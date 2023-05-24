@@ -1,0 +1,22 @@
+[workspace]
+resolver = "2"
+members = [
+    "vulkan-layer",
+    "vulkan-layer-macros",
+    "xtask",
+]
+# Do not operate on vulkan-layer-macros by default, because it doesn't work well with panic=abort
+# for testing.
+default-members = [
+    "vulkan-layer",
+    "xtask",
+]
+
+[profile.dev]
+panic = "abort"
+
+[profile.dev.build-override]
+opt-level = 3
+
+[profile.release]
+panic = "abort"

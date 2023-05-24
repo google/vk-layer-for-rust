@@ -1,0 +1,21 @@
+[package]
+name = "vulkan-layer"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+ash = "0.37.2"
+log = "0.4.17"
+num-traits = "0.2.15"
+once_cell = "1.17.1"
+smallvec = "1.10.0"
+thiserror = "1.0.40"
+vulkan-layer-macros = { path = "../vulkan-layer-macros" }
+mockall = { version = "0.11.4", optional = true }
+
+[features]
+default = []
+_test = ["dep:mockall"]
+
+[dev-dependencies]
+vulkan-layer = { path = ".", default-features = false, features = ["_test"] }
