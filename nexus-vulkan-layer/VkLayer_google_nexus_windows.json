@@ -1,0 +1,17 @@
+{
+  "file_format_version" : "1.0.0",
+  "layer" : {
+    "name": "VK_LAYER_GOOGLE_nexus",
+    "type": "GLOBAL",
+    "library_path": "..\\target\\debug\\VkLayer_nexus.dll",
+    "api_version": "1.1.0",
+    "implementation_version": "1",
+    "description": "Layer used for nexus.",
+    "enable_environment": {
+      "ENABLE_NEXUS_LAYER": "1"
+    },
+    "disable_environment": {
+      "DISABLE_NEXUS_LAYER": "1"
+    }
+  }
+}

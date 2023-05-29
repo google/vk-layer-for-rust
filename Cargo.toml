@@ -10,6 +10,7 @@ members = [
 default-members = [
     "vulkan-layer",
     "xtask",
+    "nexus-vulkan-layer",
 ]
 
 [profile.dev]
