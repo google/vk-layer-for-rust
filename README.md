@@ -51,6 +51,7 @@ TODO
 
 ## TODO
 
+- [ ] Handle the case where the underlying driver returns a null pointer to function. Currently we still return a valid function pointer, however the Android loader may test the returned function pointer to decide if such function is supported. Basically, allowing interception of `vkGet*ProcAddr` will fix this issue.
 - [ ] Set up `Android.bp` to build in an Android tree.
 - [x] Auto-generate the binding from [`vk_layer.h`](https://github.com/KhronosGroup/Vulkan-Headers/blob/9e61870ecbd32514113b467e0a0c46f60ed222c7/include/vulkan/vk_layer.h).
 - [x] Auto-generate the `global_simple_intercept.rs` from `vk.xml`.

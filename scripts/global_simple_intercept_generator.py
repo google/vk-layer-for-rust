@@ -424,7 +424,8 @@ class VulkanCommand(NamedTuple):
             last_not_len_param = next(
                 (param for _, param, _ in reversed_params if param.name not in len_params), None)
             is_returned = False
-            if last_not_len_param is not None:
+            if last_not_len_param is not None and \
+                    not last_not_len_param.type.decayed_type().is_struct():
                 param_type = last_not_len_param.type
                 is_returned = param_type.points_to is not None and not param_type.points_to.is_const
                 # pointers to opaque type won't be part of the return value while array types are
@@ -511,6 +512,7 @@ class GlobalSimpleInterceptGenerator(OutputGenerator):
         self.unhandled_commands: dict[str, UnhandledCommand] = {}
         self.command_aliases: list[set[str]] = []
         self.dispatch_infos: dict[str, CommandDispatchInfo] = {}
+        self.types: dict[str, reg.TypeInfo] = {}
         self.manually_implemented_cmd: set[str] = set([
             "vkDestroyInstance",
             "vkEnumeratePhysicalDevices",
@@ -636,7 +638,7 @@ class GlobalSimpleInterceptGenerator(OutputGenerator):
             self.unhandled_commands[name] = unhandled_command
             return
 
-        vk_xml_cmd = VkXmlCommand.from_cmd_info(cmdinfo)
+        vk_xml_cmd = VkXmlCommand.from_cmd_info(cmdinfo, self.types)
         rust_ffi_function = RustFfiFunction.from_vk_xml_command(vk_xml_cmd)
         vulkan_command = VulkanCommand(vk_xml_command=vk_xml_cmd, rust_fn=rust_ffi_function)
 
@@ -669,3 +671,11 @@ class GlobalSimpleInterceptGenerator(OutputGenerator):
             return GlobalSimpleInterceptGenerator.should_skip_cmd(cmd) is not None
         self.dispatch_infos[self.featureName] = CommandDispatchInfo.from_feature_info(
             feature, should_skip_command)
+
+    def genType(self, typeinfo: reg.TypeInfo, name: str, alias):
+        super().genType(typeinfo, name, alias)
+        self.types[name] = typeinfo
+
+    def genGroup(self, groupinfo: reg.GroupInfo, groupName: str, alias):
+        super().genGroup(groupinfo, groupName, alias)
+        self.types[groupName] = groupinfo

@@ -126,19 +126,22 @@ pub trait DeviceInfo: Send + Sync {
     fn get_buffer_memory_requirements(
         &self,
         _buffer: vk::Buffer,
-    ) -> LayerResult<vk::MemoryRequirements> {
+        _p_memory_requirements: &mut vk::MemoryRequirements,
+    ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_image_memory_requirements(
         &self,
         _image: vk::Image,
-    ) -> LayerResult<vk::MemoryRequirements> {
+        _p_memory_requirements: &mut vk::MemoryRequirements,
+    ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_image_sparse_memory_requirements(
         &self,
         _image: vk::Image,
-    ) -> LayerResult<Vec<vk::SparseImageMemoryRequirements>> {
+        _p_sparse_memory_requirements: Option<&mut [vk::SparseImageMemoryRequirements]>,
+    ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn queue_bind_sparse(
@@ -285,7 +288,8 @@ pub trait DeviceInfo: Send + Sync {
         &self,
         _image: vk::Image,
         _p_subresource: &vk::ImageSubresource,
-    ) -> LayerResult<vk::SubresourceLayout> {
+        _p_layout: &mut vk::SubresourceLayout,
+    ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn create_image_view(
@@ -480,7 +484,8 @@ pub trait DeviceInfo: Send + Sync {
     fn get_render_area_granularity(
         &self,
         _render_pass: vk::RenderPass,
-    ) -> LayerResult<vk::Extent2D> {
+        _p_granularity: &mut vk::Extent2D,
+    ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn create_command_pool(
@@ -975,19 +980,22 @@ pub trait DeviceInfo: Send + Sync {
     fn get_image_memory_requirements2(
         &self,
         _p_info: &vk::ImageMemoryRequirementsInfo2,
-    ) -> LayerResult<vk::MemoryRequirements2> {
+        _p_memory_requirements: &mut vk::MemoryRequirements2,
+    ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_buffer_memory_requirements2(
         &self,
         _p_info: &vk::BufferMemoryRequirementsInfo2,
-    ) -> LayerResult<vk::MemoryRequirements2> {
+        _p_memory_requirements: &mut vk::MemoryRequirements2,
+    ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_image_sparse_memory_requirements2(
         &self,
         _p_info: &vk::ImageSparseMemoryRequirementsInfo2,
-    ) -> LayerResult<Vec<vk::SparseImageMemoryRequirements2>> {
+        _p_sparse_memory_requirements: Option<&mut [vk::SparseImageMemoryRequirements2]>,
+    ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn trim_command_pool(
@@ -1039,7 +1047,8 @@ pub trait DeviceInfo: Send + Sync {
     fn get_descriptor_set_layout_support(
         &self,
         _p_create_info: &vk::DescriptorSetLayoutCreateInfo,
-    ) -> LayerResult<vk::DescriptorSetLayoutSupport> {
+        _p_support: &mut vk::DescriptorSetLayoutSupport,
+    ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn cmd_draw_indirect_count(
@@ -1385,19 +1394,22 @@ pub trait DeviceInfo: Send + Sync {
     fn get_device_buffer_memory_requirements(
         &self,
         _p_info: &vk::DeviceBufferMemoryRequirements,
-    ) -> LayerResult<vk::MemoryRequirements2> {
+        _p_memory_requirements: &mut vk::MemoryRequirements2,
+    ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_device_image_memory_requirements(
         &self,
         _p_info: &vk::DeviceImageMemoryRequirements,
-    ) -> LayerResult<vk::MemoryRequirements2> {
+        _p_memory_requirements: &mut vk::MemoryRequirements2,
+    ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_device_image_sparse_memory_requirements(
         &self,
         _p_info: &vk::DeviceImageMemoryRequirements,
-    ) -> LayerResult<Vec<vk::SparseImageMemoryRequirements2>> {
+        _p_sparse_memory_requirements: Option<&mut [vk::SparseImageMemoryRequirements2]>,
+    ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn create_swapchain_khr(
@@ -1438,7 +1450,8 @@ pub trait DeviceInfo: Send + Sync {
     }
     fn get_device_group_present_capabilities_khr(
         &self,
-    ) -> LayerResult<VkResult<vk::DeviceGroupPresentCapabilitiesKHR>> {
+        _p_device_group_present_capabilities: &mut vk::DeviceGroupPresentCapabilitiesKHR,
+    ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_device_group_surface_present_modes_khr(
@@ -1477,7 +1490,8 @@ pub trait DeviceInfo: Send + Sync {
     fn get_video_session_memory_requirements_khr(
         &self,
         _video_session: vk::VideoSessionKHR,
-    ) -> LayerResult<VkResult<Vec<vk::VideoSessionMemoryRequirementsKHR>>> {
+        _p_memory_requirements: Option<&mut [vk::VideoSessionMemoryRequirementsKHR]>,
+    ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn bind_video_session_memory_khr(
@@ -1546,7 +1560,8 @@ pub trait DeviceInfo: Send + Sync {
         &self,
         _handle_type: vk::ExternalMemoryHandleTypeFlags,
         _handle: vk::HANDLE,
-    ) -> LayerResult<VkResult<vk::MemoryWin32HandlePropertiesKHR>> {
+        _p_memory_win32_handle_properties: &mut vk::MemoryWin32HandlePropertiesKHR,
+    ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_memory_fd_khr(
@@ -1559,7 +1574,8 @@ pub trait DeviceInfo: Send + Sync {
         &self,
         _handle_type: vk::ExternalMemoryHandleTypeFlags,
         _fd: c_int,
-    ) -> LayerResult<VkResult<vk::MemoryFdPropertiesKHR>> {
+        _p_memory_fd_properties: &mut vk::MemoryFdPropertiesKHR,
+    ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn import_semaphore_win32_handle_khr(
@@ -1692,19 +1708,22 @@ pub trait DeviceInfo: Send + Sync {
     fn get_pipeline_executable_properties_khr(
         &self,
         _p_pipeline_info: &vk::PipelineInfoKHR,
-    ) -> LayerResult<VkResult<Vec<vk::PipelineExecutablePropertiesKHR>>> {
+        _p_properties: Option<&mut [vk::PipelineExecutablePropertiesKHR]>,
+    ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_pipeline_executable_statistics_khr(
         &self,
         _p_executable_info: &vk::PipelineExecutableInfoKHR,
-    ) -> LayerResult<VkResult<Vec<vk::PipelineExecutableStatisticKHR>>> {
+        _p_statistics: Option<&mut [vk::PipelineExecutableStatisticKHR]>,
+    ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_pipeline_executable_internal_representations_khr(
         &self,
         _p_executable_info: &vk::PipelineExecutableInfoKHR,
-    ) -> LayerResult<VkResult<Vec<vk::PipelineExecutableInternalRepresentationKHR>>> {
+        _p_internal_representations: Option<&mut [vk::PipelineExecutableInternalRepresentationKHR]>,
+    ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn cmd_encode_video_khr(
@@ -1727,7 +1746,8 @@ pub trait DeviceInfo: Send + Sync {
     fn get_queue_checkpoint_data2_nv(
         &self,
         _queue: vk::Queue,
-    ) -> LayerResult<Vec<vk::CheckpointData2NV>> {
+        _p_checkpoint_data: Option<&mut [vk::CheckpointData2NV]>,
+    ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn cmd_trace_rays_indirect2_khr(
@@ -1899,7 +1919,8 @@ pub trait DeviceInfo: Send + Sync {
     fn get_image_view_address_nvx(
         &self,
         _image_view: vk::ImageView,
-    ) -> LayerResult<VkResult<vk::ImageViewAddressPropertiesNVX>> {
+        _p_properties: &mut vk::ImageViewAddressPropertiesNVX,
+    ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_shader_info_amd(
@@ -1970,13 +1991,15 @@ pub trait DeviceInfo: Send + Sync {
     fn get_refresh_cycle_duration_google(
         &self,
         _swapchain: vk::SwapchainKHR,
-    ) -> LayerResult<VkResult<vk::RefreshCycleDurationGOOGLE>> {
+        _p_display_timing_properties: &mut vk::RefreshCycleDurationGOOGLE,
+    ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_past_presentation_timing_google(
         &self,
         _swapchain: vk::SwapchainKHR,
-    ) -> LayerResult<VkResult<Vec<vk::PastPresentationTimingGOOGLE>>> {
+        _p_presentation_timings: Option<&mut [vk::PastPresentationTimingGOOGLE]>,
+    ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn cmd_set_discard_rectangle_ext(
@@ -2043,7 +2066,8 @@ pub trait DeviceInfo: Send + Sync {
     fn get_android_hardware_buffer_properties_android(
         &self,
         _buffer: *const vk::AHardwareBuffer,
-    ) -> LayerResult<VkResult<vk::AndroidHardwareBufferPropertiesANDROID>> {
+        _p_properties: &mut vk::AndroidHardwareBufferPropertiesANDROID,
+    ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_memory_android_hardware_buffer_android(
@@ -2062,7 +2086,8 @@ pub trait DeviceInfo: Send + Sync {
     fn get_image_drm_format_modifier_properties_ext(
         &self,
         _image: vk::Image,
-    ) -> LayerResult<VkResult<vk::ImageDrmFormatModifierPropertiesEXT>> {
+        _p_properties: &mut vk::ImageDrmFormatModifierPropertiesEXT,
+    ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn create_validation_cache_ext(
@@ -2133,7 +2158,8 @@ pub trait DeviceInfo: Send + Sync {
     fn get_acceleration_structure_memory_requirements_nv(
         &self,
         _p_info: &vk::AccelerationStructureMemoryRequirementsInfoNV,
-    ) -> LayerResult<vk::MemoryRequirements2KHR> {
+        _p_memory_requirements: &mut vk::MemoryRequirements2KHR,
+    ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn bind_acceleration_structure_memory_nv(
@@ -2228,7 +2254,8 @@ pub trait DeviceInfo: Send + Sync {
         &self,
         _handle_type: vk::ExternalMemoryHandleTypeFlags,
         _p_host_pointer: *const c_void,
-    ) -> LayerResult<VkResult<vk::MemoryHostPointerPropertiesEXT>> {
+        _p_memory_host_pointer_properties: &mut vk::MemoryHostPointerPropertiesEXT,
+    ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn cmd_write_buffer_marker_amd(
@@ -2296,7 +2323,8 @@ pub trait DeviceInfo: Send + Sync {
     fn get_queue_checkpoint_data_nv(
         &self,
         _queue: vk::Queue,
-    ) -> LayerResult<Vec<vk::CheckpointDataNV>> {
+        _p_checkpoint_data: Option<&mut [vk::CheckpointDataNV]>,
+    ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn initialize_performance_api_intel(
@@ -2351,7 +2379,8 @@ pub trait DeviceInfo: Send + Sync {
     fn get_performance_parameter_intel(
         &self,
         _parameter: vk::PerformanceParameterTypeINTEL,
-    ) -> LayerResult<VkResult<vk::PerformanceValueINTEL>> {
+        _p_value: &mut vk::PerformanceValueINTEL,
+    ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn set_local_dimming_amd(
@@ -2396,7 +2425,8 @@ pub trait DeviceInfo: Send + Sync {
     fn get_generated_commands_memory_requirements_nv(
         &self,
         _p_info: &vk::GeneratedCommandsMemoryRequirementsInfoNV,
-    ) -> LayerResult<vk::MemoryRequirements2> {
+        _p_memory_requirements: &mut vk::MemoryRequirements2,
+    ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn cmd_preprocess_generated_commands_nv(
@@ -2437,7 +2467,10 @@ pub trait DeviceInfo: Send + Sync {
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
-    fn export_metal_objects_ext(&self) -> LayerResult<vk::ExportMetalObjectsInfoEXT> {
+    fn export_metal_objects_ext(
+        &self,
+        _p_metal_objects_info: &mut vk::ExportMetalObjectsInfoEXT,
+    ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_descriptor_set_layout_size_ext(
@@ -2533,7 +2566,8 @@ pub trait DeviceInfo: Send + Sync {
         &self,
         _image: vk::Image,
         _p_subresource: &vk::ImageSubresource2EXT,
-    ) -> LayerResult<vk::SubresourceLayout2EXT> {
+        _p_layout: &mut vk::SubresourceLayout2EXT,
+    ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn cmd_set_vertex_input_ext(
@@ -2554,7 +2588,8 @@ pub trait DeviceInfo: Send + Sync {
         &self,
         _handle_type: vk::ExternalMemoryHandleTypeFlags,
         _zircon_handle: vk::zx_handle_t,
-    ) -> LayerResult<VkResult<vk::MemoryZirconHandlePropertiesFUCHSIA>> {
+        _p_memory_zircon_handle_properties: &mut vk::MemoryZirconHandlePropertiesFUCHSIA,
+    ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn import_semaphore_zircon_handle_fuchsia(
@@ -2600,13 +2635,15 @@ pub trait DeviceInfo: Send + Sync {
     fn get_buffer_collection_properties_fuchsia(
         &self,
         _collection: vk::BufferCollectionFUCHSIA,
-    ) -> LayerResult<VkResult<vk::BufferCollectionPropertiesFUCHSIA>> {
+        _p_properties: &mut vk::BufferCollectionPropertiesFUCHSIA,
+    ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_device_subpass_shading_max_workgroup_size_huawei(
         &self,
         _renderpass: vk::RenderPass,
-    ) -> LayerResult<VkResult<vk::Extent2D>> {
+        _p_max_workgroup_size: &mut vk::Extent2D,
+    ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn cmd_subpass_shading_huawei(&self, _command_buffer: vk::CommandBuffer) -> LayerResult<()> {
@@ -2629,7 +2666,8 @@ pub trait DeviceInfo: Send + Sync {
     fn get_pipeline_properties_ext(
         &self,
         _p_pipeline_info: &vk::PipelineInfoEXT,
-    ) -> LayerResult<VkResult<vk::BaseOutStructure>> {
+        _p_pipeline_properties: &mut vk::BaseOutStructure,
+    ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn cmd_set_patch_control_points_ext(
@@ -2773,7 +2811,8 @@ pub trait DeviceInfo: Send + Sync {
         &self,
         _build_type: vk::AccelerationStructureBuildTypeKHR,
         _p_build_info: &vk::MicromapBuildInfoEXT,
-    ) -> LayerResult<vk::MicromapBuildSizesInfoEXT> {
+        _p_size_info: &mut vk::MicromapBuildSizesInfoEXT,
+    ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn set_device_memory_priority_ext(
@@ -2786,7 +2825,8 @@ pub trait DeviceInfo: Send + Sync {
     fn get_descriptor_set_layout_host_mapping_info_valve(
         &self,
         _p_binding_reference: &vk::DescriptorSetBindingReferenceVALVE,
-    ) -> LayerResult<vk::DescriptorSetLayoutHostMappingInfoVALVE> {
+        _p_host_mapping: &mut vk::DescriptorSetLayoutHostMappingInfoVALVE,
+    ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_descriptor_set_host_mapping_valve(
@@ -3057,13 +3097,15 @@ pub trait DeviceInfo: Send + Sync {
     fn get_shader_module_identifier_ext(
         &self,
         _shader_module: vk::ShaderModule,
-    ) -> LayerResult<vk::ShaderModuleIdentifierEXT> {
+        _p_identifier: &mut vk::ShaderModuleIdentifierEXT,
+    ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_shader_module_create_info_identifier_ext(
         &self,
         _p_create_info: &vk::ShaderModuleCreateInfo,
-    ) -> LayerResult<vk::ShaderModuleIdentifierEXT> {
+        _p_identifier: &mut vk::ShaderModuleIdentifierEXT,
+    ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn create_optical_flow_session_nv(
@@ -3100,13 +3142,15 @@ pub trait DeviceInfo: Send + Sync {
     fn get_framebuffer_tile_properties_qcom(
         &self,
         _framebuffer: vk::Framebuffer,
-    ) -> LayerResult<VkResult<Vec<vk::TilePropertiesQCOM>>> {
+        _p_properties: Option<&mut [vk::TilePropertiesQCOM]>,
+    ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_dynamic_rendering_tile_properties_qcom(
         &self,
         _p_rendering_info: &vk::RenderingInfo,
-    ) -> LayerResult<VkResult<vk::TilePropertiesQCOM>> {
+        _p_properties: &mut vk::TilePropertiesQCOM,
+    ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn create_acceleration_structure_khr(
@@ -3201,7 +3245,8 @@ pub trait DeviceInfo: Send + Sync {
         _build_type: vk::AccelerationStructureBuildTypeKHR,
         _p_build_info: &vk::AccelerationStructureBuildGeometryInfoKHR,
         _p_max_primitive_counts: Option<&[u32]>,
-    ) -> LayerResult<vk::AccelerationStructureBuildSizesInfoKHR> {
+        _p_size_info: &mut vk::AccelerationStructureBuildSizesInfoKHR,
+    ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn cmd_trace_rays_khr(
@@ -3297,14 +3342,16 @@ pub trait InstanceInfo: Send + Sync {
     fn get_physical_device_features(
         &self,
         _physical_device: vk::PhysicalDevice,
-    ) -> LayerResult<vk::PhysicalDeviceFeatures> {
+        _p_features: &mut vk::PhysicalDeviceFeatures,
+    ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_physical_device_format_properties(
         &self,
         _physical_device: vk::PhysicalDevice,
         _format: vk::Format,
-    ) -> LayerResult<vk::FormatProperties> {
+        _p_format_properties: &mut vk::FormatProperties,
+    ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_physical_device_image_format_properties(
@@ -3315,25 +3362,29 @@ pub trait InstanceInfo: Send + Sync {
         _tiling: vk::ImageTiling,
         _usage: vk::ImageUsageFlags,
         _flags: vk::ImageCreateFlags,
-    ) -> LayerResult<VkResult<vk::ImageFormatProperties>> {
+        _p_image_format_properties: &mut vk::ImageFormatProperties,
+    ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_physical_device_properties(
         &self,
         _physical_device: vk::PhysicalDevice,
-    ) -> LayerResult<vk::PhysicalDeviceProperties> {
+        _p_properties: &mut vk::PhysicalDeviceProperties,
+    ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_physical_device_queue_family_properties(
         &self,
         _physical_device: vk::PhysicalDevice,
-    ) -> LayerResult<Vec<vk::QueueFamilyProperties>> {
+        _p_queue_family_properties: Option<&mut [vk::QueueFamilyProperties]>,
+    ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_physical_device_memory_properties(
         &self,
         _physical_device: vk::PhysicalDevice,
-    ) -> LayerResult<vk::PhysicalDeviceMemoryProperties> {
+        _p_memory_properties: &mut vk::PhysicalDeviceMemoryProperties,
+    ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn create_device(
@@ -3352,79 +3403,91 @@ pub trait InstanceInfo: Send + Sync {
         _samples: vk::SampleCountFlags,
         _usage: vk::ImageUsageFlags,
         _tiling: vk::ImageTiling,
-    ) -> LayerResult<Vec<vk::SparseImageFormatProperties>> {
+        _p_properties: Option<&mut [vk::SparseImageFormatProperties]>,
+    ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_physical_device_features2(
         &self,
         _physical_device: vk::PhysicalDevice,
-    ) -> LayerResult<vk::PhysicalDeviceFeatures2> {
+        _p_features: &mut vk::PhysicalDeviceFeatures2,
+    ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_physical_device_properties2(
         &self,
         _physical_device: vk::PhysicalDevice,
-    ) -> LayerResult<vk::PhysicalDeviceProperties2> {
+        _p_properties: &mut vk::PhysicalDeviceProperties2,
+    ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_physical_device_format_properties2(
         &self,
         _physical_device: vk::PhysicalDevice,
         _format: vk::Format,
-    ) -> LayerResult<vk::FormatProperties2> {
+        _p_format_properties: &mut vk::FormatProperties2,
+    ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_physical_device_image_format_properties2(
         &self,
         _physical_device: vk::PhysicalDevice,
         _p_image_format_info: &vk::PhysicalDeviceImageFormatInfo2,
-    ) -> LayerResult<VkResult<vk::ImageFormatProperties2>> {
+        _p_image_format_properties: &mut vk::ImageFormatProperties2,
+    ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_physical_device_queue_family_properties2(
         &self,
         _physical_device: vk::PhysicalDevice,
-    ) -> LayerResult<Vec<vk::QueueFamilyProperties2>> {
+        _p_queue_family_properties: Option<&mut [vk::QueueFamilyProperties2]>,
+    ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_physical_device_memory_properties2(
         &self,
         _physical_device: vk::PhysicalDevice,
-    ) -> LayerResult<vk::PhysicalDeviceMemoryProperties2> {
+        _p_memory_properties: &mut vk::PhysicalDeviceMemoryProperties2,
+    ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_physical_device_sparse_image_format_properties2(
         &self,
         _physical_device: vk::PhysicalDevice,
         _p_format_info: &vk::PhysicalDeviceSparseImageFormatInfo2,
-    ) -> LayerResult<Vec<vk::SparseImageFormatProperties2>> {
+        _p_properties: Option<&mut [vk::SparseImageFormatProperties2]>,
+    ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_physical_device_external_buffer_properties(
         &self,
         _physical_device: vk::PhysicalDevice,
         _p_external_buffer_info: &vk::PhysicalDeviceExternalBufferInfo,
-    ) -> LayerResult<vk::ExternalBufferProperties> {
+        _p_external_buffer_properties: &mut vk::ExternalBufferProperties,
+    ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_physical_device_external_fence_properties(
         &self,
         _physical_device: vk::PhysicalDevice,
         _p_external_fence_info: &vk::PhysicalDeviceExternalFenceInfo,
-    ) -> LayerResult<vk::ExternalFenceProperties> {
+        _p_external_fence_properties: &mut vk::ExternalFenceProperties,
+    ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_physical_device_external_semaphore_properties(
         &self,
         _physical_device: vk::PhysicalDevice,
         _p_external_semaphore_info: &vk::PhysicalDeviceExternalSemaphoreInfo,
-    ) -> LayerResult<vk::ExternalSemaphoreProperties> {
+        _p_external_semaphore_properties: &mut vk::ExternalSemaphoreProperties,
+    ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_physical_device_tool_properties(
         &self,
         _physical_device: vk::PhysicalDevice,
-    ) -> LayerResult<VkResult<Vec<vk::PhysicalDeviceToolProperties>>> {
+        _p_tool_properties: Option<&mut [vk::PhysicalDeviceToolProperties]>,
+    ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn destroy_surface_khr(
@@ -3446,14 +3509,16 @@ pub trait InstanceInfo: Send + Sync {
         &self,
         _physical_device: vk::PhysicalDevice,
         _surface: vk::SurfaceKHR,
-    ) -> LayerResult<VkResult<vk::SurfaceCapabilitiesKHR>> {
+        _p_surface_capabilities: &mut vk::SurfaceCapabilitiesKHR,
+    ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_physical_device_surface_formats_khr(
         &self,
         _physical_device: vk::PhysicalDevice,
         _surface: vk::SurfaceKHR,
-    ) -> LayerResult<VkResult<Vec<vk::SurfaceFormatKHR>>> {
+        _p_surface_formats: Option<&mut [vk::SurfaceFormatKHR]>,
+    ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_physical_device_surface_present_modes_khr(
@@ -3467,19 +3532,22 @@ pub trait InstanceInfo: Send + Sync {
         &self,
         _physical_device: vk::PhysicalDevice,
         _surface: vk::SurfaceKHR,
-    ) -> LayerResult<VkResult<Vec<vk::Rect2D>>> {
+        _p_rects: Option<&mut [vk::Rect2D]>,
+    ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_physical_device_display_properties_khr(
         &self,
         _physical_device: vk::PhysicalDevice,
-    ) -> LayerResult<VkResult<Vec<vk::DisplayPropertiesKHR>>> {
+        _p_properties: Option<&mut [vk::DisplayPropertiesKHR]>,
+    ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_physical_device_display_plane_properties_khr(
         &self,
         _physical_device: vk::PhysicalDevice,
-    ) -> LayerResult<VkResult<Vec<vk::DisplayPlanePropertiesKHR>>> {
+        _p_properties: Option<&mut [vk::DisplayPlanePropertiesKHR]>,
+    ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_display_plane_supported_displays_khr(
@@ -3493,7 +3561,8 @@ pub trait InstanceInfo: Send + Sync {
         &self,
         _physical_device: vk::PhysicalDevice,
         _display: vk::DisplayKHR,
-    ) -> LayerResult<VkResult<Vec<vk::DisplayModePropertiesKHR>>> {
+        _p_properties: Option<&mut [vk::DisplayModePropertiesKHR]>,
+    ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn create_display_mode_khr(
@@ -3510,7 +3579,8 @@ pub trait InstanceInfo: Send + Sync {
         _physical_device: vk::PhysicalDevice,
         _mode: vk::DisplayModeKHR,
         _plane_index: u32,
-    ) -> LayerResult<VkResult<vk::DisplayPlaneCapabilitiesKHR>> {
+        _p_capabilities: &mut vk::DisplayPlaneCapabilitiesKHR,
+    ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn create_display_plane_surface_khr(
@@ -3592,14 +3662,16 @@ pub trait InstanceInfo: Send + Sync {
         &self,
         _physical_device: vk::PhysicalDevice,
         _p_video_profile: &vk::VideoProfileInfoKHR,
-    ) -> LayerResult<VkResult<vk::VideoCapabilitiesKHR>> {
+        _p_capabilities: &mut vk::VideoCapabilitiesKHR,
+    ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_physical_device_video_format_properties_khr(
         &self,
         _physical_device: vk::PhysicalDevice,
         _p_video_format_info: &vk::PhysicalDeviceVideoFormatInfoKHR,
-    ) -> LayerResult<VkResult<Vec<vk::VideoFormatPropertiesKHR>>> {
+        _p_video_format_properties: Option<&mut [vk::VideoFormatPropertiesKHR]>,
+    ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn enumerate_physical_device_queue_family_performance_query_counters_khr(
@@ -3607,7 +3679,8 @@ pub trait InstanceInfo: Send + Sync {
         _physical_device: vk::PhysicalDevice,
         _queue_family_index: u32,
         _p_counters: Option<&mut [vk::PerformanceCounterKHR]>,
-    ) -> LayerResult<VkResult<Vec<vk::PerformanceCounterDescriptionKHR>>> {
+        _p_counter_descriptions: Option<&mut [vk::PerformanceCounterDescriptionKHR]>,
+    ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_physical_device_queue_family_performance_query_passes_khr(
@@ -3621,46 +3694,53 @@ pub trait InstanceInfo: Send + Sync {
         &self,
         _physical_device: vk::PhysicalDevice,
         _p_surface_info: &vk::PhysicalDeviceSurfaceInfo2KHR,
-    ) -> LayerResult<VkResult<vk::SurfaceCapabilities2KHR>> {
+        _p_surface_capabilities: &mut vk::SurfaceCapabilities2KHR,
+    ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_physical_device_surface_formats2_khr(
         &self,
         _physical_device: vk::PhysicalDevice,
         _p_surface_info: &vk::PhysicalDeviceSurfaceInfo2KHR,
-    ) -> LayerResult<VkResult<Vec<vk::SurfaceFormat2KHR>>> {
+        _p_surface_formats: Option<&mut [vk::SurfaceFormat2KHR]>,
+    ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_physical_device_display_properties2_khr(
         &self,
         _physical_device: vk::PhysicalDevice,
-    ) -> LayerResult<VkResult<Vec<vk::DisplayProperties2KHR>>> {
+        _p_properties: Option<&mut [vk::DisplayProperties2KHR]>,
+    ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_physical_device_display_plane_properties2_khr(
         &self,
         _physical_device: vk::PhysicalDevice,
-    ) -> LayerResult<VkResult<Vec<vk::DisplayPlaneProperties2KHR>>> {
+        _p_properties: Option<&mut [vk::DisplayPlaneProperties2KHR]>,
+    ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_display_mode_properties2_khr(
         &self,
         _physical_device: vk::PhysicalDevice,
         _display: vk::DisplayKHR,
-    ) -> LayerResult<VkResult<Vec<vk::DisplayModeProperties2KHR>>> {
+        _p_properties: Option<&mut [vk::DisplayModeProperties2KHR]>,
+    ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_display_plane_capabilities2_khr(
         &self,
         _physical_device: vk::PhysicalDevice,
         _p_display_plane_info: &vk::DisplayPlaneInfo2KHR,
-    ) -> LayerResult<VkResult<vk::DisplayPlaneCapabilities2KHR>> {
+        _p_capabilities: &mut vk::DisplayPlaneCapabilities2KHR,
+    ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_physical_device_fragment_shading_rates_khr(
         &self,
         _physical_device: vk::PhysicalDevice,
-    ) -> LayerResult<VkResult<Vec<vk::PhysicalDeviceFragmentShadingRateKHR>>> {
+        _p_fragment_shading_rates: Option<&mut [vk::PhysicalDeviceFragmentShadingRateKHR]>,
+    ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn create_debug_report_callback_ext(
@@ -3705,7 +3785,8 @@ pub trait InstanceInfo: Send + Sync {
         _usage: vk::ImageUsageFlags,
         _flags: vk::ImageCreateFlags,
         _external_handle_type: vk::ExternalMemoryHandleTypeFlagsNV,
-    ) -> LayerResult<VkResult<vk::ExternalImageFormatPropertiesNV>> {
+        _p_external_image_format_properties: &mut vk::ExternalImageFormatPropertiesNV,
+    ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn create_vi_surface_nn(
@@ -3742,7 +3823,8 @@ pub trait InstanceInfo: Send + Sync {
         &self,
         _physical_device: vk::PhysicalDevice,
         _surface: vk::SurfaceKHR,
-    ) -> LayerResult<VkResult<vk::SurfaceCapabilities2EXT>> {
+        _p_surface_capabilities: &mut vk::SurfaceCapabilities2EXT,
+    ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn create_ios_surface_mvk(
@@ -3785,7 +3867,8 @@ pub trait InstanceInfo: Send + Sync {
         &self,
         _physical_device: vk::PhysicalDevice,
         _samples: vk::SampleCountFlags,
-    ) -> LayerResult<vk::MultisamplePropertiesEXT> {
+        _p_multisample_properties: &mut vk::MultisamplePropertiesEXT,
+    ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_physical_device_calibrateable_time_domains_ext(
@@ -3811,13 +3894,15 @@ pub trait InstanceInfo: Send + Sync {
     fn get_physical_device_cooperative_matrix_properties_nv(
         &self,
         _physical_device: vk::PhysicalDevice,
-    ) -> LayerResult<VkResult<Vec<vk::CooperativeMatrixPropertiesNV>>> {
+        _p_properties: Option<&mut [vk::CooperativeMatrixPropertiesNV]>,
+    ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_physical_device_supported_framebuffer_mixed_samples_combinations_nv(
         &self,
         _physical_device: vk::PhysicalDevice,
-    ) -> LayerResult<VkResult<Vec<vk::FramebufferMixedSamplesCombinationNV>>> {
+        _p_combinations: Option<&mut [vk::FramebufferMixedSamplesCombinationNV]>,
+    ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_physical_device_surface_present_modes2_ext(
@@ -3898,7 +3983,8 @@ pub trait InstanceInfo: Send + Sync {
         &self,
         _physical_device: vk::PhysicalDevice,
         _p_optical_flow_image_format_info: &vk::OpticalFlowImageFormatInfoNV,
-    ) -> LayerResult<VkResult<Vec<vk::OpticalFlowImageFormatPropertiesNV>>> {
+        _p_image_format_properties: Option<&mut [vk::OpticalFlowImageFormatPropertiesNV]>,
+    ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
 }

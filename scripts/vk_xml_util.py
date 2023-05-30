@@ -160,6 +160,7 @@ def escape_rust_keywords(id: str) -> str:
         return id
     return escape_rust_keywords("_" + id)
 
+
 def write_license(file):
     today = datetime.date.today()
     file.write("".join([
@@ -197,21 +198,20 @@ opaque_type_map = {
     'CAMetalLayer': 'vk::CAMetalLayer',
 }
 
+primitive_type_map = {
+    'uint64_t': 'u64',
+    'uint32_t': 'u32',
+    'uint16_t': 'u16',
+    'int32_t': 'i32',
+    'char': 'c_char',
+    'size_t': 'usize',
+    'float': 'f32',
+    'int': 'c_int',
+}
+
 
 def decayed_type_to_rust_type(decayed_type: str) -> str:
-    try_opaque_type = opaque_type_map.get(decayed_type)
-    if try_opaque_type is not None:
-        return try_opaque_type
     manual_type_map = {
-        'uint64_t': 'u64',
-        'uint32_t': 'u32',
-        'uint16_t': 'u16',
-        'int32_t': 'i32',
-        'char': 'c_char',
-        'size_t': 'usize',
-        'float': 'f32',
-        'int': 'c_int',
-
         # from "X11/Xlib.h"
         'Display': 'vk::Display',
         'VisualID': 'vk::VisualID',
@@ -237,6 +237,7 @@ def decayed_type_to_rust_type(decayed_type: str) -> str:
         'GgpStreamDescriptor': 'vk::GgpStreamDescriptor',
         'GgpFrameToken': 'vk::GgpFrameToken',
     }
+    manual_type_map |= opaque_type_map | primitive_type_map
     try_manual_type = manual_type_map.get(decayed_type)
     if try_manual_type is not None:
         return try_manual_type
@@ -279,9 +280,27 @@ class VkXmlType:
     # A pointer type only has the points_to field. Otherwise, the type only has the name field.
     points_to: Optional[VkXmlType] = None
     name: Optional[str] = None
+    reg_type_info: Optional[reg.TypeInfo | reg.GroupInfo] = None
 
     len: Optional[VkXmlLenKind] = None
     dimensions: list[int] = field(default_factory=list)
+
+    def decayed_type(self) -> VkXmlType:
+        if self.name is not None:
+            return self
+        return self.points_to.decayed_type()
+
+    def is_struct(self) -> bool:
+        if self.reg_type_info is None:
+            return False
+        if not isinstance(self.reg_type_info, reg.TypeInfo):
+            return False
+        return self.reg_type_info.elem.get('category') == 'struct'
+
+
+def get_param_decayed_type(param: Element) -> str:
+    type_element = param.find('type')
+    return ''.join(type_element.itertext()).strip()
 
 
 class VkXmlParam(NamedTuple):
@@ -290,13 +309,16 @@ class VkXmlParam(NamedTuple):
     len_var: Optional[str] = None
 
     @staticmethod
-    def from_param_element(param: Element) -> VkXmlParam:
+    def from_param_element(
+        param: Element,
+        decayed_type_info: reg.TypeInfo | reg.GroupInfo,
+    ) -> VkXmlParam:
         type_element = param.find('type')
 
         name_element = param.find('name')
 
         param_name = ''.join(name_element.itertext()).strip()
-        decayed_type = ''.join(type_element.itertext()).strip()
+        decayed_type = get_param_decayed_type(param)
 
         dimensions: list[int] = []
         if name_element.tail is not None and name_element.tail.strip() != "":
@@ -343,7 +365,7 @@ class VkXmlParam(NamedTuple):
         is_optionals += [False] * (len(is_consts) - len(is_optionals))
         vk_xml_type = VkXmlType(is_const=is_consts.pop(),
                                 is_optional=is_optionals.pop(), name=decayed_type,
-                                dimensions=dimensions)
+                                reg_type_info=decayed_type_info, dimensions=dimensions)
         for _ in range(len(is_consts)):
             vk_xml_type = VkXmlType(is_const=is_consts.pop(),
                                     is_optional=is_optionals.pop(), points_to=vk_xml_type)
@@ -375,8 +397,13 @@ class VkXmlCommand(NamedTuple):
     parameters: list[VkXmlParam]
 
     @staticmethod
-    def from_cmd_info(cmdinfo: reg.CmdInfo) -> VkXmlCommand:
-        params = [VkXmlParam.from_param_element(param) for param in cmdinfo.getParams()]
+    def from_cmd_info(cmdinfo: reg.CmdInfo, typeinfos: dict[str, reg.TypeInfo | reg.GroupInfo]) -> VkXmlCommand:
+        params: list[VkXmlParam] = []
+        for param in cmdinfo.getParams():
+            typename = get_param_decayed_type(param)
+            assert typename in typeinfos, f"Unknown type: {typename}"
+            typeinfo = typeinfos[typename]
+            params.append(VkXmlParam.from_param_element(param, typeinfo))
         return_type = cmdinfo.elem.find('proto/type').text.strip()
         xmlElem = cmdinfo.elem
         name = xmlElem.get('name')
@@ -597,8 +624,9 @@ class RustMethod(NamedTuple):
     def from_vk_xml_command(vk_xml_cmd: VkXmlCommand) -> RustMethod:
         vk_xml_params = vk_xml_cmd.parameters
         len_params = [param.len_var for param in vk_xml_params if param.len_var is not None]
+        not_len_xml_params = [param for param in vk_xml_params if param.name not in len_params]
         rust_params: list[RustParam] = [RustParam.from_vk_xml_param(
-            vk_xml_param) for vk_xml_param in vk_xml_params if vk_xml_param.name not in len_params]
+            vk_xml_param) for vk_xml_param in not_len_xml_params]
         assert len(rust_params) > 0, "Unexpected command with 0 parameters."
 
         # Remove the leading vk::Instance or vk::Device parameter, since it should be included in
@@ -610,9 +638,16 @@ class RustMethod(NamedTuple):
         return_c_type = vk_xml_cmd.return_type
         if return_c_type in ['VkResult', 'void']:
             rust_return_type = '()'
+            # TODO: move the return parameter detection into VkXmlParam and support multiple out
+            # parameters. In addition, we can share the return parameter test logic across different
+            # generator class.
             if len(rust_params) > 0:
                 last_param_type = rust_params[-1].type
-                if last_param_type.refers_to is not None and not last_param_type.refers_to.is_const:
+                if not_len_xml_params[-1].type.decayed_type().is_struct():
+                    # For struct type, we don't treat it as a return type given the complication of
+                    # pNext chain of the return parameter, and possible input fields.
+                    pass
+                elif last_param_type.refers_to is not None and not last_param_type.refers_to.is_const:
                     last_param = rust_params.pop()
                     rust_return_type = last_param.type.refers_to.to_string()
                 elif last_param_type.slice_of is not None and not last_param_type.slice_of.is_const:

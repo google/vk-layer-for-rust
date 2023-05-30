@@ -28,6 +28,7 @@ class LayerTraitGenerator(OutputGenerator):
         self.all_commands: dict[DispatchChainType, dict[str, RustMethod]] = {}
         self.command_aliases: VulkanAliases = VulkanAliases()
         self.unhandled_commands: dict[str, UnhandledCommand] = {}
+        self.types: dict[str, reg.TypeInfo | reg.GroupInfo] = {}
 
     def beginFile(self, gen_opts):
         super().beginFile(gen_opts)
@@ -139,7 +140,7 @@ class LayerTraitGenerator(OutputGenerator):
         if name in should_skip:
             return
 
-        vk_xml_cmd = VkXmlCommand.from_cmd_info(cmdinfo)
+        vk_xml_cmd = VkXmlCommand.from_cmd_info(cmdinfo, self.types)
         dispatch_chain_type = vk_xml_cmd.get_dispatch_chain_type()
 
         if dispatch_chain_type is None:
@@ -151,3 +152,11 @@ class LayerTraitGenerator(OutputGenerator):
         commands = self.all_commands.setdefault(dispatch_chain_type, {})
         rust_method = RustMethod.from_vk_xml_command(vk_xml_cmd)
         commands[name] = rust_method
+
+    def genType(self, typeinfo: reg.TypeInfo, name: str, alias):
+        super().genType(typeinfo, name, alias)
+        self.types[name] = typeinfo
+
+    def genGroup(self, groupinfo: reg.GroupInfo, groupName: str, alias):
+        super().genGroup(groupinfo, groupName, alias)
+        self.types[groupName] = groupinfo
