@@ -120,6 +120,11 @@ def main():
     reg = Registry(generator, generator_option)
     tree = etree.parse(args.registry)
 
+    # Allow the generation of the VK_ANDROID_native_buffer extension.
+    for android_ext_elem in tree.findall(
+            ".//extension[@name='VK_ANDROID_native_buffer'][@supported]"):
+        android_ext_elem.set('supported', 'vulkan')
+
     # Load the XML tree into the registry object
     reg.loadElementTree(tree)
 

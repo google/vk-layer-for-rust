@@ -51,6 +51,7 @@ pub(crate) struct DeviceDispatchTable {
     khr_video_encode_queue: Arc<ash::vk::KhrVideoEncodeQueueFn>,
     khr_synchronization2: Arc<ash::vk::KhrSynchronization2Fn>,
     khr_ray_tracing_maintenance1: Arc<ash::vk::KhrRayTracingMaintenance1Fn>,
+    android_native_buffer: Arc<ash::vk::AndroidNativeBufferFn>,
     ext_debug_marker: Arc<ash::vk::ExtDebugMarkerFn>,
     ext_transform_feedback: Arc<ash::vk::ExtTransformFeedbackFn>,
     nvx_binary_import: Arc<ash::vk::NvxBinaryImportFn>,
@@ -169,6 +170,9 @@ impl DeviceDispatchTable {
             )),
             khr_synchronization2: Arc::new(ash::vk::KhrSynchronization2Fn::load(&proc_addr_loader)),
             khr_ray_tracing_maintenance1: Arc::new(ash::vk::KhrRayTracingMaintenance1Fn::load(
+                &proc_addr_loader,
+            )),
+            android_native_buffer: Arc::new(ash::vk::AndroidNativeBufferFn::load(
                 &proc_addr_loader,
             )),
             ext_debug_marker: Arc::new(ash::vk::ExtDebugMarkerFn::load(&proc_addr_loader)),
@@ -441,7 +445,7 @@ impl InstanceDispatchTable {
 //   yet.
 
 impl<T: Layer> Global<T> {
-    pub(crate) const DEVICE_COMMANDS: [VulkanCommand; 513] = [
+    pub(crate) const DEVICE_COMMANDS: [VulkanCommand; 517] = [
         VulkanCommand {
             name: "vkAcquireFullScreenExclusiveModeEXT",
             proc: unsafe {
@@ -449,6 +453,12 @@ impl<T: Layer> Global<T> {
                     Self::acquire_full_screen_exclusive_mode_ext
                         as vk::PFN_vkAcquireFullScreenExclusiveModeEXT,
                 )
+            },
+        },
+        VulkanCommand {
+            name: "vkAcquireImageANDROID",
+            proc: unsafe {
+                std::mem::transmute(Self::acquire_image_android as vk::PFN_vkAcquireImageANDROID)
             },
         },
         VulkanCommand {
@@ -3792,6 +3802,24 @@ impl<T: Layer> Global<T> {
             },
         },
         VulkanCommand {
+            name: "vkGetSwapchainGrallocUsage2ANDROID",
+            proc: unsafe {
+                std::mem::transmute(
+                    Self::get_swapchain_gralloc_usage2_android
+                        as vk::PFN_vkGetSwapchainGrallocUsage2ANDROID,
+                )
+            },
+        },
+        VulkanCommand {
+            name: "vkGetSwapchainGrallocUsageANDROID",
+            proc: unsafe {
+                std::mem::transmute(
+                    Self::get_swapchain_gralloc_usage_android
+                        as vk::PFN_vkGetSwapchainGrallocUsageANDROID,
+                )
+            },
+        },
+        VulkanCommand {
             name: "vkGetSwapchainImagesKHR",
             proc: unsafe {
                 std::mem::transmute(
@@ -3941,6 +3969,15 @@ impl<T: Layer> Global<T> {
                 std::mem::transmute(
                     Self::queue_set_performance_configuration_intel
                         as vk::PFN_vkQueueSetPerformanceConfigurationINTEL,
+                )
+            },
+        },
+        VulkanCommand {
+            name: "vkQueueSignalReleaseImageANDROID",
+            proc: unsafe {
+                std::mem::transmute(
+                    Self::queue_signal_release_image_android
+                        as vk::PFN_vkQueueSignalReleaseImageANDROID,
                 )
             },
         },
@@ -13722,6 +13759,150 @@ impl<T: Layer> Global<T> {
                 (dispatch_table.cmd_trace_rays_indirect2_khr)(
                     command_buffer,
                     indirect_device_address,
+                )
+            },
+        }
+    }
+    extern "system" fn get_swapchain_gralloc_usage_android(
+        device: vk::Device,
+        format: vk::Format,
+        image_usage: vk::ImageUsageFlags,
+        gralloc_usage: *mut c_int,
+    ) -> vk::Result {
+        let global = Self::instance();
+        // vkGetSwapchainGrallocUsageANDROID
+        let device_info = global.get_device_info(device).unwrap();
+        let dispatch_table = &device_info.dispatch_table.android_native_buffer;
+        let layer_result = device_info
+            .customized_info
+            .get_swapchain_gralloc_usage_android(format, image_usage);
+        match layer_result {
+            LayerResult::Handled(res) => match res {
+                Ok(res) => {
+                    *unsafe { gralloc_usage.as_mut() }.unwrap() = res;
+                    vk::Result::SUCCESS
+                }
+                Err(e) => e,
+            },
+            LayerResult::Unhandled => unsafe {
+                (dispatch_table.get_swapchain_gralloc_usage_android)(
+                    device,
+                    format,
+                    image_usage,
+                    gralloc_usage,
+                )
+            },
+        }
+    }
+    extern "system" fn acquire_image_android(
+        device: vk::Device,
+        image: vk::Image,
+        native_fence_fd: c_int,
+        semaphore: vk::Semaphore,
+        fence: vk::Fence,
+    ) -> vk::Result {
+        let global = Self::instance();
+        // vkAcquireImageANDROID
+        let device_info = global.get_device_info(device).unwrap();
+        let dispatch_table = &device_info.dispatch_table.android_native_buffer;
+        let layer_result = device_info.customized_info.acquire_image_android(
+            image,
+            native_fence_fd,
+            semaphore,
+            fence,
+        );
+        match layer_result {
+            LayerResult::Handled(res) => match res {
+                Ok(()) => vk::Result::SUCCESS,
+                Err(e) => e,
+            },
+            LayerResult::Unhandled => unsafe {
+                (dispatch_table.acquire_image_android)(
+                    device,
+                    image,
+                    native_fence_fd,
+                    semaphore,
+                    fence,
+                )
+            },
+        }
+    }
+    extern "system" fn queue_signal_release_image_android(
+        queue: vk::Queue,
+        wait_semaphore_count: u32,
+        p_wait_semaphores: *const vk::Semaphore,
+        image: vk::Image,
+        p_native_fence_fd: *mut c_int,
+    ) -> vk::Result {
+        let global = Self::instance();
+        // vkQueueSignalReleaseImageANDROID
+        let device_info = global.get_device_info(queue).unwrap();
+        let dispatch_table = &device_info.dispatch_table.android_native_buffer;
+        #[allow(clippy::unnecessary_cast)]
+        let layer_result = device_info
+            .customized_info
+            .queue_signal_release_image_android(
+                queue,
+                unsafe {
+                    std::slice::from_raw_parts(p_wait_semaphores, wait_semaphore_count as usize)
+                },
+                image,
+            );
+        match layer_result {
+            LayerResult::Handled(res) => match res {
+                Ok(res) => {
+                    *unsafe { p_native_fence_fd.as_mut() }.unwrap() = res;
+                    vk::Result::SUCCESS
+                }
+                Err(e) => e,
+            },
+            LayerResult::Unhandled => unsafe {
+                (dispatch_table.queue_signal_release_image_android)(
+                    queue,
+                    wait_semaphore_count,
+                    p_wait_semaphores,
+                    image,
+                    p_native_fence_fd,
+                )
+            },
+        }
+    }
+    extern "system" fn get_swapchain_gralloc_usage2_android(
+        device: vk::Device,
+        format: vk::Format,
+        image_usage: vk::ImageUsageFlags,
+        swapchain_image_usage: vk::SwapchainImageUsageFlagsANDROID,
+        gralloc_consumer_usage: *mut u64,
+        gralloc_producer_usage: *mut u64,
+    ) -> vk::Result {
+        let global = Self::instance();
+        // vkGetSwapchainGrallocUsage2ANDROID
+        let device_info = global.get_device_info(device).unwrap();
+        let dispatch_table = &device_info.dispatch_table.android_native_buffer;
+        let layer_result = device_info
+            .customized_info
+            .get_swapchain_gralloc_usage2_android(
+                format,
+                image_usage,
+                swapchain_image_usage,
+                unsafe { gralloc_consumer_usage.as_mut() }.unwrap(),
+            );
+        match layer_result {
+            LayerResult::Handled(res) => match res {
+                Ok(res) => {
+                    *unsafe { gralloc_producer_usage.as_mut() }.unwrap() = res;
+                    vk::Result::SUCCESS
+                }
+                Err(e) => e,
+            },
+            LayerResult::Unhandled => unsafe {
+                (dispatch_table.get_swapchain_gralloc_usage2_android)(
+                    device,
+                    format,
+                    image_usage,
+                    swapchain_image_usage,
+                    gralloc_consumer_usage,
+                    gralloc_producer_usage,
                 )
             },
         }

@@ -73,7 +73,7 @@ impl VkNegotiateLayerStructType {
 }
 #[repr(transparent)]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
-pub struct VkNegotiateLayerStructType(pub ::std::os::raw::c_uint);
+pub struct VkNegotiateLayerStructType(pub ::std::os::raw::c_int);
 #[repr(C)]
 pub struct VkNegotiateLayerInterface {
     pub sType: VkNegotiateLayerStructType,
@@ -175,7 +175,7 @@ impl VkLayerFunction_ {
 }
 #[repr(transparent)]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
-pub struct VkLayerFunction_(pub ::std::os::raw::c_uint);
+pub struct VkLayerFunction_(pub ::std::os::raw::c_int);
 pub use self::VkLayerFunction_ as VkLayerFunction;
 #[repr(C)]
 pub struct VkLayerInstanceLink_ {

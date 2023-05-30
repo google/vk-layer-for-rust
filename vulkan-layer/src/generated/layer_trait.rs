@@ -1737,6 +1737,39 @@ pub trait DeviceInfo: Send + Sync {
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
+    fn get_swapchain_gralloc_usage_android(
+        &self,
+        _format: vk::Format,
+        _image_usage: vk::ImageUsageFlags,
+    ) -> LayerResult<VkResult<c_int>> {
+        LayerResult::Unhandled
+    }
+    fn acquire_image_android(
+        &self,
+        _image: vk::Image,
+        _native_fence_fd: c_int,
+        _semaphore: vk::Semaphore,
+        _fence: vk::Fence,
+    ) -> LayerResult<VkResult<()>> {
+        LayerResult::Unhandled
+    }
+    fn queue_signal_release_image_android(
+        &self,
+        _queue: vk::Queue,
+        _p_wait_semaphores: &[vk::Semaphore],
+        _image: vk::Image,
+    ) -> LayerResult<VkResult<c_int>> {
+        LayerResult::Unhandled
+    }
+    fn get_swapchain_gralloc_usage2_android(
+        &self,
+        _format: vk::Format,
+        _image_usage: vk::ImageUsageFlags,
+        _swapchain_image_usage: vk::SwapchainImageUsageFlagsANDROID,
+        _gralloc_consumer_usage: &mut u64,
+    ) -> LayerResult<VkResult<u64>> {
+        LayerResult::Unhandled
+    }
     fn debug_marker_set_object_tag_ext(
         &self,
         _p_tag_info: &vk::DebugMarkerObjectTagInfoEXT,
