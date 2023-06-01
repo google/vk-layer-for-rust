@@ -76,6 +76,7 @@ class LayerTraitGenerator(OutputGenerator):
                 "        create_info: &vk::InstanceCreateInfo,",
                 "        allocator: Option<&vk::AllocationCallbacks>,",
                 "        instance: Arc<ash::Instance>,",
+                "        next_get_instance_proc_addr: vk::PFN_vkGetInstanceProcAddr,"
                 "    ) -> Self::InstanceInfo;",
                 "",
                 "    fn create_device_info(",
@@ -84,6 +85,7 @@ class LayerTraitGenerator(OutputGenerator):
                 "        create_info: &vk::DeviceCreateInfo,",
                 "        allocator: Option<&vk::AllocationCallbacks>,",
                 "        device: Arc<ash::Device>,",
+                "        next_get_device_proc_addr: vk::PFN_vkGetDeviceProcAddr,"
                 "    ) -> Self::DeviceInfo;",
                 "",
             ],
@@ -119,10 +121,6 @@ class LayerTraitGenerator(OutputGenerator):
             return
 
         should_skip = [
-            # vkGet*ProcAddr should only be handled in the layer framework level, so they should not
-            # be able to be implemented in the layer trait
-            "vkGetInstanceProcAddr",
-            "vkGetDeviceProcAddr",
             # Should be intercepted through Drop trait of InstanceInfo and DeviceInfo
             "vkDestroyInstance",
             "vkDestroyDevice",

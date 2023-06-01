@@ -311,6 +311,7 @@ impl<T: Layer> Global<T> {
                         unsafe { create_info.as_ref() }.unwrap(),
                         unsafe { allocator.as_ref() },
                         ash_instance,
+                        get_instance_proc_addr,
                     ),
                 }),
             );
@@ -508,6 +509,7 @@ impl<T: Layer> Global<T> {
                         unsafe { p_create_info.as_ref() }.unwrap(),
                         unsafe { p_allocator.as_ref() },
                         ash_device,
+                        get_device_proc_addr,
                     ),
                 }),
             );
@@ -727,13 +729,18 @@ impl<T: Layer> Global<T> {
             // We can't handle vkEnumerateInstanceVersion.
             _ => {}
         }
+        assert_ne!(instance, vk::Instance::null());
+        let instance_info = global.get_instance_info(instance)?;
+        if let LayerResult::Handled(res) =
+            instance_info.customized_info.get_instance_proc_addr(name)
+        {
+            return res;
+        }
         if let Ok(index) =
             Self::INSTANCE_COMMANDS.binary_search_by_key(&name, |VulkanCommand { name, .. }| name)
         {
             return Self::INSTANCE_COMMANDS[index].proc;
         }
-        assert_ne!(instance, vk::Instance::null());
-        let instance_info = global.get_instance_info(instance)?;
         unsafe { (instance_info.get_instance_proc_addr)(instance, p_name) }
     }
 
@@ -747,13 +754,16 @@ impl<T: Layer> Global<T> {
     ) -> vk::PFN_vkVoidFunction {
         let name = unsafe { CStr::from_ptr(p_name) };
         let name = name.to_str().expect("name should be a valid UTF-8 string.");
+        let global = Self::instance();
+        let device_info = global.get_device_info(device)?;
+        if let LayerResult::Handled(res) = device_info.customized_info.get_device_proc_addr(name) {
+            return res;
+        }
         if let Ok(index) =
             Self::DEVICE_COMMANDS.binary_search_by_key(&name, |VulkanCommand { name, .. }| name)
         {
             return Self::DEVICE_COMMANDS[index].proc;
         }
-        let global = Self::instance();
-        let device_info = global.get_device_info(device)?;
         unsafe { (device_info.get_device_proc_addr)(device, p_name) }
     }
 }
@@ -801,6 +811,7 @@ mod test {
             _: &vk::DeviceCreateInfo,
             _: Option<&vk::AllocationCallbacks>,
             _: Arc<ash::Device>,
+            _: vk::PFN_vkGetDeviceProcAddr,
         ) -> Self::DeviceInfo {
             StubDeviceInfo
         }
@@ -810,6 +821,7 @@ mod test {
             _: &vk::InstanceCreateInfo,
             _: Option<&vk::AllocationCallbacks>,
             _: Arc<ash::Instance>,
+            _: vk::PFN_vkGetInstanceProcAddr,
         ) -> Self::InstanceInfo {
             StubInstanceInfo
         }

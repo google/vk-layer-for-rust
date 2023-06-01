@@ -42,6 +42,9 @@ use super::LayerResult;
 // * vkBuildAccelerationStructuresKHR: Dynamic multi-dimensional array bindings are not supported
 //   yet.
 pub trait DeviceInfo: Send + Sync {
+    fn get_device_proc_addr(&self, _p_name: &str) -> LayerResult<vk::PFN_vkVoidFunction> {
+        LayerResult::Unhandled
+    }
     fn get_device_queue(
         &self,
         _queue_family_index: u32,
@@ -3387,6 +3390,9 @@ pub trait InstanceInfo: Send + Sync {
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
+    fn get_instance_proc_addr(&self, _p_name: &str) -> LayerResult<vk::PFN_vkVoidFunction> {
+        LayerResult::Unhandled
+    }
     fn create_device(
         &self,
         _physical_device: vk::PhysicalDevice,
@@ -4003,6 +4009,7 @@ pub trait Layer: 'static + Sync + Default {
         create_info: &vk::InstanceCreateInfo,
         allocator: Option<&vk::AllocationCallbacks>,
         instance: Arc<ash::Instance>,
+        next_get_instance_proc_addr: vk::PFN_vkGetInstanceProcAddr,
     ) -> Self::InstanceInfo;
 
     fn create_device_info(
@@ -4011,6 +4018,7 @@ pub trait Layer: 'static + Sync + Default {
         create_info: &vk::DeviceCreateInfo,
         allocator: Option<&vk::AllocationCallbacks>,
         device: Arc<ash::Device>,
+        next_get_device_proc_addr: vk::PFN_vkGetDeviceProcAddr,
     ) -> Self::DeviceInfo;
 
     fn create_instance(
