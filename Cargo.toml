@@ -3,3 +3,9 @@ members = [
     "vulkan-layer",
     "xtask",
 ]
+
+[profile.dev]
+panic = "abort"
+
+[profile.release]
+panic = "abort"
