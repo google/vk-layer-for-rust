@@ -25,13 +25,13 @@ use std::{
     ptr::{null_mut, NonNull},
     sync::{Arc, Mutex},
 };
+use vk_utils::VulkanBaseOutStructChain;
 
 mod bindings;
 // mod layer_trait;
 mod generated;
 mod vk_utils;
 
-use crate::vk_utils::find_struct;
 use bindings::{VkLayerDeviceCreateInfo, VkLayerFunction, VkLayerInstanceCreateInfo};
 use generated::{
     global_simple_intercept::{DeviceDispatchTable, InstanceDispatchTable},
@@ -242,15 +242,28 @@ impl<T: Layer> Global<T> {
         allocator: *const vk::AllocationCallbacks,
         instance: *mut vk::Instance,
     ) -> vk::Result {
-        let next_element = unsafe { create_info.as_ref() }
+        let p_next_chain = unsafe { create_info.as_ref() }
             .map(|create_info| create_info.p_next as *mut vk::BaseOutStructure)
             .unwrap_or(null_mut());
-        let layer_create_info =
-            find_struct::<VkLayerInstanceCreateInfo>(unsafe { next_element.as_mut() }).find(
-                |layer_create_info| {
-                    layer_create_info.function == VkLayerFunction::VK_LAYER_LINK_INFO
-                },
-            );
+        let mut p_next_chain: VulkanBaseOutStructChain = unsafe { p_next_chain.as_mut() }.into();
+        let layer_create_info = p_next_chain.find_map(|out_struct| {
+            let out_struct = out_struct as *mut vk::BaseOutStructure;
+            let layer_create_info = unsafe {
+                ash::match_out_struct!(match out_struct {
+                    out_struct @ VkLayerInstanceCreateInfo => {
+                        out_struct
+                    }
+                    _ => {
+                        return None;
+                    }
+                })
+            };
+            if layer_create_info.function == VkLayerFunction::VK_LAYER_LINK_INFO {
+                Some(layer_create_info)
+            } else {
+                None
+            }
+        });
         let layer_create_info = match layer_create_info {
             Some(layer_create_info) => layer_create_info,
             None => {
@@ -426,15 +439,28 @@ impl<T: Layer> Global<T> {
         p_allocator: *const vk::AllocationCallbacks,
         p_device: *mut vk::Device,
     ) -> vk::Result {
-        let next_element = unsafe { p_create_info.as_ref() }
+        let p_next_chain = unsafe { p_create_info.as_ref() }
             .map(|create_info| create_info.p_next as *mut vk::BaseOutStructure)
             .unwrap_or(null_mut());
-        let layer_create_info =
-            find_struct::<VkLayerDeviceCreateInfo>(unsafe { next_element.as_mut() }).find(
-                |layer_create_info| {
-                    layer_create_info.function == VkLayerFunction::VK_LAYER_LINK_INFO
-                },
-            );
+        let mut p_next_chain: VulkanBaseOutStructChain = unsafe { p_next_chain.as_mut() }.into();
+        let layer_create_info = p_next_chain.find_map(|out_struct| {
+            let out_struct = out_struct as *mut vk::BaseOutStructure;
+            let layer_create_info = unsafe {
+                ash::match_out_struct!(match out_struct {
+                    out_struct @ VkLayerDeviceCreateInfo => {
+                        out_struct
+                    }
+                    _ => {
+                        return None;
+                    }
+                })
+            };
+            if layer_create_info.function == VkLayerFunction::VK_LAYER_LINK_INFO {
+                Some(layer_create_info)
+            } else {
+                None
+            }
+        });
         let layer_create_info = match layer_create_info {
             Some(layer_create_info) => layer_create_info,
             None => {

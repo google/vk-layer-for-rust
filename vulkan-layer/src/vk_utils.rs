@@ -14,8 +14,14 @@
 
 use ash::vk;
 
-struct VulkanBaseOutStructChain<'a> {
+pub(crate) struct VulkanBaseOutStructChain<'a> {
     next: Option<&'a mut vk::BaseOutStructure>,
+}
+
+impl<'a> From<Option<&'a mut vk::BaseOutStructure>> for VulkanBaseOutStructChain<'a> {
+    fn from(next: Option<&'a mut vk::BaseOutStructure>) -> Self {
+        Self { next }
+    }
 }
 
 impl<'a> Iterator for VulkanBaseOutStructChain<'a> {
@@ -27,17 +33,4 @@ impl<'a> Iterator for VulkanBaseOutStructChain<'a> {
             element
         })
     }
-}
-
-pub(crate) fn find_struct<T: vk::TaggedStructure>(
-    chain: Option<&mut vk::BaseOutStructure>,
-) -> impl Iterator<Item = &mut T> {
-    let iter = VulkanBaseOutStructChain { next: chain };
-    iter.filter_map(|base_out_structure| {
-        if base_out_structure.s_type == T::STRUCTURE_TYPE {
-            Some(unsafe { std::mem::transmute(base_out_structure) })
-        } else {
-            None
-        }
-    })
 }
