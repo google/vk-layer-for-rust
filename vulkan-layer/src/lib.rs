@@ -19,7 +19,7 @@ use once_cell::sync::OnceCell;
 use std::{
     any::{Any, TypeId},
     borrow::Borrow,
-    collections::BTreeMap,
+    collections::{BTreeMap, BTreeSet},
     ffi::{c_char, c_void, CStr, CString},
     fmt::Debug,
     ptr::{null_mut, NonNull},
@@ -35,8 +35,8 @@ mod vk_utils;
 
 use bindings::{VkLayerDeviceCreateInfo, VkLayerFunction, VkLayerInstanceCreateInfo};
 use generated::{
-    global_simple_intercept::{DeviceDispatchTable, InstanceDispatchTable},
-    VulkanCommand,
+    global_simple_intercept::{DeviceDispatchTable, Extension, Feature, InstanceDispatchTable},
+    ApiVersion, VulkanCommand,
 };
 pub use generated::{
     layer_trait::{DeviceInfo, InstanceInfo, Layer},
@@ -143,6 +143,8 @@ impl DispatchableObject for vk::Queue {
 struct InstanceInfoWrapper<T: InstanceInfo> {
     get_instance_proc_addr: vk::PFN_vkGetInstanceProcAddr,
     dispatch_table: InstanceDispatchTable,
+    api_version: ApiVersion,
+    enabled_extensions: BTreeSet<Extension>,
     customized_info: T,
 }
 
@@ -161,6 +163,8 @@ pub struct Global<T: Layer> {
     physical_device_map: Mutex<BTreeMap<vk::PhysicalDevice, Arc<PhysicalDeviceInfoWrapper>>>,
     device_map: Mutex<BTreeMap<DeviceDispatchKey, Arc<DeviceInfoWrapper<T::DeviceInfo>>>>,
     layer_info: T,
+    instance_commands: OnceCell<Vec<VulkanCommand>>,
+    device_commands: OnceCell<Vec<VulkanCommand>>,
 }
 
 impl<T: Layer> Global<T> {
@@ -301,6 +305,34 @@ impl<T: Layer> Global<T> {
             )
         };
 
+        let create_info = unsafe { create_info.as_ref() }.unwrap();
+        let enabled_extensions = unsafe {
+            std::slice::from_raw_parts(
+                create_info.pp_enabled_extension_names,
+                create_info.enabled_extension_count.try_into().unwrap(),
+            )
+        }
+        .iter()
+        .filter_map(|extension_name| -> Option<Extension> {
+            let extension_name = unsafe { CStr::from_ptr(*extension_name) };
+            let extension_name = extension_name.to_str().unwrap_or_else(|e| {
+                panic!(
+                    "Invalid extension name {}: {}",
+                    extension_name.to_string_lossy(),
+                    e
+                )
+            });
+            extension_name.try_into().ok()
+        })
+        .collect();
+        let api_version = unsafe { create_info.p_application_info.as_ref() }
+            .map(|app_info| app_info.api_version)
+            .unwrap_or(0);
+        let api_version = if api_version == 0 {
+            ApiVersion { major: 1, minor: 0 }
+        } else {
+            api_version.into()
+        };
         {
             let key = instance.get_dispatch_key();
             let global = Self::instance();
@@ -321,8 +353,10 @@ impl<T: Layer> Global<T> {
                         get_instance_proc_addr,
                         Arc::clone(&ash_instance),
                     ),
+                    api_version,
+                    enabled_extensions,
                     customized_info: global.layer_info.create_instance_info(
-                        unsafe { create_info.as_ref() }.unwrap(),
+                        create_info,
                         unsafe { allocator.as_ref() },
                         ash_instance,
                         get_instance_proc_addr,
@@ -774,10 +808,20 @@ impl<T: Layer> Global<T> {
         {
             return res;
         }
+        let instance_commands = global.get_instance_commands();
         if let Ok(index) =
-            Self::INSTANCE_COMMANDS.binary_search_by_key(&name, |VulkanCommand { name, .. }| name)
+            instance_commands.binary_search_by_key(&name, |VulkanCommand { name, .. }| name)
         {
-            return Self::INSTANCE_COMMANDS[index].proc;
+            let command = &instance_commands[index];
+            let enabled = command.features.iter().any(|feature| match feature {
+                Feature::Extension(extension) => {
+                    instance_info.enabled_extensions.contains(extension)
+                }
+                Feature::Core(version) => *version <= instance_info.api_version,
+            });
+            if enabled {
+                return command.proc;
+            }
         }
         unsafe { (instance_info.get_instance_proc_addr)(instance, p_name) }
     }
@@ -797,10 +841,11 @@ impl<T: Layer> Global<T> {
         if let LayerResult::Handled(res) = device_info.customized_info.get_device_proc_addr(name) {
             return res;
         }
-        if let Ok(index) =
-            Self::DEVICE_COMMANDS.binary_search_by_key(&name, |VulkanCommand { name, .. }| name)
+        if let Ok(index) = global
+            .get_device_commands()
+            .binary_search_by_key(&name, |VulkanCommand { name, .. }| name)
         {
-            return Self::DEVICE_COMMANDS[index].proc;
+            return global.get_device_commands()[index].proc;
         }
         unsafe { (device_info.get_device_proc_addr)(device, p_name) }
     }
@@ -813,6 +858,8 @@ impl<T: Layer> Default for Global<T> {
             physical_device_map: Default::default(),
             device_map: Default::default(),
             layer_info: Default::default(),
+            instance_commands: Default::default(),
+            device_commands: Default::default(),
         }
     }
 }
@@ -838,14 +885,18 @@ mod test {
             }
         }
 
-        let mut name_iter = Global::<StubLayer>::DEVICE_COMMANDS
+        let global = Global::<StubLayer>::instance();
+
+        let mut name_iter = global
+            .get_device_commands()
             .iter()
             .map(|VulkanCommand { name, .. }| *name);
         let mut last = name_iter.next().unwrap();
 
         assert!(name_iter.all(check(&mut last)));
 
-        let mut name_iter = Global::<StubLayer>::INSTANCE_COMMANDS
+        let mut name_iter = global
+            .get_instance_commands()
             .iter()
             .map(|VulkanCommand { name, .. }| *name);
         let mut last = name_iter.next().unwrap();

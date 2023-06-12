@@ -19,6 +19,37 @@ use ash::vk;
 pub mod global_simple_intercept;
 pub mod layer_trait;
 
+use global_simple_intercept::Feature;
+use smallvec::SmallVec;
+use thiserror::Error;
+
+#[derive(Error, Debug)]
+pub enum TryFromExtensionError {
+    #[error("unknown extension `{0}`")]
+    UnknownExtension(String),
+}
+
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
+pub(crate) struct ApiVersion {
+    // At most 7 bits
+    pub major: u8,
+    // At most 10 bits
+    pub minor: u16,
+}
+
+impl From<u32> for ApiVersion {
+    fn from(value: u32) -> Self {
+        Self {
+            major: vk::api_version_major(value)
+                .try_into()
+                .expect("The major version must be no more than 7 bits."),
+            minor: vk::api_version_minor(value)
+                .try_into()
+                .expect("The minor version must be no more than 10 bits."),
+        }
+    }
+}
+
 #[must_use]
 pub enum LayerResult<T> {
     Handled(T),
@@ -27,6 +58,7 @@ pub enum LayerResult<T> {
 
 pub(crate) struct VulkanCommand {
     pub name: &'static str,
+    pub features: SmallVec<[Feature; 2]>,
     pub proc: vk::PFN_vkVoidFunction,
 }
 

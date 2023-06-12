@@ -14,7 +14,6 @@
 
 from __future__ import annotations
 from generator import OutputGenerator
-import os
 import reg
 import sys
 from typing import NamedTuple, Optional, ClassVar, Callable
@@ -23,6 +22,7 @@ from vk_xml_util import (DispatchChainType, VkXmlCommand, camel_case_to_snake_ca
                          generate_unhandled_command_comments, VkXmlLenKind, VkXmlParam,
                          opaque_type_map, VulkanAliases, write_license)
 from dataclasses import dataclass, field
+import logging
 
 
 def snake_case_to_upper_camel_case(input: str) -> str:
@@ -90,6 +90,66 @@ class CommandDispatchInfo:
             return self.extension_info.name[3:].lower()
         else:
             assert False, "CommandDispatchInfo should either be core or extension."
+
+    def _get_enum_variant_name(self) -> str:
+        if self.extension_info is not None:
+            extension_info = self.extension_info
+            return snake_case_to_upper_camel_case(extension_info.name.removeprefix("VK_"))
+        else:
+            assert False, "Only extension is defined as enum variant"
+
+    def get_enum_name(self) -> str:
+        '''Return the enum with the path e.g. Feature::Core(ApiVersion{major: 1, minor: 1})'''
+        if self.core_info is not None:
+            core_info = self.core_info
+            return (f"Feature::Core(ApiVersion {{ major: {core_info.version_major}, minor: "
+                    f"{core_info.version_minor}}})")
+        elif self.extension_info is not None:
+            return f"Feature::Extension(Extension::{self._get_enum_variant_name()})"
+        else:
+            assert False, "A dispatch info should be either from an extension or from the core"
+
+    @staticmethod
+    def get_feature_enum_lines(dispatch_infos: list[CommandDispatchInfo]) -> list[str]:
+        extension_enum_lines = [
+            "#[derive(PartialEq, Eq, PartialOrd, Ord)]",
+            "pub(crate) enum Extension {",
+        ]
+        extension_enum_try_from_lines = [
+            "impl TryFrom<&str> for Extension {",
+            "    type Error = TryFromExtensionError;",
+            "",
+            "    fn try_from(value: &str) -> Result<Self, Self::Error> {",
+            "        match value {",
+        ]
+        for dispatch_info in dispatch_infos:
+            if dispatch_info.core_info is not None:
+                pass
+            elif dispatch_info.extension_info is not None:
+                variant_name = dispatch_info._get_enum_variant_name()
+                extension_enum_lines.append(f"    {variant_name},")
+                extension_info = dispatch_info.extension_info
+                extension_enum_try_from_lines.append(
+                    f'            "{extension_info.name}" => Ok(Extension::{variant_name}),')
+            else:
+                assert False, "A dispatch info should be either from an extension or from the core"
+
+        extension_enum_lines.append("}")
+        extension_enum_try_from_lines += [
+            "            _ => Err(TryFromExtensionError::UnknownExtension(value.to_owned()))",
+            "        }",
+            "    }",
+            "}",
+        ]
+        feature_enum_lines = [
+            "#[derive(PartialEq, Eq, PartialOrd, Ord)]"
+            "pub(crate) enum Feature {",
+            "    Core(ApiVersion),"
+            "    Extension(Extension),"
+            "}",
+        ]
+        return extension_enum_lines + ["\n"] + extension_enum_try_from_lines + ["\n"] +\
+            feature_enum_lines
 
     @staticmethod
     def get_disapatch_tables_impl_lines(
@@ -535,12 +595,14 @@ class GlobalSimpleInterceptGenerator(OutputGenerator):
         self.outFile.write("// This file is generated from the Vulkan XML API registry.\n")
         self.outFile.write("\n".join([
             "#![allow(unused_unsafe)]",
-            "use std::{ffi::{c_int, c_void, c_char, CStr}, ptr::NonNull, sync::Arc};",
+            ("use std::{ffi::{c_int, c_void, c_char, CStr}, ptr::NonNull, "
+             "sync::Arc};"),
             "use ash::vk;",
+            "use smallvec::smallvec;",
             "",
             "use crate::{DeviceInfo, fill_vk_out_array, Global, InstanceInfo, Layer, LayerResult};",
-            ("use super::{get_instance_proc_addr_loader, get_device_proc_addr_loader, VulkanCommand"
-             "};"),
+            ("use super::{get_instance_proc_addr_loader, get_device_proc_addr_loader, "
+             "VulkanCommand, TryFromExtensionError, ApiVersion};"),
             "",
         ]))
         self.newline()
@@ -563,7 +625,8 @@ class GlobalSimpleInterceptGenerator(OutputGenerator):
         not_aliased_commands = [cmd for name,
                                 cmd in all_commands.items() if name not in aliased_commands]
         # Not all dispatch will be used. For some extension, e.g. VK_EXT_shader_object, all commands
-        # are in other extensions, so we don't need to create a dispatch table for it.
+        # are in other extensions like VK_EXT_extended_dynamic_state, so we don't need to create a
+        # dispatch table for it.
         used_dispatch_info: list[CommandDispatchInfo] = []
         for command in not_aliased_commands:
             command_name = command.vk_xml_command.name
@@ -574,6 +637,13 @@ class GlobalSimpleInterceptGenerator(OutputGenerator):
                 used_dispatch_info.append(dispatch_info)
 
         self.outFile.write(
+            "\n".join(CommandDispatchInfo.get_feature_enum_lines(
+                list(self.dispatch_infos.values())))
+        )
+        self.newline()
+        self.newline()
+
+        self.outFile.write(
             "\n".join(CommandDispatchInfo.get_disapatch_tables_impl_lines(
                 used_dispatch_info, self.instance_commands, self.device_commands, aliased_commands))
         )
@@ -582,16 +652,30 @@ class GlobalSimpleInterceptGenerator(OutputGenerator):
 
         self.outFile.write(generate_unhandled_command_comments(self.unhandled_commands.values()))
 
-        def generate_vulkan_command_entries(indent: int, commands: dict[str, VulkanCommand]) -> str:
+        def generate_vulkan_command_entries(
+                indent: int,
+                commands: dict[str, VulkanCommand],
+                dispatch_infos: dict[str, CommandDispatchInfo]) -> str:
+            command_to_dispatch_infos: dict[str, list[CommandDispatchInfo]] = {}
+            for dispatch_info in dispatch_infos.values():
+                for command in dispatch_info.commands:
+                    command_dispatch_infos = command_to_dispatch_infos.setdefault(command, [])
+                    command_dispatch_infos.append(dispatch_info)
             lines: list[str] = []
             command_items = sorted(commands.items(), key=lambda command: command[0])
             for proc_name, command in command_items:
                 # Use the actual name, because ash doesn't generate type names for alised types.
                 fp_type_name = f'vk::PFN_{command.vk_xml_command.name}'
                 rust_fn_name = f"Self::{command.rust_fn.name}"
+                features = [dispatch_info.get_enum_name()
+                            for dispatch_info in command_to_dispatch_infos[proc_name]]
+                assert len(features) > 0, ("Every command must have at least one dispatch_info "
+                                           "associated.")
                 lines += [
                     (f'VulkanCommand {{'),
                     (f'    name: "{proc_name}",'),
+                    # TODO: generate the correct feature set.
+                    (f'    features: smallvec![{", ".join(features)}],'),
                     (f'    proc: unsafe {{ std::mem::transmute({rust_fn_name} as {fp_type_name})'
                      f'}},'),
                     (f'}},'),
@@ -600,17 +684,23 @@ class GlobalSimpleInterceptGenerator(OutputGenerator):
         self.newline()
 
         self.outFile.write("impl<T: Layer> Global<T> {\n")
-        self.outFile.write(
-            (f"    pub(crate) const DEVICE_COMMANDS: [VulkanCommand; {len(self.device_commands)}] "
-             "= [\n"))
-        self.outFile.write(generate_vulkan_command_entries(8, self.device_commands))
-        self.outFile.write("    ];\n")
+        self.outFile.write("    pub(crate) fn get_device_commands(&self) -> &[VulkanCommand] {\n")
+        self.outFile.write("        self.device_commands.get_or_init(|| {")
+        self.outFile.write("            vec![\n")
+        self.outFile.write(generate_vulkan_command_entries(
+            16, self.device_commands, self.dispatch_infos))
+        self.outFile.write("            ]")
+        self.outFile.write("        })\n")
+        self.outFile.write("    }\n")
 
-        self.outFile.write(
-            (f"    pub(crate) const INSTANCE_COMMANDS: [VulkanCommand; "
-             f"{len(self.instance_commands)}] = [\n"))
-        self.outFile.write(generate_vulkan_command_entries(8, self.instance_commands))
-        self.outFile.write("    ];\n")
+        self.outFile.write("    pub(crate) fn get_instance_commands(&self) -> &[VulkanCommand] {\n")
+        self.outFile.write("        self.instance_commands.get_or_init(|| {")
+        self.outFile.write("            vec![\n")
+        self.outFile.write(generate_vulkan_command_entries(
+            16, self.instance_commands, self.dispatch_infos))
+        self.outFile.write("            ]")
+        self.outFile.write("        })\n")
+        self.outFile.write("    }\n")
 
         for vulkan_command in not_aliased_commands:
             if vulkan_command.vk_xml_command.name in self.manually_implemented_cmd:

@@ -19,7 +19,7 @@ use std::{
     fs::File,
     io::Write,
     path::{Path, PathBuf},
-    process::Command,
+    process::{Command, Stdio},
     thread,
     time::SystemTime,
 };
@@ -156,12 +156,14 @@ fn run_vulkan_layer_genvk(
     assert!(status.success());
 
     let output_file = File::open(&output_file_path).unwrap();
-    let formatted_content = Command::new("rustup")
+    let output = Command::new("rustup")
         .args(["run", "nightly", "rustfmt", "--emit=stdout", "--quiet"])
         .stdin(output_file)
+        .stderr(Stdio::inherit())
         .output()
-        .unwrap()
-        .stdout;
+        .unwrap();
+    assert!(output.status.success(), "Format failed.");
+    let formatted_content = output.stdout;
     let mut output_file = File::create(&output_file_path).unwrap();
     output_file.write_all(&formatted_content).unwrap();
     info!("{} completes generation.", output_file_path.display());
