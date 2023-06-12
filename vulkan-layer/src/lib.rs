@@ -28,8 +28,9 @@ use std::{
 use vk_utils::VulkanBaseOutStructChain;
 
 mod bindings;
-// mod layer_trait;
 mod generated;
+#[cfg(any(feature = "_test", test))]
+pub mod test_utils;
 mod vk_utils;
 
 use bindings::{VkLayerDeviceCreateInfo, VkLayerFunction, VkLayerInstanceCreateInfo};
@@ -729,33 +730,44 @@ impl<T: Layer> Global<T> {
             "According to VUID-vkGetInstanceProcAddr-pName-parameter, p_name must be a null-",
             "terminated UTF-8 string."
         ));
-        // Handle global commands.
-        match name {
-            "vkEnumerateInstanceExtensionProperties" => {
-                return unsafe {
-                    std::mem::transmute(
-                        Self::enumerate_instance_extension_properties
-                            as vk::PFN_vkEnumerateInstanceExtensionProperties,
-                    )
+        if instance == vk::Instance::null() {
+            match name {
+                "vkGetInstanceProcAddr" => {
+                    return unsafe {
+                        std::mem::transmute(
+                            Self::get_instance_proc_addr as vk::PFN_vkGetInstanceProcAddr,
+                        )
+                    }
                 }
-            }
-            "vkEnumerateInstanceLayerProperties" => {
-                return unsafe {
-                    std::mem::transmute(
-                        Self::enumerate_instance_layer_properties
-                            as vk::PFN_vkEnumerateInstanceLayerProperties,
-                    )
+                "vkEnumerateInstanceExtensionProperties" => {
+                    return unsafe {
+                        std::mem::transmute(
+                            Self::enumerate_instance_extension_properties
+                                as vk::PFN_vkEnumerateInstanceExtensionProperties,
+                        )
+                    }
                 }
-            }
-            "vkCreateInstance" => {
-                return unsafe {
-                    std::mem::transmute(Self::create_instance as vk::PFN_vkCreateInstance)
+                "vkEnumerateInstanceLayerProperties" => {
+                    return unsafe {
+                        std::mem::transmute(
+                            Self::enumerate_instance_layer_properties
+                                as vk::PFN_vkEnumerateInstanceLayerProperties,
+                        )
+                    }
                 }
+                "vkCreateInstance" => {
+                    return unsafe {
+                        std::mem::transmute(Self::create_instance as vk::PFN_vkCreateInstance)
+                    }
+                }
+                _ => {}
             }
-            // We can't handle vkEnumerateInstanceVersion.
-            _ => {}
+            // TODO: allow inteception of vkEnumerateInstanceVersion and handle
+            // vkEnumerateInstanceVersion properly. For now, we still return NULL for
+            // vkEnumerateInstanceVersion. The Vulkan loader should cover us for this case.
+            // Per spec, if instance is NULL, and pName is not NULL, NULL should be returned.
+            return None;
         }
-        assert_ne!(instance, vk::Instance::null());
         let instance_info = global.get_instance_info(instance)?;
         if let LayerResult::Handled(res) =
             instance_info.customized_info.get_instance_proc_addr(name)
@@ -807,54 +819,14 @@ impl<T: Layer> Default for Global<T> {
 
 #[cfg(test)]
 mod test {
-    use crate::{generated::VulkanCommand, DeviceInfo, Global, InstanceInfo, Layer};
-    use ash::vk;
-    use std::{cmp::Ordering, sync::Arc};
-
-    struct StubInstanceInfo;
-
-    impl InstanceInfo for StubInstanceInfo {}
-
-    struct StubDeviceInfo;
-
-    impl DeviceInfo for StubDeviceInfo {}
-
-    #[derive(Default)]
-    struct StubLayer;
-
-    impl Layer for StubLayer {
-        const LAYER_NAME: &'static str = "VK_LAYER_GOOGLE_stub";
-        const LAYER_DESCRIPTION: &'static str = "";
-        const IMPLEMENTATION_VERSION: u32 = 1;
-        const SPEC_VERSION: u32 = vk::API_VERSION_1_1;
-
-        type DeviceInfo = StubDeviceInfo;
-        type InstanceInfo = StubInstanceInfo;
-
-        fn create_device_info(
-            &self,
-            _: vk::PhysicalDevice,
-            _: &vk::DeviceCreateInfo,
-            _: Option<&vk::AllocationCallbacks>,
-            _: Arc<ash::Device>,
-            _: vk::PFN_vkGetDeviceProcAddr,
-        ) -> Self::DeviceInfo {
-            StubDeviceInfo
-        }
-
-        fn create_instance_info(
-            &self,
-            _: &vk::InstanceCreateInfo,
-            _: Option<&vk::AllocationCallbacks>,
-            _: Arc<ash::Instance>,
-            _: vk::PFN_vkGetInstanceProcAddr,
-        ) -> Self::InstanceInfo {
-            StubInstanceInfo
-        }
-    }
+    use crate::{generated::VulkanCommand, test_utils::MockLayer, Global};
+    use std::cmp::Ordering;
 
     #[test]
     fn commands_must_be_sorted() {
+        #[derive(Default)]
+        struct Local;
+        type StubLayer = MockLayer<Local>;
         #[inline]
         fn check<'a, T: PartialOrd>(last: &'a mut T) -> impl FnMut(T) -> bool + 'a {
             move |curr| {

@@ -88,6 +88,7 @@ fn generate_vulkan_layer_header_binding(vulkan_headers_dir: &Path, dst: &Path) {
             is_bitfield: false,
             is_global: false,
         })
+        .derive_default(true)
         .allowlist_file("vk_layer.h")
         .allowlist_type("VkNegotiateLayerInterface")
         .allowlist_type("VkLayerDeviceCreateInfo")

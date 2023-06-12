@@ -161,6 +161,15 @@ fn bindgen_test_layout_VkNegotiateLayerInterface() {
         )
     );
 }
+impl Default for VkNegotiateLayerInterface {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
 impl VkLayerFunction_ {
     pub const VK_LAYER_LINK_INFO: VkLayerFunction_ = VkLayerFunction_(0);
 }
@@ -230,6 +239,15 @@ fn bindgen_test_layout_VkLayerInstanceLink_() {
         )
     );
 }
+impl Default for VkLayerInstanceLink_ {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
 pub type VkLayerInstanceLink = VkLayerInstanceLink_;
 pub type PFN_vkSetInstanceLoaderData = ::std::option::Option<
     unsafe extern "C" fn(instance: VkInstance, object: *mut ::std::os::raw::c_void) -> VkResult,
@@ -271,7 +289,7 @@ pub struct VkLayerInstanceCreateInfo__bindgen_ty_1 {
     pub bindgen_union_field: [u64; 2usize],
 }
 #[repr(C)]
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Default, Copy, Clone)]
 pub struct VkLayerInstanceCreateInfo__bindgen_ty_1__bindgen_ty_1 {
     pub pfnLayerCreateDevice: PFN_vkLayerCreateDevice,
     pub pfnLayerDestroyDevice: PFN_vkLayerDestroyDevice,
@@ -380,6 +398,15 @@ fn bindgen_test_layout_VkLayerInstanceCreateInfo__bindgen_ty_1() {
         )
     );
 }
+impl Default for VkLayerInstanceCreateInfo__bindgen_ty_1 {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
 #[test]
 fn bindgen_test_layout_VkLayerInstanceCreateInfo() {
     const UNINIT: ::std::mem::MaybeUninit<VkLayerInstanceCreateInfo> =
@@ -436,6 +463,15 @@ fn bindgen_test_layout_VkLayerInstanceCreateInfo() {
         )
     );
 }
+impl Default for VkLayerInstanceCreateInfo {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
 #[repr(C)]
 pub struct VkLayerDeviceLink_ {
     pub pNext: *mut VkLayerDeviceLink_,
@@ -486,6 +522,15 @@ fn bindgen_test_layout_VkLayerDeviceLink_() {
             stringify!(pfnNextGetDeviceProcAddr)
         )
     );
+}
+impl Default for VkLayerDeviceLink_ {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
 }
 pub type VkLayerDeviceLink = VkLayerDeviceLink_;
 #[repr(C)]
@@ -543,6 +588,15 @@ fn bindgen_test_layout_VkLayerDeviceCreateInfo__bindgen_ty_1() {
         )
     );
 }
+impl Default for VkLayerDeviceCreateInfo__bindgen_ty_1 {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
+}
 #[test]
 fn bindgen_test_layout_VkLayerDeviceCreateInfo() {
     const UNINIT: ::std::mem::MaybeUninit<VkLayerDeviceCreateInfo> =
@@ -598,4 +652,13 @@ fn bindgen_test_layout_VkLayerDeviceCreateInfo() {
             stringify!(u)
         )
     );
+}
+impl Default for VkLayerDeviceCreateInfo {
+    fn default() -> Self {
+        let mut s = ::std::mem::MaybeUninit::<Self>::uninit();
+        unsafe {
+            ::std::ptr::write_bytes(s.as_mut_ptr(), 0, 1);
+            s.assume_init()
+        }
+    }
 }

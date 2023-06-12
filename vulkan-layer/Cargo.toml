@@ -8,3 +8,9 @@ ash = "0.37.2"
 log = "0.4.17"
 num-traits = "0.2.15"
 once_cell = "1.17.1"
+
+[features]
+_test = []
+
+[dev-dependencies]
+vulkan-layer = { path = ".", default-features = false, features = ["_test"] }

@@ -40,6 +40,10 @@ unsafe impl vk::TaggedStructure for VkLayerInstanceCreateInfo {
     const STRUCTURE_TYPE: vk::StructureType = vk::StructureType::LOADER_INSTANCE_CREATE_INFO;
 }
 
+unsafe impl ExtendsInstanceCreateInfo for VkLayerInstanceCreateInfo {}
+
 unsafe impl vk::TaggedStructure for VkLayerDeviceCreateInfo {
     const STRUCTURE_TYPE: vk::StructureType = vk::StructureType::LOADER_DEVICE_CREATE_INFO;
 }
+
+unsafe impl ExtendsDeviceCreateInfo for VkLayerDeviceCreateInfo {}
