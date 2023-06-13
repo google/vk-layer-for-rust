@@ -10,9 +10,10 @@ num-traits = "0.2.15"
 once_cell = "1.17.1"
 smallvec = "1.10.0"
 thiserror = "1.0.40"
+vulkan-layer-macros = { path = "../vulkan-layer-macros" }
 
 [features]
-_test = []
+_test = ["vulkan-layer-macros/_test"]
 
 [dev-dependencies]
 vulkan-layer = { path = ".", default-features = false, features = ["_test"] }

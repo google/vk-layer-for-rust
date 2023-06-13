@@ -224,6 +224,8 @@ mod get_instance_proc_addr {
                 )
             }
             .is_none());
+            // TODO: when we allow return the next function pointer for not intercepted function
+            // also add a layer that intercepts vkDestroyInstance in this test
         }
 
         #[test]
@@ -274,6 +276,8 @@ mod get_instance_proc_addr {
                     );
                 }
             });
+            // TODO: when we allow to intercept the global commands also add a layer that intercepts
+            // the global commands and test.
         }
 
         #[test]
@@ -293,6 +297,8 @@ mod get_instance_proc_addr {
                     entry.static_fn().get_instance_proc_addr as usize
                 );
             });
+            // TODO: when we allow return the next function pointer for not intercepted function
+            // also add a layer that intercepts vkGetInstanceProcAddr in this test
         }
 
         #[test]
@@ -367,6 +373,9 @@ mod get_instance_proc_addr {
                 };
                 assert!(fp.is_none());
             });
+            // TODO: when we allow return the next function pointer for not intercepted function
+            // also add a layer that intercepts vkDestroySurfaceKHR and
+            // vkGetPhysicalDeviceSparseImageFormatProperties2 in this test
         }
 
         #[test]

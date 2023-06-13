@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "vulkan-layer",
+    "vulkan-layer-macros",
     "xtask",
 ]
 

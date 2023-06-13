@@ -1,0 +1,16 @@
+[package]
+name = "vulkan-layer-macros"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+cfg-if = "1.0.0"
+proc-macro2 = "1.0.60"
+quote = "1.0.28"
+syn = { version = "2.0.18", features = ["full"] }
+
+[features]
+_test = []

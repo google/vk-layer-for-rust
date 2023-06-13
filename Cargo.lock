@@ -388,6 +388,17 @@ dependencies = [
  "smallvec",
  "thiserror",
  "vulkan-layer",
+ "vulkan-layer-macros",
+]
+
+[[package]]
+name = "vulkan-layer-macros"
+version = "0.1.0"
+dependencies = [
+ "cfg-if",
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]
