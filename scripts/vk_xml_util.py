@@ -154,6 +154,20 @@ def camel_case_to_snake_case(input: str) -> str:
     return res + input[-1].lower()
 
 
+def snake_case_to_upper_camel_case(input: str) -> str:
+    if len(input) <= 1:
+        return input.upper()
+    output = input[0].upper()
+    for prev, cur, next in zip(input, input[1:], input[2:]):
+        if cur == '_' and next != '_':
+            continue
+        if prev == '_':
+            output += cur.upper()
+            continue
+        output += cur
+    return output + input[-1]
+
+
 def escape_rust_keywords(id: str) -> str:
     keywords = set(["type"])
     if id not in keywords:

@@ -39,7 +39,7 @@ use generated::{
     ApiVersion, VulkanCommand,
 };
 pub use generated::{
-    layer_trait::{DeviceInfo, InstanceInfo, Layer},
+    layer_trait::{DeviceInfo, InstanceInfo, Layer, VulkanCommand as LayerVulkanCommand},
     LayerResult,
 };
 
@@ -621,7 +621,7 @@ impl<T: Layer> Global<T> {
         vec![layer_property]
     }
 
-    // Introspection queryies required by Android, so we need to expose them as public functions so
+    // Introspection queries required by Android, so we need to expose them as public functions so
     // that the user can futher expose them as functions exported by the dynamic link library.
 
     /// # Safety
@@ -809,21 +809,26 @@ impl<T: Layer> Global<T> {
             return res;
         }
         let instance_commands = global.get_instance_commands();
-        if let Ok(index) =
-            instance_commands.binary_search_by_key(&name, |VulkanCommand { name, .. }| name)
+        let get_next_proc_addr =
+            || unsafe { (instance_info.get_instance_proc_addr)(instance, p_name) };
+        let index = match instance_commands
+            .binary_search_by_key(&name, |VulkanCommand { name, .. }| name)
         {
-            let command = &instance_commands[index];
-            let enabled = command.features.iter().any(|feature| match feature {
-                Feature::Extension(extension) => {
-                    instance_info.enabled_extensions.contains(extension)
-                }
-                Feature::Core(version) => *version <= instance_info.api_version,
-            });
-            if enabled {
-                return command.proc;
-            }
+            Ok(index) => index,
+            Err(_) => return get_next_proc_addr(),
+        };
+        let command = &instance_commands[index];
+        if !command.hooked {
+            return get_next_proc_addr();
         }
-        unsafe { (instance_info.get_instance_proc_addr)(instance, p_name) }
+        let enabled = command.features.iter().any(|feature| match feature {
+            Feature::Extension(extension) => instance_info.enabled_extensions.contains(extension),
+            Feature::Core(version) => *version <= instance_info.api_version,
+        });
+        if !enabled {
+            return get_next_proc_addr();
+        }
+        return command.proc;
     }
 
     /// # Safety

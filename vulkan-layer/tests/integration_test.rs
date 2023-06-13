@@ -32,12 +32,18 @@ fn create_entry<T: Layer>() -> ash::Entry {
     }
 }
 
+struct Context {
+    entry: ash::Entry,
+    instance: ash::Instance,
+    next_entry: ash::Entry,
+}
+
 trait InstanceCreateInfoExt {
-    fn with_instance<T: Layer>(self, f: impl FnOnce(&ash::Entry, &ash::Instance));
+    fn with_instance<T: Layer>(self, f: impl FnOnce(&Context));
 }
 
 impl InstanceCreateInfoExt for vk::InstanceCreateInfoBuilder<'_> {
-    fn with_instance<T: Layer>(self, f: impl FnOnce(&ash::Entry, &ash::Instance)) {
+    fn with_instance<T: Layer>(self, f: impl FnOnce(&Context)) {
         extern "system" fn get_instance_proc_addr(
             instance: vk::Instance,
             p_name: *const i8,
@@ -129,7 +135,7 @@ impl InstanceCreateInfoExt for vk::InstanceCreateInfoBuilder<'_> {
                             None
                         }
                     }
-                    "vkDestroySwapchainKHR" => {
+                    "vkDestroySurfaceKHR" => {
                         if instance_data
                             .enabled_extensions
                             .contains(vk::KhrSurfaceFn::name().to_str().unwrap())
@@ -164,8 +170,17 @@ impl InstanceCreateInfoExt for vk::InstanceCreateInfoBuilder<'_> {
         let create_instance_info = self.push_next(&mut layer_create_info);
         let instance = unsafe { entry.create_instance(&create_instance_info, None) }.unwrap();
         assert_ne!(instance.handle(), vk::Instance::null());
-        f(&entry, &instance);
-        unsafe { instance.destroy_instance(None) };
+        let context = Context {
+            entry,
+            instance,
+            next_entry: unsafe {
+                ash::Entry::from_static_fn(vk::StaticFn {
+                    get_instance_proc_addr,
+                })
+            },
+        };
+        f(&context);
+        unsafe { context.instance.destroy_instance(None) };
     }
 }
 
@@ -257,25 +272,29 @@ mod get_instance_proc_addr {
         fn test_should_return_null_for_global_commands() {
             #[derive(Default)]
             struct Tag;
-            vk::InstanceCreateInfo::builder().with_instance::<MockLayer<Tag>>(|entry, instance| {
-                let global_commands = [
-                    "vkEnumerateInstanceVersion",
-                    "vkEnumerateInstanceExtensionProperties",
-                    "vkEnumerateInstanceLayerProperties",
-                    "vkCreateInstance",
-                ];
-                for global_command in &global_commands {
-                    let global_command = CString::new(global_command.to_owned()).unwrap();
-                    let proc_addr = unsafe {
-                        entry.get_instance_proc_addr(instance.handle(), global_command.as_ptr())
-                    };
-                    assert!(
-                        proc_addr.is_none(),
-                        "{} should be null",
-                        global_command.to_string_lossy()
-                    );
-                }
-            });
+            vk::InstanceCreateInfo::builder().with_instance::<MockLayer<Tag>>(
+                |Context {
+                     entry, instance, ..
+                 }| {
+                    let global_commands = [
+                        "vkEnumerateInstanceVersion",
+                        "vkEnumerateInstanceExtensionProperties",
+                        "vkEnumerateInstanceLayerProperties",
+                        "vkCreateInstance",
+                    ];
+                    for global_command in &global_commands {
+                        let global_command = CString::new(global_command.to_owned()).unwrap();
+                        let proc_addr = unsafe {
+                            entry.get_instance_proc_addr(instance.handle(), global_command.as_ptr())
+                        };
+                        assert!(
+                            proc_addr.is_none(),
+                            "{} should be null",
+                            global_command.to_string_lossy()
+                        );
+                    }
+                },
+            );
             // TODO: when we allow to intercept the global commands also add a layer that intercepts
             // the global commands and test.
         }
@@ -284,19 +303,24 @@ mod get_instance_proc_addr {
         fn test_should_return_fp_for_get_instance_proc_addr() {
             #[derive(Default)]
             struct Tag;
-            vk::InstanceCreateInfo::builder().with_instance::<MockLayer<Tag>>(|entry, instance| {
-                let get_instance_proc_addr_name = b"vkGetInstanceProcAddr\0".as_ptr() as *const i8;
-                let get_instance_proc_addr = unsafe {
-                    entry.get_instance_proc_addr(instance.handle(), get_instance_proc_addr_name)
-                }
-                .unwrap();
-                let get_instance_proc_addr: vk::PFN_vkGetInstanceProcAddr =
-                    unsafe { std::mem::transmute(get_instance_proc_addr) };
-                assert_eq!(
-                    get_instance_proc_addr as usize,
-                    entry.static_fn().get_instance_proc_addr as usize
-                );
-            });
+            vk::InstanceCreateInfo::builder().with_instance::<MockLayer<Tag>>(
+                |Context {
+                     entry, instance, ..
+                 }| {
+                    let get_instance_proc_addr_name =
+                        b"vkGetInstanceProcAddr\0".as_ptr() as *const i8;
+                    let get_instance_proc_addr = unsafe {
+                        entry.get_instance_proc_addr(instance.handle(), get_instance_proc_addr_name)
+                    }
+                    .unwrap();
+                    let get_instance_proc_addr: vk::PFN_vkGetInstanceProcAddr =
+                        unsafe { std::mem::transmute(get_instance_proc_addr) };
+                    assert_eq!(
+                        get_instance_proc_addr as usize,
+                        entry.static_fn().get_instance_proc_addr as usize
+                    );
+                },
+            );
             // TODO: when we allow return the next function pointer for not intercepted function
             // also add a layer that intercepts vkGetInstanceProcAddr in this test
         }
@@ -305,17 +329,51 @@ mod get_instance_proc_addr {
         fn test_should_return_fp_for_core_dispatchable_command() {
             #[derive(Default)]
             struct Tag;
-            vk::InstanceCreateInfo::builder().with_instance::<MockLayer<Tag>>(|entry, instance| {
-                let destroy_instance = unsafe {
-                    entry.get_instance_proc_addr(
-                        instance.handle(),
-                        b"vkDestroyInstance\0".as_ptr() as *const i8,
-                    )
-                };
-                assert!(destroy_instance.is_some());
-                // vkDestroyInstance will be called in with_instance after this function is
-                // returned.
-            });
+            vk::InstanceCreateInfo::builder().with_instance::<MockLayer<Tag>>(
+                |Context {
+                     entry, instance, ..
+                 }| {
+                    let destroy_instance = unsafe {
+                        entry.get_instance_proc_addr(
+                            instance.handle(),
+                            b"vkDestroyInstance\0".as_ptr() as *const i8,
+                        )
+                    };
+                    assert!(destroy_instance.is_some());
+                    // vkDestroyInstance will be called in with_instance after this function is
+                    // returned.
+                },
+            );
+        }
+
+        #[test]
+        fn test_should_return_next_proc_addr_for_not_intercepted_command() {
+            #[derive(Default)]
+            struct Tag;
+            let enabled_extensions = [vk::KhrSurfaceFn::name().as_ptr()];
+            vk::InstanceCreateInfo::builder()
+                .enabled_extension_names(&enabled_extensions)
+                .with_instance::<MockLayer<Tag>>(
+                    |Context {
+                         entry,
+                         instance,
+                         next_entry,
+                         ..
+                     }| {
+                        let destroy_surface_name = b"vkDestroySurfaceKHR\0".as_ptr() as *const i8;
+                        let destroy_surface = unsafe {
+                            entry.get_instance_proc_addr(instance.handle(), destroy_surface_name)
+                        }
+                        .map(|fp| fp as usize);
+                        // We don't wrap the object, so the VkInstance should be the same.
+                        let next_destroy_surface = unsafe {
+                            next_entry
+                                .get_instance_proc_addr(instance.handle(), destroy_surface_name)
+                        }
+                        .map(|fp| fp as usize);
+                        assert_eq!(destroy_surface, next_destroy_surface);
+                    },
+                );
         }
 
         #[test]
@@ -326,29 +384,37 @@ mod get_instance_proc_addr {
             let application_info = ApplicationInfo::builder().api_version(vk::API_VERSION_1_1);
             vk::InstanceCreateInfo::builder()
                 .application_info(&application_info)
-                .with_instance::<MockLayer<Tag>>(|entry, instance| {
-                    let fp = unsafe {
-                        entry.get_instance_proc_addr(
-                            instance.handle(),
-                            b"vkGetPhysicalDeviceSparseImageFormatProperties2\0".as_ptr()
-                                as *const i8,
-                        )
-                    };
-                    assert!(fp.is_some());
-                });
+                .with_instance::<MockLayer<Tag>>(
+                    |Context {
+                         entry, instance, ..
+                     }| {
+                        let fp = unsafe {
+                            entry.get_instance_proc_addr(
+                                instance.handle(),
+                                b"vkGetPhysicalDeviceSparseImageFormatProperties2\0".as_ptr()
+                                    as *const i8,
+                            )
+                        };
+                        assert!(fp.is_some());
+                    },
+                );
 
             let enabled_extensions = [vk::KhrSurfaceFn::name().as_ptr()];
             vk::InstanceCreateInfo::builder()
                 .enabled_extension_names(&enabled_extensions)
-                .with_instance::<MockLayer<Tag>>(|entry, instance| {
-                    let fp = unsafe {
-                        entry.get_instance_proc_addr(
-                            instance.handle(),
-                            b"vkDestroySurfaceKHR\0".as_ptr() as *const i8,
-                        )
-                    };
-                    assert!(fp.is_some());
-                });
+                .with_instance::<MockLayer<Tag>>(
+                    |Context {
+                         entry, instance, ..
+                     }| {
+                        let fp = unsafe {
+                            entry.get_instance_proc_addr(
+                                instance.handle(),
+                                b"vkDestroySurfaceKHR\0".as_ptr() as *const i8,
+                            )
+                        };
+                        assert!(fp.is_some());
+                    },
+                );
             // TODO: when we allow customize layer extensions, also test with the extension provided
             // by the layer
         }
@@ -357,25 +423,39 @@ mod get_instance_proc_addr {
         fn test_if_extension_is_not_enabled_null_should_be_returned() {
             #[derive(Default)]
             struct Tag;
-            vk::InstanceCreateInfo::builder().with_instance::<MockLayer<Tag>>(|entry, instance| {
-                let fp = unsafe {
-                    entry.get_instance_proc_addr(
-                        instance.handle(),
-                        b"vkDestroySurfaceKHR\0".as_ptr() as *const i8,
-                    )
-                };
-                assert!(fp.is_none());
-                let fp = unsafe {
-                    entry.get_instance_proc_addr(
-                        instance.handle(),
-                        b"vkGetPhysicalDeviceSparseImageFormatProperties2\0".as_ptr() as *const i8,
-                    )
-                };
-                assert!(fp.is_none());
-            });
+            vk::InstanceCreateInfo::builder().with_instance::<MockLayer<Tag>>(
+                |Context {
+                     entry, instance, ..
+                 }| {
+                    let fp = unsafe {
+                        entry.get_instance_proc_addr(
+                            instance.handle(),
+                            b"vkDestroySurfaceKHR\0".as_ptr() as *const i8,
+                        )
+                    };
+                    assert!(fp.is_none());
+                    let fp = unsafe {
+                        entry.get_instance_proc_addr(
+                            instance.handle(),
+                            b"vkGetPhysicalDeviceSparseImageFormatProperties2\0".as_ptr()
+                                as *const i8,
+                        )
+                    };
+                    assert!(fp.is_none());
+                },
+            );
             // TODO: when we allow return the next function pointer for not intercepted function
             // also add a layer that intercepts vkDestroySurfaceKHR and
             // vkGetPhysicalDeviceSparseImageFormatProperties2 in this test
+        }
+
+        #[test]
+        #[ignore]
+        fn test_commands_that_should_always_be_intercepted() {
+            todo!(concat!(
+                "6 Android introspection queries, 2 physical device enumeration API, 4 ",
+                "device/instance creation destroying APIs."
+            ))
         }
 
         #[test]

@@ -3,7 +3,7 @@ use std::{marker::PhantomData, sync::Arc};
 use ash::vk;
 use vulkan_layer_macros::impl_test_vulkan_layer;
 
-use crate::{DeviceInfo, InstanceInfo, Layer};
+use crate::{DeviceInfo, InstanceInfo, Layer, LayerVulkanCommand};
 
 pub use crate::bindings::{
     VkLayerDeviceCreateInfo, VkLayerFunction, VkLayerInstanceCreateInfo, VkLayerInstanceLink,
@@ -31,4 +31,8 @@ pub struct MockLayer<Tag = ()> {
 impl<T: 'static + Sync + Default> Layer for MockLayer<T> {
     type DeviceInfo = MockDeviceInfo;
     type InstanceInfo = MockInstanceInfo;
+
+    fn hooked_commands(&self) -> &'static [LayerVulkanCommand] {
+        &[]
+    }
 }

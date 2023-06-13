@@ -18,25 +18,11 @@ import reg
 import sys
 from typing import NamedTuple, Optional, ClassVar, Callable
 from vk_xml_util import (DispatchChainType, VkXmlCommand, camel_case_to_snake_case,
-                         RustParam, decayed_type_to_rust_type, UnhandledCommand,
-                         generate_unhandled_command_comments, VkXmlLenKind, VkXmlParam,
-                         opaque_type_map, VulkanAliases, write_license)
+                         snake_case_to_upper_camel_case, RustParam, decayed_type_to_rust_type,
+                         UnhandledCommand, generate_unhandled_command_comments, VkXmlLenKind,
+                         VkXmlParam, opaque_type_map, VulkanAliases, write_license)
 from dataclasses import dataclass, field
 import logging
-
-
-def snake_case_to_upper_camel_case(input: str) -> str:
-    if len(input) <= 1:
-        return input.upper()
-    output = input[0].upper()
-    for prev, cur, next in zip(input, input[1:], input[2:]):
-        if cur == '_' and next != '_':
-            continue
-        if prev == '_':
-            output += cur.upper()
-            continue
-        output += cur
-    return output + input[-1]
 
 
 @dataclass
@@ -596,11 +582,12 @@ class GlobalSimpleInterceptGenerator(OutputGenerator):
         self.outFile.write("\n".join([
             "#![allow(unused_unsafe)]",
             ("use std::{ffi::{c_int, c_void, c_char, CStr}, ptr::NonNull, "
-             "sync::Arc};"),
+             "sync::Arc, collections::HashSet};"),
             "use ash::vk;",
             "use smallvec::smallvec;",
             "",
-            "use crate::{DeviceInfo, fill_vk_out_array, Global, InstanceInfo, Layer, LayerResult};",
+            ("use crate::{DeviceInfo, fill_vk_out_array, Global, InstanceInfo, Layer, LayerResult, "
+             "LayerVulkanCommand};"),
             ("use super::{get_instance_proc_addr_loader, get_device_proc_addr_loader, "
              "VulkanCommand, TryFromExtensionError, ApiVersion};"),
             "",
@@ -655,7 +642,8 @@ class GlobalSimpleInterceptGenerator(OutputGenerator):
         def generate_vulkan_command_entries(
                 indent: int,
                 commands: dict[str, VulkanCommand],
-                dispatch_infos: dict[str, CommandDispatchInfo]) -> str:
+                dispatch_infos: dict[str, CommandDispatchInfo],
+                hooked_commands_var: str) -> str:
             command_to_dispatch_infos: dict[str, list[CommandDispatchInfo]] = {}
             for dispatch_info in dispatch_infos.values():
                 for command in dispatch_info.commands:
@@ -663,6 +651,23 @@ class GlobalSimpleInterceptGenerator(OutputGenerator):
                     command_dispatch_infos.append(dispatch_info)
             lines: list[str] = []
             command_items = sorted(commands.items(), key=lambda command: command[0])
+            always_hooked_commands = [
+                "vkEnumerateInstanceLayerProperties",
+                "vkEnumerateInstanceExtensionProperties",
+                "vkEnumerateDeviceLayerProperties",
+                "vkEnumerateDeviceExtensionProperties",
+                "vkGetInstanceProcAddr",
+                "vkGetDeviceProcAddr",
+
+                "vkCreateInstance",
+                "vkDestroyInstance",
+                "vkCreateDevice",
+                "vkDestroyDevice",
+
+                "vkEnumeratePhysicalDeviceGroups",
+                "vkEnumeratePhysicalDeviceGroupsKHR",
+                "vkEnumeratePhysicalDevices",
+            ]
             for proc_name, command in command_items:
                 # Use the actual name, because ash doesn't generate type names for alised types.
                 fp_type_name = f'vk::PFN_{command.vk_xml_command.name}'
@@ -671,11 +676,18 @@ class GlobalSimpleInterceptGenerator(OutputGenerator):
                             for dispatch_info in command_to_dispatch_infos[proc_name]]
                 assert len(features) > 0, ("Every command must have at least one dispatch_info "
                                            "associated.")
+                hook_command_variant_value = snake_case_to_upper_camel_case(command.rust_fn.name)
+                hooked_expr: str = ""
+                if proc_name in always_hooked_commands:
+                    hooked_expr = "true"
+                else:
+                    hooked_expr = (f'{hooked_commands_var}.contains('
+                                   f'&&LayerVulkanCommand::{hook_command_variant_value})')
                 lines += [
                     (f'VulkanCommand {{'),
                     (f'    name: "{proc_name}",'),
-                    # TODO: generate the correct feature set.
                     (f'    features: smallvec![{", ".join(features)}],'),
+                    (f'    hooked: {hooked_expr},'),
                     (f'    proc: unsafe {{ std::mem::transmute({rust_fn_name} as {fp_type_name})'
                      f'}},'),
                     (f'}},'),
@@ -683,21 +695,29 @@ class GlobalSimpleInterceptGenerator(OutputGenerator):
             return "".join([" " * indent + line + "\n" for line in lines])
         self.newline()
 
-        self.outFile.write("impl<T: Layer> Global<T> {\n")
-        self.outFile.write("    pub(crate) fn get_device_commands(&self) -> &[VulkanCommand] {\n")
-        self.outFile.write("        self.device_commands.get_or_init(|| {")
-        self.outFile.write("            vec![\n")
+        self.outFile.write("\n".join([
+            "impl<T: Layer> Global<T> {",
+            "    pub(crate) fn get_device_commands(&self) -> &[VulkanCommand] {",
+            "        self.device_commands.get_or_init(|| {",
+            ("            let hooked_commands = self.layer_info.hooked_commands().iter()"
+             ".collect::<HashSet<_>>();"),
+            "            vec![",
+        ] + [""]))
         self.outFile.write(generate_vulkan_command_entries(
-            16, self.device_commands, self.dispatch_infos))
+            16, self.device_commands, self.dispatch_infos, "hooked_commands"))
         self.outFile.write("            ]")
         self.outFile.write("        })\n")
         self.outFile.write("    }\n")
 
-        self.outFile.write("    pub(crate) fn get_instance_commands(&self) -> &[VulkanCommand] {\n")
-        self.outFile.write("        self.instance_commands.get_or_init(|| {")
-        self.outFile.write("            vec![\n")
+        self.outFile.write("\n".join([
+            "    pub(crate) fn get_instance_commands(&self) -> &[VulkanCommand] {",
+            "        self.instance_commands.get_or_init(|| {",
+            ("            let hooked_commands = self.layer_info.hooked_commands().iter()"
+             ".collect::<HashSet<_>>();"),
+            "            vec![",
+        ] + [""]))
         self.outFile.write(generate_vulkan_command_entries(
-            16, self.instance_commands, self.dispatch_infos))
+            16, self.instance_commands, self.dispatch_infos, "hooked_commands"))
         self.outFile.write("            ]")
         self.outFile.write("        })\n")
         self.outFile.write("    }\n")

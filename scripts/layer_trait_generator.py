@@ -18,7 +18,7 @@ import sys
 from typing import Optional
 from vk_xml_util import (VkXmlCommand, RustMethod, DispatchChainType,
                          UnhandledCommand, generate_unhandled_command_comments, VulkanAliases,
-                         write_license)
+                         write_license, snake_case_to_upper_camel_case)
 
 
 class LayerTraitGenerator(OutputGenerator):
@@ -88,10 +88,16 @@ class LayerTraitGenerator(OutputGenerator):
                 "        next_get_device_proc_addr: vk::PFN_vkGetDeviceProcAddr,"
                 "    ) -> Self::DeviceInfo;",
                 "",
+                "    fn hooked_commands(&self) -> &'static [VulkanCommand];",
+                "",
             ],
             DispatchChainType.INSTANCE: ["pub trait InstanceInfo: Send + Sync {"],
             DispatchChainType.DEVICE: ["pub trait DeviceInfo: Send + Sync {"],
         }
+        command_enum = [
+            "#[derive(PartialOrd, Ord, PartialEq, Eq, Hash, Clone)]"
+            "pub enum VulkanCommand {",
+        ]
 
         for dispatch_type, commands in self.all_commands.items():
             for name, command in commands.items():
@@ -102,6 +108,11 @@ class LayerTraitGenerator(OutputGenerator):
                     f'        LayerResult::Unhandled',
                     f'    }}',
                 ]
+                command_enum.append(f"    {snake_case_to_upper_camel_case(command.name)},")
+        command_enum += ["}"]
+        self.outFile.write("\n".join(command_enum))
+        self.newline()
+        self.newline()
 
         for dispatch_chain_type in sorted(list(dispatch_chain_type_to_lines.keys())):
             lines = dispatch_chain_type_to_lines[dispatch_chain_type]

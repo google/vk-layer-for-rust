@@ -59,6 +59,7 @@ pub enum LayerResult<T> {
 pub(crate) struct VulkanCommand {
     pub name: &'static str,
     pub features: SmallVec<[Feature; 2]>,
+    pub hooked: bool,
     pub proc: vk::PFN_vkVoidFunction,
 }
 
