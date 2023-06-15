@@ -15,7 +15,6 @@
 // This file is generated from the Vulkan XML API registry.
 #![allow(clippy::too_many_arguments)]
 use std::ffi::{c_int, c_void};
-use std::sync::Arc;
 
 use ash::{prelude::VkResult, vk};
 
@@ -579,8 +578,8 @@ pub enum VulkanCommand {
     CmdDrawMeshTasksIndirectCountExt,
 }
 
-pub trait DeviceInfo: Send + Sync {
-    fn get_device_proc_addr(&self, _p_name: &str) -> LayerResult<vk::PFN_vkVoidFunction> {
+pub trait DeviceHooks: Send + Sync {
+    fn get_device_proc_addr(&self, _p_name: &'static str) -> LayerResult<vk::PFN_vkVoidFunction> {
         LayerResult::Unhandled
     }
     fn get_device_queue(
@@ -593,7 +592,7 @@ pub trait DeviceInfo: Send + Sync {
     fn queue_submit(
         &self,
         _queue: vk::Queue,
-        _p_submits: &[vk::SubmitInfo],
+        _p_submits: &'static [vk::SubmitInfo],
         _fence: vk::Fence,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
@@ -606,15 +605,15 @@ pub trait DeviceInfo: Send + Sync {
     }
     fn allocate_memory(
         &self,
-        _p_allocate_info: &vk::MemoryAllocateInfo,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_allocate_info: &'static vk::MemoryAllocateInfo,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::DeviceMemory>> {
         LayerResult::Unhandled
     }
     fn free_memory(
         &self,
         _memory: vk::DeviceMemory,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -632,13 +631,13 @@ pub trait DeviceInfo: Send + Sync {
     }
     fn flush_mapped_memory_ranges(
         &self,
-        _p_memory_ranges: &[vk::MappedMemoryRange],
+        _p_memory_ranges: &'static [vk::MappedMemoryRange],
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn invalidate_mapped_memory_ranges(
         &self,
-        _p_memory_ranges: &[vk::MappedMemoryRange],
+        _p_memory_ranges: &'static [vk::MappedMemoryRange],
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
@@ -667,47 +666,47 @@ pub trait DeviceInfo: Send + Sync {
     fn get_buffer_memory_requirements(
         &self,
         _buffer: vk::Buffer,
-        _p_memory_requirements: &mut vk::MemoryRequirements,
+        _p_memory_requirements: &'static mut vk::MemoryRequirements,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_image_memory_requirements(
         &self,
         _image: vk::Image,
-        _p_memory_requirements: &mut vk::MemoryRequirements,
+        _p_memory_requirements: &'static mut vk::MemoryRequirements,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_image_sparse_memory_requirements(
         &self,
         _image: vk::Image,
-        _p_sparse_memory_requirements: Option<&mut [vk::SparseImageMemoryRequirements]>,
+        _p_sparse_memory_requirements: Option<&'static mut [vk::SparseImageMemoryRequirements]>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn queue_bind_sparse(
         &self,
         _queue: vk::Queue,
-        _p_bind_info: &[vk::BindSparseInfo],
+        _p_bind_info: &'static [vk::BindSparseInfo],
         _fence: vk::Fence,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn create_fence(
         &self,
-        _p_create_info: &vk::FenceCreateInfo,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_info: &'static vk::FenceCreateInfo,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::Fence>> {
         LayerResult::Unhandled
     }
     fn destroy_fence(
         &self,
         _fence: vk::Fence,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
-    fn reset_fences(&self, _p_fences: &[vk::Fence]) -> LayerResult<VkResult<()>> {
+    fn reset_fences(&self, _p_fences: &'static [vk::Fence]) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_fence_status(&self, _fence: vk::Fence) -> LayerResult<VkResult<()>> {
@@ -715,7 +714,7 @@ pub trait DeviceInfo: Send + Sync {
     }
     fn wait_for_fences(
         &self,
-        _p_fences: &[vk::Fence],
+        _p_fences: &'static [vk::Fence],
         _wait_all: bool,
         _timeout: u64,
     ) -> LayerResult<VkResult<()>> {
@@ -723,29 +722,29 @@ pub trait DeviceInfo: Send + Sync {
     }
     fn create_semaphore(
         &self,
-        _p_create_info: &vk::SemaphoreCreateInfo,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_info: &'static vk::SemaphoreCreateInfo,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::Semaphore>> {
         LayerResult::Unhandled
     }
     fn destroy_semaphore(
         &self,
         _semaphore: vk::Semaphore,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn create_event(
         &self,
-        _p_create_info: &vk::EventCreateInfo,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_info: &'static vk::EventCreateInfo,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::Event>> {
         LayerResult::Unhandled
     }
     fn destroy_event(
         &self,
         _event: vk::Event,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -760,15 +759,15 @@ pub trait DeviceInfo: Send + Sync {
     }
     fn create_query_pool(
         &self,
-        _p_create_info: &vk::QueryPoolCreateInfo,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_info: &'static vk::QueryPoolCreateInfo,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::QueryPool>> {
         LayerResult::Unhandled
     }
     fn destroy_query_pool(
         &self,
         _query_pool: vk::QueryPool,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -777,7 +776,7 @@ pub trait DeviceInfo: Send + Sync {
         _query_pool: vk::QueryPool,
         _first_query: u32,
         _query_count: u32,
-        _p_data: &mut [u8],
+        _p_data: &'static mut [u8],
         _stride: vk::DeviceSize,
         _flags: vk::QueryResultFlags,
     ) -> LayerResult<VkResult<()>> {
@@ -785,93 +784,93 @@ pub trait DeviceInfo: Send + Sync {
     }
     fn create_buffer(
         &self,
-        _p_create_info: &vk::BufferCreateInfo,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_info: &'static vk::BufferCreateInfo,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::Buffer>> {
         LayerResult::Unhandled
     }
     fn destroy_buffer(
         &self,
         _buffer: vk::Buffer,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn create_buffer_view(
         &self,
-        _p_create_info: &vk::BufferViewCreateInfo,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_info: &'static vk::BufferViewCreateInfo,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::BufferView>> {
         LayerResult::Unhandled
     }
     fn destroy_buffer_view(
         &self,
         _buffer_view: vk::BufferView,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn create_image(
         &self,
-        _p_create_info: &vk::ImageCreateInfo,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_info: &'static vk::ImageCreateInfo,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::Image>> {
         LayerResult::Unhandled
     }
     fn destroy_image(
         &self,
         _image: vk::Image,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_image_subresource_layout(
         &self,
         _image: vk::Image,
-        _p_subresource: &vk::ImageSubresource,
-        _p_layout: &mut vk::SubresourceLayout,
+        _p_subresource: &'static vk::ImageSubresource,
+        _p_layout: &'static mut vk::SubresourceLayout,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn create_image_view(
         &self,
-        _p_create_info: &vk::ImageViewCreateInfo,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_info: &'static vk::ImageViewCreateInfo,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::ImageView>> {
         LayerResult::Unhandled
     }
     fn destroy_image_view(
         &self,
         _image_view: vk::ImageView,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn create_shader_module(
         &self,
-        _p_create_info: &vk::ShaderModuleCreateInfo,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_info: &'static vk::ShaderModuleCreateInfo,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::ShaderModule>> {
         LayerResult::Unhandled
     }
     fn destroy_shader_module(
         &self,
         _shader_module: vk::ShaderModule,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn create_pipeline_cache(
         &self,
-        _p_create_info: &vk::PipelineCacheCreateInfo,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_info: &'static vk::PipelineCacheCreateInfo,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::PipelineCache>> {
         LayerResult::Unhandled
     }
     fn destroy_pipeline_cache(
         &self,
         _pipeline_cache: vk::PipelineCache,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -884,86 +883,86 @@ pub trait DeviceInfo: Send + Sync {
     fn merge_pipeline_caches(
         &self,
         _dst_cache: vk::PipelineCache,
-        _p_src_caches: &[vk::PipelineCache],
+        _p_src_caches: &'static [vk::PipelineCache],
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn create_graphics_pipelines(
         &self,
         _pipeline_cache: vk::PipelineCache,
-        _p_create_infos: &[vk::GraphicsPipelineCreateInfo],
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_infos: &'static [vk::GraphicsPipelineCreateInfo],
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<Vec<vk::Pipeline>>> {
         LayerResult::Unhandled
     }
     fn create_compute_pipelines(
         &self,
         _pipeline_cache: vk::PipelineCache,
-        _p_create_infos: &[vk::ComputePipelineCreateInfo],
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_infos: &'static [vk::ComputePipelineCreateInfo],
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<Vec<vk::Pipeline>>> {
         LayerResult::Unhandled
     }
     fn destroy_pipeline(
         &self,
         _pipeline: vk::Pipeline,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn create_pipeline_layout(
         &self,
-        _p_create_info: &vk::PipelineLayoutCreateInfo,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_info: &'static vk::PipelineLayoutCreateInfo,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::PipelineLayout>> {
         LayerResult::Unhandled
     }
     fn destroy_pipeline_layout(
         &self,
         _pipeline_layout: vk::PipelineLayout,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn create_sampler(
         &self,
-        _p_create_info: &vk::SamplerCreateInfo,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_info: &'static vk::SamplerCreateInfo,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::Sampler>> {
         LayerResult::Unhandled
     }
     fn destroy_sampler(
         &self,
         _sampler: vk::Sampler,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn create_descriptor_set_layout(
         &self,
-        _p_create_info: &vk::DescriptorSetLayoutCreateInfo,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_info: &'static vk::DescriptorSetLayoutCreateInfo,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::DescriptorSetLayout>> {
         LayerResult::Unhandled
     }
     fn destroy_descriptor_set_layout(
         &self,
         _descriptor_set_layout: vk::DescriptorSetLayout,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn create_descriptor_pool(
         &self,
-        _p_create_info: &vk::DescriptorPoolCreateInfo,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_info: &'static vk::DescriptorPoolCreateInfo,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::DescriptorPool>> {
         LayerResult::Unhandled
     }
     fn destroy_descriptor_pool(
         &self,
         _descriptor_pool: vk::DescriptorPool,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -976,70 +975,70 @@ pub trait DeviceInfo: Send + Sync {
     }
     fn allocate_descriptor_sets(
         &self,
-        _p_allocate_info: &vk::DescriptorSetAllocateInfo,
+        _p_allocate_info: &'static vk::DescriptorSetAllocateInfo,
     ) -> LayerResult<VkResult<Vec<vk::DescriptorSet>>> {
         LayerResult::Unhandled
     }
     fn free_descriptor_sets(
         &self,
         _descriptor_pool: vk::DescriptorPool,
-        _p_descriptor_sets: &[vk::DescriptorSet],
+        _p_descriptor_sets: &'static [vk::DescriptorSet],
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn update_descriptor_sets(
         &self,
-        _p_descriptor_writes: &[vk::WriteDescriptorSet],
-        _p_descriptor_copies: &[vk::CopyDescriptorSet],
+        _p_descriptor_writes: &'static [vk::WriteDescriptorSet],
+        _p_descriptor_copies: &'static [vk::CopyDescriptorSet],
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn create_framebuffer(
         &self,
-        _p_create_info: &vk::FramebufferCreateInfo,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_info: &'static vk::FramebufferCreateInfo,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::Framebuffer>> {
         LayerResult::Unhandled
     }
     fn destroy_framebuffer(
         &self,
         _framebuffer: vk::Framebuffer,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn create_render_pass(
         &self,
-        _p_create_info: &vk::RenderPassCreateInfo,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_info: &'static vk::RenderPassCreateInfo,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::RenderPass>> {
         LayerResult::Unhandled
     }
     fn destroy_render_pass(
         &self,
         _render_pass: vk::RenderPass,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_render_area_granularity(
         &self,
         _render_pass: vk::RenderPass,
-        _p_granularity: &mut vk::Extent2D,
+        _p_granularity: &'static mut vk::Extent2D,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn create_command_pool(
         &self,
-        _p_create_info: &vk::CommandPoolCreateInfo,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_info: &'static vk::CommandPoolCreateInfo,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::CommandPool>> {
         LayerResult::Unhandled
     }
     fn destroy_command_pool(
         &self,
         _command_pool: vk::CommandPool,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -1052,21 +1051,21 @@ pub trait DeviceInfo: Send + Sync {
     }
     fn allocate_command_buffers(
         &self,
-        _p_allocate_info: &vk::CommandBufferAllocateInfo,
+        _p_allocate_info: &'static vk::CommandBufferAllocateInfo,
     ) -> LayerResult<VkResult<Vec<vk::CommandBuffer>>> {
         LayerResult::Unhandled
     }
     fn free_command_buffers(
         &self,
         _command_pool: vk::CommandPool,
-        _p_command_buffers: &[vk::CommandBuffer],
+        _p_command_buffers: &'static [vk::CommandBuffer],
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn begin_command_buffer(
         &self,
         _command_buffer: vk::CommandBuffer,
-        _p_begin_info: &vk::CommandBufferBeginInfo,
+        _p_begin_info: &'static vk::CommandBufferBeginInfo,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
@@ -1092,7 +1091,7 @@ pub trait DeviceInfo: Send + Sync {
         &self,
         _command_buffer: vk::CommandBuffer,
         _first_viewport: u32,
-        _p_viewports: &[vk::Viewport],
+        _p_viewports: &'static [vk::Viewport],
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -1100,7 +1099,7 @@ pub trait DeviceInfo: Send + Sync {
         &self,
         _command_buffer: vk::CommandBuffer,
         _first_scissor: u32,
-        _p_scissors: &[vk::Rect2D],
+        _p_scissors: &'static [vk::Rect2D],
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -1123,7 +1122,7 @@ pub trait DeviceInfo: Send + Sync {
     fn cmd_set_blend_constants(
         &self,
         _command_buffer: vk::CommandBuffer,
-        _blend_constants: &[f32; 4],
+        _blend_constants: &'static [f32; 4],
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -1165,8 +1164,8 @@ pub trait DeviceInfo: Send + Sync {
         _pipeline_bind_point: vk::PipelineBindPoint,
         _layout: vk::PipelineLayout,
         _first_set: u32,
-        _p_descriptor_sets: &[vk::DescriptorSet],
-        _p_dynamic_offsets: &[u32],
+        _p_descriptor_sets: &'static [vk::DescriptorSet],
+        _p_dynamic_offsets: &'static [u32],
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -1183,8 +1182,8 @@ pub trait DeviceInfo: Send + Sync {
         &self,
         _command_buffer: vk::CommandBuffer,
         _first_binding: u32,
-        _p_buffers: &[vk::Buffer],
-        _p_offsets: &[vk::DeviceSize],
+        _p_buffers: &'static [vk::Buffer],
+        _p_offsets: &'static [vk::DeviceSize],
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -1251,7 +1250,7 @@ pub trait DeviceInfo: Send + Sync {
         _command_buffer: vk::CommandBuffer,
         _src_buffer: vk::Buffer,
         _dst_buffer: vk::Buffer,
-        _p_regions: &[vk::BufferCopy],
+        _p_regions: &'static [vk::BufferCopy],
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -1262,7 +1261,7 @@ pub trait DeviceInfo: Send + Sync {
         _src_image_layout: vk::ImageLayout,
         _dst_image: vk::Image,
         _dst_image_layout: vk::ImageLayout,
-        _p_regions: &[vk::ImageCopy],
+        _p_regions: &'static [vk::ImageCopy],
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -1273,7 +1272,7 @@ pub trait DeviceInfo: Send + Sync {
         _src_image_layout: vk::ImageLayout,
         _dst_image: vk::Image,
         _dst_image_layout: vk::ImageLayout,
-        _p_regions: &[vk::ImageBlit],
+        _p_regions: &'static [vk::ImageBlit],
         _filter: vk::Filter,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
@@ -1284,7 +1283,7 @@ pub trait DeviceInfo: Send + Sync {
         _src_buffer: vk::Buffer,
         _dst_image: vk::Image,
         _dst_image_layout: vk::ImageLayout,
-        _p_regions: &[vk::BufferImageCopy],
+        _p_regions: &'static [vk::BufferImageCopy],
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -1294,7 +1293,7 @@ pub trait DeviceInfo: Send + Sync {
         _src_image: vk::Image,
         _src_image_layout: vk::ImageLayout,
         _dst_buffer: vk::Buffer,
-        _p_regions: &[vk::BufferImageCopy],
+        _p_regions: &'static [vk::BufferImageCopy],
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -1303,7 +1302,7 @@ pub trait DeviceInfo: Send + Sync {
         _command_buffer: vk::CommandBuffer,
         _dst_buffer: vk::Buffer,
         _dst_offset: vk::DeviceSize,
-        _p_data: &[u8],
+        _p_data: &'static [u8],
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -1322,8 +1321,8 @@ pub trait DeviceInfo: Send + Sync {
         _command_buffer: vk::CommandBuffer,
         _image: vk::Image,
         _image_layout: vk::ImageLayout,
-        _p_color: &vk::ClearColorValue,
-        _p_ranges: &[vk::ImageSubresourceRange],
+        _p_color: &'static vk::ClearColorValue,
+        _p_ranges: &'static [vk::ImageSubresourceRange],
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -1332,16 +1331,16 @@ pub trait DeviceInfo: Send + Sync {
         _command_buffer: vk::CommandBuffer,
         _image: vk::Image,
         _image_layout: vk::ImageLayout,
-        _p_depth_stencil: &vk::ClearDepthStencilValue,
-        _p_ranges: &[vk::ImageSubresourceRange],
+        _p_depth_stencil: &'static vk::ClearDepthStencilValue,
+        _p_ranges: &'static [vk::ImageSubresourceRange],
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn cmd_clear_attachments(
         &self,
         _command_buffer: vk::CommandBuffer,
-        _p_attachments: &[vk::ClearAttachment],
-        _p_rects: &[vk::ClearRect],
+        _p_attachments: &'static [vk::ClearAttachment],
+        _p_rects: &'static [vk::ClearRect],
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -1352,7 +1351,7 @@ pub trait DeviceInfo: Send + Sync {
         _src_image_layout: vk::ImageLayout,
         _dst_image: vk::Image,
         _dst_image_layout: vk::ImageLayout,
-        _p_regions: &[vk::ImageResolve],
+        _p_regions: &'static [vk::ImageResolve],
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -1375,12 +1374,12 @@ pub trait DeviceInfo: Send + Sync {
     fn cmd_wait_events(
         &self,
         _command_buffer: vk::CommandBuffer,
-        _p_events: &[vk::Event],
+        _p_events: &'static [vk::Event],
         _src_stage_mask: vk::PipelineStageFlags,
         _dst_stage_mask: vk::PipelineStageFlags,
-        _p_memory_barriers: &[vk::MemoryBarrier],
-        _p_buffer_memory_barriers: &[vk::BufferMemoryBarrier],
-        _p_image_memory_barriers: &[vk::ImageMemoryBarrier],
+        _p_memory_barriers: &'static [vk::MemoryBarrier],
+        _p_buffer_memory_barriers: &'static [vk::BufferMemoryBarrier],
+        _p_image_memory_barriers: &'static [vk::ImageMemoryBarrier],
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -1390,9 +1389,9 @@ pub trait DeviceInfo: Send + Sync {
         _src_stage_mask: vk::PipelineStageFlags,
         _dst_stage_mask: vk::PipelineStageFlags,
         _dependency_flags: vk::DependencyFlags,
-        _p_memory_barriers: &[vk::MemoryBarrier],
-        _p_buffer_memory_barriers: &[vk::BufferMemoryBarrier],
-        _p_image_memory_barriers: &[vk::ImageMemoryBarrier],
+        _p_memory_barriers: &'static [vk::MemoryBarrier],
+        _p_buffer_memory_barriers: &'static [vk::BufferMemoryBarrier],
+        _p_image_memory_barriers: &'static [vk::ImageMemoryBarrier],
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -1450,14 +1449,14 @@ pub trait DeviceInfo: Send + Sync {
         _layout: vk::PipelineLayout,
         _stage_flags: vk::ShaderStageFlags,
         _offset: u32,
-        _p_values: &[u8],
+        _p_values: &'static [u8],
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn cmd_begin_render_pass(
         &self,
         _command_buffer: vk::CommandBuffer,
-        _p_render_pass_begin: &vk::RenderPassBeginInfo,
+        _p_render_pass_begin: &'static vk::RenderPassBeginInfo,
         _contents: vk::SubpassContents,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
@@ -1475,19 +1474,19 @@ pub trait DeviceInfo: Send + Sync {
     fn cmd_execute_commands(
         &self,
         _command_buffer: vk::CommandBuffer,
-        _p_command_buffers: &[vk::CommandBuffer],
+        _p_command_buffers: &'static [vk::CommandBuffer],
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn bind_buffer_memory2(
         &self,
-        _p_bind_infos: &[vk::BindBufferMemoryInfo],
+        _p_bind_infos: &'static [vk::BindBufferMemoryInfo],
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn bind_image_memory2(
         &self,
-        _p_bind_infos: &[vk::BindImageMemoryInfo],
+        _p_bind_infos: &'static [vk::BindImageMemoryInfo],
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
@@ -1520,22 +1519,22 @@ pub trait DeviceInfo: Send + Sync {
     }
     fn get_image_memory_requirements2(
         &self,
-        _p_info: &vk::ImageMemoryRequirementsInfo2,
-        _p_memory_requirements: &mut vk::MemoryRequirements2,
+        _p_info: &'static vk::ImageMemoryRequirementsInfo2,
+        _p_memory_requirements: &'static mut vk::MemoryRequirements2,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_buffer_memory_requirements2(
         &self,
-        _p_info: &vk::BufferMemoryRequirementsInfo2,
-        _p_memory_requirements: &mut vk::MemoryRequirements2,
+        _p_info: &'static vk::BufferMemoryRequirementsInfo2,
+        _p_memory_requirements: &'static mut vk::MemoryRequirements2,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_image_sparse_memory_requirements2(
         &self,
-        _p_info: &vk::ImageSparseMemoryRequirementsInfo2,
-        _p_sparse_memory_requirements: Option<&mut [vk::SparseImageMemoryRequirements2]>,
+        _p_info: &'static vk::ImageSparseMemoryRequirementsInfo2,
+        _p_sparse_memory_requirements: Option<&'static mut [vk::SparseImageMemoryRequirements2]>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -1546,34 +1545,37 @@ pub trait DeviceInfo: Send + Sync {
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
-    fn get_device_queue2(&self, _p_queue_info: &vk::DeviceQueueInfo2) -> LayerResult<vk::Queue> {
+    fn get_device_queue2(
+        &self,
+        _p_queue_info: &'static vk::DeviceQueueInfo2,
+    ) -> LayerResult<vk::Queue> {
         LayerResult::Unhandled
     }
     fn create_sampler_ycbcr_conversion(
         &self,
-        _p_create_info: &vk::SamplerYcbcrConversionCreateInfo,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_info: &'static vk::SamplerYcbcrConversionCreateInfo,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::SamplerYcbcrConversion>> {
         LayerResult::Unhandled
     }
     fn destroy_sampler_ycbcr_conversion(
         &self,
         _ycbcr_conversion: vk::SamplerYcbcrConversion,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn create_descriptor_update_template(
         &self,
-        _p_create_info: &vk::DescriptorUpdateTemplateCreateInfo,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_info: &'static vk::DescriptorUpdateTemplateCreateInfo,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::DescriptorUpdateTemplate>> {
         LayerResult::Unhandled
     }
     fn destroy_descriptor_update_template(
         &self,
         _descriptor_update_template: vk::DescriptorUpdateTemplate,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -1587,8 +1589,8 @@ pub trait DeviceInfo: Send + Sync {
     }
     fn get_descriptor_set_layout_support(
         &self,
-        _p_create_info: &vk::DescriptorSetLayoutCreateInfo,
-        _p_support: &mut vk::DescriptorSetLayoutSupport,
+        _p_create_info: &'static vk::DescriptorSetLayoutCreateInfo,
+        _p_support: &'static mut vk::DescriptorSetLayoutSupport,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -1618,31 +1620,31 @@ pub trait DeviceInfo: Send + Sync {
     }
     fn create_render_pass2(
         &self,
-        _p_create_info: &vk::RenderPassCreateInfo2,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_info: &'static vk::RenderPassCreateInfo2,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::RenderPass>> {
         LayerResult::Unhandled
     }
     fn cmd_begin_render_pass2(
         &self,
         _command_buffer: vk::CommandBuffer,
-        _p_render_pass_begin: &vk::RenderPassBeginInfo,
-        _p_subpass_begin_info: &vk::SubpassBeginInfo,
+        _p_render_pass_begin: &'static vk::RenderPassBeginInfo,
+        _p_subpass_begin_info: &'static vk::SubpassBeginInfo,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn cmd_next_subpass2(
         &self,
         _command_buffer: vk::CommandBuffer,
-        _p_subpass_begin_info: &vk::SubpassBeginInfo,
-        _p_subpass_end_info: &vk::SubpassEndInfo,
+        _p_subpass_begin_info: &'static vk::SubpassBeginInfo,
+        _p_subpass_end_info: &'static vk::SubpassEndInfo,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn cmd_end_render_pass2(
         &self,
         _command_buffer: vk::CommandBuffer,
-        _p_subpass_end_info: &vk::SubpassEndInfo,
+        _p_subpass_end_info: &'static vk::SubpassEndInfo,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -1659,46 +1661,46 @@ pub trait DeviceInfo: Send + Sync {
     }
     fn wait_semaphores(
         &self,
-        _p_wait_info: &vk::SemaphoreWaitInfo,
+        _p_wait_info: &'static vk::SemaphoreWaitInfo,
         _timeout: u64,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn signal_semaphore(
         &self,
-        _p_signal_info: &vk::SemaphoreSignalInfo,
+        _p_signal_info: &'static vk::SemaphoreSignalInfo,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_buffer_device_address(
         &self,
-        _p_info: &vk::BufferDeviceAddressInfo,
+        _p_info: &'static vk::BufferDeviceAddressInfo,
     ) -> LayerResult<vk::DeviceAddress> {
         LayerResult::Unhandled
     }
     fn get_buffer_opaque_capture_address(
         &self,
-        _p_info: &vk::BufferDeviceAddressInfo,
+        _p_info: &'static vk::BufferDeviceAddressInfo,
     ) -> LayerResult<u64> {
         LayerResult::Unhandled
     }
     fn get_device_memory_opaque_capture_address(
         &self,
-        _p_info: &vk::DeviceMemoryOpaqueCaptureAddressInfo,
+        _p_info: &'static vk::DeviceMemoryOpaqueCaptureAddressInfo,
     ) -> LayerResult<u64> {
         LayerResult::Unhandled
     }
     fn create_private_data_slot(
         &self,
-        _p_create_info: &vk::PrivateDataSlotCreateInfo,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_info: &'static vk::PrivateDataSlotCreateInfo,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::PrivateDataSlot>> {
         LayerResult::Unhandled
     }
     fn destroy_private_data_slot(
         &self,
         _private_data_slot: vk::PrivateDataSlot,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -1723,7 +1725,7 @@ pub trait DeviceInfo: Send + Sync {
         &self,
         _command_buffer: vk::CommandBuffer,
         _event: vk::Event,
-        _p_dependency_info: &vk::DependencyInfo,
+        _p_dependency_info: &'static vk::DependencyInfo,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -1738,15 +1740,15 @@ pub trait DeviceInfo: Send + Sync {
     fn cmd_wait_events2(
         &self,
         _command_buffer: vk::CommandBuffer,
-        _p_events: &[vk::Event],
-        _p_dependency_infos: &[vk::DependencyInfo],
+        _p_events: &'static [vk::Event],
+        _p_dependency_infos: &'static [vk::DependencyInfo],
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn cmd_pipeline_barrier2(
         &self,
         _command_buffer: vk::CommandBuffer,
-        _p_dependency_info: &vk::DependencyInfo,
+        _p_dependency_info: &'static vk::DependencyInfo,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -1762,7 +1764,7 @@ pub trait DeviceInfo: Send + Sync {
     fn queue_submit2(
         &self,
         _queue: vk::Queue,
-        _p_submits: &[vk::SubmitInfo2],
+        _p_submits: &'static [vk::SubmitInfo2],
         _fence: vk::Fence,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
@@ -1770,49 +1772,49 @@ pub trait DeviceInfo: Send + Sync {
     fn cmd_copy_buffer2(
         &self,
         _command_buffer: vk::CommandBuffer,
-        _p_copy_buffer_info: &vk::CopyBufferInfo2,
+        _p_copy_buffer_info: &'static vk::CopyBufferInfo2,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn cmd_copy_image2(
         &self,
         _command_buffer: vk::CommandBuffer,
-        _p_copy_image_info: &vk::CopyImageInfo2,
+        _p_copy_image_info: &'static vk::CopyImageInfo2,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn cmd_copy_buffer_to_image2(
         &self,
         _command_buffer: vk::CommandBuffer,
-        _p_copy_buffer_to_image_info: &vk::CopyBufferToImageInfo2,
+        _p_copy_buffer_to_image_info: &'static vk::CopyBufferToImageInfo2,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn cmd_copy_image_to_buffer2(
         &self,
         _command_buffer: vk::CommandBuffer,
-        _p_copy_image_to_buffer_info: &vk::CopyImageToBufferInfo2,
+        _p_copy_image_to_buffer_info: &'static vk::CopyImageToBufferInfo2,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn cmd_blit_image2(
         &self,
         _command_buffer: vk::CommandBuffer,
-        _p_blit_image_info: &vk::BlitImageInfo2,
+        _p_blit_image_info: &'static vk::BlitImageInfo2,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn cmd_resolve_image2(
         &self,
         _command_buffer: vk::CommandBuffer,
-        _p_resolve_image_info: &vk::ResolveImageInfo2,
+        _p_resolve_image_info: &'static vk::ResolveImageInfo2,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn cmd_begin_rendering(
         &self,
         _command_buffer: vk::CommandBuffer,
-        _p_rendering_info: &vk::RenderingInfo,
+        _p_rendering_info: &'static vk::RenderingInfo,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -1843,14 +1845,14 @@ pub trait DeviceInfo: Send + Sync {
     fn cmd_set_viewport_with_count(
         &self,
         _command_buffer: vk::CommandBuffer,
-        _p_viewports: &[vk::Viewport],
+        _p_viewports: &'static [vk::Viewport],
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn cmd_set_scissor_with_count(
         &self,
         _command_buffer: vk::CommandBuffer,
-        _p_scissors: &[vk::Rect2D],
+        _p_scissors: &'static [vk::Rect2D],
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -1858,10 +1860,10 @@ pub trait DeviceInfo: Send + Sync {
         &self,
         _command_buffer: vk::CommandBuffer,
         _first_binding: u32,
-        _p_buffers: &[vk::Buffer],
-        _p_offsets: &[vk::DeviceSize],
-        _p_sizes: Option<&[vk::DeviceSize]>,
-        _p_strides: Option<&[vk::DeviceSize]>,
+        _p_buffers: &'static [vk::Buffer],
+        _p_offsets: &'static [vk::DeviceSize],
+        _p_sizes: Option<&'static [vk::DeviceSize]>,
+        _p_strides: Option<&'static [vk::DeviceSize]>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -1934,36 +1936,36 @@ pub trait DeviceInfo: Send + Sync {
     }
     fn get_device_buffer_memory_requirements(
         &self,
-        _p_info: &vk::DeviceBufferMemoryRequirements,
-        _p_memory_requirements: &mut vk::MemoryRequirements2,
+        _p_info: &'static vk::DeviceBufferMemoryRequirements,
+        _p_memory_requirements: &'static mut vk::MemoryRequirements2,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_device_image_memory_requirements(
         &self,
-        _p_info: &vk::DeviceImageMemoryRequirements,
-        _p_memory_requirements: &mut vk::MemoryRequirements2,
+        _p_info: &'static vk::DeviceImageMemoryRequirements,
+        _p_memory_requirements: &'static mut vk::MemoryRequirements2,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_device_image_sparse_memory_requirements(
         &self,
-        _p_info: &vk::DeviceImageMemoryRequirements,
-        _p_sparse_memory_requirements: Option<&mut [vk::SparseImageMemoryRequirements2]>,
+        _p_info: &'static vk::DeviceImageMemoryRequirements,
+        _p_sparse_memory_requirements: Option<&'static mut [vk::SparseImageMemoryRequirements2]>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn create_swapchain_khr(
         &self,
-        _p_create_info: &vk::SwapchainCreateInfoKHR,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_info: &'static vk::SwapchainCreateInfoKHR,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::SwapchainKHR>> {
         LayerResult::Unhandled
     }
     fn destroy_swapchain_khr(
         &self,
         _swapchain: vk::SwapchainKHR,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -1985,13 +1987,13 @@ pub trait DeviceInfo: Send + Sync {
     fn queue_present_khr(
         &self,
         _queue: vk::Queue,
-        _p_present_info: &vk::PresentInfoKHR,
+        _p_present_info: &'static vk::PresentInfoKHR,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_device_group_present_capabilities_khr(
         &self,
-        _p_device_group_present_capabilities: &mut vk::DeviceGroupPresentCapabilitiesKHR,
+        _p_device_group_present_capabilities: &'static mut vk::DeviceGroupPresentCapabilitiesKHR,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
@@ -2003,97 +2005,97 @@ pub trait DeviceInfo: Send + Sync {
     }
     fn acquire_next_image2_khr(
         &self,
-        _p_acquire_info: &vk::AcquireNextImageInfoKHR,
+        _p_acquire_info: &'static vk::AcquireNextImageInfoKHR,
     ) -> LayerResult<VkResult<u32>> {
         LayerResult::Unhandled
     }
     fn create_shared_swapchains_khr(
         &self,
-        _p_create_infos: &[vk::SwapchainCreateInfoKHR],
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_infos: &'static [vk::SwapchainCreateInfoKHR],
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<Vec<vk::SwapchainKHR>>> {
         LayerResult::Unhandled
     }
     fn create_video_session_khr(
         &self,
-        _p_create_info: &vk::VideoSessionCreateInfoKHR,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_info: &'static vk::VideoSessionCreateInfoKHR,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::VideoSessionKHR>> {
         LayerResult::Unhandled
     }
     fn destroy_video_session_khr(
         &self,
         _video_session: vk::VideoSessionKHR,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_video_session_memory_requirements_khr(
         &self,
         _video_session: vk::VideoSessionKHR,
-        _p_memory_requirements: Option<&mut [vk::VideoSessionMemoryRequirementsKHR]>,
+        _p_memory_requirements: Option<&'static mut [vk::VideoSessionMemoryRequirementsKHR]>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn bind_video_session_memory_khr(
         &self,
         _video_session: vk::VideoSessionKHR,
-        _p_bind_session_memory_infos: &[vk::BindVideoSessionMemoryInfoKHR],
+        _p_bind_session_memory_infos: &'static [vk::BindVideoSessionMemoryInfoKHR],
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn create_video_session_parameters_khr(
         &self,
-        _p_create_info: &vk::VideoSessionParametersCreateInfoKHR,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_info: &'static vk::VideoSessionParametersCreateInfoKHR,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::VideoSessionParametersKHR>> {
         LayerResult::Unhandled
     }
     fn update_video_session_parameters_khr(
         &self,
         _video_session_parameters: vk::VideoSessionParametersKHR,
-        _p_update_info: &vk::VideoSessionParametersUpdateInfoKHR,
+        _p_update_info: &'static vk::VideoSessionParametersUpdateInfoKHR,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn destroy_video_session_parameters_khr(
         &self,
         _video_session_parameters: vk::VideoSessionParametersKHR,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn cmd_begin_video_coding_khr(
         &self,
         _command_buffer: vk::CommandBuffer,
-        _p_begin_info: &vk::VideoBeginCodingInfoKHR,
+        _p_begin_info: &'static vk::VideoBeginCodingInfoKHR,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn cmd_end_video_coding_khr(
         &self,
         _command_buffer: vk::CommandBuffer,
-        _p_end_coding_info: &vk::VideoEndCodingInfoKHR,
+        _p_end_coding_info: &'static vk::VideoEndCodingInfoKHR,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn cmd_control_video_coding_khr(
         &self,
         _command_buffer: vk::CommandBuffer,
-        _p_coding_control_info: &vk::VideoCodingControlInfoKHR,
+        _p_coding_control_info: &'static vk::VideoCodingControlInfoKHR,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn cmd_decode_video_khr(
         &self,
         _command_buffer: vk::CommandBuffer,
-        _p_decode_info: &vk::VideoDecodeInfoKHR,
+        _p_decode_info: &'static vk::VideoDecodeInfoKHR,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_memory_win32_handle_khr(
         &self,
-        _p_get_win32_handle_info: &vk::MemoryGetWin32HandleInfoKHR,
+        _p_get_win32_handle_info: &'static vk::MemoryGetWin32HandleInfoKHR,
     ) -> LayerResult<VkResult<vk::HANDLE>> {
         LayerResult::Unhandled
     }
@@ -2101,13 +2103,13 @@ pub trait DeviceInfo: Send + Sync {
         &self,
         _handle_type: vk::ExternalMemoryHandleTypeFlags,
         _handle: vk::HANDLE,
-        _p_memory_win32_handle_properties: &mut vk::MemoryWin32HandlePropertiesKHR,
+        _p_memory_win32_handle_properties: &'static mut vk::MemoryWin32HandlePropertiesKHR,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_memory_fd_khr(
         &self,
-        _p_get_fd_info: &vk::MemoryGetFdInfoKHR,
+        _p_get_fd_info: &'static vk::MemoryGetFdInfoKHR,
     ) -> LayerResult<VkResult<c_int>> {
         LayerResult::Unhandled
     }
@@ -2115,31 +2117,31 @@ pub trait DeviceInfo: Send + Sync {
         &self,
         _handle_type: vk::ExternalMemoryHandleTypeFlags,
         _fd: c_int,
-        _p_memory_fd_properties: &mut vk::MemoryFdPropertiesKHR,
+        _p_memory_fd_properties: &'static mut vk::MemoryFdPropertiesKHR,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn import_semaphore_win32_handle_khr(
         &self,
-        _p_import_semaphore_win32_handle_info: &vk::ImportSemaphoreWin32HandleInfoKHR,
+        _p_import_semaphore_win32_handle_info: &'static vk::ImportSemaphoreWin32HandleInfoKHR,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_semaphore_win32_handle_khr(
         &self,
-        _p_get_win32_handle_info: &vk::SemaphoreGetWin32HandleInfoKHR,
+        _p_get_win32_handle_info: &'static vk::SemaphoreGetWin32HandleInfoKHR,
     ) -> LayerResult<VkResult<vk::HANDLE>> {
         LayerResult::Unhandled
     }
     fn import_semaphore_fd_khr(
         &self,
-        _p_import_semaphore_fd_info: &vk::ImportSemaphoreFdInfoKHR,
+        _p_import_semaphore_fd_info: &'static vk::ImportSemaphoreFdInfoKHR,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_semaphore_fd_khr(
         &self,
-        _p_get_fd_info: &vk::SemaphoreGetFdInfoKHR,
+        _p_get_fd_info: &'static vk::SemaphoreGetFdInfoKHR,
     ) -> LayerResult<VkResult<c_int>> {
         LayerResult::Unhandled
     }
@@ -2149,7 +2151,7 @@ pub trait DeviceInfo: Send + Sync {
         _pipeline_bind_point: vk::PipelineBindPoint,
         _layout: vk::PipelineLayout,
         _set: u32,
-        _p_descriptor_writes: &[vk::WriteDescriptorSet],
+        _p_descriptor_writes: &'static [vk::WriteDescriptorSet],
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -2168,31 +2170,31 @@ pub trait DeviceInfo: Send + Sync {
     }
     fn import_fence_win32_handle_khr(
         &self,
-        _p_import_fence_win32_handle_info: &vk::ImportFenceWin32HandleInfoKHR,
+        _p_import_fence_win32_handle_info: &'static vk::ImportFenceWin32HandleInfoKHR,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_fence_win32_handle_khr(
         &self,
-        _p_get_win32_handle_info: &vk::FenceGetWin32HandleInfoKHR,
+        _p_get_win32_handle_info: &'static vk::FenceGetWin32HandleInfoKHR,
     ) -> LayerResult<VkResult<vk::HANDLE>> {
         LayerResult::Unhandled
     }
     fn import_fence_fd_khr(
         &self,
-        _p_import_fence_fd_info: &vk::ImportFenceFdInfoKHR,
+        _p_import_fence_fd_info: &'static vk::ImportFenceFdInfoKHR,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_fence_fd_khr(
         &self,
-        _p_get_fd_info: &vk::FenceGetFdInfoKHR,
+        _p_get_fd_info: &'static vk::FenceGetFdInfoKHR,
     ) -> LayerResult<VkResult<c_int>> {
         LayerResult::Unhandled
     }
     fn acquire_profiling_lock_khr(
         &self,
-        _p_info: &vk::AcquireProfilingLockInfoKHR,
+        _p_info: &'static vk::AcquireProfilingLockInfoKHR,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
@@ -2202,8 +2204,8 @@ pub trait DeviceInfo: Send + Sync {
     fn cmd_set_fragment_shading_rate_khr(
         &self,
         _command_buffer: vk::CommandBuffer,
-        _p_fragment_size: &vk::Extent2D,
-        _combiner_ops: &[vk::FragmentShadingRateCombinerOpKHR; 2],
+        _p_fragment_size: &'static vk::Extent2D,
+        _combiner_ops: &'static [vk::FragmentShadingRateCombinerOpKHR; 2],
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -2217,14 +2219,14 @@ pub trait DeviceInfo: Send + Sync {
     }
     fn create_deferred_operation_khr(
         &self,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::DeferredOperationKHR>> {
         LayerResult::Unhandled
     }
     fn destroy_deferred_operation_khr(
         &self,
         _operation: vk::DeferredOperationKHR,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -2248,29 +2250,31 @@ pub trait DeviceInfo: Send + Sync {
     }
     fn get_pipeline_executable_properties_khr(
         &self,
-        _p_pipeline_info: &vk::PipelineInfoKHR,
-        _p_properties: Option<&mut [vk::PipelineExecutablePropertiesKHR]>,
+        _p_pipeline_info: &'static vk::PipelineInfoKHR,
+        _p_properties: Option<&'static mut [vk::PipelineExecutablePropertiesKHR]>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_pipeline_executable_statistics_khr(
         &self,
-        _p_executable_info: &vk::PipelineExecutableInfoKHR,
-        _p_statistics: Option<&mut [vk::PipelineExecutableStatisticKHR]>,
+        _p_executable_info: &'static vk::PipelineExecutableInfoKHR,
+        _p_statistics: Option<&'static mut [vk::PipelineExecutableStatisticKHR]>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_pipeline_executable_internal_representations_khr(
         &self,
-        _p_executable_info: &vk::PipelineExecutableInfoKHR,
-        _p_internal_representations: Option<&mut [vk::PipelineExecutableInternalRepresentationKHR]>,
+        _p_executable_info: &'static vk::PipelineExecutableInfoKHR,
+        _p_internal_representations: Option<
+            &'static mut [vk::PipelineExecutableInternalRepresentationKHR],
+        >,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn cmd_encode_video_khr(
         &self,
         _command_buffer: vk::CommandBuffer,
-        _p_encode_info: &vk::VideoEncodeInfoKHR,
+        _p_encode_info: &'static vk::VideoEncodeInfoKHR,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -2287,7 +2291,7 @@ pub trait DeviceInfo: Send + Sync {
     fn get_queue_checkpoint_data2_nv(
         &self,
         _queue: vk::Queue,
-        _p_checkpoint_data: Option<&mut [vk::CheckpointData2NV]>,
+        _p_checkpoint_data: Option<&'static mut [vk::CheckpointData2NV]>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -2317,7 +2321,7 @@ pub trait DeviceInfo: Send + Sync {
     fn queue_signal_release_image_android(
         &self,
         _queue: vk::Queue,
-        _p_wait_semaphores: &[vk::Semaphore],
+        _p_wait_semaphores: &'static [vk::Semaphore],
         _image: vk::Image,
     ) -> LayerResult<VkResult<c_int>> {
         LayerResult::Unhandled
@@ -2327,26 +2331,26 @@ pub trait DeviceInfo: Send + Sync {
         _format: vk::Format,
         _image_usage: vk::ImageUsageFlags,
         _swapchain_image_usage: vk::SwapchainImageUsageFlagsANDROID,
-        _gralloc_consumer_usage: &mut u64,
+        _gralloc_consumer_usage: &'static mut u64,
     ) -> LayerResult<VkResult<u64>> {
         LayerResult::Unhandled
     }
     fn debug_marker_set_object_tag_ext(
         &self,
-        _p_tag_info: &vk::DebugMarkerObjectTagInfoEXT,
+        _p_tag_info: &'static vk::DebugMarkerObjectTagInfoEXT,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn debug_marker_set_object_name_ext(
         &self,
-        _p_name_info: &vk::DebugMarkerObjectNameInfoEXT,
+        _p_name_info: &'static vk::DebugMarkerObjectNameInfoEXT,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn cmd_debug_marker_begin_ext(
         &self,
         _command_buffer: vk::CommandBuffer,
-        _p_marker_info: &vk::DebugMarkerMarkerInfoEXT,
+        _p_marker_info: &'static vk::DebugMarkerMarkerInfoEXT,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -2356,7 +2360,7 @@ pub trait DeviceInfo: Send + Sync {
     fn cmd_debug_marker_insert_ext(
         &self,
         _command_buffer: vk::CommandBuffer,
-        _p_marker_info: &vk::DebugMarkerMarkerInfoEXT,
+        _p_marker_info: &'static vk::DebugMarkerMarkerInfoEXT,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -2364,9 +2368,9 @@ pub trait DeviceInfo: Send + Sync {
         &self,
         _command_buffer: vk::CommandBuffer,
         _first_binding: u32,
-        _p_buffers: &[vk::Buffer],
-        _p_offsets: &[vk::DeviceSize],
-        _p_sizes: Option<&[vk::DeviceSize]>,
+        _p_buffers: &'static [vk::Buffer],
+        _p_offsets: &'static [vk::DeviceSize],
+        _p_sizes: Option<&'static [vk::DeviceSize]>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -2374,8 +2378,8 @@ pub trait DeviceInfo: Send + Sync {
         &self,
         _command_buffer: vk::CommandBuffer,
         _first_counter_buffer: u32,
-        _p_counter_buffers: &[vk::Buffer],
-        _p_counter_buffer_offsets: Option<&[vk::DeviceSize]>,
+        _p_counter_buffers: &'static [vk::Buffer],
+        _p_counter_buffer_offsets: Option<&'static [vk::DeviceSize]>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -2383,8 +2387,8 @@ pub trait DeviceInfo: Send + Sync {
         &self,
         _command_buffer: vk::CommandBuffer,
         _first_counter_buffer: u32,
-        _p_counter_buffers: &[vk::Buffer],
-        _p_counter_buffer_offsets: Option<&[vk::DeviceSize]>,
+        _p_counter_buffers: &'static [vk::Buffer],
+        _p_counter_buffer_offsets: Option<&'static [vk::DeviceSize]>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -2421,46 +2425,49 @@ pub trait DeviceInfo: Send + Sync {
     }
     fn create_cu_module_nvx(
         &self,
-        _p_create_info: &vk::CuModuleCreateInfoNVX,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_info: &'static vk::CuModuleCreateInfoNVX,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::CuModuleNVX>> {
         LayerResult::Unhandled
     }
     fn create_cu_function_nvx(
         &self,
-        _p_create_info: &vk::CuFunctionCreateInfoNVX,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_info: &'static vk::CuFunctionCreateInfoNVX,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::CuFunctionNVX>> {
         LayerResult::Unhandled
     }
     fn destroy_cu_module_nvx(
         &self,
         _module: vk::CuModuleNVX,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn destroy_cu_function_nvx(
         &self,
         _function: vk::CuFunctionNVX,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn cmd_cu_launch_kernel_nvx(
         &self,
         _command_buffer: vk::CommandBuffer,
-        _p_launch_info: &vk::CuLaunchInfoNVX,
+        _p_launch_info: &'static vk::CuLaunchInfoNVX,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
-    fn get_image_view_handle_nvx(&self, _p_info: &vk::ImageViewHandleInfoNVX) -> LayerResult<u32> {
+    fn get_image_view_handle_nvx(
+        &self,
+        _p_info: &'static vk::ImageViewHandleInfoNVX,
+    ) -> LayerResult<u32> {
         LayerResult::Unhandled
     }
     fn get_image_view_address_nvx(
         &self,
         _image_view: vk::ImageView,
-        _p_properties: &mut vk::ImageViewAddressPropertiesNVX,
+        _p_properties: &'static mut vk::ImageViewAddressPropertiesNVX,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
@@ -2482,7 +2489,7 @@ pub trait DeviceInfo: Send + Sync {
     fn cmd_begin_conditional_rendering_ext(
         &self,
         _command_buffer: vk::CommandBuffer,
-        _p_conditional_rendering_begin: &vk::ConditionalRenderingBeginInfoEXT,
+        _p_conditional_rendering_begin: &'static vk::ConditionalRenderingBeginInfoEXT,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -2496,29 +2503,29 @@ pub trait DeviceInfo: Send + Sync {
         &self,
         _command_buffer: vk::CommandBuffer,
         _first_viewport: u32,
-        _p_viewport_w_scalings: &[vk::ViewportWScalingNV],
+        _p_viewport_w_scalings: &'static [vk::ViewportWScalingNV],
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn display_power_control_ext(
         &self,
         _display: vk::DisplayKHR,
-        _p_display_power_info: &vk::DisplayPowerInfoEXT,
+        _p_display_power_info: &'static vk::DisplayPowerInfoEXT,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn register_device_event_ext(
         &self,
-        _p_device_event_info: &vk::DeviceEventInfoEXT,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_device_event_info: &'static vk::DeviceEventInfoEXT,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::Fence>> {
         LayerResult::Unhandled
     }
     fn register_display_event_ext(
         &self,
         _display: vk::DisplayKHR,
-        _p_display_event_info: &vk::DisplayEventInfoEXT,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_display_event_info: &'static vk::DisplayEventInfoEXT,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::Fence>> {
         LayerResult::Unhandled
     }
@@ -2532,14 +2539,14 @@ pub trait DeviceInfo: Send + Sync {
     fn get_refresh_cycle_duration_google(
         &self,
         _swapchain: vk::SwapchainKHR,
-        _p_display_timing_properties: &mut vk::RefreshCycleDurationGOOGLE,
+        _p_display_timing_properties: &'static mut vk::RefreshCycleDurationGOOGLE,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_past_presentation_timing_google(
         &self,
         _swapchain: vk::SwapchainKHR,
-        _p_presentation_timings: Option<&mut [vk::PastPresentationTimingGOOGLE]>,
+        _p_presentation_timings: Option<&'static mut [vk::PastPresentationTimingGOOGLE]>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
@@ -2547,33 +2554,33 @@ pub trait DeviceInfo: Send + Sync {
         &self,
         _command_buffer: vk::CommandBuffer,
         _first_discard_rectangle: u32,
-        _p_discard_rectangles: &[vk::Rect2D],
+        _p_discard_rectangles: &'static [vk::Rect2D],
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn set_hdr_metadata_ext(
         &self,
-        _p_swapchains: &[vk::SwapchainKHR],
-        _p_metadata: &[vk::HdrMetadataEXT],
+        _p_swapchains: &'static [vk::SwapchainKHR],
+        _p_metadata: &'static [vk::HdrMetadataEXT],
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn set_debug_utils_object_name_ext(
         &self,
-        _p_name_info: &vk::DebugUtilsObjectNameInfoEXT,
+        _p_name_info: &'static vk::DebugUtilsObjectNameInfoEXT,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn set_debug_utils_object_tag_ext(
         &self,
-        _p_tag_info: &vk::DebugUtilsObjectTagInfoEXT,
+        _p_tag_info: &'static vk::DebugUtilsObjectTagInfoEXT,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn queue_begin_debug_utils_label_ext(
         &self,
         _queue: vk::Queue,
-        _p_label_info: &vk::DebugUtilsLabelEXT,
+        _p_label_info: &'static vk::DebugUtilsLabelEXT,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -2583,14 +2590,14 @@ pub trait DeviceInfo: Send + Sync {
     fn queue_insert_debug_utils_label_ext(
         &self,
         _queue: vk::Queue,
-        _p_label_info: &vk::DebugUtilsLabelEXT,
+        _p_label_info: &'static vk::DebugUtilsLabelEXT,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn cmd_begin_debug_utils_label_ext(
         &self,
         _command_buffer: vk::CommandBuffer,
-        _p_label_info: &vk::DebugUtilsLabelEXT,
+        _p_label_info: &'static vk::DebugUtilsLabelEXT,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -2600,55 +2607,55 @@ pub trait DeviceInfo: Send + Sync {
     fn cmd_insert_debug_utils_label_ext(
         &self,
         _command_buffer: vk::CommandBuffer,
-        _p_label_info: &vk::DebugUtilsLabelEXT,
+        _p_label_info: &'static vk::DebugUtilsLabelEXT,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_android_hardware_buffer_properties_android(
         &self,
         _buffer: *const vk::AHardwareBuffer,
-        _p_properties: &mut vk::AndroidHardwareBufferPropertiesANDROID,
+        _p_properties: &'static mut vk::AndroidHardwareBufferPropertiesANDROID,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_memory_android_hardware_buffer_android(
         &self,
-        _p_info: &vk::MemoryGetAndroidHardwareBufferInfoANDROID,
+        _p_info: &'static vk::MemoryGetAndroidHardwareBufferInfoANDROID,
     ) -> LayerResult<VkResult<*mut vk::AHardwareBuffer>> {
         LayerResult::Unhandled
     }
     fn cmd_set_sample_locations_ext(
         &self,
         _command_buffer: vk::CommandBuffer,
-        _p_sample_locations_info: &vk::SampleLocationsInfoEXT,
+        _p_sample_locations_info: &'static vk::SampleLocationsInfoEXT,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_image_drm_format_modifier_properties_ext(
         &self,
         _image: vk::Image,
-        _p_properties: &mut vk::ImageDrmFormatModifierPropertiesEXT,
+        _p_properties: &'static mut vk::ImageDrmFormatModifierPropertiesEXT,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn create_validation_cache_ext(
         &self,
-        _p_create_info: &vk::ValidationCacheCreateInfoEXT,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_info: &'static vk::ValidationCacheCreateInfoEXT,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::ValidationCacheEXT>> {
         LayerResult::Unhandled
     }
     fn destroy_validation_cache_ext(
         &self,
         _validation_cache: vk::ValidationCacheEXT,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn merge_validation_caches_ext(
         &self,
         _dst_cache: vk::ValidationCacheEXT,
-        _p_src_caches: &[vk::ValidationCacheEXT],
+        _p_src_caches: &'static [vk::ValidationCacheEXT],
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
@@ -2670,7 +2677,7 @@ pub trait DeviceInfo: Send + Sync {
         &self,
         _command_buffer: vk::CommandBuffer,
         _first_viewport: u32,
-        _p_shading_rate_palettes: &[vk::ShadingRatePaletteNV],
+        _p_shading_rate_palettes: &'static [vk::ShadingRatePaletteNV],
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -2678,41 +2685,41 @@ pub trait DeviceInfo: Send + Sync {
         &self,
         _command_buffer: vk::CommandBuffer,
         _sample_order_type: vk::CoarseSampleOrderTypeNV,
-        _p_custom_sample_orders: &[vk::CoarseSampleOrderCustomNV],
+        _p_custom_sample_orders: &'static [vk::CoarseSampleOrderCustomNV],
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn create_acceleration_structure_nv(
         &self,
-        _p_create_info: &vk::AccelerationStructureCreateInfoNV,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_info: &'static vk::AccelerationStructureCreateInfoNV,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::AccelerationStructureNV>> {
         LayerResult::Unhandled
     }
     fn destroy_acceleration_structure_nv(
         &self,
         _acceleration_structure: vk::AccelerationStructureNV,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_acceleration_structure_memory_requirements_nv(
         &self,
-        _p_info: &vk::AccelerationStructureMemoryRequirementsInfoNV,
-        _p_memory_requirements: &mut vk::MemoryRequirements2KHR,
+        _p_info: &'static vk::AccelerationStructureMemoryRequirementsInfoNV,
+        _p_memory_requirements: &'static mut vk::MemoryRequirements2KHR,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn bind_acceleration_structure_memory_nv(
         &self,
-        _p_bind_infos: &[vk::BindAccelerationStructureMemoryInfoNV],
+        _p_bind_infos: &'static [vk::BindAccelerationStructureMemoryInfoNV],
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn cmd_build_acceleration_structure_nv(
         &self,
         _command_buffer: vk::CommandBuffer,
-        _p_info: &vk::AccelerationStructureInfoNV,
+        _p_info: &'static vk::AccelerationStructureInfoNV,
         _instance_data: vk::Buffer,
         _instance_offset: vk::DeviceSize,
         _update: bool,
@@ -2755,8 +2762,8 @@ pub trait DeviceInfo: Send + Sync {
     fn create_ray_tracing_pipelines_nv(
         &self,
         _pipeline_cache: vk::PipelineCache,
-        _p_create_infos: &[vk::RayTracingPipelineCreateInfoNV],
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_infos: &'static [vk::RayTracingPipelineCreateInfoNV],
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<Vec<vk::Pipeline>>> {
         LayerResult::Unhandled
     }
@@ -2777,7 +2784,7 @@ pub trait DeviceInfo: Send + Sync {
     fn cmd_write_acceleration_structures_properties_nv(
         &self,
         _command_buffer: vk::CommandBuffer,
-        _p_acceleration_structures: &[vk::AccelerationStructureNV],
+        _p_acceleration_structures: &'static [vk::AccelerationStructureNV],
         _query_type: vk::QueryType,
         _query_pool: vk::QueryPool,
         _first_query: u32,
@@ -2795,7 +2802,7 @@ pub trait DeviceInfo: Send + Sync {
         &self,
         _handle_type: vk::ExternalMemoryHandleTypeFlags,
         _p_host_pointer: *const c_void,
-        _p_memory_host_pointer_properties: &mut vk::MemoryHostPointerPropertiesEXT,
+        _p_memory_host_pointer_properties: &'static mut vk::MemoryHostPointerPropertiesEXT,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
@@ -2811,8 +2818,8 @@ pub trait DeviceInfo: Send + Sync {
     }
     fn get_calibrated_timestamps_ext(
         &self,
-        _p_timestamp_infos: &[vk::CalibratedTimestampInfoEXT],
-        _p_timestamps: &mut [u64],
+        _p_timestamp_infos: &'static [vk::CalibratedTimestampInfoEXT],
+        _p_timestamps: &'static mut [u64],
     ) -> LayerResult<VkResult<u64>> {
         LayerResult::Unhandled
     }
@@ -2850,7 +2857,7 @@ pub trait DeviceInfo: Send + Sync {
         &self,
         _command_buffer: vk::CommandBuffer,
         _first_exclusive_scissor: u32,
-        _p_exclusive_scissors: &[vk::Rect2D],
+        _p_exclusive_scissors: &'static [vk::Rect2D],
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -2864,13 +2871,13 @@ pub trait DeviceInfo: Send + Sync {
     fn get_queue_checkpoint_data_nv(
         &self,
         _queue: vk::Queue,
-        _p_checkpoint_data: Option<&mut [vk::CheckpointDataNV]>,
+        _p_checkpoint_data: Option<&'static mut [vk::CheckpointDataNV]>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn initialize_performance_api_intel(
         &self,
-        _p_initialize_info: &vk::InitializePerformanceApiInfoINTEL,
+        _p_initialize_info: &'static vk::InitializePerformanceApiInfoINTEL,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
@@ -2880,27 +2887,27 @@ pub trait DeviceInfo: Send + Sync {
     fn cmd_set_performance_marker_intel(
         &self,
         _command_buffer: vk::CommandBuffer,
-        _p_marker_info: &vk::PerformanceMarkerInfoINTEL,
+        _p_marker_info: &'static vk::PerformanceMarkerInfoINTEL,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn cmd_set_performance_stream_marker_intel(
         &self,
         _command_buffer: vk::CommandBuffer,
-        _p_marker_info: &vk::PerformanceStreamMarkerInfoINTEL,
+        _p_marker_info: &'static vk::PerformanceStreamMarkerInfoINTEL,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn cmd_set_performance_override_intel(
         &self,
         _command_buffer: vk::CommandBuffer,
-        _p_override_info: &vk::PerformanceOverrideInfoINTEL,
+        _p_override_info: &'static vk::PerformanceOverrideInfoINTEL,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn acquire_performance_configuration_intel(
         &self,
-        _p_acquire_info: &vk::PerformanceConfigurationAcquireInfoINTEL,
+        _p_acquire_info: &'static vk::PerformanceConfigurationAcquireInfoINTEL,
     ) -> LayerResult<VkResult<vk::PerformanceConfigurationINTEL>> {
         LayerResult::Unhandled
     }
@@ -2920,7 +2927,7 @@ pub trait DeviceInfo: Send + Sync {
     fn get_performance_parameter_intel(
         &self,
         _parameter: vk::PerformanceParameterTypeINTEL,
-        _p_value: &mut vk::PerformanceValueINTEL,
+        _p_value: &'static mut vk::PerformanceValueINTEL,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
@@ -2945,7 +2952,7 @@ pub trait DeviceInfo: Send + Sync {
     }
     fn get_device_group_surface_present_modes2_ext(
         &self,
-        _p_surface_info: &vk::PhysicalDeviceSurfaceInfo2KHR,
+        _p_surface_info: &'static vk::PhysicalDeviceSurfaceInfo2KHR,
     ) -> LayerResult<VkResult<vk::DeviceGroupPresentModeFlagsKHR>> {
         LayerResult::Unhandled
     }
@@ -2959,21 +2966,21 @@ pub trait DeviceInfo: Send + Sync {
     }
     fn release_swapchain_images_ext(
         &self,
-        _p_release_info: &vk::ReleaseSwapchainImagesInfoEXT,
+        _p_release_info: &'static vk::ReleaseSwapchainImagesInfoEXT,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_generated_commands_memory_requirements_nv(
         &self,
-        _p_info: &vk::GeneratedCommandsMemoryRequirementsInfoNV,
-        _p_memory_requirements: &mut vk::MemoryRequirements2,
+        _p_info: &'static vk::GeneratedCommandsMemoryRequirementsInfoNV,
+        _p_memory_requirements: &'static mut vk::MemoryRequirements2,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn cmd_preprocess_generated_commands_nv(
         &self,
         _command_buffer: vk::CommandBuffer,
-        _p_generated_commands_info: &vk::GeneratedCommandsInfoNV,
+        _p_generated_commands_info: &'static vk::GeneratedCommandsInfoNV,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -2981,7 +2988,7 @@ pub trait DeviceInfo: Send + Sync {
         &self,
         _command_buffer: vk::CommandBuffer,
         _is_preprocessed: bool,
-        _p_generated_commands_info: &vk::GeneratedCommandsInfoNV,
+        _p_generated_commands_info: &'static vk::GeneratedCommandsInfoNV,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -2996,21 +3003,21 @@ pub trait DeviceInfo: Send + Sync {
     }
     fn create_indirect_commands_layout_nv(
         &self,
-        _p_create_info: &vk::IndirectCommandsLayoutCreateInfoNV,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_info: &'static vk::IndirectCommandsLayoutCreateInfoNV,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::IndirectCommandsLayoutNV>> {
         LayerResult::Unhandled
     }
     fn destroy_indirect_commands_layout_nv(
         &self,
         _indirect_commands_layout: vk::IndirectCommandsLayoutNV,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn export_metal_objects_ext(
         &self,
-        _p_metal_objects_info: &mut vk::ExportMetalObjectsInfoEXT,
+        _p_metal_objects_info: &'static mut vk::ExportMetalObjectsInfoEXT,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -3029,14 +3036,14 @@ pub trait DeviceInfo: Send + Sync {
     }
     fn get_descriptor_ext(
         &self,
-        _p_descriptor_info: &vk::DescriptorGetInfoEXT,
+        _p_descriptor_info: &'static vk::DescriptorGetInfoEXT,
     ) -> LayerResult<Vec<u8>> {
         LayerResult::Unhandled
     }
     fn cmd_bind_descriptor_buffers_ext(
         &self,
         _command_buffer: vk::CommandBuffer,
-        _p_binding_infos: &[vk::DescriptorBufferBindingInfoEXT],
+        _p_binding_infos: &'static [vk::DescriptorBufferBindingInfoEXT],
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -3046,8 +3053,8 @@ pub trait DeviceInfo: Send + Sync {
         _pipeline_bind_point: vk::PipelineBindPoint,
         _layout: vk::PipelineLayout,
         _first_set: u32,
-        _p_buffer_indices: &[u32],
-        _p_offsets: &[vk::DeviceSize],
+        _p_buffer_indices: &'static [u32],
+        _p_offsets: &'static [vk::DeviceSize],
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -3062,35 +3069,35 @@ pub trait DeviceInfo: Send + Sync {
     }
     fn get_buffer_opaque_capture_descriptor_data_ext(
         &self,
-        _p_info: &vk::BufferCaptureDescriptorDataInfoEXT,
+        _p_info: &'static vk::BufferCaptureDescriptorDataInfoEXT,
         _p_data: *mut c_void,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_image_opaque_capture_descriptor_data_ext(
         &self,
-        _p_info: &vk::ImageCaptureDescriptorDataInfoEXT,
+        _p_info: &'static vk::ImageCaptureDescriptorDataInfoEXT,
         _p_data: *mut c_void,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_image_view_opaque_capture_descriptor_data_ext(
         &self,
-        _p_info: &vk::ImageViewCaptureDescriptorDataInfoEXT,
+        _p_info: &'static vk::ImageViewCaptureDescriptorDataInfoEXT,
         _p_data: *mut c_void,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_sampler_opaque_capture_descriptor_data_ext(
         &self,
-        _p_info: &vk::SamplerCaptureDescriptorDataInfoEXT,
+        _p_info: &'static vk::SamplerCaptureDescriptorDataInfoEXT,
         _p_data: *mut c_void,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_acceleration_structure_opaque_capture_descriptor_data_ext(
         &self,
-        _p_info: &vk::AccelerationStructureCaptureDescriptorDataInfoEXT,
+        _p_info: &'static vk::AccelerationStructureCaptureDescriptorDataInfoEXT,
         _p_data: *mut c_void,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
@@ -3099,29 +3106,29 @@ pub trait DeviceInfo: Send + Sync {
         &self,
         _command_buffer: vk::CommandBuffer,
         _shading_rate: vk::FragmentShadingRateNV,
-        _combiner_ops: &[vk::FragmentShadingRateCombinerOpKHR; 2],
+        _combiner_ops: &'static [vk::FragmentShadingRateCombinerOpKHR; 2],
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_image_subresource_layout2_ext(
         &self,
         _image: vk::Image,
-        _p_subresource: &vk::ImageSubresource2EXT,
-        _p_layout: &mut vk::SubresourceLayout2EXT,
+        _p_subresource: &'static vk::ImageSubresource2EXT,
+        _p_layout: &'static mut vk::SubresourceLayout2EXT,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn cmd_set_vertex_input_ext(
         &self,
         _command_buffer: vk::CommandBuffer,
-        _p_vertex_binding_descriptions: &[vk::VertexInputBindingDescription2EXT],
-        _p_vertex_attribute_descriptions: &[vk::VertexInputAttributeDescription2EXT],
+        _p_vertex_binding_descriptions: &'static [vk::VertexInputBindingDescription2EXT],
+        _p_vertex_attribute_descriptions: &'static [vk::VertexInputAttributeDescription2EXT],
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_memory_zircon_handle_fuchsia(
         &self,
-        _p_get_zircon_handle_info: &vk::MemoryGetZirconHandleInfoFUCHSIA,
+        _p_get_zircon_handle_info: &'static vk::MemoryGetZirconHandleInfoFUCHSIA,
     ) -> LayerResult<VkResult<vk::zx_handle_t>> {
         LayerResult::Unhandled
     }
@@ -3129,61 +3136,61 @@ pub trait DeviceInfo: Send + Sync {
         &self,
         _handle_type: vk::ExternalMemoryHandleTypeFlags,
         _zircon_handle: vk::zx_handle_t,
-        _p_memory_zircon_handle_properties: &mut vk::MemoryZirconHandlePropertiesFUCHSIA,
+        _p_memory_zircon_handle_properties: &'static mut vk::MemoryZirconHandlePropertiesFUCHSIA,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn import_semaphore_zircon_handle_fuchsia(
         &self,
-        _p_import_semaphore_zircon_handle_info: &vk::ImportSemaphoreZirconHandleInfoFUCHSIA,
+        _p_import_semaphore_zircon_handle_info: &'static vk::ImportSemaphoreZirconHandleInfoFUCHSIA,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_semaphore_zircon_handle_fuchsia(
         &self,
-        _p_get_zircon_handle_info: &vk::SemaphoreGetZirconHandleInfoFUCHSIA,
+        _p_get_zircon_handle_info: &'static vk::SemaphoreGetZirconHandleInfoFUCHSIA,
     ) -> LayerResult<VkResult<vk::zx_handle_t>> {
         LayerResult::Unhandled
     }
     fn create_buffer_collection_fuchsia(
         &self,
-        _p_create_info: &vk::BufferCollectionCreateInfoFUCHSIA,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_info: &'static vk::BufferCollectionCreateInfoFUCHSIA,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::BufferCollectionFUCHSIA>> {
         LayerResult::Unhandled
     }
     fn set_buffer_collection_image_constraints_fuchsia(
         &self,
         _collection: vk::BufferCollectionFUCHSIA,
-        _p_image_constraints_info: &vk::ImageConstraintsInfoFUCHSIA,
+        _p_image_constraints_info: &'static vk::ImageConstraintsInfoFUCHSIA,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn set_buffer_collection_buffer_constraints_fuchsia(
         &self,
         _collection: vk::BufferCollectionFUCHSIA,
-        _p_buffer_constraints_info: &vk::BufferConstraintsInfoFUCHSIA,
+        _p_buffer_constraints_info: &'static vk::BufferConstraintsInfoFUCHSIA,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn destroy_buffer_collection_fuchsia(
         &self,
         _collection: vk::BufferCollectionFUCHSIA,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_buffer_collection_properties_fuchsia(
         &self,
         _collection: vk::BufferCollectionFUCHSIA,
-        _p_properties: &mut vk::BufferCollectionPropertiesFUCHSIA,
+        _p_properties: &'static mut vk::BufferCollectionPropertiesFUCHSIA,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_device_subpass_shading_max_workgroup_size_huawei(
         &self,
         _renderpass: vk::RenderPass,
-        _p_max_workgroup_size: &mut vk::Extent2D,
+        _p_max_workgroup_size: &'static mut vk::Extent2D,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
@@ -3200,14 +3207,14 @@ pub trait DeviceInfo: Send + Sync {
     }
     fn get_memory_remote_address_nv(
         &self,
-        _p_memory_get_remote_address_info: &vk::MemoryGetRemoteAddressInfoNV,
+        _p_memory_get_remote_address_info: &'static vk::MemoryGetRemoteAddressInfoNV,
     ) -> LayerResult<VkResult<vk::RemoteAddressNV>> {
         LayerResult::Unhandled
     }
     fn get_pipeline_properties_ext(
         &self,
-        _p_pipeline_info: &vk::PipelineInfoEXT,
-        _p_pipeline_properties: &mut vk::BaseOutStructure,
+        _p_pipeline_info: &'static vk::PipelineInfoEXT,
+        _p_pipeline_properties: &'static mut vk::BaseOutStructure,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
@@ -3225,17 +3232,17 @@ pub trait DeviceInfo: Send + Sync {
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
-    fn cmd_set_color_write_enable_ext(
+    fn cmd_set_color_write_enable_ext<T: Iterator<Item = bool> + 'static>(
         &self,
         _command_buffer: vk::CommandBuffer,
-        _p_color_write_enables: impl Iterator<Item = bool>,
+        _p_color_write_enables: T,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn cmd_draw_multi_ext(
         &self,
         _command_buffer: vk::CommandBuffer,
-        _p_vertex_info: &[vk::MultiDrawInfoEXT],
+        _p_vertex_info: &'static [vk::MultiDrawInfoEXT],
         _instance_count: u32,
         _first_instance: u32,
         _stride: u32,
@@ -3245,68 +3252,68 @@ pub trait DeviceInfo: Send + Sync {
     fn cmd_draw_multi_indexed_ext(
         &self,
         _command_buffer: vk::CommandBuffer,
-        _p_index_info: &[vk::MultiDrawIndexedInfoEXT],
+        _p_index_info: &'static [vk::MultiDrawIndexedInfoEXT],
         _instance_count: u32,
         _first_instance: u32,
         _stride: u32,
-        _p_vertex_offset: Option<&i32>,
+        _p_vertex_offset: Option<&'static i32>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn create_micromap_ext(
         &self,
-        _p_create_info: &vk::MicromapCreateInfoEXT,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_info: &'static vk::MicromapCreateInfoEXT,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::MicromapEXT>> {
         LayerResult::Unhandled
     }
     fn destroy_micromap_ext(
         &self,
         _micromap: vk::MicromapEXT,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn cmd_build_micromaps_ext(
         &self,
         _command_buffer: vk::CommandBuffer,
-        _p_infos: &[vk::MicromapBuildInfoEXT],
+        _p_infos: &'static [vk::MicromapBuildInfoEXT],
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn build_micromaps_ext(
         &self,
         _deferred_operation: vk::DeferredOperationKHR,
-        _p_infos: &[vk::MicromapBuildInfoEXT],
+        _p_infos: &'static [vk::MicromapBuildInfoEXT],
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn copy_micromap_ext(
         &self,
         _deferred_operation: vk::DeferredOperationKHR,
-        _p_info: &vk::CopyMicromapInfoEXT,
+        _p_info: &'static vk::CopyMicromapInfoEXT,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn copy_micromap_to_memory_ext(
         &self,
         _deferred_operation: vk::DeferredOperationKHR,
-        _p_info: &vk::CopyMicromapToMemoryInfoEXT,
+        _p_info: &'static vk::CopyMicromapToMemoryInfoEXT,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn copy_memory_to_micromap_ext(
         &self,
         _deferred_operation: vk::DeferredOperationKHR,
-        _p_info: &vk::CopyMemoryToMicromapInfoEXT,
+        _p_info: &'static vk::CopyMemoryToMicromapInfoEXT,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn write_micromaps_properties_ext(
         &self,
-        _p_micromaps: &[vk::MicromapEXT],
+        _p_micromaps: &'static [vk::MicromapEXT],
         _query_type: vk::QueryType,
-        _p_data: &mut [u8],
+        _p_data: &'static mut [u8],
         _stride: usize,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
@@ -3314,28 +3321,28 @@ pub trait DeviceInfo: Send + Sync {
     fn cmd_copy_micromap_ext(
         &self,
         _command_buffer: vk::CommandBuffer,
-        _p_info: &vk::CopyMicromapInfoEXT,
+        _p_info: &'static vk::CopyMicromapInfoEXT,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn cmd_copy_micromap_to_memory_ext(
         &self,
         _command_buffer: vk::CommandBuffer,
-        _p_info: &vk::CopyMicromapToMemoryInfoEXT,
+        _p_info: &'static vk::CopyMicromapToMemoryInfoEXT,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn cmd_copy_memory_to_micromap_ext(
         &self,
         _command_buffer: vk::CommandBuffer,
-        _p_info: &vk::CopyMemoryToMicromapInfoEXT,
+        _p_info: &'static vk::CopyMemoryToMicromapInfoEXT,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn cmd_write_micromaps_properties_ext(
         &self,
         _command_buffer: vk::CommandBuffer,
-        _p_micromaps: &[vk::MicromapEXT],
+        _p_micromaps: &'static [vk::MicromapEXT],
         _query_type: vk::QueryType,
         _query_pool: vk::QueryPool,
         _first_query: u32,
@@ -3344,15 +3351,15 @@ pub trait DeviceInfo: Send + Sync {
     }
     fn get_device_micromap_compatibility_ext(
         &self,
-        _p_version_info: &vk::MicromapVersionInfoEXT,
+        _p_version_info: &'static vk::MicromapVersionInfoEXT,
     ) -> LayerResult<vk::AccelerationStructureCompatibilityKHR> {
         LayerResult::Unhandled
     }
     fn get_micromap_build_sizes_ext(
         &self,
         _build_type: vk::AccelerationStructureBuildTypeKHR,
-        _p_build_info: &vk::MicromapBuildInfoEXT,
-        _p_size_info: &mut vk::MicromapBuildSizesInfoEXT,
+        _p_build_info: &'static vk::MicromapBuildInfoEXT,
+        _p_size_info: &'static mut vk::MicromapBuildSizesInfoEXT,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -3365,8 +3372,8 @@ pub trait DeviceInfo: Send + Sync {
     }
     fn get_descriptor_set_layout_host_mapping_info_valve(
         &self,
-        _p_binding_reference: &vk::DescriptorSetBindingReferenceVALVE,
-        _p_host_mapping: &mut vk::DescriptorSetLayoutHostMappingInfoVALVE,
+        _p_binding_reference: &'static vk::DescriptorSetBindingReferenceVALVE,
+        _p_host_mapping: &'static mut vk::DescriptorSetLayoutHostMappingInfoVALVE,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -3392,14 +3399,14 @@ pub trait DeviceInfo: Send + Sync {
         _stride: u32,
         _dst_image: vk::Image,
         _dst_image_layout: vk::ImageLayout,
-        _p_image_subresources: &[vk::ImageSubresourceLayers],
+        _p_image_subresources: &'static [vk::ImageSubresourceLayers],
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn cmd_decompress_memory_nv(
         &self,
         _command_buffer: vk::CommandBuffer,
-        _p_decompress_memory_regions: &[vk::DecompressMemoryRegionNV],
+        _p_decompress_memory_regions: &'static [vk::DecompressMemoryRegionNV],
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -3444,7 +3451,7 @@ pub trait DeviceInfo: Send + Sync {
         &self,
         _command_buffer: vk::CommandBuffer,
         _samples: vk::SampleCountFlags,
-        _p_sample_mask: &[vk::SampleMask],
+        _p_sample_mask: &'static [vk::SampleMask],
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -3469,11 +3476,11 @@ pub trait DeviceInfo: Send + Sync {
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
-    fn cmd_set_color_blend_enable_ext(
+    fn cmd_set_color_blend_enable_ext<T: Iterator<Item = bool> + 'static>(
         &self,
         _command_buffer: vk::CommandBuffer,
         _first_attachment: u32,
-        _p_color_blend_enables: impl Iterator<Item = bool>,
+        _p_color_blend_enables: T,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -3481,7 +3488,7 @@ pub trait DeviceInfo: Send + Sync {
         &self,
         _command_buffer: vk::CommandBuffer,
         _first_attachment: u32,
-        _p_color_blend_equations: &[vk::ColorBlendEquationEXT],
+        _p_color_blend_equations: &'static [vk::ColorBlendEquationEXT],
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -3489,7 +3496,7 @@ pub trait DeviceInfo: Send + Sync {
         &self,
         _command_buffer: vk::CommandBuffer,
         _first_attachment: u32,
-        _p_color_write_masks: &[vk::ColorComponentFlags],
+        _p_color_write_masks: &'static [vk::ColorComponentFlags],
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -3532,7 +3539,7 @@ pub trait DeviceInfo: Send + Sync {
         &self,
         _command_buffer: vk::CommandBuffer,
         _first_attachment: u32,
-        _p_color_blend_advanced: &[vk::ColorBlendAdvancedEXT],
+        _p_color_blend_advanced: &'static [vk::ColorBlendAdvancedEXT],
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -3575,7 +3582,7 @@ pub trait DeviceInfo: Send + Sync {
         &self,
         _command_buffer: vk::CommandBuffer,
         _first_viewport: u32,
-        _p_viewport_swizzles: &[vk::ViewportSwizzleNV],
+        _p_viewport_swizzles: &'static [vk::ViewportSwizzleNV],
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -3610,7 +3617,7 @@ pub trait DeviceInfo: Send + Sync {
     fn cmd_set_coverage_modulation_table_nv(
         &self,
         _command_buffer: vk::CommandBuffer,
-        _p_coverage_modulation_table: &[f32],
+        _p_coverage_modulation_table: &'static [f32],
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -3638,28 +3645,28 @@ pub trait DeviceInfo: Send + Sync {
     fn get_shader_module_identifier_ext(
         &self,
         _shader_module: vk::ShaderModule,
-        _p_identifier: &mut vk::ShaderModuleIdentifierEXT,
+        _p_identifier: &'static mut vk::ShaderModuleIdentifierEXT,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_shader_module_create_info_identifier_ext(
         &self,
-        _p_create_info: &vk::ShaderModuleCreateInfo,
-        _p_identifier: &mut vk::ShaderModuleIdentifierEXT,
+        _p_create_info: &'static vk::ShaderModuleCreateInfo,
+        _p_identifier: &'static mut vk::ShaderModuleIdentifierEXT,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn create_optical_flow_session_nv(
         &self,
-        _p_create_info: &vk::OpticalFlowSessionCreateInfoNV,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_info: &'static vk::OpticalFlowSessionCreateInfoNV,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::OpticalFlowSessionNV>> {
         LayerResult::Unhandled
     }
     fn destroy_optical_flow_session_nv(
         &self,
         _session: vk::OpticalFlowSessionNV,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -3676,64 +3683,64 @@ pub trait DeviceInfo: Send + Sync {
         &self,
         _command_buffer: vk::CommandBuffer,
         _session: vk::OpticalFlowSessionNV,
-        _p_execute_info: &vk::OpticalFlowExecuteInfoNV,
+        _p_execute_info: &'static vk::OpticalFlowExecuteInfoNV,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_framebuffer_tile_properties_qcom(
         &self,
         _framebuffer: vk::Framebuffer,
-        _p_properties: Option<&mut [vk::TilePropertiesQCOM]>,
+        _p_properties: Option<&'static mut [vk::TilePropertiesQCOM]>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_dynamic_rendering_tile_properties_qcom(
         &self,
-        _p_rendering_info: &vk::RenderingInfo,
-        _p_properties: &mut vk::TilePropertiesQCOM,
+        _p_rendering_info: &'static vk::RenderingInfo,
+        _p_properties: &'static mut vk::TilePropertiesQCOM,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn create_acceleration_structure_khr(
         &self,
-        _p_create_info: &vk::AccelerationStructureCreateInfoKHR,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_info: &'static vk::AccelerationStructureCreateInfoKHR,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::AccelerationStructureKHR>> {
         LayerResult::Unhandled
     }
     fn destroy_acceleration_structure_khr(
         &self,
         _acceleration_structure: vk::AccelerationStructureKHR,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn copy_acceleration_structure_khr(
         &self,
         _deferred_operation: vk::DeferredOperationKHR,
-        _p_info: &vk::CopyAccelerationStructureInfoKHR,
+        _p_info: &'static vk::CopyAccelerationStructureInfoKHR,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn copy_acceleration_structure_to_memory_khr(
         &self,
         _deferred_operation: vk::DeferredOperationKHR,
-        _p_info: &vk::CopyAccelerationStructureToMemoryInfoKHR,
+        _p_info: &'static vk::CopyAccelerationStructureToMemoryInfoKHR,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn copy_memory_to_acceleration_structure_khr(
         &self,
         _deferred_operation: vk::DeferredOperationKHR,
-        _p_info: &vk::CopyMemoryToAccelerationStructureInfoKHR,
+        _p_info: &'static vk::CopyMemoryToAccelerationStructureInfoKHR,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn write_acceleration_structures_properties_khr(
         &self,
-        _p_acceleration_structures: &[vk::AccelerationStructureKHR],
+        _p_acceleration_structures: &'static [vk::AccelerationStructureKHR],
         _query_type: vk::QueryType,
-        _p_data: &mut [u8],
+        _p_data: &'static mut [u8],
         _stride: usize,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
@@ -3741,34 +3748,34 @@ pub trait DeviceInfo: Send + Sync {
     fn cmd_copy_acceleration_structure_khr(
         &self,
         _command_buffer: vk::CommandBuffer,
-        _p_info: &vk::CopyAccelerationStructureInfoKHR,
+        _p_info: &'static vk::CopyAccelerationStructureInfoKHR,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn cmd_copy_acceleration_structure_to_memory_khr(
         &self,
         _command_buffer: vk::CommandBuffer,
-        _p_info: &vk::CopyAccelerationStructureToMemoryInfoKHR,
+        _p_info: &'static vk::CopyAccelerationStructureToMemoryInfoKHR,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn cmd_copy_memory_to_acceleration_structure_khr(
         &self,
         _command_buffer: vk::CommandBuffer,
-        _p_info: &vk::CopyMemoryToAccelerationStructureInfoKHR,
+        _p_info: &'static vk::CopyMemoryToAccelerationStructureInfoKHR,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_acceleration_structure_device_address_khr(
         &self,
-        _p_info: &vk::AccelerationStructureDeviceAddressInfoKHR,
+        _p_info: &'static vk::AccelerationStructureDeviceAddressInfoKHR,
     ) -> LayerResult<vk::DeviceAddress> {
         LayerResult::Unhandled
     }
     fn cmd_write_acceleration_structures_properties_khr(
         &self,
         _command_buffer: vk::CommandBuffer,
-        _p_acceleration_structures: &[vk::AccelerationStructureKHR],
+        _p_acceleration_structures: &'static [vk::AccelerationStructureKHR],
         _query_type: vk::QueryType,
         _query_pool: vk::QueryPool,
         _first_query: u32,
@@ -3777,26 +3784,26 @@ pub trait DeviceInfo: Send + Sync {
     }
     fn get_device_acceleration_structure_compatibility_khr(
         &self,
-        _p_version_info: &vk::AccelerationStructureVersionInfoKHR,
+        _p_version_info: &'static vk::AccelerationStructureVersionInfoKHR,
     ) -> LayerResult<vk::AccelerationStructureCompatibilityKHR> {
         LayerResult::Unhandled
     }
     fn get_acceleration_structure_build_sizes_khr(
         &self,
         _build_type: vk::AccelerationStructureBuildTypeKHR,
-        _p_build_info: &vk::AccelerationStructureBuildGeometryInfoKHR,
-        _p_max_primitive_counts: Option<&[u32]>,
-        _p_size_info: &mut vk::AccelerationStructureBuildSizesInfoKHR,
+        _p_build_info: &'static vk::AccelerationStructureBuildGeometryInfoKHR,
+        _p_max_primitive_counts: Option<&'static [u32]>,
+        _p_size_info: &'static mut vk::AccelerationStructureBuildSizesInfoKHR,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn cmd_trace_rays_khr(
         &self,
         _command_buffer: vk::CommandBuffer,
-        _p_raygen_shader_binding_table: &vk::StridedDeviceAddressRegionKHR,
-        _p_miss_shader_binding_table: &vk::StridedDeviceAddressRegionKHR,
-        _p_hit_shader_binding_table: &vk::StridedDeviceAddressRegionKHR,
-        _p_callable_shader_binding_table: &vk::StridedDeviceAddressRegionKHR,
+        _p_raygen_shader_binding_table: &'static vk::StridedDeviceAddressRegionKHR,
+        _p_miss_shader_binding_table: &'static vk::StridedDeviceAddressRegionKHR,
+        _p_hit_shader_binding_table: &'static vk::StridedDeviceAddressRegionKHR,
+        _p_callable_shader_binding_table: &'static vk::StridedDeviceAddressRegionKHR,
         _width: u32,
         _height: u32,
         _depth: u32,
@@ -3807,8 +3814,8 @@ pub trait DeviceInfo: Send + Sync {
         &self,
         _deferred_operation: vk::DeferredOperationKHR,
         _pipeline_cache: vk::PipelineCache,
-        _p_create_infos: &[vk::RayTracingPipelineCreateInfoKHR],
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_infos: &'static [vk::RayTracingPipelineCreateInfoKHR],
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<Vec<vk::Pipeline>>> {
         LayerResult::Unhandled
     }
@@ -3823,10 +3830,10 @@ pub trait DeviceInfo: Send + Sync {
     fn cmd_trace_rays_indirect_khr(
         &self,
         _command_buffer: vk::CommandBuffer,
-        _p_raygen_shader_binding_table: &vk::StridedDeviceAddressRegionKHR,
-        _p_miss_shader_binding_table: &vk::StridedDeviceAddressRegionKHR,
-        _p_hit_shader_binding_table: &vk::StridedDeviceAddressRegionKHR,
-        _p_callable_shader_binding_table: &vk::StridedDeviceAddressRegionKHR,
+        _p_raygen_shader_binding_table: &'static vk::StridedDeviceAddressRegionKHR,
+        _p_miss_shader_binding_table: &'static vk::StridedDeviceAddressRegionKHR,
+        _p_hit_shader_binding_table: &'static vk::StridedDeviceAddressRegionKHR,
+        _p_callable_shader_binding_table: &'static vk::StridedDeviceAddressRegionKHR,
         _indirect_device_address: vk::DeviceAddress,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
@@ -3879,11 +3886,11 @@ pub trait DeviceInfo: Send + Sync {
     }
 }
 
-pub trait InstanceInfo: Send + Sync {
+pub trait InstanceHooks: Send + Sync {
     fn get_physical_device_features(
         &self,
         _physical_device: vk::PhysicalDevice,
-        _p_features: &mut vk::PhysicalDeviceFeatures,
+        _p_features: &'static mut vk::PhysicalDeviceFeatures,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -3891,7 +3898,7 @@ pub trait InstanceInfo: Send + Sync {
         &self,
         _physical_device: vk::PhysicalDevice,
         _format: vk::Format,
-        _p_format_properties: &mut vk::FormatProperties,
+        _p_format_properties: &'static mut vk::FormatProperties,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -3903,39 +3910,39 @@ pub trait InstanceInfo: Send + Sync {
         _tiling: vk::ImageTiling,
         _usage: vk::ImageUsageFlags,
         _flags: vk::ImageCreateFlags,
-        _p_image_format_properties: &mut vk::ImageFormatProperties,
+        _p_image_format_properties: &'static mut vk::ImageFormatProperties,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_physical_device_properties(
         &self,
         _physical_device: vk::PhysicalDevice,
-        _p_properties: &mut vk::PhysicalDeviceProperties,
+        _p_properties: &'static mut vk::PhysicalDeviceProperties,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_physical_device_queue_family_properties(
         &self,
         _physical_device: vk::PhysicalDevice,
-        _p_queue_family_properties: Option<&mut [vk::QueueFamilyProperties]>,
+        _p_queue_family_properties: Option<&'static mut [vk::QueueFamilyProperties]>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_physical_device_memory_properties(
         &self,
         _physical_device: vk::PhysicalDevice,
-        _p_memory_properties: &mut vk::PhysicalDeviceMemoryProperties,
+        _p_memory_properties: &'static mut vk::PhysicalDeviceMemoryProperties,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
-    fn get_instance_proc_addr(&self, _p_name: &str) -> LayerResult<vk::PFN_vkVoidFunction> {
+    fn get_instance_proc_addr(&self, _p_name: &'static str) -> LayerResult<vk::PFN_vkVoidFunction> {
         LayerResult::Unhandled
     }
     fn create_device(
         &self,
         _physical_device: vk::PhysicalDevice,
-        _p_create_info: &vk::DeviceCreateInfo,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_info: &'static vk::DeviceCreateInfo,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::Device>> {
         LayerResult::Unhandled
     }
@@ -3947,21 +3954,21 @@ pub trait InstanceInfo: Send + Sync {
         _samples: vk::SampleCountFlags,
         _usage: vk::ImageUsageFlags,
         _tiling: vk::ImageTiling,
-        _p_properties: Option<&mut [vk::SparseImageFormatProperties]>,
+        _p_properties: Option<&'static mut [vk::SparseImageFormatProperties]>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_physical_device_features2(
         &self,
         _physical_device: vk::PhysicalDevice,
-        _p_features: &mut vk::PhysicalDeviceFeatures2,
+        _p_features: &'static mut vk::PhysicalDeviceFeatures2,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_physical_device_properties2(
         &self,
         _physical_device: vk::PhysicalDevice,
-        _p_properties: &mut vk::PhysicalDeviceProperties2,
+        _p_properties: &'static mut vk::PhysicalDeviceProperties2,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -3969,75 +3976,75 @@ pub trait InstanceInfo: Send + Sync {
         &self,
         _physical_device: vk::PhysicalDevice,
         _format: vk::Format,
-        _p_format_properties: &mut vk::FormatProperties2,
+        _p_format_properties: &'static mut vk::FormatProperties2,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_physical_device_image_format_properties2(
         &self,
         _physical_device: vk::PhysicalDevice,
-        _p_image_format_info: &vk::PhysicalDeviceImageFormatInfo2,
-        _p_image_format_properties: &mut vk::ImageFormatProperties2,
+        _p_image_format_info: &'static vk::PhysicalDeviceImageFormatInfo2,
+        _p_image_format_properties: &'static mut vk::ImageFormatProperties2,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_physical_device_queue_family_properties2(
         &self,
         _physical_device: vk::PhysicalDevice,
-        _p_queue_family_properties: Option<&mut [vk::QueueFamilyProperties2]>,
+        _p_queue_family_properties: Option<&'static mut [vk::QueueFamilyProperties2]>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_physical_device_memory_properties2(
         &self,
         _physical_device: vk::PhysicalDevice,
-        _p_memory_properties: &mut vk::PhysicalDeviceMemoryProperties2,
+        _p_memory_properties: &'static mut vk::PhysicalDeviceMemoryProperties2,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_physical_device_sparse_image_format_properties2(
         &self,
         _physical_device: vk::PhysicalDevice,
-        _p_format_info: &vk::PhysicalDeviceSparseImageFormatInfo2,
-        _p_properties: Option<&mut [vk::SparseImageFormatProperties2]>,
+        _p_format_info: &'static vk::PhysicalDeviceSparseImageFormatInfo2,
+        _p_properties: Option<&'static mut [vk::SparseImageFormatProperties2]>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_physical_device_external_buffer_properties(
         &self,
         _physical_device: vk::PhysicalDevice,
-        _p_external_buffer_info: &vk::PhysicalDeviceExternalBufferInfo,
-        _p_external_buffer_properties: &mut vk::ExternalBufferProperties,
+        _p_external_buffer_info: &'static vk::PhysicalDeviceExternalBufferInfo,
+        _p_external_buffer_properties: &'static mut vk::ExternalBufferProperties,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_physical_device_external_fence_properties(
         &self,
         _physical_device: vk::PhysicalDevice,
-        _p_external_fence_info: &vk::PhysicalDeviceExternalFenceInfo,
-        _p_external_fence_properties: &mut vk::ExternalFenceProperties,
+        _p_external_fence_info: &'static vk::PhysicalDeviceExternalFenceInfo,
+        _p_external_fence_properties: &'static mut vk::ExternalFenceProperties,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_physical_device_external_semaphore_properties(
         &self,
         _physical_device: vk::PhysicalDevice,
-        _p_external_semaphore_info: &vk::PhysicalDeviceExternalSemaphoreInfo,
-        _p_external_semaphore_properties: &mut vk::ExternalSemaphoreProperties,
+        _p_external_semaphore_info: &'static vk::PhysicalDeviceExternalSemaphoreInfo,
+        _p_external_semaphore_properties: &'static mut vk::ExternalSemaphoreProperties,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_physical_device_tool_properties(
         &self,
         _physical_device: vk::PhysicalDevice,
-        _p_tool_properties: Option<&mut [vk::PhysicalDeviceToolProperties]>,
+        _p_tool_properties: Option<&'static mut [vk::PhysicalDeviceToolProperties]>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn destroy_surface_khr(
         &self,
         _surface: vk::SurfaceKHR,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -4053,7 +4060,7 @@ pub trait InstanceInfo: Send + Sync {
         &self,
         _physical_device: vk::PhysicalDevice,
         _surface: vk::SurfaceKHR,
-        _p_surface_capabilities: &mut vk::SurfaceCapabilitiesKHR,
+        _p_surface_capabilities: &'static mut vk::SurfaceCapabilitiesKHR,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
@@ -4061,7 +4068,7 @@ pub trait InstanceInfo: Send + Sync {
         &self,
         _physical_device: vk::PhysicalDevice,
         _surface: vk::SurfaceKHR,
-        _p_surface_formats: Option<&mut [vk::SurfaceFormatKHR]>,
+        _p_surface_formats: Option<&'static mut [vk::SurfaceFormatKHR]>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
@@ -4076,21 +4083,21 @@ pub trait InstanceInfo: Send + Sync {
         &self,
         _physical_device: vk::PhysicalDevice,
         _surface: vk::SurfaceKHR,
-        _p_rects: Option<&mut [vk::Rect2D]>,
+        _p_rects: Option<&'static mut [vk::Rect2D]>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_physical_device_display_properties_khr(
         &self,
         _physical_device: vk::PhysicalDevice,
-        _p_properties: Option<&mut [vk::DisplayPropertiesKHR]>,
+        _p_properties: Option<&'static mut [vk::DisplayPropertiesKHR]>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_physical_device_display_plane_properties_khr(
         &self,
         _physical_device: vk::PhysicalDevice,
-        _p_properties: Option<&mut [vk::DisplayPlanePropertiesKHR]>,
+        _p_properties: Option<&'static mut [vk::DisplayPlanePropertiesKHR]>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
@@ -4105,7 +4112,7 @@ pub trait InstanceInfo: Send + Sync {
         &self,
         _physical_device: vk::PhysicalDevice,
         _display: vk::DisplayKHR,
-        _p_properties: Option<&mut [vk::DisplayModePropertiesKHR]>,
+        _p_properties: Option<&'static mut [vk::DisplayModePropertiesKHR]>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
@@ -4113,8 +4120,8 @@ pub trait InstanceInfo: Send + Sync {
         &self,
         _physical_device: vk::PhysicalDevice,
         _display: vk::DisplayKHR,
-        _p_create_info: &vk::DisplayModeCreateInfoKHR,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_info: &'static vk::DisplayModeCreateInfoKHR,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::DisplayModeKHR>> {
         LayerResult::Unhandled
     }
@@ -4123,21 +4130,21 @@ pub trait InstanceInfo: Send + Sync {
         _physical_device: vk::PhysicalDevice,
         _mode: vk::DisplayModeKHR,
         _plane_index: u32,
-        _p_capabilities: &mut vk::DisplayPlaneCapabilitiesKHR,
+        _p_capabilities: &'static mut vk::DisplayPlaneCapabilitiesKHR,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn create_display_plane_surface_khr(
         &self,
-        _p_create_info: &vk::DisplaySurfaceCreateInfoKHR,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_info: &'static vk::DisplaySurfaceCreateInfoKHR,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::SurfaceKHR>> {
         LayerResult::Unhandled
     }
     fn create_xlib_surface_khr(
         &self,
-        _p_create_info: &vk::XlibSurfaceCreateInfoKHR,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_info: &'static vk::XlibSurfaceCreateInfoKHR,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::SurfaceKHR>> {
         LayerResult::Unhandled
     }
@@ -4145,15 +4152,15 @@ pub trait InstanceInfo: Send + Sync {
         &self,
         _physical_device: vk::PhysicalDevice,
         _queue_family_index: u32,
-        _dpy: &mut vk::Display,
+        _dpy: &'static mut vk::Display,
         _visual_id: vk::VisualID,
     ) -> LayerResult<bool> {
         LayerResult::Unhandled
     }
     fn create_xcb_surface_khr(
         &self,
-        _p_create_info: &vk::XcbSurfaceCreateInfoKHR,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_info: &'static vk::XcbSurfaceCreateInfoKHR,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::SurfaceKHR>> {
         LayerResult::Unhandled
     }
@@ -4168,8 +4175,8 @@ pub trait InstanceInfo: Send + Sync {
     }
     fn create_wayland_surface_khr(
         &self,
-        _p_create_info: &vk::WaylandSurfaceCreateInfoKHR,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_info: &'static vk::WaylandSurfaceCreateInfoKHR,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::SurfaceKHR>> {
         LayerResult::Unhandled
     }
@@ -4183,15 +4190,15 @@ pub trait InstanceInfo: Send + Sync {
     }
     fn create_android_surface_khr(
         &self,
-        _p_create_info: &vk::AndroidSurfaceCreateInfoKHR,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_info: &'static vk::AndroidSurfaceCreateInfoKHR,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::SurfaceKHR>> {
         LayerResult::Unhandled
     }
     fn create_win32_surface_khr(
         &self,
-        _p_create_info: &vk::Win32SurfaceCreateInfoKHR,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_info: &'static vk::Win32SurfaceCreateInfoKHR,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::SurfaceKHR>> {
         LayerResult::Unhandled
     }
@@ -4205,16 +4212,16 @@ pub trait InstanceInfo: Send + Sync {
     fn get_physical_device_video_capabilities_khr(
         &self,
         _physical_device: vk::PhysicalDevice,
-        _p_video_profile: &vk::VideoProfileInfoKHR,
-        _p_capabilities: &mut vk::VideoCapabilitiesKHR,
+        _p_video_profile: &'static vk::VideoProfileInfoKHR,
+        _p_capabilities: &'static mut vk::VideoCapabilitiesKHR,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_physical_device_video_format_properties_khr(
         &self,
         _physical_device: vk::PhysicalDevice,
-        _p_video_format_info: &vk::PhysicalDeviceVideoFormatInfoKHR,
-        _p_video_format_properties: Option<&mut [vk::VideoFormatPropertiesKHR]>,
+        _p_video_format_info: &'static vk::PhysicalDeviceVideoFormatInfoKHR,
+        _p_video_format_properties: Option<&'static mut [vk::VideoFormatPropertiesKHR]>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
@@ -4222,45 +4229,45 @@ pub trait InstanceInfo: Send + Sync {
         &self,
         _physical_device: vk::PhysicalDevice,
         _queue_family_index: u32,
-        _p_counters: Option<&mut [vk::PerformanceCounterKHR]>,
-        _p_counter_descriptions: Option<&mut [vk::PerformanceCounterDescriptionKHR]>,
+        _p_counters: Option<&'static mut [vk::PerformanceCounterKHR]>,
+        _p_counter_descriptions: Option<&'static mut [vk::PerformanceCounterDescriptionKHR]>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_physical_device_queue_family_performance_query_passes_khr(
         &self,
         _physical_device: vk::PhysicalDevice,
-        _p_performance_query_create_info: &vk::QueryPoolPerformanceCreateInfoKHR,
+        _p_performance_query_create_info: &'static vk::QueryPoolPerformanceCreateInfoKHR,
     ) -> LayerResult<u32> {
         LayerResult::Unhandled
     }
     fn get_physical_device_surface_capabilities2_khr(
         &self,
         _physical_device: vk::PhysicalDevice,
-        _p_surface_info: &vk::PhysicalDeviceSurfaceInfo2KHR,
-        _p_surface_capabilities: &mut vk::SurfaceCapabilities2KHR,
+        _p_surface_info: &'static vk::PhysicalDeviceSurfaceInfo2KHR,
+        _p_surface_capabilities: &'static mut vk::SurfaceCapabilities2KHR,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_physical_device_surface_formats2_khr(
         &self,
         _physical_device: vk::PhysicalDevice,
-        _p_surface_info: &vk::PhysicalDeviceSurfaceInfo2KHR,
-        _p_surface_formats: Option<&mut [vk::SurfaceFormat2KHR]>,
+        _p_surface_info: &'static vk::PhysicalDeviceSurfaceInfo2KHR,
+        _p_surface_formats: Option<&'static mut [vk::SurfaceFormat2KHR]>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_physical_device_display_properties2_khr(
         &self,
         _physical_device: vk::PhysicalDevice,
-        _p_properties: Option<&mut [vk::DisplayProperties2KHR]>,
+        _p_properties: Option<&'static mut [vk::DisplayProperties2KHR]>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_physical_device_display_plane_properties2_khr(
         &self,
         _physical_device: vk::PhysicalDevice,
-        _p_properties: Option<&mut [vk::DisplayPlaneProperties2KHR]>,
+        _p_properties: Option<&'static mut [vk::DisplayPlaneProperties2KHR]>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
@@ -4268,36 +4275,36 @@ pub trait InstanceInfo: Send + Sync {
         &self,
         _physical_device: vk::PhysicalDevice,
         _display: vk::DisplayKHR,
-        _p_properties: Option<&mut [vk::DisplayModeProperties2KHR]>,
+        _p_properties: Option<&'static mut [vk::DisplayModeProperties2KHR]>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_display_plane_capabilities2_khr(
         &self,
         _physical_device: vk::PhysicalDevice,
-        _p_display_plane_info: &vk::DisplayPlaneInfo2KHR,
-        _p_capabilities: &mut vk::DisplayPlaneCapabilities2KHR,
+        _p_display_plane_info: &'static vk::DisplayPlaneInfo2KHR,
+        _p_capabilities: &'static mut vk::DisplayPlaneCapabilities2KHR,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_physical_device_fragment_shading_rates_khr(
         &self,
         _physical_device: vk::PhysicalDevice,
-        _p_fragment_shading_rates: Option<&mut [vk::PhysicalDeviceFragmentShadingRateKHR]>,
+        _p_fragment_shading_rates: Option<&'static mut [vk::PhysicalDeviceFragmentShadingRateKHR]>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn create_debug_report_callback_ext(
         &self,
-        _p_create_info: &vk::DebugReportCallbackCreateInfoEXT,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_info: &'static vk::DebugReportCallbackCreateInfoEXT,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::DebugReportCallbackEXT>> {
         LayerResult::Unhandled
     }
     fn destroy_debug_report_callback_ext(
         &self,
         _callback: vk::DebugReportCallbackEXT,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -4308,15 +4315,15 @@ pub trait InstanceInfo: Send + Sync {
         _object: u64,
         _location: usize,
         _message_code: i32,
-        _p_layer_prefix: &str,
-        _p_message: &str,
+        _p_layer_prefix: &'static str,
+        _p_message: &'static str,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn create_stream_descriptor_surface_ggp(
         &self,
-        _p_create_info: &vk::StreamDescriptorSurfaceCreateInfoGGP,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_info: &'static vk::StreamDescriptorSurfaceCreateInfoGGP,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::SurfaceKHR>> {
         LayerResult::Unhandled
     }
@@ -4329,14 +4336,14 @@ pub trait InstanceInfo: Send + Sync {
         _usage: vk::ImageUsageFlags,
         _flags: vk::ImageCreateFlags,
         _external_handle_type: vk::ExternalMemoryHandleTypeFlagsNV,
-        _p_external_image_format_properties: &mut vk::ExternalImageFormatPropertiesNV,
+        _p_external_image_format_properties: &'static mut vk::ExternalImageFormatPropertiesNV,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn create_vi_surface_nn(
         &self,
-        _p_create_info: &vk::ViSurfaceCreateInfoNN,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_info: &'static vk::ViSurfaceCreateInfoNN,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::SurfaceKHR>> {
         LayerResult::Unhandled
     }
@@ -4350,7 +4357,7 @@ pub trait InstanceInfo: Send + Sync {
     fn acquire_xlib_display_ext(
         &self,
         _physical_device: vk::PhysicalDevice,
-        _dpy: &mut vk::Display,
+        _dpy: &'static mut vk::Display,
         _display: vk::DisplayKHR,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
@@ -4358,7 +4365,7 @@ pub trait InstanceInfo: Send + Sync {
     fn get_rand_r_output_display_ext(
         &self,
         _physical_device: vk::PhysicalDevice,
-        _dpy: &mut vk::Display,
+        _dpy: &'static mut vk::Display,
         _rr_output: vk::RROutput,
     ) -> LayerResult<VkResult<vk::DisplayKHR>> {
         LayerResult::Unhandled
@@ -4367,35 +4374,35 @@ pub trait InstanceInfo: Send + Sync {
         &self,
         _physical_device: vk::PhysicalDevice,
         _surface: vk::SurfaceKHR,
-        _p_surface_capabilities: &mut vk::SurfaceCapabilities2EXT,
+        _p_surface_capabilities: &'static mut vk::SurfaceCapabilities2EXT,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn create_ios_surface_mvk(
         &self,
-        _p_create_info: &vk::IOSSurfaceCreateInfoMVK,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_info: &'static vk::IOSSurfaceCreateInfoMVK,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::SurfaceKHR>> {
         LayerResult::Unhandled
     }
     fn create_mac_os_surface_mvk(
         &self,
-        _p_create_info: &vk::MacOSSurfaceCreateInfoMVK,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_info: &'static vk::MacOSSurfaceCreateInfoMVK,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::SurfaceKHR>> {
         LayerResult::Unhandled
     }
     fn create_debug_utils_messenger_ext(
         &self,
-        _p_create_info: &vk::DebugUtilsMessengerCreateInfoEXT,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_info: &'static vk::DebugUtilsMessengerCreateInfoEXT,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::DebugUtilsMessengerEXT>> {
         LayerResult::Unhandled
     }
     fn destroy_debug_utils_messenger_ext(
         &self,
         _messenger: vk::DebugUtilsMessengerEXT,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -4403,7 +4410,7 @@ pub trait InstanceInfo: Send + Sync {
         &self,
         _message_severity: vk::DebugUtilsMessageSeverityFlagsEXT,
         _message_types: vk::DebugUtilsMessageTypeFlagsEXT,
-        _p_callback_data: &vk::DebugUtilsMessengerCallbackDataEXT,
+        _p_callback_data: &'static vk::DebugUtilsMessengerCallbackDataEXT,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -4411,7 +4418,7 @@ pub trait InstanceInfo: Send + Sync {
         &self,
         _physical_device: vk::PhysicalDevice,
         _samples: vk::SampleCountFlags,
-        _p_multisample_properties: &mut vk::MultisamplePropertiesEXT,
+        _p_multisample_properties: &'static mut vk::MultisamplePropertiesEXT,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -4423,43 +4430,43 @@ pub trait InstanceInfo: Send + Sync {
     }
     fn create_image_pipe_surface_fuchsia(
         &self,
-        _p_create_info: &vk::ImagePipeSurfaceCreateInfoFUCHSIA,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_info: &'static vk::ImagePipeSurfaceCreateInfoFUCHSIA,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::SurfaceKHR>> {
         LayerResult::Unhandled
     }
     fn create_metal_surface_ext(
         &self,
-        _p_create_info: &vk::MetalSurfaceCreateInfoEXT,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_info: &'static vk::MetalSurfaceCreateInfoEXT,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::SurfaceKHR>> {
         LayerResult::Unhandled
     }
     fn get_physical_device_cooperative_matrix_properties_nv(
         &self,
         _physical_device: vk::PhysicalDevice,
-        _p_properties: Option<&mut [vk::CooperativeMatrixPropertiesNV]>,
+        _p_properties: Option<&'static mut [vk::CooperativeMatrixPropertiesNV]>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_physical_device_supported_framebuffer_mixed_samples_combinations_nv(
         &self,
         _physical_device: vk::PhysicalDevice,
-        _p_combinations: Option<&mut [vk::FramebufferMixedSamplesCombinationNV]>,
+        _p_combinations: Option<&'static mut [vk::FramebufferMixedSamplesCombinationNV]>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_physical_device_surface_present_modes2_ext(
         &self,
         _physical_device: vk::PhysicalDevice,
-        _p_surface_info: &vk::PhysicalDeviceSurfaceInfo2KHR,
+        _p_surface_info: &'static vk::PhysicalDeviceSurfaceInfo2KHR,
     ) -> LayerResult<VkResult<Vec<vk::PresentModeKHR>>> {
         LayerResult::Unhandled
     }
     fn create_headless_surface_ext(
         &self,
-        _p_create_info: &vk::HeadlessSurfaceCreateInfoEXT,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_info: &'static vk::HeadlessSurfaceCreateInfoEXT,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::SurfaceKHR>> {
         LayerResult::Unhandled
     }
@@ -4495,8 +4502,8 @@ pub trait InstanceInfo: Send + Sync {
     }
     fn create_direct_fb_surface_ext(
         &self,
-        _p_create_info: &vk::DirectFBSurfaceCreateInfoEXT,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_info: &'static vk::DirectFBSurfaceCreateInfoEXT,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::SurfaceKHR>> {
         LayerResult::Unhandled
     }
@@ -4504,14 +4511,14 @@ pub trait InstanceInfo: Send + Sync {
         &self,
         _physical_device: vk::PhysicalDevice,
         _queue_family_index: u32,
-        _dfb: &mut vk::IDirectFB,
+        _dfb: &'static mut vk::IDirectFB,
     ) -> LayerResult<bool> {
         LayerResult::Unhandled
     }
     fn create_screen_surface_qnx(
         &self,
-        _p_create_info: &vk::ScreenSurfaceCreateInfoQNX,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_info: &'static vk::ScreenSurfaceCreateInfoQNX,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::SurfaceKHR>> {
         LayerResult::Unhandled
     }
@@ -4526,45 +4533,18 @@ pub trait InstanceInfo: Send + Sync {
     fn get_physical_device_optical_flow_image_formats_nv(
         &self,
         _physical_device: vk::PhysicalDevice,
-        _p_optical_flow_image_format_info: &vk::OpticalFlowImageFormatInfoNV,
-        _p_image_format_properties: Option<&mut [vk::OpticalFlowImageFormatPropertiesNV]>,
+        _p_optical_flow_image_format_info: &'static vk::OpticalFlowImageFormatInfoNV,
+        _p_image_format_properties: Option<&'static mut [vk::OpticalFlowImageFormatPropertiesNV]>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
 }
 
-pub trait Layer: 'static + Sync + Default {
-    const LAYER_NAME: &'static str;
-    const SPEC_VERSION: u32;
-    const IMPLEMENTATION_VERSION: u32;
-    const LAYER_DESCRIPTION: &'static str;
-
-    type InstanceInfo: InstanceInfo;
-    type DeviceInfo: DeviceInfo;
-
-    fn create_instance_info(
-        &self,
-        create_info: &vk::InstanceCreateInfo,
-        allocator: Option<&vk::AllocationCallbacks>,
-        instance: Arc<ash::Instance>,
-        next_get_instance_proc_addr: vk::PFN_vkGetInstanceProcAddr,
-    ) -> Self::InstanceInfo;
-
-    fn create_device_info(
-        &self,
-        physical_device: vk::PhysicalDevice,
-        create_info: &vk::DeviceCreateInfo,
-        allocator: Option<&vk::AllocationCallbacks>,
-        device: Arc<ash::Device>,
-        next_get_device_proc_addr: vk::PFN_vkGetDeviceProcAddr,
-    ) -> Self::DeviceInfo;
-
-    fn hooked_commands(&self) -> &'static [VulkanCommand];
-
+pub trait GlobalHooks: Sync {
     fn create_instance(
         &self,
-        _p_create_info: &vk::InstanceCreateInfo,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
+        _p_create_info: &'static vk::InstanceCreateInfo,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::Instance>> {
         LayerResult::Unhandled
     }

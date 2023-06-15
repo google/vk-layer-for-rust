@@ -39,8 +39,8 @@ use generated::{
     ApiVersion, VulkanCommand,
 };
 pub use generated::{
-    layer_trait::{DeviceInfo, InstanceInfo, Layer, VulkanCommand as LayerVulkanCommand},
-    LayerResult,
+    layer_trait::{DeviceHooks, GlobalHooks, InstanceHooks, VulkanCommand as LayerVulkanCommand},
+    DeviceInfo, InstanceInfo, Layer, LayerResult,
 };
 
 fn as_i8_slice(input: &CString) -> &[i8] {
@@ -162,9 +162,11 @@ pub struct Global<T: Layer> {
     instance_map: Mutex<BTreeMap<InstanceDispatchKey, Arc<InstanceInfoWrapper<T::InstanceInfo>>>>,
     physical_device_map: Mutex<BTreeMap<vk::PhysicalDevice, Arc<PhysicalDeviceInfoWrapper>>>,
     device_map: Mutex<BTreeMap<DeviceDispatchKey, Arc<DeviceInfoWrapper<T::DeviceInfo>>>>,
-    layer_info: T,
+    pub layer_info: T,
+    // TODO: use normal Vec instead, so that we know when the initialization happens.
     instance_commands: OnceCell<Vec<VulkanCommand>>,
     device_commands: OnceCell<Vec<VulkanCommand>>,
+    get_instance_addr_proc_hooked: bool,
 }
 
 impl<T: Layer> Global<T> {
@@ -799,36 +801,61 @@ impl<T: Layer> Global<T> {
             // TODO: allow inteception of vkEnumerateInstanceVersion and handle
             // vkEnumerateInstanceVersion properly. For now, we still return NULL for
             // vkEnumerateInstanceVersion. The Vulkan loader should cover us for this case.
-            // Per spec, if instance is NULL, and pName is not NULL, NULL should be returned.
+            // Per spec, if instance is NULL, and pName is neither NULL nor a global command, NULL
+            // should be returned.
             return None;
         }
         let instance_info = global.get_instance_info(instance)?;
-        if let LayerResult::Handled(res) =
-            instance_info.customized_info.get_instance_proc_addr(name)
-        {
-            return res;
+        if global.get_instance_addr_proc_hooked {
+            if let LayerResult::Handled(res) = instance_info
+                .customized_info
+                .hooks()
+                .get_instance_proc_addr(name)
+            {
+                return res;
+            }
         }
-        let instance_commands = global.get_instance_commands();
         let get_next_proc_addr =
             || unsafe { (instance_info.get_instance_proc_addr)(instance, p_name) };
-        let index = match instance_commands
+        let instance_commands = global.get_instance_commands();
+        let instance_command = match instance_commands
             .binary_search_by_key(&name, |VulkanCommand { name, .. }| name)
         {
-            Ok(index) => index,
-            Err(_) => return get_next_proc_addr(),
+            Ok(index) => Some(&instance_commands[index]),
+            Err(_) => None,
         };
-        let command = &instance_commands[index];
-        if !command.hooked {
-            return get_next_proc_addr();
+        if let Some(instance_command) = instance_command {
+            if !instance_command.hooked {
+                return get_next_proc_addr();
+            }
+            let enabled = instance_command
+                .features
+                .iter()
+                .any(|feature| match feature {
+                    Feature::Extension(extension) => {
+                        instance_info.enabled_extensions.contains(extension)
+                    }
+                    Feature::Core(version) => *version <= instance_info.api_version,
+                });
+            if !enabled {
+                return get_next_proc_addr();
+            }
+            return instance_command.proc;
         }
-        let enabled = command.features.iter().any(|feature| match feature {
-            Feature::Extension(extension) => instance_info.enabled_extensions.contains(extension),
-            Feature::Core(version) => *version <= instance_info.api_version,
-        });
-        if !enabled {
-            return get_next_proc_addr();
+        let device_commands = global.get_device_commands();
+        let device_command =
+            match device_commands.binary_search_by_key(&name, |VulkanCommand { name, .. }| name) {
+                Ok(index) => Some(&device_commands[index]),
+                Err(_) => None,
+            };
+        if let Some(device_command) = device_command {
+            if !device_command.hooked {
+                return get_next_proc_addr();
+            }
+            return device_command.proc;
         }
-        return command.proc;
+        // We don't recognize this command.
+        get_next_proc_addr()
     }
 
     /// # Safety
@@ -843,7 +870,11 @@ impl<T: Layer> Global<T> {
         let name = name.to_str().expect("name should be a valid UTF-8 string.");
         let global = Self::instance();
         let device_info = global.get_device_info(device)?;
-        if let LayerResult::Handled(res) = device_info.customized_info.get_device_proc_addr(name) {
+        if let LayerResult::Handled(res) = device_info
+            .customized_info
+            .hooks()
+            .get_device_proc_addr(name)
+        {
             return res;
         }
         if let Ok(index) = global
@@ -858,27 +889,37 @@ impl<T: Layer> Global<T> {
 
 impl<T: Layer> Default for Global<T> {
     fn default() -> Self {
+        let layer_info: T = Default::default();
+        let get_instance_addr_proc_hooked = layer_info
+            .hooked_commands()
+            .any(|command| command == LayerVulkanCommand::GetInstanceProcAddr);
         Self {
             instance_map: Default::default(),
             physical_device_map: Default::default(),
             device_map: Default::default(),
-            layer_info: Default::default(),
+            layer_info,
             instance_commands: Default::default(),
             device_commands: Default::default(),
+            get_instance_addr_proc_hooked,
         }
     }
 }
 
 #[cfg(test)]
 mod test {
-    use crate::{generated::VulkanCommand, test_utils::MockLayer, Global};
-    use std::cmp::Ordering;
+    use crate::{
+        generated::VulkanCommand,
+        test_utils::{TestLayer, TestLayerWrapper},
+        Global,
+    };
+    use std::{cmp::Ordering, sync::Arc};
 
     #[test]
     fn commands_must_be_sorted() {
         #[derive(Default)]
-        struct Local;
-        type StubLayer = MockLayer<Local>;
+        struct Tag;
+        impl TestLayer for Tag {}
+        type StubLayer = Arc<TestLayerWrapper<Tag>>;
         #[inline]
         fn check<'a, T: PartialOrd>(last: &'a mut T) -> impl FnMut(T) -> bool + 'a {
             move |curr| {

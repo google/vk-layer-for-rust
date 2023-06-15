@@ -38,7 +38,6 @@ class LayerTraitGenerator(OutputGenerator):
         self.outFile.write("#![allow(clippy::too_many_arguments)]\n")
         self.outFile.write('\n'.join([
             "use std::ffi::{c_int, c_void};",
-            "use std::sync::Arc;",
             "",
             "use ash::{vk, prelude::VkResult};",
             "",
@@ -61,41 +60,12 @@ class LayerTraitGenerator(OutputGenerator):
         self.outFile.write(generate_unhandled_command_comments(self.unhandled_commands.values()))
 
         dispatch_chain_type_to_lines: dict[DispatchChainType, list[str]] = {
-            DispatchChainType.GLOBAL: [
-                "pub trait Layer: 'static + Sync + Default {",
-                "    const LAYER_NAME: &'static str;",
-                "    const SPEC_VERSION: u32;",
-                "    const IMPLEMENTATION_VERSION: u32;",
-                "    const LAYER_DESCRIPTION: &'static str;",
-                "",
-                "    type InstanceInfo: InstanceInfo;",
-                "    type DeviceInfo: DeviceInfo;",
-                "",
-                "    fn create_instance_info(",
-                "        &self,",
-                "        create_info: &vk::InstanceCreateInfo,",
-                "        allocator: Option<&vk::AllocationCallbacks>,",
-                "        instance: Arc<ash::Instance>,",
-                "        next_get_instance_proc_addr: vk::PFN_vkGetInstanceProcAddr,"
-                "    ) -> Self::InstanceInfo;",
-                "",
-                "    fn create_device_info(",
-                "        &self,",
-                "        physical_device: vk::PhysicalDevice,",
-                "        create_info: &vk::DeviceCreateInfo,",
-                "        allocator: Option<&vk::AllocationCallbacks>,",
-                "        device: Arc<ash::Device>,",
-                "        next_get_device_proc_addr: vk::PFN_vkGetDeviceProcAddr,"
-                "    ) -> Self::DeviceInfo;",
-                "",
-                "    fn hooked_commands(&self) -> &'static [VulkanCommand];",
-                "",
-            ],
-            DispatchChainType.INSTANCE: ["pub trait InstanceInfo: Send + Sync {"],
-            DispatchChainType.DEVICE: ["pub trait DeviceInfo: Send + Sync {"],
+            DispatchChainType.GLOBAL: ["pub trait GlobalHooks: Sync {"],
+            DispatchChainType.INSTANCE: ["pub trait InstanceHooks: Send + Sync {"],
+            DispatchChainType.DEVICE: ["pub trait DeviceHooks: Send + Sync {"],
         }
         command_enum = [
-            "#[derive(PartialOrd, Ord, PartialEq, Eq, Hash, Clone)]"
+            "#[derive(PartialOrd, Ord, PartialEq, Eq, Hash, Clone)]",
             "pub enum VulkanCommand {",
         ]
 

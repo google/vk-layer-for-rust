@@ -18,7 +18,7 @@ import logging
 import os
 import re
 import reg
-from typing import Callable, ClassVar, NamedTuple, Optional
+from typing import Callable, ClassVar, NamedTuple, Optional, Generator
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 from dataclasses import dataclass, field
@@ -575,10 +575,6 @@ class RustType(NamedTuple):
             # the value must be non-zero.
             return self.name
 
-        # Generic type for bool for efficient ABI breaking API.
-        if self.is_root and self.slice_of is not None and self.slice_of.name == "bool":
-            return "impl Iterator<Item = bool>"
-
         def wrap_option(inner: str) -> str:
             if self.is_optional:
                 return f'Option<{inner}>'
@@ -599,10 +595,10 @@ class RustType(NamedTuple):
             return wrap_option(add_pointer(self.points_to.to_string()))
         elif self.slice_of is not None:
             mut_mod = '' if self.slice_of.is_const else 'mut '
-            return wrap_option(f'&{mut_mod}[{self.slice_of.to_string()}]')
+            return wrap_option(f"&'static {mut_mod}[{self.slice_of.to_string()}]")
         elif self.refers_to is not None:
             mut_mod = '' if self.refers_to.is_const else 'mut '
-            return wrap_option(f'&{mut_mod}{self.refers_to.to_string()}')
+            return wrap_option(f"&'static {mut_mod}{self.refers_to.to_string()}")
         elif self.array_info is not None:
             array_info = self.array_info
             return wrap_option(f'[{array_info.element_type.to_string()}; {array_info.length}]')
@@ -690,11 +686,37 @@ class RustMethod(NamedTuple):
         )
 
     def to_string(self) -> str:
-        params = ', '.join([param.to_string() for param in self.parameters])
+        class TypeParam(NamedTuple):
+            name: str
+            restriction: str
+
+        def generate_type_params(used_params: list[TypeParam]) -> Generator[str, str, None]:
+            type_arg_names = ["T", "U", "V", "W"]
+            for type_arg_name in type_arg_names:
+                restriction = yield type_arg_name
+                used_params.append(TypeParam(name=type_arg_name, restriction=restriction))
+            assert False, "Too many generic type parameters."
+
+        used_type_params: list[TypeParam] = []
+        type_params = generate_type_params(used_type_params)
+
+        def param_to_string(param: RustParam) -> str:
+            if param.type.slice_of is not None and param.type.slice_of.name == "bool":
+                type_param = next(type_params)
+                type_params.send("Iterator<Item = bool> + 'static")
+                # Generic type for bool for efficient ABI breaking API.
+                return f'{param.name}: {type_param}'
+            return param.to_string()
+        params = ', '.join([param_to_string(param) for param in self.parameters])
         # Prevent the Rust linter from complaining explicit -> ()
         assert self.return_type != '()', ("Unexpected rust return type: (). All return type should "
                                           "be LayerResult<T>")
-        return f'fn {self.name}(&self, {params}) -> {self.return_type}'
+        generic_params: str = ""
+        if len(used_type_params) > 0:
+            generic_params = ", ".join(
+                [f"{type_param.name}: {type_param.restriction}" for type_param in used_type_params])
+            generic_params  = f"<{generic_params}>"
+        return f'fn {self.name}{generic_params}(&self, {params}) -> {self.return_type}'
 
 
 def generate_unhandled_command_comments(

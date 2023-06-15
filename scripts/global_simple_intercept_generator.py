@@ -532,7 +532,7 @@ class VulkanCommand(NamedTuple):
 
         param_names = [param.name for param in self.rust_fn.parameters]
         lines += [
-            (f"let layer_result = {dispatch_chain_var}.customized_info.{self.rust_fn.name}("
+            (f"let layer_result = {dispatch_chain_var}.customized_info.hooks().{self.rust_fn.name}("
              f"{', '.join(intercept_params)});"),
             "match layer_result {",
             f"    LayerResult::Handled(res) => {{",
@@ -587,7 +587,7 @@ class GlobalSimpleInterceptGenerator(OutputGenerator):
             "use smallvec::smallvec;",
             "",
             ("use crate::{DeviceInfo, fill_vk_out_array, Global, InstanceInfo, Layer, LayerResult, "
-             "LayerVulkanCommand};"),
+             "LayerVulkanCommand, InstanceHooks, DeviceHooks};"),
             ("use super::{get_instance_proc_addr_loader, get_device_proc_addr_loader, "
              "VulkanCommand, TryFromExtensionError, ApiVersion};"),
             "",
@@ -682,7 +682,7 @@ class GlobalSimpleInterceptGenerator(OutputGenerator):
                     hooked_expr = "true"
                 else:
                     hooked_expr = (f'{hooked_commands_var}.contains('
-                                   f'&&LayerVulkanCommand::{hook_command_variant_value})')
+                                   f'&LayerVulkanCommand::{hook_command_variant_value})')
                 lines += [
                     (f'VulkanCommand {{'),
                     (f'    name: "{proc_name}",'),
@@ -699,7 +699,7 @@ class GlobalSimpleInterceptGenerator(OutputGenerator):
             "impl<T: Layer> Global<T> {",
             "    pub(crate) fn get_device_commands(&self) -> &[VulkanCommand] {",
             "        self.device_commands.get_or_init(|| {",
-            ("            let hooked_commands = self.layer_info.hooked_commands().iter()"
+            ("            let hooked_commands = self.layer_info.hooked_commands()"
              ".collect::<HashSet<_>>();"),
             "            vec![",
         ] + [""]))
@@ -712,7 +712,7 @@ class GlobalSimpleInterceptGenerator(OutputGenerator):
         self.outFile.write("\n".join([
             "    pub(crate) fn get_instance_commands(&self) -> &[VulkanCommand] {",
             "        self.instance_commands.get_or_init(|| {",
-            ("            let hooked_commands = self.layer_info.hooked_commands().iter()"
+            ("            let hooked_commands = self.layer_info.hooked_commands()"
              ".collect::<HashSet<_>>();"),
             "            vec![",
         ] + [""]))
