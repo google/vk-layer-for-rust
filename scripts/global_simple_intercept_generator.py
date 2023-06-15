@@ -632,7 +632,7 @@ class VulkanCommand(NamedTuple):
             [
                 (
                     "let layer_result ="
-                    f" {dispatch_chain_var}.customized_info.hooks().{self.rust_fn.name}("
+                    f" {dispatch_chain_var}.customized_info.borrow().hooks().{self.rust_fn.name}("
                     f"{', '.join(intercept_params)});"
                 ),
                 "match layer_result {",
@@ -691,8 +691,8 @@ class GlobalSimpleInterceptGenerator(OutputGenerator):
                 [
                     "#![allow(unused_unsafe)]",
                     (
-                        "use std::{ffi::{c_int, c_void, c_char, CStr}, ptr::NonNull, "
-                        "sync::Arc, collections::HashSet};"
+                        "use std::{borrow:: Borrow, ffi::{c_int, c_void, c_char, CStr},"
+                        " ptr::NonNull, sync::Arc, collections::HashSet};"
                     ),
                     "use ash::vk;",
                     "use smallvec::smallvec;",

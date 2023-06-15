@@ -17,6 +17,7 @@
 use ash::vk;
 use smallvec::smallvec;
 use std::{
+    borrow::Borrow,
     collections::HashSet,
     ffi::{c_char, c_int, c_void, CStr},
     ptr::NonNull,
@@ -7374,6 +7375,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.core.fp_v1_0();
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .get_physical_device_features(physical_device, unsafe { p_features.as_mut() }.unwrap());
         match layer_result {
@@ -7394,6 +7396,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.core.fp_v1_0();
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .get_physical_device_format_properties(
                 physical_device,
@@ -7426,6 +7429,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.core.fp_v1_0();
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .get_physical_device_image_format_properties(
                 physical_device,
@@ -7464,6 +7468,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.core.fp_v1_0();
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .get_physical_device_properties(
                 physical_device,
@@ -7488,6 +7493,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .get_physical_device_queue_family_properties(
                 physical_device,
@@ -7523,6 +7529,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.core.fp_v1_0();
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .get_physical_device_memory_properties(
                 physical_device,
@@ -7555,6 +7562,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .get_physical_device_sparse_image_format_properties(
                 physical_device,
@@ -7600,6 +7608,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.core.fp_v1_1();
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .get_physical_device_features2(
                 physical_device,
@@ -7622,6 +7631,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.core.fp_v1_1();
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .get_physical_device_properties2(
                 physical_device,
@@ -7645,6 +7655,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.core.fp_v1_1();
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .get_physical_device_format_properties2(
                 physical_device,
@@ -7673,6 +7684,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.core.fp_v1_1();
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .get_physical_device_image_format_properties2(
                 physical_device,
@@ -7705,6 +7717,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .get_physical_device_queue_family_properties2(
                 physical_device,
@@ -7740,6 +7753,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.core.fp_v1_1();
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .get_physical_device_memory_properties2(
                 physical_device,
@@ -7768,6 +7782,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .get_physical_device_sparse_image_format_properties2(
                 physical_device,
@@ -7806,6 +7821,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.core.fp_v1_1();
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .get_physical_device_external_buffer_properties(
                 physical_device,
@@ -7834,6 +7850,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.core.fp_v1_1();
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .get_physical_device_external_fence_properties(
                 physical_device,
@@ -7862,6 +7879,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.core.fp_v1_1();
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .get_physical_device_external_semaphore_properties(
                 physical_device,
@@ -7891,6 +7909,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .get_physical_device_tool_properties(
                 physical_device,
@@ -7930,6 +7949,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.khr_surface;
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .destroy_surface_khr(surface, unsafe { p_allocator.as_ref() });
         match layer_result {
@@ -7951,6 +7971,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.khr_surface;
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .get_physical_device_surface_support_khr(physical_device, queue_family_index, surface);
         match layer_result {
@@ -7983,6 +8004,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.khr_surface;
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .get_physical_device_surface_capabilities_khr(
                 physical_device,
@@ -8016,6 +8038,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .get_physical_device_surface_formats_khr(
                 physical_device,
@@ -8058,6 +8081,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.khr_surface;
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .get_physical_device_surface_present_modes_khr(physical_device, surface);
         match layer_result {
@@ -8094,6 +8118,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .get_physical_device_present_rectangles_khr(
                 physical_device,
@@ -8136,6 +8161,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .get_physical_device_display_properties_khr(
                 physical_device,
@@ -8176,6 +8202,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .get_physical_device_display_plane_properties_khr(
                 physical_device,
@@ -8216,6 +8243,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.khr_display;
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .get_display_plane_supported_displays_khr(physical_device, plane_index);
         match layer_result {
@@ -8248,6 +8276,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .get_display_mode_properties_khr(
                 physical_device,
@@ -8291,6 +8320,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.khr_display;
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .create_display_mode_khr(
                 physical_device,
@@ -8329,6 +8359,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.khr_display;
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .get_display_plane_capabilities_khr(
                 physical_device,
@@ -8363,6 +8394,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.khr_display;
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .create_display_plane_surface_khr(unsafe { p_create_info.as_ref() }.unwrap(), unsafe {
                 p_allocator.as_ref()
@@ -8397,6 +8429,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.khr_xlib_surface;
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .create_xlib_surface_khr(unsafe { p_create_info.as_ref() }.unwrap(), unsafe {
                 p_allocator.as_ref()
@@ -8431,6 +8464,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.khr_xlib_surface;
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .get_physical_device_xlib_presentation_support_khr(
                 physical_device,
@@ -8468,6 +8502,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.khr_xcb_surface;
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .create_xcb_surface_khr(unsafe { p_create_info.as_ref() }.unwrap(), unsafe {
                 p_allocator.as_ref()
@@ -8502,6 +8537,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.khr_xcb_surface;
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .get_physical_device_xcb_presentation_support_khr(
                 physical_device,
@@ -8539,6 +8575,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.khr_wayland_surface;
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .create_wayland_surface_khr(unsafe { p_create_info.as_ref() }.unwrap(), unsafe {
                 p_allocator.as_ref()
@@ -8572,6 +8609,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.khr_wayland_surface;
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .get_physical_device_wayland_presentation_support_khr(
                 physical_device,
@@ -8607,6 +8645,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.khr_android_surface;
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .create_android_surface_khr(unsafe { p_create_info.as_ref() }.unwrap(), unsafe {
                 p_allocator.as_ref()
@@ -8641,6 +8680,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.khr_win32_surface;
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .create_win32_surface_khr(unsafe { p_create_info.as_ref() }.unwrap(), unsafe {
                 p_allocator.as_ref()
@@ -8673,6 +8713,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.khr_win32_surface;
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .get_physical_device_win32_presentation_support_khr(
                 physical_device,
@@ -8705,6 +8746,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.khr_video_queue;
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .get_physical_device_video_capabilities_khr(
                 physical_device,
@@ -8738,6 +8780,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .get_physical_device_video_format_properties_khr(
                 physical_device,
@@ -8783,6 +8826,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .enumerate_physical_device_queue_family_performance_query_counters_khr(
                 physical_device,
@@ -8836,6 +8880,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.khr_performance_query;
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .get_physical_device_queue_family_performance_query_passes_khr(
                 physical_device,
@@ -8865,6 +8910,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.khr_get_surface_capabilities2;
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .get_physical_device_surface_capabilities2_khr(
                 physical_device,
@@ -8898,6 +8944,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .get_physical_device_surface_formats2_khr(
                 physical_device,
@@ -8940,6 +8987,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .get_physical_device_display_properties2_khr(
                 physical_device,
@@ -8980,6 +9028,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .get_physical_device_display_plane_properties2_khr(
                 physical_device,
@@ -9021,6 +9070,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .get_display_mode_properties2_khr(
                 physical_device,
@@ -9062,6 +9112,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.khr_get_display_properties2;
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .get_display_plane_capabilities2_khr(
                 physical_device,
@@ -9094,6 +9145,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .get_physical_device_fragment_shading_rates_khr(
                 physical_device,
@@ -9134,6 +9186,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.ext_debug_report;
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .create_debug_report_callback_ext(unsafe { p_create_info.as_ref() }.unwrap(), unsafe {
                 p_allocator.as_ref()
@@ -9167,6 +9220,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.ext_debug_report;
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .destroy_debug_report_callback_ext(callback, unsafe { p_allocator.as_ref() });
         match layer_result {
@@ -9192,6 +9246,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.ext_debug_report;
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .debug_report_message_ext(
                 flags,
@@ -9230,6 +9285,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.ggp_stream_descriptor_surface;
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .create_stream_descriptor_surface_ggp(
                 unsafe { p_create_info.as_ref() }.unwrap(),
@@ -9269,6 +9325,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.nv_external_memory_capabilities;
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .get_physical_device_external_image_format_properties_nv(
                 physical_device,
@@ -9311,6 +9368,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.nn_vi_surface;
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .create_vi_surface_nn(unsafe { p_create_info.as_ref() }.unwrap(), unsafe {
                 p_allocator.as_ref()
@@ -9343,6 +9401,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.ext_direct_mode_display;
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .release_display_ext(physical_device, display);
         match layer_result {
@@ -9366,6 +9425,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.ext_acquire_xlib_display;
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .acquire_xlib_display_ext(physical_device, unsafe { dpy.as_mut() }.unwrap(), display);
         match layer_result {
@@ -9390,6 +9450,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.ext_acquire_xlib_display;
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .get_rand_r_output_display_ext(
                 physical_device,
@@ -9425,6 +9486,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.ext_display_surface_counter;
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .get_physical_device_surface_capabilities2_ext(
                 physical_device,
@@ -9457,6 +9519,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.mvk_ios_surface;
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .create_ios_surface_mvk(unsafe { p_create_info.as_ref() }.unwrap(), unsafe {
                 p_allocator.as_ref()
@@ -9491,6 +9554,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.mvk_macos_surface;
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .create_mac_os_surface_mvk(unsafe { p_create_info.as_ref() }.unwrap(), unsafe {
                 p_allocator.as_ref()
@@ -9525,6 +9589,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.ext_debug_utils;
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .create_debug_utils_messenger_ext(unsafe { p_create_info.as_ref() }.unwrap(), unsafe {
                 p_allocator.as_ref()
@@ -9558,6 +9623,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.ext_debug_utils;
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .destroy_debug_utils_messenger_ext(messenger, unsafe { p_allocator.as_ref() });
         match layer_result {
@@ -9579,6 +9645,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.ext_debug_utils;
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .submit_debug_utils_message_ext(
                 message_severity,
@@ -9608,6 +9675,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.ext_sample_locations;
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .get_physical_device_multisample_properties_ext(
                 physical_device,
@@ -9636,6 +9704,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.ext_calibrated_timestamps;
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .get_physical_device_calibrateable_time_domains_ext(physical_device);
         match layer_result {
@@ -9670,6 +9739,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.fuchsia_imagepipe_surface;
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .create_image_pipe_surface_fuchsia(
                 unsafe { p_create_info.as_ref() }.unwrap(),
@@ -9705,6 +9775,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.ext_metal_surface;
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .create_metal_surface_ext(unsafe { p_create_info.as_ref() }.unwrap(), unsafe {
                 p_allocator.as_ref()
@@ -9739,6 +9810,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .get_physical_device_cooperative_matrix_properties_nv(
                 physical_device,
@@ -9779,6 +9851,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .get_physical_device_supported_framebuffer_mixed_samples_combinations_nv(
                 physical_device,
@@ -9820,6 +9893,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.ext_full_screen_exclusive;
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .get_physical_device_surface_present_modes2_ext(
                 physical_device,
@@ -9858,6 +9932,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.ext_headless_surface;
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .create_headless_surface_ext(unsafe { p_create_info.as_ref() }.unwrap(), unsafe {
                 p_allocator.as_ref()
@@ -9891,6 +9966,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.ext_acquire_drm_display;
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .acquire_drm_display_ext(physical_device, drm_fd, display);
         match layer_result {
@@ -9913,11 +9989,11 @@ impl<T: Layer> Global<T> {
         // vkGetDrmDisplayEXT
         let instance_info = global.get_instance_info(physical_device).unwrap();
         let dispatch_table = &instance_info.dispatch_table.ext_acquire_drm_display;
-        let layer_result = instance_info.customized_info.hooks().get_drm_display_ext(
-            physical_device,
-            drm_fd,
-            connector_id,
-        );
+        let layer_result = instance_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .get_drm_display_ext(physical_device, drm_fd, connector_id);
         match layer_result {
             LayerResult::Handled(res) => match res {
                 Ok(res) => {
@@ -9941,6 +10017,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.nv_acquire_winrt_display;
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .acquire_winrt_display_nv(physical_device, display);
         match layer_result {
@@ -9964,6 +10041,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.nv_acquire_winrt_display;
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .get_winrt_display_nv(physical_device, device_relative_id);
         match layer_result {
@@ -9995,6 +10073,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.ext_directfb_surface;
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .create_direct_fb_surface_ext(unsafe { p_create_info.as_ref() }.unwrap(), unsafe {
                 p_allocator.as_ref()
@@ -10028,6 +10107,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.ext_directfb_surface;
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .get_physical_device_direct_fb_presentation_support_ext(
                 physical_device,
@@ -10063,6 +10143,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.qnx_screen_surface;
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .create_screen_surface_qnx(unsafe { p_create_info.as_ref() }.unwrap(), unsafe {
                 p_allocator.as_ref()
@@ -10096,6 +10177,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &instance_info.dispatch_table.qnx_screen_surface;
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .get_physical_device_screen_presentation_support_qnx(
                 physical_device,
@@ -10132,6 +10214,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = instance_info
             .customized_info
+            .borrow()
             .hooks()
             .get_physical_device_optical_flow_image_formats_nv(
                 physical_device,
@@ -10174,6 +10257,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_device_queue(queue_family_index, queue_index);
         match layer_result {
@@ -10196,7 +10280,7 @@ impl<T: Layer> Global<T> {
         let device_info = global.get_device_info(queue).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         #[allow(clippy::unnecessary_cast)]
-        let layer_result = device_info.customized_info.hooks().queue_submit(
+        let layer_result = device_info.customized_info.borrow().hooks().queue_submit(
             queue,
             unsafe { std::slice::from_raw_parts(p_submits, submit_count as usize) },
             fence,
@@ -10216,7 +10300,11 @@ impl<T: Layer> Global<T> {
         // vkQueueWaitIdle
         let device_info = global.get_device_info(queue).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        let layer_result = device_info.customized_info.hooks().queue_wait_idle(queue);
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .queue_wait_idle(queue);
         match layer_result {
             LayerResult::Handled(res) => match res {
                 Ok(()) => vk::Result::SUCCESS,
@@ -10230,7 +10318,11 @@ impl<T: Layer> Global<T> {
         // vkDeviceWaitIdle
         let device_info = global.get_device_info(device).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        let layer_result = device_info.customized_info.hooks().device_wait_idle();
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .device_wait_idle();
         match layer_result {
             LayerResult::Handled(res) => match res {
                 Ok(()) => vk::Result::SUCCESS,
@@ -10251,6 +10343,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .allocate_memory(unsafe { p_allocate_info.as_ref() }.unwrap(), unsafe {
                 p_allocator.as_ref()
@@ -10279,6 +10372,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .free_memory(memory, unsafe { p_allocator.as_ref() });
         match layer_result {
@@ -10302,6 +10396,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .map_memory(memory, offset, size, flags);
         match layer_result {
@@ -10322,7 +10417,11 @@ impl<T: Layer> Global<T> {
         // vkUnmapMemory
         let device_info = global.get_device_info(device).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        let layer_result = device_info.customized_info.hooks().unmap_memory(memory);
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .unmap_memory(memory);
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe { (dispatch_table.unmap_memory)(device, memory) },
@@ -10340,6 +10439,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .flush_mapped_memory_ranges(unsafe {
                 std::slice::from_raw_parts(p_memory_ranges, memory_range_count as usize)
@@ -10370,6 +10470,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .invalidate_mapped_memory_ranges(unsafe {
                 std::slice::from_raw_parts(p_memory_ranges, memory_range_count as usize)
@@ -10399,6 +10500,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_device_memory_commitment(memory);
         match layer_result {
@@ -10424,11 +10526,11 @@ impl<T: Layer> Global<T> {
         // vkBindBufferMemory
         let device_info = global.get_device_info(device).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        let layer_result =
-            device_info
-                .customized_info
-                .hooks()
-                .bind_buffer_memory(buffer, memory, memory_offset);
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .bind_buffer_memory(buffer, memory, memory_offset);
         match layer_result {
             LayerResult::Handled(res) => match res {
                 Ok(()) => vk::Result::SUCCESS,
@@ -10449,11 +10551,11 @@ impl<T: Layer> Global<T> {
         // vkBindImageMemory
         let device_info = global.get_device_info(device).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        let layer_result =
-            device_info
-                .customized_info
-                .hooks()
-                .bind_image_memory(image, memory, memory_offset);
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .bind_image_memory(image, memory, memory_offset);
         match layer_result {
             LayerResult::Handled(res) => match res {
                 Ok(()) => vk::Result::SUCCESS,
@@ -10475,6 +10577,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_buffer_memory_requirements(
                 buffer,
@@ -10502,6 +10605,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_image_memory_requirements(
                 image,
@@ -10527,6 +10631,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_image_sparse_memory_requirements(
                 image,
@@ -10565,11 +10670,15 @@ impl<T: Layer> Global<T> {
         let device_info = global.get_device_info(queue).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         #[allow(clippy::unnecessary_cast)]
-        let layer_result = device_info.customized_info.hooks().queue_bind_sparse(
-            queue,
-            unsafe { std::slice::from_raw_parts(p_bind_info, bind_info_count as usize) },
-            fence,
-        );
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .queue_bind_sparse(
+                queue,
+                unsafe { std::slice::from_raw_parts(p_bind_info, bind_info_count as usize) },
+                fence,
+            );
         match layer_result {
             LayerResult::Handled(res) => match res {
                 Ok(()) => vk::Result::SUCCESS,
@@ -10592,6 +10701,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .create_fence(unsafe { p_create_info.as_ref() }.unwrap(), unsafe {
                 p_allocator.as_ref()
@@ -10620,6 +10730,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .destroy_fence(fence, unsafe { p_allocator.as_ref() });
         match layer_result {
@@ -10641,6 +10752,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .reset_fences(unsafe { std::slice::from_raw_parts(p_fences, fence_count as usize) });
         match layer_result {
@@ -10658,7 +10770,11 @@ impl<T: Layer> Global<T> {
         // vkGetFenceStatus
         let device_info = global.get_device_info(device).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        let layer_result = device_info.customized_info.hooks().get_fence_status(fence);
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .get_fence_status(fence);
         match layer_result {
             LayerResult::Handled(res) => match res {
                 Ok(()) => vk::Result::SUCCESS,
@@ -10679,11 +10795,15 @@ impl<T: Layer> Global<T> {
         let device_info = global.get_device_info(device).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         #[allow(clippy::unnecessary_cast)]
-        let layer_result = device_info.customized_info.hooks().wait_for_fences(
-            unsafe { std::slice::from_raw_parts(p_fences, fence_count as usize) },
-            wait_all == vk::TRUE,
-            timeout,
-        );
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .wait_for_fences(
+                unsafe { std::slice::from_raw_parts(p_fences, fence_count as usize) },
+                wait_all == vk::TRUE,
+                timeout,
+            );
         match layer_result {
             LayerResult::Handled(res) => match res {
                 Ok(()) => vk::Result::SUCCESS,
@@ -10706,6 +10826,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .create_semaphore(unsafe { p_create_info.as_ref() }.unwrap(), unsafe {
                 p_allocator.as_ref()
@@ -10734,6 +10855,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .destroy_semaphore(semaphore, unsafe { p_allocator.as_ref() });
         match layer_result {
@@ -10755,6 +10877,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .create_event(unsafe { p_create_info.as_ref() }.unwrap(), unsafe {
                 p_allocator.as_ref()
@@ -10783,6 +10906,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .destroy_event(event, unsafe { p_allocator.as_ref() });
         match layer_result {
@@ -10797,7 +10921,11 @@ impl<T: Layer> Global<T> {
         // vkGetEventStatus
         let device_info = global.get_device_info(device).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        let layer_result = device_info.customized_info.hooks().get_event_status(event);
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .get_event_status(event);
         match layer_result {
             LayerResult::Handled(res) => match res {
                 Ok(()) => vk::Result::SUCCESS,
@@ -10811,7 +10939,11 @@ impl<T: Layer> Global<T> {
         // vkSetEvent
         let device_info = global.get_device_info(device).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        let layer_result = device_info.customized_info.hooks().set_event(event);
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .set_event(event);
         match layer_result {
             LayerResult::Handled(res) => match res {
                 Ok(()) => vk::Result::SUCCESS,
@@ -10825,7 +10957,11 @@ impl<T: Layer> Global<T> {
         // vkResetEvent
         let device_info = global.get_device_info(device).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        let layer_result = device_info.customized_info.hooks().reset_event(event);
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .reset_event(event);
         match layer_result {
             LayerResult::Handled(res) => match res {
                 Ok(()) => vk::Result::SUCCESS,
@@ -10846,6 +10982,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .create_query_pool(unsafe { p_create_info.as_ref() }.unwrap(), unsafe {
                 p_allocator.as_ref()
@@ -10874,6 +11011,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .destroy_query_pool(query_pool, unsafe { p_allocator.as_ref() });
         match layer_result {
@@ -10898,14 +11036,18 @@ impl<T: Layer> Global<T> {
         let device_info = global.get_device_info(device).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         #[allow(clippy::unnecessary_cast)]
-        let layer_result = device_info.customized_info.hooks().get_query_pool_results(
-            query_pool,
-            first_query,
-            query_count,
-            unsafe { std::slice::from_raw_parts_mut(p_data as *mut u8, data_size as usize) },
-            stride,
-            flags,
-        );
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .get_query_pool_results(
+                query_pool,
+                first_query,
+                query_count,
+                unsafe { std::slice::from_raw_parts_mut(p_data as *mut u8, data_size as usize) },
+                stride,
+                flags,
+            );
         match layer_result {
             LayerResult::Handled(res) => match res {
                 Ok(()) => vk::Result::SUCCESS,
@@ -10937,6 +11079,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .create_buffer(unsafe { p_create_info.as_ref() }.unwrap(), unsafe {
                 p_allocator.as_ref()
@@ -10965,6 +11108,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .destroy_buffer(buffer, unsafe { p_allocator.as_ref() });
         match layer_result {
@@ -10986,6 +11130,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .create_buffer_view(unsafe { p_create_info.as_ref() }.unwrap(), unsafe {
                 p_allocator.as_ref()
@@ -11014,6 +11159,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .destroy_buffer_view(buffer_view, unsafe { p_allocator.as_ref() });
         match layer_result {
@@ -11035,6 +11181,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .create_image(unsafe { p_create_info.as_ref() }.unwrap(), unsafe {
                 p_allocator.as_ref()
@@ -11063,6 +11210,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .destroy_image(image, unsafe { p_allocator.as_ref() });
         match layer_result {
@@ -11084,6 +11232,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_image_subresource_layout(
                 image,
@@ -11114,6 +11263,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .create_image_view(unsafe { p_create_info.as_ref() }.unwrap(), unsafe {
                 p_allocator.as_ref()
@@ -11142,6 +11292,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .destroy_image_view(image_view, unsafe { p_allocator.as_ref() });
         match layer_result {
@@ -11163,6 +11314,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .create_shader_module(unsafe { p_create_info.as_ref() }.unwrap(), unsafe {
                 p_allocator.as_ref()
@@ -11196,6 +11348,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .destroy_shader_module(shader_module, unsafe { p_allocator.as_ref() });
         match layer_result {
@@ -11217,6 +11370,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .create_pipeline_cache(unsafe { p_create_info.as_ref() }.unwrap(), unsafe {
                 p_allocator.as_ref()
@@ -11250,6 +11404,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .destroy_pipeline_cache(pipeline_cache, unsafe { p_allocator.as_ref() });
         match layer_result {
@@ -11271,6 +11426,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_pipeline_cache_data(pipeline_cache);
         match layer_result {
@@ -11304,6 +11460,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .merge_pipeline_caches(dst_cache, unsafe {
                 std::slice::from_raw_parts(p_src_caches, src_cache_count as usize)
@@ -11338,6 +11495,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .create_graphics_pipelines(
                 pipeline_cache,
@@ -11385,6 +11543,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .create_compute_pipelines(
                 pipeline_cache,
@@ -11428,6 +11587,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .destroy_pipeline(pipeline, unsafe { p_allocator.as_ref() });
         match layer_result {
@@ -11449,6 +11609,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .create_pipeline_layout(unsafe { p_create_info.as_ref() }.unwrap(), unsafe {
                 p_allocator.as_ref()
@@ -11482,6 +11643,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .destroy_pipeline_layout(pipeline_layout, unsafe { p_allocator.as_ref() });
         match layer_result {
@@ -11503,6 +11665,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .create_sampler(unsafe { p_create_info.as_ref() }.unwrap(), unsafe {
                 p_allocator.as_ref()
@@ -11531,6 +11694,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .destroy_sampler(sampler, unsafe { p_allocator.as_ref() });
         match layer_result {
@@ -11552,6 +11716,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .create_descriptor_set_layout(unsafe { p_create_info.as_ref() }.unwrap(), unsafe {
                 p_allocator.as_ref()
@@ -11585,6 +11750,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .destroy_descriptor_set_layout(descriptor_set_layout, unsafe { p_allocator.as_ref() });
         match layer_result {
@@ -11610,6 +11776,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .create_descriptor_pool(unsafe { p_create_info.as_ref() }.unwrap(), unsafe {
                 p_allocator.as_ref()
@@ -11643,6 +11810,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .destroy_descriptor_pool(descriptor_pool, unsafe { p_allocator.as_ref() });
         match layer_result {
@@ -11663,6 +11831,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .reset_descriptor_pool(descriptor_pool, flags);
         match layer_result {
@@ -11686,6 +11855,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .allocate_descriptor_sets(unsafe { p_allocate_info.as_ref() }.unwrap());
         match layer_result {
@@ -11727,6 +11897,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .free_descriptor_sets(descriptor_pool, unsafe {
                 std::slice::from_raw_parts(p_descriptor_sets, descriptor_set_count as usize)
@@ -11759,14 +11930,18 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         #[allow(clippy::unnecessary_cast)]
         #[allow(clippy::unnecessary_cast)]
-        let layer_result = device_info.customized_info.hooks().update_descriptor_sets(
-            unsafe {
-                std::slice::from_raw_parts(p_descriptor_writes, descriptor_write_count as usize)
-            },
-            unsafe {
-                std::slice::from_raw_parts(p_descriptor_copies, descriptor_copy_count as usize)
-            },
-        );
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .update_descriptor_sets(
+                unsafe {
+                    std::slice::from_raw_parts(p_descriptor_writes, descriptor_write_count as usize)
+                },
+                unsafe {
+                    std::slice::from_raw_parts(p_descriptor_copies, descriptor_copy_count as usize)
+                },
+            );
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -11792,6 +11967,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .create_framebuffer(unsafe { p_create_info.as_ref() }.unwrap(), unsafe {
                 p_allocator.as_ref()
@@ -11825,6 +12001,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .destroy_framebuffer(framebuffer, unsafe { p_allocator.as_ref() });
         match layer_result {
@@ -11846,6 +12023,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .create_render_pass(unsafe { p_create_info.as_ref() }.unwrap(), unsafe {
                 p_allocator.as_ref()
@@ -11879,6 +12057,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .destroy_render_pass(render_pass, unsafe { p_allocator.as_ref() });
         match layer_result {
@@ -11899,6 +12078,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_render_area_granularity(render_pass, unsafe { p_granularity.as_mut() }.unwrap());
         match layer_result {
@@ -11920,6 +12100,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .create_command_pool(unsafe { p_create_info.as_ref() }.unwrap(), unsafe {
                 p_allocator.as_ref()
@@ -11953,6 +12134,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .destroy_command_pool(command_pool, unsafe { p_allocator.as_ref() });
         match layer_result {
@@ -11973,6 +12155,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .reset_command_pool(command_pool, flags);
         match layer_result {
@@ -11996,6 +12179,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .allocate_command_buffers(unsafe { p_allocate_info.as_ref() }.unwrap());
         match layer_result {
@@ -12037,6 +12221,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .free_command_buffers(command_pool, unsafe {
                 std::slice::from_raw_parts(p_command_buffers, command_buffer_count as usize)
@@ -12063,6 +12248,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .begin_command_buffer(command_buffer, unsafe { p_begin_info.as_ref() }.unwrap());
         match layer_result {
@@ -12082,6 +12268,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .end_command_buffer(command_buffer);
         match layer_result {
@@ -12104,6 +12291,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .reset_command_buffer(command_buffer, flags);
         match layer_result {
@@ -12125,11 +12313,11 @@ impl<T: Layer> Global<T> {
         // vkCmdBindPipeline
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        let layer_result = device_info.customized_info.hooks().cmd_bind_pipeline(
-            command_buffer,
-            pipeline_bind_point,
-            pipeline,
-        );
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .cmd_bind_pipeline(command_buffer, pipeline_bind_point, pipeline);
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -12148,11 +12336,13 @@ impl<T: Layer> Global<T> {
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         #[allow(clippy::unnecessary_cast)]
-        let layer_result = device_info.customized_info.hooks().cmd_set_viewport(
-            command_buffer,
-            first_viewport,
-            unsafe { std::slice::from_raw_parts(p_viewports, viewport_count as usize) },
-        );
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .cmd_set_viewport(command_buffer, first_viewport, unsafe {
+                std::slice::from_raw_parts(p_viewports, viewport_count as usize)
+            });
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -12176,11 +12366,13 @@ impl<T: Layer> Global<T> {
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         #[allow(clippy::unnecessary_cast)]
-        let layer_result = device_info.customized_info.hooks().cmd_set_scissor(
-            command_buffer,
-            first_scissor,
-            unsafe { std::slice::from_raw_parts(p_scissors, scissor_count as usize) },
-        );
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .cmd_set_scissor(command_buffer, first_scissor, unsafe {
+                std::slice::from_raw_parts(p_scissors, scissor_count as usize)
+            });
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -12200,6 +12392,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_line_width(command_buffer, line_width);
         match layer_result {
@@ -12219,12 +12412,16 @@ impl<T: Layer> Global<T> {
         // vkCmdSetDepthBias
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        let layer_result = device_info.customized_info.hooks().cmd_set_depth_bias(
-            command_buffer,
-            depth_bias_constant_factor,
-            depth_bias_clamp,
-            depth_bias_slope_factor,
-        );
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .cmd_set_depth_bias(
+                command_buffer,
+                depth_bias_constant_factor,
+                depth_bias_clamp,
+                depth_bias_slope_factor,
+            );
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -12248,6 +12445,7 @@ impl<T: Layer> Global<T> {
         let blend_constants = unsafe { blend_constants.as_ref() }.unwrap();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_blend_constants(command_buffer, blend_constants);
         match layer_result {
@@ -12266,11 +12464,11 @@ impl<T: Layer> Global<T> {
         // vkCmdSetDepthBounds
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        let layer_result = device_info.customized_info.hooks().cmd_set_depth_bounds(
-            command_buffer,
-            min_depth_bounds,
-            max_depth_bounds,
-        );
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .cmd_set_depth_bounds(command_buffer, min_depth_bounds, max_depth_bounds);
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -12293,6 +12491,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_stencil_compare_mask(command_buffer, face_mask, compare_mask);
         match layer_result {
@@ -12317,6 +12516,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_stencil_write_mask(command_buffer, face_mask, write_mask);
         match layer_result {
@@ -12337,6 +12537,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_stencil_reference(command_buffer, face_mask, reference);
         match layer_result {
@@ -12364,6 +12565,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_bind_descriptor_sets(
                 command_buffer,
@@ -12403,12 +12605,11 @@ impl<T: Layer> Global<T> {
         // vkCmdBindIndexBuffer
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        let layer_result = device_info.customized_info.hooks().cmd_bind_index_buffer(
-            command_buffer,
-            buffer,
-            offset,
-            index_type,
-        );
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .cmd_bind_index_buffer(command_buffer, buffer, offset, index_type);
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -12429,12 +12630,16 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         #[allow(clippy::unnecessary_cast)]
         #[allow(clippy::unnecessary_cast)]
-        let layer_result = device_info.customized_info.hooks().cmd_bind_vertex_buffers(
-            command_buffer,
-            first_binding,
-            unsafe { std::slice::from_raw_parts(p_buffers, binding_count as usize) },
-            unsafe { std::slice::from_raw_parts(p_offsets, binding_count as usize) },
-        );
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .cmd_bind_vertex_buffers(
+                command_buffer,
+                first_binding,
+                unsafe { std::slice::from_raw_parts(p_buffers, binding_count as usize) },
+                unsafe { std::slice::from_raw_parts(p_offsets, binding_count as usize) },
+            );
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -12459,7 +12664,7 @@ impl<T: Layer> Global<T> {
         // vkCmdDraw
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        let layer_result = device_info.customized_info.hooks().cmd_draw(
+        let layer_result = device_info.customized_info.borrow().hooks().cmd_draw(
             command_buffer,
             vertex_count,
             instance_count,
@@ -12491,14 +12696,18 @@ impl<T: Layer> Global<T> {
         // vkCmdDrawIndexed
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        let layer_result = device_info.customized_info.hooks().cmd_draw_indexed(
-            command_buffer,
-            index_count,
-            instance_count,
-            first_index,
-            vertex_offset,
-            first_instance,
-        );
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .cmd_draw_indexed(
+                command_buffer,
+                index_count,
+                instance_count,
+                first_index,
+                vertex_offset,
+                first_instance,
+            );
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -12524,13 +12733,11 @@ impl<T: Layer> Global<T> {
         // vkCmdDrawIndirect
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        let layer_result = device_info.customized_info.hooks().cmd_draw_indirect(
-            command_buffer,
-            buffer,
-            offset,
-            draw_count,
-            stride,
-        );
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .cmd_draw_indirect(command_buffer, buffer, offset, draw_count, stride);
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -12557,6 +12764,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_draw_indexed_indirect(command_buffer, buffer, offset, draw_count, stride);
         match layer_result {
@@ -12582,7 +12790,7 @@ impl<T: Layer> Global<T> {
         // vkCmdDispatch
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        let layer_result = device_info.customized_info.hooks().cmd_dispatch(
+        let layer_result = device_info.customized_info.borrow().hooks().cmd_dispatch(
             command_buffer,
             group_countx,
             group_county,
@@ -12609,11 +12817,11 @@ impl<T: Layer> Global<T> {
         // vkCmdDispatchIndirect
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        let layer_result = device_info.customized_info.hooks().cmd_dispatch_indirect(
-            command_buffer,
-            buffer,
-            offset,
-        );
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .cmd_dispatch_indirect(command_buffer, buffer, offset);
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -12633,12 +12841,13 @@ impl<T: Layer> Global<T> {
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         #[allow(clippy::unnecessary_cast)]
-        let layer_result = device_info.customized_info.hooks().cmd_copy_buffer(
-            command_buffer,
-            src_buffer,
-            dst_buffer,
-            unsafe { std::slice::from_raw_parts(p_regions, region_count as usize) },
-        );
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .cmd_copy_buffer(command_buffer, src_buffer, dst_buffer, unsafe {
+                std::slice::from_raw_parts(p_regions, region_count as usize)
+            });
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -12666,7 +12875,7 @@ impl<T: Layer> Global<T> {
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         #[allow(clippy::unnecessary_cast)]
-        let layer_result = device_info.customized_info.hooks().cmd_copy_image(
+        let layer_result = device_info.customized_info.borrow().hooks().cmd_copy_image(
             command_buffer,
             src_image,
             src_image_layout,
@@ -12704,7 +12913,7 @@ impl<T: Layer> Global<T> {
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         #[allow(clippy::unnecessary_cast)]
-        let layer_result = device_info.customized_info.hooks().cmd_blit_image(
+        let layer_result = device_info.customized_info.borrow().hooks().cmd_blit_image(
             command_buffer,
             src_image,
             src_image_layout,
@@ -12744,6 +12953,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_copy_buffer_to_image(
                 command_buffer,
@@ -12781,6 +12991,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_copy_image_to_buffer(
                 command_buffer,
@@ -12815,12 +13026,13 @@ impl<T: Layer> Global<T> {
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         #[allow(clippy::unnecessary_cast)]
-        let layer_result = device_info.customized_info.hooks().cmd_update_buffer(
-            command_buffer,
-            dst_buffer,
-            dst_offset,
-            unsafe { std::slice::from_raw_parts(p_data as *const u8, data_size as usize) },
-        );
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .cmd_update_buffer(command_buffer, dst_buffer, dst_offset, unsafe {
+                std::slice::from_raw_parts(p_data as *const u8, data_size as usize)
+            });
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -12845,13 +13057,11 @@ impl<T: Layer> Global<T> {
         // vkCmdFillBuffer
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        let layer_result = device_info.customized_info.hooks().cmd_fill_buffer(
-            command_buffer,
-            dst_buffer,
-            dst_offset,
-            size,
-            data,
-        );
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .cmd_fill_buffer(command_buffer, dst_buffer, dst_offset, size, data);
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -12872,13 +13082,17 @@ impl<T: Layer> Global<T> {
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         #[allow(clippy::unnecessary_cast)]
-        let layer_result = device_info.customized_info.hooks().cmd_clear_color_image(
-            command_buffer,
-            image,
-            image_layout,
-            unsafe { p_color.as_ref() }.unwrap(),
-            unsafe { std::slice::from_raw_parts(p_ranges, range_count as usize) },
-        );
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .cmd_clear_color_image(
+                command_buffer,
+                image,
+                image_layout,
+                unsafe { p_color.as_ref() }.unwrap(),
+                unsafe { std::slice::from_raw_parts(p_ranges, range_count as usize) },
+            );
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -12908,6 +13122,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_clear_depth_stencil_image(
                 command_buffer,
@@ -12943,11 +13158,15 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         #[allow(clippy::unnecessary_cast)]
         #[allow(clippy::unnecessary_cast)]
-        let layer_result = device_info.customized_info.hooks().cmd_clear_attachments(
-            command_buffer,
-            unsafe { std::slice::from_raw_parts(p_attachments, attachment_count as usize) },
-            unsafe { std::slice::from_raw_parts(p_rects, rect_count as usize) },
-        );
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .cmd_clear_attachments(
+                command_buffer,
+                unsafe { std::slice::from_raw_parts(p_attachments, attachment_count as usize) },
+                unsafe { std::slice::from_raw_parts(p_rects, rect_count as usize) },
+            );
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -12975,14 +13194,18 @@ impl<T: Layer> Global<T> {
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         #[allow(clippy::unnecessary_cast)]
-        let layer_result = device_info.customized_info.hooks().cmd_resolve_image(
-            command_buffer,
-            src_image,
-            src_image_layout,
-            dst_image,
-            dst_image_layout,
-            unsafe { std::slice::from_raw_parts(p_regions, region_count as usize) },
-        );
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .cmd_resolve_image(
+                command_buffer,
+                src_image,
+                src_image_layout,
+                dst_image,
+                dst_image_layout,
+                unsafe { std::slice::from_raw_parts(p_regions, region_count as usize) },
+            );
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -13007,11 +13230,11 @@ impl<T: Layer> Global<T> {
         // vkCmdSetEvent
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        let layer_result =
-            device_info
-                .customized_info
-                .hooks()
-                .cmd_set_event(command_buffer, event, stage_mask);
+        let layer_result = device_info.customized_info.borrow().hooks().cmd_set_event(
+            command_buffer,
+            event,
+            stage_mask,
+        );
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -13028,11 +13251,11 @@ impl<T: Layer> Global<T> {
         // vkCmdResetEvent
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        let layer_result =
-            device_info
-                .customized_info
-                .hooks()
-                .cmd_reset_event(command_buffer, event, stage_mask);
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .cmd_reset_event(command_buffer, event, stage_mask);
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -13061,25 +13284,31 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         #[allow(clippy::unnecessary_cast)]
         #[allow(clippy::unnecessary_cast)]
-        let layer_result = device_info.customized_info.hooks().cmd_wait_events(
-            command_buffer,
-            unsafe { std::slice::from_raw_parts(p_events, event_count as usize) },
-            src_stage_mask,
-            dst_stage_mask,
-            unsafe { std::slice::from_raw_parts(p_memory_barriers, memory_barrier_count as usize) },
-            unsafe {
-                std::slice::from_raw_parts(
-                    p_buffer_memory_barriers,
-                    buffer_memory_barrier_count as usize,
-                )
-            },
-            unsafe {
-                std::slice::from_raw_parts(
-                    p_image_memory_barriers,
-                    image_memory_barrier_count as usize,
-                )
-            },
-        );
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .cmd_wait_events(
+                command_buffer,
+                unsafe { std::slice::from_raw_parts(p_events, event_count as usize) },
+                src_stage_mask,
+                dst_stage_mask,
+                unsafe {
+                    std::slice::from_raw_parts(p_memory_barriers, memory_barrier_count as usize)
+                },
+                unsafe {
+                    std::slice::from_raw_parts(
+                        p_buffer_memory_barriers,
+                        buffer_memory_barrier_count as usize,
+                    )
+                },
+                unsafe {
+                    std::slice::from_raw_parts(
+                        p_image_memory_barriers,
+                        image_memory_barrier_count as usize,
+                    )
+                },
+            );
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -13118,25 +13347,31 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         #[allow(clippy::unnecessary_cast)]
         #[allow(clippy::unnecessary_cast)]
-        let layer_result = device_info.customized_info.hooks().cmd_pipeline_barrier(
-            command_buffer,
-            src_stage_mask,
-            dst_stage_mask,
-            dependency_flags,
-            unsafe { std::slice::from_raw_parts(p_memory_barriers, memory_barrier_count as usize) },
-            unsafe {
-                std::slice::from_raw_parts(
-                    p_buffer_memory_barriers,
-                    buffer_memory_barrier_count as usize,
-                )
-            },
-            unsafe {
-                std::slice::from_raw_parts(
-                    p_image_memory_barriers,
-                    image_memory_barrier_count as usize,
-                )
-            },
-        );
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .cmd_pipeline_barrier(
+                command_buffer,
+                src_stage_mask,
+                dst_stage_mask,
+                dependency_flags,
+                unsafe {
+                    std::slice::from_raw_parts(p_memory_barriers, memory_barrier_count as usize)
+                },
+                unsafe {
+                    std::slice::from_raw_parts(
+                        p_buffer_memory_barriers,
+                        buffer_memory_barrier_count as usize,
+                    )
+                },
+                unsafe {
+                    std::slice::from_raw_parts(
+                        p_image_memory_barriers,
+                        image_memory_barrier_count as usize,
+                    )
+                },
+            );
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -13165,12 +13400,11 @@ impl<T: Layer> Global<T> {
         // vkCmdBeginQuery
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        let layer_result = device_info.customized_info.hooks().cmd_begin_query(
-            command_buffer,
-            query_pool,
-            query,
-            flags,
-        );
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .cmd_begin_query(command_buffer, query_pool, query, flags);
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -13187,11 +13421,11 @@ impl<T: Layer> Global<T> {
         // vkCmdEndQuery
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        let layer_result =
-            device_info
-                .customized_info
-                .hooks()
-                .cmd_end_query(command_buffer, query_pool, query);
+        let layer_result = device_info.customized_info.borrow().hooks().cmd_end_query(
+            command_buffer,
+            query_pool,
+            query,
+        );
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -13209,12 +13443,11 @@ impl<T: Layer> Global<T> {
         // vkCmdResetQueryPool
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        let layer_result = device_info.customized_info.hooks().cmd_reset_query_pool(
-            command_buffer,
-            query_pool,
-            first_query,
-            query_count,
-        );
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .cmd_reset_query_pool(command_buffer, query_pool, first_query, query_count);
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -13237,12 +13470,11 @@ impl<T: Layer> Global<T> {
         // vkCmdWriteTimestamp
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        let layer_result = device_info.customized_info.hooks().cmd_write_timestamp(
-            command_buffer,
-            pipeline_stage,
-            query_pool,
-            query,
-        );
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .cmd_write_timestamp(command_buffer, pipeline_stage, query_pool, query);
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -13271,6 +13503,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_copy_query_pool_results(
                 command_buffer,
@@ -13311,13 +13544,13 @@ impl<T: Layer> Global<T> {
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         #[allow(clippy::unnecessary_cast)]
-        let layer_result = device_info.customized_info.hooks().cmd_push_constants(
-            command_buffer,
-            layout,
-            stage_flags,
-            offset,
-            unsafe { std::slice::from_raw_parts(p_values as *const u8, size as usize) },
-        );
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .cmd_push_constants(command_buffer, layout, stage_flags, offset, unsafe {
+                std::slice::from_raw_parts(p_values as *const u8, size as usize)
+            });
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -13341,11 +13574,15 @@ impl<T: Layer> Global<T> {
         // vkCmdBeginRenderPass
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        let layer_result = device_info.customized_info.hooks().cmd_begin_render_pass(
-            command_buffer,
-            unsafe { p_render_pass_begin.as_ref() }.unwrap(),
-            contents,
-        );
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .cmd_begin_render_pass(
+                command_buffer,
+                unsafe { p_render_pass_begin.as_ref() }.unwrap(),
+                contents,
+            );
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -13367,6 +13604,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_next_subpass(command_buffer, contents);
         match layer_result {
@@ -13383,6 +13621,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_end_render_pass(command_buffer);
         match layer_result {
@@ -13404,6 +13643,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_execute_commands(command_buffer, unsafe {
                 std::slice::from_raw_parts(p_command_buffers, command_buffer_count as usize)
@@ -13431,6 +13671,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .bind_buffer_memory2(unsafe {
                 std::slice::from_raw_parts(p_bind_infos, bind_info_count as usize)
@@ -13457,6 +13698,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .bind_image_memory2(unsafe {
                 std::slice::from_raw_parts(p_bind_infos, bind_info_count as usize)
@@ -13484,6 +13726,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_1();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_device_group_peer_memory_features(
                 heap_index,
@@ -13512,6 +13755,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_1();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_device_mask(command_buffer, device_mask);
         match layer_result {
@@ -13534,15 +13778,19 @@ impl<T: Layer> Global<T> {
         // vkCmdDispatchBase
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_1();
-        let layer_result = device_info.customized_info.hooks().cmd_dispatch_base(
-            command_buffer,
-            base_groupx,
-            base_groupy,
-            base_groupz,
-            group_countx,
-            group_county,
-            group_countz,
-        );
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .cmd_dispatch_base(
+                command_buffer,
+                base_groupx,
+                base_groupy,
+                base_groupz,
+                group_countx,
+                group_county,
+                group_countz,
+            );
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -13569,6 +13817,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_1();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_image_memory_requirements2(
                 unsafe { p_info.as_ref() }.unwrap(),
@@ -13596,6 +13845,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_1();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_buffer_memory_requirements2(
                 unsafe { p_info.as_ref() }.unwrap(),
@@ -13625,6 +13875,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_image_sparse_memory_requirements2(
                 unsafe { p_info.as_ref() }.unwrap(),
@@ -13663,6 +13914,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_1();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .trim_command_pool(command_pool, flags);
         match layer_result {
@@ -13683,6 +13935,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_1();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_device_queue2(unsafe { p_queue_info.as_ref() }.unwrap());
         match layer_result {
@@ -13706,6 +13959,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_1();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .create_sampler_ycbcr_conversion(unsafe { p_create_info.as_ref() }.unwrap(), unsafe {
                 p_allocator.as_ref()
@@ -13739,6 +13993,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_1();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .destroy_sampler_ycbcr_conversion(ycbcr_conversion, unsafe { p_allocator.as_ref() });
         match layer_result {
@@ -13764,6 +14019,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_1();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .create_descriptor_update_template(
                 unsafe { p_create_info.as_ref() }.unwrap(),
@@ -13798,6 +14054,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_1();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .destroy_descriptor_update_template(descriptor_update_template, unsafe {
                 p_allocator.as_ref()
@@ -13825,6 +14082,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_1();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .update_descriptor_set_with_template(
                 descriptor_set,
@@ -13854,6 +14112,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_1();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_descriptor_set_layout_support(
                 unsafe { p_create_info.as_ref() }.unwrap(),
@@ -13879,15 +14138,19 @@ impl<T: Layer> Global<T> {
         // vkCmdDrawIndirectCount
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_2();
-        let layer_result = device_info.customized_info.hooks().cmd_draw_indirect_count(
-            command_buffer,
-            buffer,
-            offset,
-            count_buffer,
-            count_buffer_offset,
-            max_draw_count,
-            stride,
-        );
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .cmd_draw_indirect_count(
+                command_buffer,
+                buffer,
+                offset,
+                count_buffer,
+                count_buffer_offset,
+                max_draw_count,
+                stride,
+            );
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -13918,6 +14181,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_2();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_draw_indexed_indirect_count(
                 command_buffer,
@@ -13955,6 +14219,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_2();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .create_render_pass2(unsafe { p_create_info.as_ref() }.unwrap(), unsafe {
                 p_allocator.as_ref()
@@ -13986,11 +14251,15 @@ impl<T: Layer> Global<T> {
         // vkCmdBeginRenderPass2
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_2();
-        let layer_result = device_info.customized_info.hooks().cmd_begin_render_pass2(
-            command_buffer,
-            unsafe { p_render_pass_begin.as_ref() }.unwrap(),
-            unsafe { p_subpass_begin_info.as_ref() }.unwrap(),
-        );
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .cmd_begin_render_pass2(
+                command_buffer,
+                unsafe { p_render_pass_begin.as_ref() }.unwrap(),
+                unsafe { p_subpass_begin_info.as_ref() }.unwrap(),
+            );
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -14011,11 +14280,15 @@ impl<T: Layer> Global<T> {
         // vkCmdNextSubpass2
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_2();
-        let layer_result = device_info.customized_info.hooks().cmd_next_subpass2(
-            command_buffer,
-            unsafe { p_subpass_begin_info.as_ref() }.unwrap(),
-            unsafe { p_subpass_end_info.as_ref() }.unwrap(),
-        );
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .cmd_next_subpass2(
+                command_buffer,
+                unsafe { p_subpass_begin_info.as_ref() }.unwrap(),
+                unsafe { p_subpass_end_info.as_ref() }.unwrap(),
+            );
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -14035,10 +14308,14 @@ impl<T: Layer> Global<T> {
         // vkCmdEndRenderPass2
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_2();
-        let layer_result = device_info.customized_info.hooks().cmd_end_render_pass2(
-            command_buffer,
-            unsafe { p_subpass_end_info.as_ref() }.unwrap(),
-        );
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .cmd_end_render_pass2(
+                command_buffer,
+                unsafe { p_subpass_end_info.as_ref() }.unwrap(),
+            );
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -14056,11 +14333,11 @@ impl<T: Layer> Global<T> {
         // vkResetQueryPool
         let device_info = global.get_device_info(device).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_2();
-        let layer_result = device_info.customized_info.hooks().reset_query_pool(
-            query_pool,
-            first_query,
-            query_count,
-        );
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .reset_query_pool(query_pool, first_query, query_count);
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -14079,6 +14356,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_2();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_semaphore_counter_value(semaphore);
         match layer_result {
@@ -14105,6 +14383,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_2();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .wait_semaphores(unsafe { p_wait_info.as_ref() }.unwrap(), timeout);
         match layer_result {
@@ -14127,6 +14406,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_2();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .signal_semaphore(unsafe { p_signal_info.as_ref() }.unwrap());
         match layer_result {
@@ -14149,6 +14429,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_2();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_buffer_device_address(unsafe { p_info.as_ref() }.unwrap());
         match layer_result {
@@ -14168,6 +14449,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_2();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_buffer_opaque_capture_address(unsafe { p_info.as_ref() }.unwrap());
         match layer_result {
@@ -14187,6 +14469,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_2();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_device_memory_opaque_capture_address(unsafe { p_info.as_ref() }.unwrap());
         match layer_result {
@@ -14208,6 +14491,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_3();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .create_private_data_slot(unsafe { p_create_info.as_ref() }.unwrap(), unsafe {
                 p_allocator.as_ref()
@@ -14241,6 +14525,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_3();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .destroy_private_data_slot(private_data_slot, unsafe { p_allocator.as_ref() });
         match layer_result {
@@ -14261,12 +14546,11 @@ impl<T: Layer> Global<T> {
         // vkSetPrivateData
         let device_info = global.get_device_info(device).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_3();
-        let layer_result = device_info.customized_info.hooks().set_private_data(
-            object_type,
-            object_handle,
-            private_data_slot,
-            data,
-        );
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .set_private_data(object_type, object_handle, private_data_slot, data);
         match layer_result {
             LayerResult::Handled(res) => match res {
                 Ok(()) => vk::Result::SUCCESS,
@@ -14294,11 +14578,11 @@ impl<T: Layer> Global<T> {
         // vkGetPrivateData
         let device_info = global.get_device_info(device).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_3();
-        let layer_result = device_info.customized_info.hooks().get_private_data(
-            object_type,
-            object_handle,
-            private_data_slot,
-        );
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .get_private_data(object_type, object_handle, private_data_slot);
         match layer_result {
             LayerResult::Handled(res) => {
                 *unsafe { p_data.as_mut() }.unwrap() = res;
@@ -14323,7 +14607,7 @@ impl<T: Layer> Global<T> {
         // vkCmdSetEvent2
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_3();
-        let layer_result = device_info.customized_info.hooks().cmd_set_event2(
+        let layer_result = device_info.customized_info.borrow().hooks().cmd_set_event2(
             command_buffer,
             event,
             unsafe { p_dependency_info.as_ref() }.unwrap(),
@@ -14344,11 +14628,11 @@ impl<T: Layer> Global<T> {
         // vkCmdResetEvent2
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_3();
-        let layer_result =
-            device_info
-                .customized_info
-                .hooks()
-                .cmd_reset_event2(command_buffer, event, stage_mask);
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .cmd_reset_event2(command_buffer, event, stage_mask);
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -14368,11 +14652,15 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_3();
         #[allow(clippy::unnecessary_cast)]
         #[allow(clippy::unnecessary_cast)]
-        let layer_result = device_info.customized_info.hooks().cmd_wait_events2(
-            command_buffer,
-            unsafe { std::slice::from_raw_parts(p_events, event_count as usize) },
-            unsafe { std::slice::from_raw_parts(p_dependency_infos, event_count as usize) },
-        );
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .cmd_wait_events2(
+                command_buffer,
+                unsafe { std::slice::from_raw_parts(p_events, event_count as usize) },
+                unsafe { std::slice::from_raw_parts(p_dependency_infos, event_count as usize) },
+            );
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -14393,10 +14681,14 @@ impl<T: Layer> Global<T> {
         // vkCmdPipelineBarrier2
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_3();
-        let layer_result = device_info.customized_info.hooks().cmd_pipeline_barrier2(
-            command_buffer,
-            unsafe { p_dependency_info.as_ref() }.unwrap(),
-        );
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .cmd_pipeline_barrier2(
+                command_buffer,
+                unsafe { p_dependency_info.as_ref() }.unwrap(),
+            );
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -14414,12 +14706,11 @@ impl<T: Layer> Global<T> {
         // vkCmdWriteTimestamp2
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_3();
-        let layer_result = device_info.customized_info.hooks().cmd_write_timestamp2(
-            command_buffer,
-            stage,
-            query_pool,
-            query,
-        );
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .cmd_write_timestamp2(command_buffer, stage, query_pool, query);
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -14438,7 +14729,7 @@ impl<T: Layer> Global<T> {
         let device_info = global.get_device_info(queue).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_3();
         #[allow(clippy::unnecessary_cast)]
-        let layer_result = device_info.customized_info.hooks().queue_submit2(
+        let layer_result = device_info.customized_info.borrow().hooks().queue_submit2(
             queue,
             unsafe { std::slice::from_raw_parts(p_submits, submit_count as usize) },
             fence,
@@ -14461,10 +14752,14 @@ impl<T: Layer> Global<T> {
         // vkCmdCopyBuffer2
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_3();
-        let layer_result = device_info.customized_info.hooks().cmd_copy_buffer2(
-            command_buffer,
-            unsafe { p_copy_buffer_info.as_ref() }.unwrap(),
-        );
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .cmd_copy_buffer2(
+                command_buffer,
+                unsafe { p_copy_buffer_info.as_ref() }.unwrap(),
+            );
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -14480,10 +14775,14 @@ impl<T: Layer> Global<T> {
         // vkCmdCopyImage2
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_3();
-        let layer_result = device_info.customized_info.hooks().cmd_copy_image2(
-            command_buffer,
-            unsafe { p_copy_image_info.as_ref() }.unwrap(),
-        );
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .cmd_copy_image2(
+                command_buffer,
+                unsafe { p_copy_image_info.as_ref() }.unwrap(),
+            );
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -14501,6 +14800,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_3();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_copy_buffer_to_image2(
                 command_buffer,
@@ -14526,6 +14826,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_3();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_copy_image_to_buffer2(
                 command_buffer,
@@ -14549,10 +14850,14 @@ impl<T: Layer> Global<T> {
         // vkCmdBlitImage2
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_3();
-        let layer_result = device_info.customized_info.hooks().cmd_blit_image2(
-            command_buffer,
-            unsafe { p_blit_image_info.as_ref() }.unwrap(),
-        );
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .cmd_blit_image2(
+                command_buffer,
+                unsafe { p_blit_image_info.as_ref() }.unwrap(),
+            );
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -14568,10 +14873,14 @@ impl<T: Layer> Global<T> {
         // vkCmdResolveImage2
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_3();
-        let layer_result = device_info.customized_info.hooks().cmd_resolve_image2(
-            command_buffer,
-            unsafe { p_resolve_image_info.as_ref() }.unwrap(),
-        );
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .cmd_resolve_image2(
+                command_buffer,
+                unsafe { p_resolve_image_info.as_ref() }.unwrap(),
+            );
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -14587,10 +14896,14 @@ impl<T: Layer> Global<T> {
         // vkCmdBeginRendering
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_3();
-        let layer_result = device_info.customized_info.hooks().cmd_begin_rendering(
-            command_buffer,
-            unsafe { p_rendering_info.as_ref() }.unwrap(),
-        );
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .cmd_begin_rendering(
+                command_buffer,
+                unsafe { p_rendering_info.as_ref() }.unwrap(),
+            );
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -14605,6 +14918,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_3();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_end_rendering(command_buffer);
         match layer_result {
@@ -14622,6 +14936,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_3();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_cull_mode(command_buffer, cull_mode);
         match layer_result {
@@ -14641,6 +14956,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_3();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_front_face(command_buffer, front_face);
         match layer_result {
@@ -14660,6 +14976,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_3();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_primitive_topology(command_buffer, primitive_topology);
         match layer_result {
@@ -14681,6 +14998,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_viewport_with_count(command_buffer, unsafe {
                 std::slice::from_raw_parts(p_viewports, viewport_count as usize)
@@ -14708,6 +15026,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_scissor_with_count(command_buffer, unsafe {
                 std::slice::from_raw_parts(p_scissors, scissor_count as usize)
@@ -14742,6 +15061,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_bind_vertex_buffers2(
                 command_buffer,
@@ -14784,6 +15104,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_3();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_depth_test_enable(command_buffer, depth_test_enable == vk::TRUE);
         match layer_result {
@@ -14803,6 +15124,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_3();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_depth_write_enable(command_buffer, depth_write_enable == vk::TRUE);
         match layer_result {
@@ -14822,6 +15144,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_3();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_depth_compare_op(command_buffer, depth_compare_op);
         match layer_result {
@@ -14841,6 +15164,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_3();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_depth_bounds_test_enable(command_buffer, depth_bounds_test_enable == vk::TRUE);
         match layer_result {
@@ -14863,6 +15187,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_3();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_stencil_test_enable(command_buffer, stencil_test_enable == vk::TRUE);
         match layer_result {
@@ -14884,14 +15209,18 @@ impl<T: Layer> Global<T> {
         // vkCmdSetStencilOp
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_3();
-        let layer_result = device_info.customized_info.hooks().cmd_set_stencil_op(
-            command_buffer,
-            face_mask,
-            fail_op,
-            pass_op,
-            depth_fail_op,
-            compare_op,
-        );
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .cmd_set_stencil_op(
+                command_buffer,
+                face_mask,
+                fail_op,
+                pass_op,
+                depth_fail_op,
+                compare_op,
+            );
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -14916,6 +15245,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_3();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_rasterizer_discard_enable(
                 command_buffer,
@@ -14941,6 +15271,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_3();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_depth_bias_enable(command_buffer, depth_bias_enable == vk::TRUE);
         match layer_result {
@@ -14960,6 +15291,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_3();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_primitive_restart_enable(command_buffer, primitive_restart_enable == vk::TRUE);
         match layer_result {
@@ -14983,6 +15315,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_3();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_device_buffer_memory_requirements(
                 unsafe { p_info.as_ref() }.unwrap(),
@@ -15010,6 +15343,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_3();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_device_image_memory_requirements(
                 unsafe { p_info.as_ref() }.unwrap(),
@@ -15039,6 +15373,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_device_image_sparse_memory_requirements(
                 unsafe { p_info.as_ref() }.unwrap(),
@@ -15078,6 +15413,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.khr_swapchain;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .create_swapchain_khr(unsafe { p_create_info.as_ref() }.unwrap(), unsafe {
                 p_allocator.as_ref()
@@ -15111,6 +15447,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.khr_swapchain;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .destroy_swapchain_khr(swapchain, unsafe { p_allocator.as_ref() });
         match layer_result {
@@ -15132,6 +15469,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.khr_swapchain;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_swapchain_images_khr(swapchain);
         match layer_result {
@@ -15169,6 +15507,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.khr_swapchain;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .acquire_next_image_khr(swapchain, timeout, semaphore, fence);
         match layer_result {
@@ -15201,6 +15540,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.khr_swapchain;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .queue_present_khr(queue, unsafe { p_present_info.as_ref() }.unwrap());
         match layer_result {
@@ -15223,6 +15563,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.khr_swapchain;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_device_group_present_capabilities_khr(
                 unsafe { p_device_group_present_capabilities.as_mut() }.unwrap(),
@@ -15251,6 +15592,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.khr_swapchain;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_device_group_surface_present_modes_khr(surface);
         match layer_result {
@@ -15279,6 +15621,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.khr_swapchain;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .acquire_next_image2_khr(unsafe { p_acquire_info.as_ref() }.unwrap());
         match layer_result {
@@ -15308,6 +15651,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .create_shared_swapchains_khr(
                 unsafe { std::slice::from_raw_parts(p_create_infos, swapchain_count as usize) },
@@ -15350,6 +15694,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.khr_video_queue;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .create_video_session_khr(unsafe { p_create_info.as_ref() }.unwrap(), unsafe {
                 p_allocator.as_ref()
@@ -15383,6 +15728,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.khr_video_queue;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .destroy_video_session_khr(video_session, unsafe { p_allocator.as_ref() });
         match layer_result {
@@ -15405,6 +15751,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_video_session_memory_requirements_khr(
                 video_session,
@@ -15447,6 +15794,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .bind_video_session_memory_khr(video_session, unsafe {
                 std::slice::from_raw_parts(
@@ -15481,6 +15829,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.khr_video_queue;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .create_video_session_parameters_khr(
                 unsafe { p_create_info.as_ref() }.unwrap(),
@@ -15515,6 +15864,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.khr_video_queue;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .update_video_session_parameters_khr(
                 video_session_parameters,
@@ -15545,6 +15895,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.khr_video_queue;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .destroy_video_session_parameters_khr(video_session_parameters, unsafe {
                 p_allocator.as_ref()
@@ -15570,6 +15921,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.khr_video_queue;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_begin_video_coding_khr(command_buffer, unsafe { p_begin_info.as_ref() }.unwrap());
         match layer_result {
@@ -15589,6 +15941,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.khr_video_queue;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_end_video_coding_khr(
                 command_buffer,
@@ -15611,6 +15964,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.khr_video_queue;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_control_video_coding_khr(
                 command_buffer,
@@ -15633,6 +15987,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.khr_video_decode_queue;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_decode_video_khr(command_buffer, unsafe { p_decode_info.as_ref() }.unwrap());
         match layer_result {
@@ -15653,6 +16008,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.khr_external_memory_win32;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_memory_win32_handle_khr(unsafe { p_get_win32_handle_info.as_ref() }.unwrap());
         match layer_result {
@@ -15684,6 +16040,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.khr_external_memory_win32;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_memory_win32_handle_properties_khr(
                 handle_type,
@@ -15716,6 +16073,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.khr_external_memory_fd;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_memory_fd_khr(unsafe { p_get_fd_info.as_ref() }.unwrap());
         match layer_result {
@@ -15743,6 +16101,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.khr_external_memory_fd;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_memory_fd_properties_khr(
                 handle_type,
@@ -15774,6 +16133,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.khr_external_semaphore_win32;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .import_semaphore_win32_handle_khr(
                 unsafe { p_import_semaphore_win32_handle_info.as_ref() }.unwrap(),
@@ -15802,6 +16162,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.khr_external_semaphore_win32;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_semaphore_win32_handle_khr(unsafe { p_get_win32_handle_info.as_ref() }.unwrap());
         match layer_result {
@@ -15831,6 +16192,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.khr_external_semaphore_fd;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .import_semaphore_fd_khr(unsafe { p_import_semaphore_fd_info.as_ref() }.unwrap());
         match layer_result {
@@ -15854,6 +16216,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.khr_external_semaphore_fd;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_semaphore_fd_khr(unsafe { p_get_fd_info.as_ref() }.unwrap());
         match layer_result {
@@ -15884,6 +16247,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_push_descriptor_set_khr(
                 command_buffer,
@@ -15921,6 +16285,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.khr_push_descriptor;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_push_descriptor_set_with_template_khr(
                 command_buffer,
@@ -15952,6 +16317,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.khr_shared_presentable_image;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_swapchain_status_khr(swapchain);
         match layer_result {
@@ -15974,6 +16340,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.khr_external_fence_win32;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .import_fence_win32_handle_khr(
                 unsafe { p_import_fence_win32_handle_info.as_ref() }.unwrap(),
@@ -16002,6 +16369,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.khr_external_fence_win32;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_fence_win32_handle_khr(unsafe { p_get_win32_handle_info.as_ref() }.unwrap());
         match layer_result {
@@ -16031,6 +16399,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.khr_external_fence_fd;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .import_fence_fd_khr(unsafe { p_import_fence_fd_info.as_ref() }.unwrap());
         match layer_result {
@@ -16054,6 +16423,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.khr_external_fence_fd;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_fence_fd_khr(unsafe { p_get_fd_info.as_ref() }.unwrap());
         match layer_result {
@@ -16079,6 +16449,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.khr_performance_query;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .acquire_profiling_lock_khr(unsafe { p_info.as_ref() }.unwrap());
         match layer_result {
@@ -16098,6 +16469,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.khr_performance_query;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .release_profiling_lock_khr();
         match layer_result {
@@ -16119,6 +16491,7 @@ impl<T: Layer> Global<T> {
         let combiner_ops = unsafe { combiner_ops.as_ref() }.unwrap();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_fragment_shading_rate_khr(
                 command_buffer,
@@ -16148,6 +16521,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.khr_present_wait;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .wait_for_present_khr(swapchain, present_id, timeout);
         match layer_result {
@@ -16171,6 +16545,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.khr_deferred_host_operations;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .create_deferred_operation_khr(unsafe { p_allocator.as_ref() });
         match layer_result {
@@ -16201,6 +16576,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.khr_deferred_host_operations;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .destroy_deferred_operation_khr(operation, unsafe { p_allocator.as_ref() });
         match layer_result {
@@ -16220,6 +16596,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.khr_deferred_host_operations;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_deferred_operation_max_concurrency_khr(operation);
         match layer_result {
@@ -16239,6 +16616,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.khr_deferred_host_operations;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_deferred_operation_result_khr(operation);
         match layer_result {
@@ -16261,6 +16639,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.khr_deferred_host_operations;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .deferred_operation_join_khr(operation);
         match layer_result {
@@ -16288,6 +16667,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_pipeline_executable_properties_khr(
                 unsafe { p_pipeline_info.as_ref() }.unwrap(),
@@ -16332,6 +16712,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_pipeline_executable_statistics_khr(
                 unsafe { p_executable_info.as_ref() }.unwrap(),
@@ -16376,6 +16757,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_pipeline_executable_internal_representations_khr(
                 unsafe { p_executable_info.as_ref() }.unwrap(),
@@ -16415,6 +16797,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.khr_video_encode_queue;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_encode_video_khr(command_buffer, unsafe { p_encode_info.as_ref() }.unwrap());
         match layer_result {
@@ -16437,6 +16820,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.khr_synchronization2;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_write_buffer_marker2_amd(command_buffer, stage, dst_buffer, dst_offset, marker);
         match layer_result {
@@ -16464,6 +16848,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_queue_checkpoint_data2_nv(
                 queue,
@@ -16499,6 +16884,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.khr_ray_tracing_maintenance1;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_trace_rays_indirect2_khr(command_buffer, indirect_device_address);
         match layer_result {
@@ -16523,6 +16909,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.android_native_buffer;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_swapchain_gralloc_usage_android(format, image_usage);
         match layer_result {
@@ -16554,12 +16941,11 @@ impl<T: Layer> Global<T> {
         // vkAcquireImageANDROID
         let device_info = global.get_device_info(device).unwrap();
         let dispatch_table = &device_info.dispatch_table.android_native_buffer;
-        let layer_result = device_info.customized_info.hooks().acquire_image_android(
-            image,
-            native_fence_fd,
-            semaphore,
-            fence,
-        );
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .acquire_image_android(image, native_fence_fd, semaphore, fence);
         match layer_result {
             LayerResult::Handled(res) => match res {
                 Ok(()) => vk::Result::SUCCESS,
@@ -16590,6 +16976,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .queue_signal_release_image_android(
                 queue,
@@ -16631,6 +17018,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.android_native_buffer;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_swapchain_gralloc_usage2_android(
                 format,
@@ -16668,6 +17056,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_debug_marker;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .debug_marker_set_object_tag_ext(unsafe { p_tag_info.as_ref() }.unwrap());
         match layer_result {
@@ -16690,6 +17079,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_debug_marker;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .debug_marker_set_object_name_ext(unsafe { p_name_info.as_ref() }.unwrap());
         match layer_result {
@@ -16712,6 +17102,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_debug_marker;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_debug_marker_begin_ext(command_buffer, unsafe { p_marker_info.as_ref() }.unwrap());
         match layer_result {
@@ -16728,6 +17119,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_debug_marker;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_debug_marker_end_ext(command_buffer);
         match layer_result {
@@ -16747,6 +17139,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_debug_marker;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_debug_marker_insert_ext(
                 command_buffer,
@@ -16776,6 +17169,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_bind_transform_feedback_buffers_ext(
                 command_buffer,
@@ -16817,6 +17211,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_begin_transform_feedback_ext(
                 command_buffer,
@@ -16863,6 +17258,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_end_transform_feedback_ext(
                 command_buffer,
@@ -16907,6 +17303,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_transform_feedback;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_begin_query_indexed_ext(command_buffer, query_pool, query, flags, index);
         match layer_result {
@@ -16934,6 +17331,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_transform_feedback;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_end_query_indexed_ext(command_buffer, query_pool, query, index);
         match layer_result {
@@ -16958,6 +17356,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_transform_feedback;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_draw_indirect_byte_count_ext(
                 command_buffer,
@@ -16995,6 +17394,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.nvx_binary_import;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .create_cu_module_nvx(unsafe { p_create_info.as_ref() }.unwrap(), unsafe {
                 p_allocator.as_ref()
@@ -17024,6 +17424,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.nvx_binary_import;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .create_cu_function_nvx(unsafe { p_create_info.as_ref() }.unwrap(), unsafe {
                 p_allocator.as_ref()
@@ -17057,6 +17458,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.nvx_binary_import;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .destroy_cu_module_nvx(module, unsafe { p_allocator.as_ref() });
         match layer_result {
@@ -17077,6 +17479,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.nvx_binary_import;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .destroy_cu_function_nvx(function, unsafe { p_allocator.as_ref() });
         match layer_result {
@@ -17096,6 +17499,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.nvx_binary_import;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_cu_launch_kernel_nvx(command_buffer, unsafe { p_launch_info.as_ref() }.unwrap());
         match layer_result {
@@ -17115,6 +17519,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.nvx_image_view_handle;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_image_view_handle_nvx(unsafe { p_info.as_ref() }.unwrap());
         match layer_result {
@@ -17135,6 +17540,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.nvx_image_view_handle;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_image_view_address_nvx(image_view, unsafe { p_properties.as_mut() }.unwrap());
         match layer_result {
@@ -17159,11 +17565,11 @@ impl<T: Layer> Global<T> {
         // vkGetShaderInfoAMD
         let device_info = global.get_device_info(device).unwrap();
         let dispatch_table = &device_info.dispatch_table.amd_shader_info;
-        let layer_result = device_info.customized_info.hooks().get_shader_info_amd(
-            pipeline,
-            shader_stage,
-            info_type,
-        );
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .get_shader_info_amd(pipeline, shader_stage, info_type);
         match layer_result {
             LayerResult::Handled(res) => match res {
                 Ok(res) => {
@@ -17196,6 +17602,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.nv_external_memory_win32;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_memory_win32_handle_nv(memory, handle_type);
         match layer_result {
@@ -17221,6 +17628,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_conditional_rendering;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_begin_conditional_rendering_ext(
                 command_buffer,
@@ -17243,6 +17651,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_conditional_rendering;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_end_conditional_rendering_ext(command_buffer);
         match layer_result {
@@ -17265,6 +17674,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_viewport_w_scaling_nv(command_buffer, first_viewport, unsafe {
                 std::slice::from_raw_parts(p_viewport_w_scalings, viewport_count as usize)
@@ -17292,6 +17702,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_display_control;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .display_power_control_ext(display, unsafe { p_display_power_info.as_ref() }.unwrap());
         match layer_result {
@@ -17316,6 +17727,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_display_control;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .register_device_event_ext(unsafe { p_device_event_info.as_ref() }.unwrap(), unsafe {
                 p_allocator.as_ref()
@@ -17351,6 +17763,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_display_control;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .register_display_event_ext(
                 display,
@@ -17388,6 +17801,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_display_control;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_swapchain_counter_ext(swapchain, counter);
         match layer_result {
@@ -17419,6 +17833,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.google_display_timing;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_refresh_cycle_duration_google(
                 swapchain,
@@ -17451,6 +17866,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_past_presentation_timing_google(
                 swapchain,
@@ -17493,6 +17909,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_discard_rectangle_ext(command_buffer, first_discard_rectangle, unsafe {
                 std::slice::from_raw_parts(p_discard_rectangles, discard_rectangle_count as usize)
@@ -17521,10 +17938,14 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_hdr_metadata;
         #[allow(clippy::unnecessary_cast)]
         #[allow(clippy::unnecessary_cast)]
-        let layer_result = device_info.customized_info.hooks().set_hdr_metadata_ext(
-            unsafe { std::slice::from_raw_parts(p_swapchains, swapchain_count as usize) },
-            unsafe { std::slice::from_raw_parts(p_metadata, swapchain_count as usize) },
-        );
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .set_hdr_metadata_ext(
+                unsafe { std::slice::from_raw_parts(p_swapchains, swapchain_count as usize) },
+                unsafe { std::slice::from_raw_parts(p_metadata, swapchain_count as usize) },
+            );
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -17547,6 +17968,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_debug_utils;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .set_debug_utils_object_name_ext(unsafe { p_name_info.as_ref() }.unwrap());
         match layer_result {
@@ -17569,6 +17991,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_debug_utils;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .set_debug_utils_object_tag_ext(unsafe { p_tag_info.as_ref() }.unwrap());
         match layer_result {
@@ -17591,6 +18014,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_debug_utils;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .queue_begin_debug_utils_label_ext(queue, unsafe { p_label_info.as_ref() }.unwrap());
         match layer_result {
@@ -17607,6 +18031,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_debug_utils;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .queue_end_debug_utils_label_ext(queue);
         match layer_result {
@@ -17626,6 +18051,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_debug_utils;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .queue_insert_debug_utils_label_ext(queue, unsafe { p_label_info.as_ref() }.unwrap());
         match layer_result {
@@ -17645,6 +18071,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_debug_utils;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_begin_debug_utils_label_ext(
                 command_buffer,
@@ -17664,6 +18091,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_debug_utils;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_end_debug_utils_label_ext(command_buffer);
         match layer_result {
@@ -17683,6 +18111,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_debug_utils;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_insert_debug_utils_label_ext(
                 command_buffer,
@@ -17708,6 +18137,7 @@ impl<T: Layer> Global<T> {
             .android_external_memory_android_hardware_buffer;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_android_hardware_buffer_properties_android(
                 unsafe { buffer.as_ref() }.unwrap(),
@@ -17740,6 +18170,7 @@ impl<T: Layer> Global<T> {
             .android_external_memory_android_hardware_buffer;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_memory_android_hardware_buffer_android(unsafe { p_info.as_ref() }.unwrap());
         match layer_result {
@@ -17767,6 +18198,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_sample_locations;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_sample_locations_ext(
                 command_buffer,
@@ -17793,6 +18225,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_image_drm_format_modifier;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_image_drm_format_modifier_properties_ext(
                 image,
@@ -17824,6 +18257,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_validation_cache;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .create_validation_cache_ext(unsafe { p_create_info.as_ref() }.unwrap(), unsafe {
                 p_allocator.as_ref()
@@ -17857,6 +18291,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_validation_cache;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .destroy_validation_cache_ext(validation_cache, unsafe { p_allocator.as_ref() });
         match layer_result {
@@ -17879,6 +18314,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .merge_validation_caches_ext(dst_cache, unsafe {
                 std::slice::from_raw_parts(p_src_caches, src_cache_count as usize)
@@ -17910,6 +18346,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_validation_cache;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_validation_cache_data_ext(validation_cache);
         match layer_result {
@@ -17941,6 +18378,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.nv_shading_rate_image;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_bind_shading_rate_image_nv(command_buffer, image_view, image_layout);
         match layer_result {
@@ -17967,6 +18405,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_viewport_shading_rate_palette_nv(command_buffer, first_viewport, unsafe {
                 std::slice::from_raw_parts(p_shading_rate_palettes, viewport_count as usize)
@@ -17996,6 +18435,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_coarse_sample_order_nv(command_buffer, sample_order_type, unsafe {
                 std::slice::from_raw_parts(
@@ -18027,6 +18467,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.nv_ray_tracing;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .create_acceleration_structure_nv(unsafe { p_create_info.as_ref() }.unwrap(), unsafe {
                 p_allocator.as_ref()
@@ -18060,6 +18501,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.nv_ray_tracing;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .destroy_acceleration_structure_nv(acceleration_structure, unsafe {
                 p_allocator.as_ref()
@@ -18086,6 +18528,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.nv_ray_tracing;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_acceleration_structure_memory_requirements_nv(
                 unsafe { p_info.as_ref() }.unwrap(),
@@ -18114,6 +18557,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .bind_acceleration_structure_memory_nv(unsafe {
                 std::slice::from_raw_parts(p_bind_infos, bind_info_count as usize)
@@ -18149,6 +18593,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.nv_ray_tracing;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_build_acceleration_structure_nv(
                 command_buffer,
@@ -18190,6 +18635,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.nv_ray_tracing;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_copy_acceleration_structure_nv(command_buffer, dst, src, mode);
         match layer_result {
@@ -18220,23 +18666,27 @@ impl<T: Layer> Global<T> {
         // vkCmdTraceRaysNV
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.nv_ray_tracing;
-        let layer_result = device_info.customized_info.hooks().cmd_trace_rays_nv(
-            command_buffer,
-            raygen_shader_binding_table_buffer,
-            raygen_shader_binding_offset,
-            miss_shader_binding_table_buffer,
-            miss_shader_binding_offset,
-            miss_shader_binding_stride,
-            hit_shader_binding_table_buffer,
-            hit_shader_binding_offset,
-            hit_shader_binding_stride,
-            callable_shader_binding_table_buffer,
-            callable_shader_binding_offset,
-            callable_shader_binding_stride,
-            width,
-            height,
-            depth,
-        );
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .cmd_trace_rays_nv(
+                command_buffer,
+                raygen_shader_binding_table_buffer,
+                raygen_shader_binding_offset,
+                miss_shader_binding_table_buffer,
+                miss_shader_binding_offset,
+                miss_shader_binding_stride,
+                hit_shader_binding_table_buffer,
+                hit_shader_binding_offset,
+                hit_shader_binding_stride,
+                callable_shader_binding_table_buffer,
+                callable_shader_binding_offset,
+                callable_shader_binding_stride,
+                width,
+                height,
+                depth,
+            );
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -18275,6 +18725,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .create_ray_tracing_pipelines_nv(
                 pipeline_cache,
@@ -18321,6 +18772,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.khr_ray_tracing_pipeline;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_ray_tracing_shader_group_handles_khr(pipeline, first_group, group_count);
         match layer_result {
@@ -18357,6 +18809,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.nv_ray_tracing;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_acceleration_structure_handle_nv(acceleration_structure);
         match layer_result {
@@ -18394,6 +18847,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_write_acceleration_structures_properties_nv(
                 command_buffer,
@@ -18432,6 +18886,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.nv_ray_tracing;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .compile_deferred_nv(pipeline, shader);
         match layer_result {
@@ -18456,6 +18911,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_external_memory_host;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_memory_host_pointer_properties_ext(
                 handle_type,
@@ -18490,6 +18946,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.amd_buffer_marker;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_write_buffer_marker_amd(
                 command_buffer,
@@ -18526,6 +18983,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_calibrated_timestamps_ext(
                 unsafe { std::slice::from_raw_parts(p_timestamp_infos, timestamp_count as usize) },
@@ -18559,11 +19017,11 @@ impl<T: Layer> Global<T> {
         // vkCmdDrawMeshTasksNV
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.nv_mesh_shader;
-        let layer_result = device_info.customized_info.hooks().cmd_draw_mesh_tasks_nv(
-            command_buffer,
-            task_count,
-            first_task,
-        );
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .cmd_draw_mesh_tasks_nv(command_buffer, task_count, first_task);
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -18584,6 +19042,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.nv_mesh_shader;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_draw_mesh_tasks_indirect_nv(command_buffer, buffer, offset, draw_count, stride);
         match layer_result {
@@ -18614,6 +19073,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.nv_mesh_shader;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_draw_mesh_tasks_indirect_count_nv(
                 command_buffer,
@@ -18652,6 +19112,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_exclusive_scissor_nv(command_buffer, first_exclusive_scissor, unsafe {
                 std::slice::from_raw_parts(p_exclusive_scissors, exclusive_scissor_count as usize)
@@ -18676,10 +19137,14 @@ impl<T: Layer> Global<T> {
         // vkCmdSetCheckpointNV
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.nv_device_diagnostic_checkpoints;
-        let layer_result = device_info.customized_info.hooks().cmd_set_checkpoint_nv(
-            command_buffer,
-            unsafe { p_checkpoint_marker.as_ref() }.unwrap(),
-        );
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .cmd_set_checkpoint_nv(
+                command_buffer,
+                unsafe { p_checkpoint_marker.as_ref() }.unwrap(),
+            );
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -18699,6 +19164,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_queue_checkpoint_data_nv(
                 queue,
@@ -18734,6 +19200,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.intel_performance_query;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .initialize_performance_api_intel(unsafe { p_initialize_info.as_ref() }.unwrap());
         match layer_result {
@@ -18753,6 +19220,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.intel_performance_query;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .uninitialize_performance_api_intel();
         match layer_result {
@@ -18772,6 +19240,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.intel_performance_query;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_performance_marker_intel(
                 command_buffer,
@@ -18797,6 +19266,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.intel_performance_query;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_performance_stream_marker_intel(
                 command_buffer,
@@ -18825,6 +19295,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.intel_performance_query;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_performance_override_intel(
                 command_buffer,
@@ -18851,6 +19322,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.intel_performance_query;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .acquire_performance_configuration_intel(unsafe { p_acquire_info.as_ref() }.unwrap());
         match layer_result {
@@ -18880,6 +19352,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.intel_performance_query;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .release_performance_configuration_intel(configuration);
         match layer_result {
@@ -18902,6 +19375,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.intel_performance_query;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .queue_set_performance_configuration_intel(queue, configuration);
         match layer_result {
@@ -18925,6 +19399,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.intel_performance_query;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_performance_parameter_intel(parameter, unsafe { p_value.as_mut() }.unwrap());
         match layer_result {
@@ -18948,6 +19423,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.amd_display_native_hdr;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .set_local_dimming_amd(swap_chain, local_dimming_enable == vk::TRUE);
         match layer_result {
@@ -18967,6 +19443,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_full_screen_exclusive;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .acquire_full_screen_exclusive_mode_ext(swapchain);
         match layer_result {
@@ -18989,6 +19466,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_full_screen_exclusive;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .release_full_screen_exclusive_mode_ext(swapchain);
         match layer_result {
@@ -19012,6 +19490,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_full_screen_exclusive;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_device_group_surface_present_modes2_ext(
                 unsafe { p_surface_info.as_ref() }.unwrap(),
@@ -19044,6 +19523,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_line_rasterization;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_line_stipple_ext(command_buffer, line_stipple_factor, line_stipple_pattern);
         match layer_result {
@@ -19067,6 +19547,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_swapchain_maintenance1;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .release_swapchain_images_ext(unsafe { p_release_info.as_ref() }.unwrap());
         match layer_result {
@@ -19090,6 +19571,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.nv_device_generated_commands;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_generated_commands_memory_requirements_nv(
                 unsafe { p_info.as_ref() }.unwrap(),
@@ -19116,6 +19598,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.nv_device_generated_commands;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_preprocess_generated_commands_nv(
                 command_buffer,
@@ -19142,6 +19625,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.nv_device_generated_commands;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_execute_generated_commands_nv(
                 command_buffer,
@@ -19171,6 +19655,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.nv_device_generated_commands;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_bind_pipeline_shader_group_nv(
                 command_buffer,
@@ -19202,6 +19687,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.nv_device_generated_commands;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .create_indirect_commands_layout_nv(
                 unsafe { p_create_info.as_ref() }.unwrap(),
@@ -19236,6 +19722,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.nv_device_generated_commands;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .destroy_indirect_commands_layout_nv(indirect_commands_layout, unsafe {
                 p_allocator.as_ref()
@@ -19261,6 +19748,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_metal_objects;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .export_metal_objects_ext(unsafe { p_metal_objects_info.as_mut() }.unwrap());
         match layer_result {
@@ -19281,6 +19769,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_descriptor_buffer;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_descriptor_set_layout_size_ext(layout);
         match layer_result {
@@ -19308,6 +19797,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_descriptor_buffer;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_descriptor_set_layout_binding_offset_ext(layout, binding);
         match layer_result {
@@ -19333,6 +19823,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_descriptor_buffer;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_descriptor_ext(unsafe { p_descriptor_info.as_ref() }.unwrap());
         match layer_result {
@@ -19363,6 +19854,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_bind_descriptor_buffers_ext(command_buffer, unsafe {
                 std::slice::from_raw_parts(p_binding_infos, buffer_count as usize)
@@ -19395,6 +19887,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_descriptor_buffer_offsets_ext(
                 command_buffer,
@@ -19431,6 +19924,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_descriptor_buffer;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_bind_descriptor_buffer_embedded_samplers_ext(
                 command_buffer,
@@ -19461,6 +19955,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_descriptor_buffer;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_buffer_opaque_capture_descriptor_data_ext(
                 unsafe { p_info.as_ref() }.unwrap(),
@@ -19489,6 +19984,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_descriptor_buffer;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_image_opaque_capture_descriptor_data_ext(
                 unsafe { p_info.as_ref() }.unwrap(),
@@ -19517,6 +20013,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_descriptor_buffer;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_image_view_opaque_capture_descriptor_data_ext(
                 unsafe { p_info.as_ref() }.unwrap(),
@@ -19545,6 +20042,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_descriptor_buffer;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_sampler_opaque_capture_descriptor_data_ext(
                 unsafe { p_info.as_ref() }.unwrap(),
@@ -19573,6 +20071,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_descriptor_buffer;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_acceleration_structure_opaque_capture_descriptor_data_ext(
                 unsafe { p_info.as_ref() }.unwrap(),
@@ -19602,6 +20101,7 @@ impl<T: Layer> Global<T> {
         let combiner_ops = unsafe { combiner_ops.as_ref() }.unwrap();
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_fragment_shading_rate_enum_nv(command_buffer, shading_rate, combiner_ops);
         match layer_result {
@@ -19627,6 +20127,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_image_compression_control;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_image_subresource_layout2_ext(
                 image,
@@ -19660,6 +20161,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_vertex_input_ext(
                 command_buffer,
@@ -19700,6 +20202,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.fuchsia_external_memory;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_memory_zircon_handle_fuchsia(
                 unsafe { p_get_zircon_handle_info.as_ref() }.unwrap(),
@@ -19733,6 +20236,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.fuchsia_external_memory;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_memory_zircon_handle_properties_fuchsia(
                 handle_type,
@@ -19764,6 +20268,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.fuchsia_external_semaphore;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .import_semaphore_zircon_handle_fuchsia(
                 unsafe { p_import_semaphore_zircon_handle_info.as_ref() }.unwrap(),
@@ -19792,6 +20297,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.fuchsia_external_semaphore;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_semaphore_zircon_handle_fuchsia(
                 unsafe { p_get_zircon_handle_info.as_ref() }.unwrap(),
@@ -19825,6 +20331,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.fuchsia_buffer_collection;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .create_buffer_collection_fuchsia(unsafe { p_create_info.as_ref() }.unwrap(), unsafe {
                 p_allocator.as_ref()
@@ -19858,6 +20365,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.fuchsia_buffer_collection;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .set_buffer_collection_image_constraints_fuchsia(
                 collection,
@@ -19888,6 +20396,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.fuchsia_buffer_collection;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .set_buffer_collection_buffer_constraints_fuchsia(
                 collection,
@@ -19918,6 +20427,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.fuchsia_buffer_collection;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .destroy_buffer_collection_fuchsia(collection, unsafe { p_allocator.as_ref() });
         match layer_result {
@@ -19938,6 +20448,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.fuchsia_buffer_collection;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_buffer_collection_properties_fuchsia(
                 collection,
@@ -19968,6 +20479,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.huawei_subpass_shading;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_device_subpass_shading_max_workgroup_size_huawei(
                 renderpass,
@@ -19994,6 +20506,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.huawei_subpass_shading;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_subpass_shading_huawei(command_buffer);
         match layer_result {
@@ -20014,6 +20527,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.huawei_invocation_mask;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_bind_invocation_mask_huawei(command_buffer, image_view, image_layout);
         match layer_result {
@@ -20038,6 +20552,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.nv_external_memory_rdma;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_memory_remote_address_nv(
                 unsafe { p_memory_get_remote_address_info.as_ref() }.unwrap(),
@@ -20070,6 +20585,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_pipeline_properties;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_pipeline_properties_ext(
                 unsafe { p_pipeline_info.as_ref() }.unwrap(),
@@ -20099,6 +20615,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_extended_dynamic_state2;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_patch_control_points_ext(command_buffer, patch_control_points);
         match layer_result {
@@ -20121,6 +20638,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_extended_dynamic_state2;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_logic_op_ext(command_buffer, logic_op);
         match layer_result {
@@ -20142,6 +20660,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_color_write_enable_ext(
                 command_buffer,
@@ -20175,13 +20694,17 @@ impl<T: Layer> Global<T> {
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.ext_multi_draw;
         #[allow(clippy::unnecessary_cast)]
-        let layer_result = device_info.customized_info.hooks().cmd_draw_multi_ext(
-            command_buffer,
-            unsafe { std::slice::from_raw_parts(p_vertex_info, draw_count as usize) },
-            instance_count,
-            first_instance,
-            stride,
-        );
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .cmd_draw_multi_ext(
+                command_buffer,
+                unsafe { std::slice::from_raw_parts(p_vertex_info, draw_count as usize) },
+                instance_count,
+                first_instance,
+                stride,
+            );
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -20212,6 +20735,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_draw_multi_indexed_ext(
                 command_buffer,
@@ -20248,6 +20772,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_opacity_micromap;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .create_micromap_ext(unsafe { p_create_info.as_ref() }.unwrap(), unsafe {
                 p_allocator.as_ref()
@@ -20276,6 +20801,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_opacity_micromap;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .destroy_micromap_ext(micromap, unsafe { p_allocator.as_ref() });
         match layer_result {
@@ -20297,6 +20823,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_build_micromaps_ext(command_buffer, unsafe {
                 std::slice::from_raw_parts(p_infos, info_count as usize)
@@ -20321,6 +20848,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .build_micromaps_ext(deferred_operation, unsafe {
                 std::slice::from_raw_parts(p_infos, info_count as usize)
@@ -20351,6 +20879,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_opacity_micromap;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .copy_micromap_ext(deferred_operation, unsafe { p_info.as_ref() }.unwrap());
         match layer_result {
@@ -20374,6 +20903,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_opacity_micromap;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .copy_micromap_to_memory_ext(deferred_operation, unsafe { p_info.as_ref() }.unwrap());
         match layer_result {
@@ -20397,6 +20927,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_opacity_micromap;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .copy_memory_to_micromap_ext(deferred_operation, unsafe { p_info.as_ref() }.unwrap());
         match layer_result {
@@ -20426,6 +20957,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .write_micromaps_properties_ext(
                 unsafe { std::slice::from_raw_parts(p_micromaps, micromap_count as usize) },
@@ -20461,6 +20993,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_opacity_micromap;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_copy_micromap_ext(command_buffer, unsafe { p_info.as_ref() }.unwrap());
         match layer_result {
@@ -20480,6 +21013,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_opacity_micromap;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_copy_micromap_to_memory_ext(command_buffer, unsafe { p_info.as_ref() }.unwrap());
         match layer_result {
@@ -20499,6 +21033,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_opacity_micromap;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_copy_memory_to_micromap_ext(command_buffer, unsafe { p_info.as_ref() }.unwrap());
         match layer_result {
@@ -20523,6 +21058,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_write_micromaps_properties_ext(
                 command_buffer,
@@ -20556,6 +21092,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_opacity_micromap;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_device_micromap_compatibility_ext(unsafe { p_version_info.as_ref() }.unwrap());
         match layer_result {
@@ -20583,6 +21120,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_opacity_micromap;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_micromap_build_sizes_ext(
                 build_type,
@@ -20612,6 +21150,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_pageable_device_local_memory;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .set_device_memory_priority_ext(memory, priority);
         match layer_result {
@@ -20632,6 +21171,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.valve_descriptor_set_host_mapping;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_descriptor_set_layout_host_mapping_info_valve(
                 unsafe { p_binding_reference.as_ref() }.unwrap(),
@@ -20659,6 +21199,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.valve_descriptor_set_host_mapping;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_descriptor_set_host_mapping_valve(descriptor_set);
         match layer_result {
@@ -20686,6 +21227,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.nv_copy_memory_indirect;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_copy_memory_indirect_nv(command_buffer, copy_buffer_address, copy_count, stride);
         match layer_result {
@@ -20716,6 +21258,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_copy_memory_to_image_indirect_nv(
                 command_buffer,
@@ -20752,6 +21295,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_decompress_memory_nv(command_buffer, unsafe {
                 std::slice::from_raw_parts(
@@ -20782,6 +21326,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.nv_memory_decompression;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_decompress_memory_indirect_count_nv(
                 command_buffer,
@@ -20811,6 +21356,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_extended_dynamic_state3;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_tessellation_domain_origin_ext(command_buffer, domain_origin);
         match layer_result {
@@ -20833,6 +21379,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_extended_dynamic_state3;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_depth_clamp_enable_ext(command_buffer, depth_clamp_enable == vk::TRUE);
         match layer_result {
@@ -20852,6 +21399,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_extended_dynamic_state3;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_polygon_mode_ext(command_buffer, polygon_mode);
         match layer_result {
@@ -20871,6 +21419,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_extended_dynamic_state3;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_rasterization_samples_ext(command_buffer, rasterization_samples);
         match layer_result {
@@ -20893,13 +21442,13 @@ impl<T: Layer> Global<T> {
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.ext_extended_dynamic_state3;
         #[allow(clippy::unnecessary_cast)]
-        let layer_result = device_info.customized_info.hooks().cmd_set_sample_mask_ext(
-            command_buffer,
-            samples,
-            unsafe {
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .cmd_set_sample_mask_ext(command_buffer, samples, unsafe {
                 std::slice::from_raw_parts(p_sample_mask, ((samples.as_raw() + 31) / 32) as usize)
-            },
-        );
+            });
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -20917,6 +21466,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_extended_dynamic_state3;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_alpha_to_coverage_enable_ext(
                 command_buffer,
@@ -20942,6 +21492,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_extended_dynamic_state3;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_alpha_to_one_enable_ext(command_buffer, alpha_to_one_enable == vk::TRUE);
         match layer_result {
@@ -20964,6 +21515,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_extended_dynamic_state3;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_logic_op_enable_ext(command_buffer, logic_op_enable == vk::TRUE);
         match layer_result {
@@ -20986,6 +21538,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_color_blend_enable_ext(
                 command_buffer,
@@ -21021,6 +21574,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_color_blend_equation_ext(command_buffer, first_attachment, unsafe {
                 std::slice::from_raw_parts(p_color_blend_equations, attachment_count as usize)
@@ -21050,6 +21604,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_color_write_mask_ext(command_buffer, first_attachment, unsafe {
                 std::slice::from_raw_parts(p_color_write_masks, attachment_count as usize)
@@ -21076,6 +21631,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_extended_dynamic_state3;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_rasterization_stream_ext(command_buffer, rasterization_stream);
         match layer_result {
@@ -21098,6 +21654,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_extended_dynamic_state3;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_conservative_rasterization_mode_ext(
                 command_buffer,
@@ -21123,6 +21680,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_extended_dynamic_state3;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_extra_primitive_overestimation_size_ext(
                 command_buffer,
@@ -21148,6 +21706,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_extended_dynamic_state3;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_depth_clip_enable_ext(command_buffer, depth_clip_enable == vk::TRUE);
         match layer_result {
@@ -21167,6 +21726,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_extended_dynamic_state3;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_sample_locations_enable_ext(
                 command_buffer,
@@ -21195,6 +21755,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_color_blend_advanced_ext(command_buffer, first_attachment, unsafe {
                 std::slice::from_raw_parts(p_color_blend_advanced, attachment_count as usize)
@@ -21221,6 +21782,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_extended_dynamic_state3;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_provoking_vertex_mode_ext(command_buffer, provoking_vertex_mode);
         match layer_result {
@@ -21243,6 +21805,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_extended_dynamic_state3;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_line_rasterization_mode_ext(command_buffer, line_rasterization_mode);
         match layer_result {
@@ -21265,6 +21828,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_extended_dynamic_state3;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_line_stipple_enable_ext(command_buffer, stippled_line_enable == vk::TRUE);
         match layer_result {
@@ -21287,6 +21851,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_extended_dynamic_state3;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_depth_clip_negative_one_to_one_ext(
                 command_buffer,
@@ -21312,6 +21877,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_extended_dynamic_state3;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_viewport_w_scaling_enable_nv(
                 command_buffer,
@@ -21340,6 +21906,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_viewport_swizzle_nv(command_buffer, first_viewport, unsafe {
                 std::slice::from_raw_parts(p_viewport_swizzles, viewport_count as usize)
@@ -21366,6 +21933,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_extended_dynamic_state3;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_coverage_to_color_enable_nv(
                 command_buffer,
@@ -21391,6 +21959,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_extended_dynamic_state3;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_coverage_to_color_location_nv(command_buffer, coverage_to_color_location);
         match layer_result {
@@ -21413,6 +21982,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_extended_dynamic_state3;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_coverage_modulation_mode_nv(command_buffer, coverage_modulation_mode);
         match layer_result {
@@ -21435,6 +22005,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_extended_dynamic_state3;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_coverage_modulation_table_enable_nv(
                 command_buffer,
@@ -21462,6 +22033,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_coverage_modulation_table_nv(command_buffer, unsafe {
                 std::slice::from_raw_parts(
@@ -21490,6 +22062,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_extended_dynamic_state3;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_shading_rate_image_enable_nv(
                 command_buffer,
@@ -21515,6 +22088,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_extended_dynamic_state3;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_representative_fragment_test_enable_nv(
                 command_buffer,
@@ -21540,6 +22114,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_extended_dynamic_state3;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_coverage_reduction_mode_nv(command_buffer, coverage_reduction_mode);
         match layer_result {
@@ -21563,6 +22138,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_shader_module_identifier;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_shader_module_identifier_ext(
                 shader_module,
@@ -21590,6 +22166,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_shader_module_identifier;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_shader_module_create_info_identifier_ext(
                 unsafe { p_create_info.as_ref() }.unwrap(),
@@ -21618,6 +22195,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.nv_optical_flow;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .create_optical_flow_session_nv(unsafe { p_create_info.as_ref() }.unwrap(), unsafe {
                 p_allocator.as_ref()
@@ -21651,6 +22229,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.nv_optical_flow;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .destroy_optical_flow_session_nv(session, unsafe { p_allocator.as_ref() });
         match layer_result {
@@ -21673,6 +22252,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.nv_optical_flow;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .bind_optical_flow_session_image_nv(session, binding_point, view, layout);
         match layer_result {
@@ -21702,6 +22282,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.nv_optical_flow;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_optical_flow_execute_nv(
                 command_buffer,
@@ -21732,6 +22313,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_framebuffer_tile_properties_qcom(
                 framebuffer,
@@ -21772,6 +22354,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.qcom_tile_properties;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_dynamic_rendering_tile_properties_qcom(
                 unsafe { p_rendering_info.as_ref() }.unwrap(),
@@ -21803,6 +22386,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.khr_acceleration_structure;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .create_acceleration_structure_khr(
                 unsafe { p_create_info.as_ref() }.unwrap(),
@@ -21837,6 +22421,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.khr_acceleration_structure;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .destroy_acceleration_structure_khr(acceleration_structure, unsafe {
                 p_allocator.as_ref()
@@ -21863,6 +22448,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.khr_acceleration_structure;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .copy_acceleration_structure_khr(
                 deferred_operation,
@@ -21889,6 +22475,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.khr_acceleration_structure;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .copy_acceleration_structure_to_memory_khr(
                 deferred_operation,
@@ -21919,6 +22506,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.khr_acceleration_structure;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .copy_memory_to_acceleration_structure_khr(
                 deferred_operation,
@@ -21955,6 +22543,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .write_acceleration_structures_properties_khr(
                 unsafe {
@@ -21995,6 +22584,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.khr_acceleration_structure;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_copy_acceleration_structure_khr(
                 command_buffer,
@@ -22017,6 +22607,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.khr_acceleration_structure;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_copy_acceleration_structure_to_memory_khr(
                 command_buffer,
@@ -22042,6 +22633,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.khr_acceleration_structure;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_copy_memory_to_acceleration_structure_khr(
                 command_buffer,
@@ -22067,6 +22659,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.khr_acceleration_structure;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_acceleration_structure_device_address_khr(unsafe { p_info.as_ref() }.unwrap());
         match layer_result {
@@ -22091,6 +22684,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_write_acceleration_structures_properties_khr(
                 command_buffer,
@@ -22129,6 +22723,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.khr_acceleration_structure;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_device_acceleration_structure_compatibility_khr(
                 unsafe { p_version_info.as_ref() }.unwrap(),
@@ -22160,6 +22755,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_acceleration_structure_build_sizes_khr(
                 build_type,
@@ -22203,16 +22799,20 @@ impl<T: Layer> Global<T> {
         // vkCmdTraceRaysKHR
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.khr_ray_tracing_pipeline;
-        let layer_result = device_info.customized_info.hooks().cmd_trace_rays_khr(
-            command_buffer,
-            unsafe { p_raygen_shader_binding_table.as_ref() }.unwrap(),
-            unsafe { p_miss_shader_binding_table.as_ref() }.unwrap(),
-            unsafe { p_hit_shader_binding_table.as_ref() }.unwrap(),
-            unsafe { p_callable_shader_binding_table.as_ref() }.unwrap(),
-            width,
-            height,
-            depth,
-        );
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .cmd_trace_rays_khr(
+                command_buffer,
+                unsafe { p_raygen_shader_binding_table.as_ref() }.unwrap(),
+                unsafe { p_miss_shader_binding_table.as_ref() }.unwrap(),
+                unsafe { p_hit_shader_binding_table.as_ref() }.unwrap(),
+                unsafe { p_callable_shader_binding_table.as_ref() }.unwrap(),
+                width,
+                height,
+                depth,
+            );
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -22245,6 +22845,7 @@ impl<T: Layer> Global<T> {
         #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .create_ray_tracing_pipelines_khr(
                 deferred_operation,
@@ -22293,6 +22894,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.khr_ray_tracing_pipeline;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_ray_tracing_capture_replay_shader_group_handles_khr(
                 pipeline,
@@ -22335,6 +22937,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.khr_ray_tracing_pipeline;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_trace_rays_indirect_khr(
                 command_buffer,
@@ -22370,6 +22973,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.khr_ray_tracing_pipeline;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_ray_tracing_shader_group_stack_size_khr(pipeline, group, group_shader);
         match layer_result {
@@ -22394,6 +22998,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.khr_ray_tracing_pipeline;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_set_ray_tracing_pipeline_stack_size_khr(command_buffer, pipeline_stack_size);
         match layer_result {
@@ -22416,12 +23021,11 @@ impl<T: Layer> Global<T> {
         // vkCmdDrawMeshTasksEXT
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.ext_mesh_shader;
-        let layer_result = device_info.customized_info.hooks().cmd_draw_mesh_tasks_ext(
-            command_buffer,
-            group_countx,
-            group_county,
-            group_countz,
-        );
+        let layer_result = device_info
+            .customized_info
+            .borrow()
+            .hooks()
+            .cmd_draw_mesh_tasks_ext(command_buffer, group_countx, group_county, group_countz);
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -22447,6 +23051,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_mesh_shader;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_draw_mesh_tasks_indirect_ext(command_buffer, buffer, offset, draw_count, stride);
         match layer_result {
@@ -22477,6 +23082,7 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info.dispatch_table.ext_mesh_shader;
         let layer_result = device_info
             .customized_info
+            .borrow()
             .hooks()
             .cmd_draw_mesh_tasks_indirect_count_ext(
                 command_buffer,

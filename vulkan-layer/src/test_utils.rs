@@ -4,14 +4,52 @@ use crate::{
 use ash::vk;
 use mockall::mock;
 use std::{
+    borrow::Borrow,
     collections::HashMap,
     marker::PhantomData,
+    ops::Deref,
     sync::{Arc, Mutex, MutexGuard, Weak},
 };
 
 pub use crate::bindings::{
     VkLayerDeviceCreateInfo, VkLayerFunction, VkLayerInstanceCreateInfo, VkLayerInstanceLink,
 };
+
+pub struct Del<T> {
+    data: T,
+    deleter: Option<Box<dyn FnOnce(&mut T) + Send + Sync>>,
+}
+
+impl<T> Deref for Del<T> {
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        &self.data
+    }
+}
+
+impl<T> Drop for Del<T> {
+    fn drop(&mut self) {
+        (self.deleter.take().unwrap())(&mut self.data);
+    }
+}
+
+pub struct ArcDel<T>(pub Arc<Del<T>>);
+
+impl<T> ArcDel<T> {
+    fn new(data: T, deleter: impl FnOnce(&mut T) + Send + Sync + 'static) -> Self {
+        ArcDel(Arc::new(Del {
+            data,
+            deleter: Some(Box::new(deleter)),
+        }))
+    }
+}
+
+impl<T> Borrow<T> for ArcDel<T> {
+    fn borrow(&self) -> &T {
+        &self.0.data
+    }
+}
 
 #[derive(Default)]
 pub struct MockDeviceHooks {}
@@ -30,35 +68,18 @@ mock! {
     }
 }
 
-pub trait Tag: 'static + Sync + Send + Default {}
-impl<T: 'static + Sync + Send + Default> Tag for T {}
-
+#[derive(Default)]
 pub struct MockInstanceInfo<T: TestLayer> {
-    layer: Weak<TestLayerWrapper<T>>,
-    instance: vk::Instance,
-    mock_hooks: Arc<Mutex<MockInstanceHooks>>,
-}
-
-impl<T: TestLayer> Drop for MockInstanceInfo<T> {
-    fn drop(&mut self) {
-        let layer = match self.layer.upgrade() {
-            Some(layer) => layer,
-            None => return,
-        };
-        layer
-            .instance_hook_mocks
-            .lock()
-            .unwrap()
-            .remove(&self.instance);
-    }
+    pub mock_hooks: Mutex<MockInstanceHooks>,
+    _marker: PhantomData<T>,
 }
 
 impl<T: TestLayer> InstanceInfo for MockInstanceInfo<T> {
-    type LayerInfo = Arc<TestLayerWrapper<T>>;
+    type LayerInfo = Arc<TestLayerWrapper<T, Self>>;
     type HooksType = MockInstanceHooks;
     type HooksRefType<'a> = MutexGuard<'a, MockInstanceHooks>;
-    fn hooked_commands(_: &Self::LayerInfo) -> &[LayerVulkanCommand] {
-        &[]
+    fn hooked_commands(layer: &Self::LayerInfo) -> &[LayerVulkanCommand] {
+        layer.inner.hooked_instance_commands()
     }
 
     fn hooks(&self) -> Self::HooksRefType<'_> {
@@ -91,23 +112,29 @@ pub trait TestLayer: Send + Sync + Default + 'static {
     const IMPLEMENTATION_VERSION: u32 = 1;
     const SPEC_VERSION: u32 = vk::API_VERSION_1_1;
 
-    fn hooked_commands(&self) -> Box<dyn Iterator<Item = LayerVulkanCommand> + '_> {
-        Box::new([].into_iter())
+    // Will only be used when work with MockInstanceInfo<Self> and TestLayerWrapper so that we can
+    // use an actual InstanceInfo with TestLayer and TestLayerWrapper.
+    fn hooked_instance_commands(&self) -> &[LayerVulkanCommand] {
+        &[]
     }
 }
 
-#[derive(Default)]
-pub struct TestLayerWrapper<T: TestLayer> {
+pub struct TestLayerWrapper<T, U = MockInstanceInfo<T>>
+where
+    T: TestLayer,
+    U: InstanceInfo + 'static,
+{
     inner: T,
-    instance_hook_mocks: Mutex<HashMap<vk::Instance, Weak<Mutex<MockInstanceHooks>>>>,
+    instances: Mutex<HashMap<vk::Instance, Weak<Del<U>>>>,
 }
 
-impl<T: TestLayer> TestLayerWrapper<T> {
-    pub fn get_instance_hooks_mock(
-        &self,
-        instance: vk::Instance,
-    ) -> Option<Arc<Mutex<MockInstanceHooks>>> {
-        self.instance_hook_mocks
+impl<T, U> TestLayerWrapper<T, U>
+where
+    T: TestLayer,
+    U: InstanceInfo + 'static,
+{
+    pub fn get_instance_info(&self, instance: vk::Instance) -> Option<Arc<impl Deref<Target = U>>> {
+        self.instances
             .lock()
             .unwrap()
             .get(&instance)
@@ -115,20 +142,40 @@ impl<T: TestLayer> TestLayerWrapper<T> {
     }
 }
 
-impl<T: TestLayer> GlobalHooks for Arc<TestLayerWrapper<T>> {}
+impl<T, U> Default for TestLayerWrapper<T, U>
+where
+    T: TestLayer,
+    U: InstanceInfo + 'static,
+{
+    fn default() -> Self {
+        Self {
+            inner: Default::default(),
+            instances: Default::default(),
+        }
+    }
+}
 
-impl<T: TestLayer> Layer for Arc<TestLayerWrapper<T>> {
+impl<T, U> GlobalHooks for Arc<TestLayerWrapper<T, U>>
+where
+    T: TestLayer,
+    U: InstanceInfo + 'static,
+{
+}
+
+impl<T, U> Layer for Arc<TestLayerWrapper<T, U>>
+where
+    T: TestLayer,
+    U: InstanceInfo<LayerInfo = Self> + Default + 'static,
+{
     type DeviceInfo = MockDeviceInfo<Self>;
-    type InstanceInfo = MockInstanceInfo<T>;
+    type InstanceInfo = U;
+    type DeviceInfoContainer = Self::DeviceInfo;
+    type InstanceInfoContainer = ArcDel<Self::InstanceInfo>;
 
     const LAYER_NAME: &'static str = <T as TestLayer>::LAYER_NAME;
     const LAYER_DESCRIPTION: &'static str = <T as TestLayer>::LAYER_DESCRIPTION;
     const IMPLEMENTATION_VERSION: u32 = <T as TestLayer>::IMPLEMENTATION_VERSION;
     const SPEC_VERSION: u32 = <T as TestLayer>::SPEC_VERSION;
-
-    fn hooked_commands(&self) -> Box<dyn Iterator<Item = LayerVulkanCommand> + '_> {
-        self.inner.hooked_commands()
-    }
 
     fn create_device_info(
         &self,
@@ -147,16 +194,20 @@ impl<T: TestLayer> Layer for Arc<TestLayerWrapper<T>> {
         _allocator: Option<&vk::AllocationCallbacks>,
         instance: Arc<ash::Instance>,
         _next_get_instance_proc_addr: vk::PFN_vkGetInstanceProcAddr,
-    ) -> Self::InstanceInfo {
-        let mock_hooks: Arc<Mutex<MockInstanceHooks>> = Default::default();
-        self.instance_hook_mocks
+    ) -> ArcDel<Self::InstanceInfo> {
+        let weak_layer = Arc::downgrade(self);
+        let instance_handle = instance.handle();
+        let instance_info = ArcDel::new(Default::default(), move |_| {
+            let layer = match weak_layer.upgrade() {
+                Some(layer) => layer,
+                None => return,
+            };
+            layer.instances.lock().unwrap().remove(&instance_handle);
+        });
+        self.instances
             .lock()
             .unwrap()
-            .insert(instance.handle(), Arc::downgrade(&mock_hooks));
-        Self::InstanceInfo {
-            layer: Arc::downgrade(self),
-            instance: instance.handle(),
-            mock_hooks,
-        }
+            .insert(instance.handle(), Arc::downgrade(&instance_info.0));
+        instance_info
     }
 }

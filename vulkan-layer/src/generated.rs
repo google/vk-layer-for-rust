@@ -13,6 +13,7 @@
 // limitations under the License.
 
 use std::{
+    borrow::Borrow,
     ffi::{c_void, CStr},
     ops::Deref,
     sync::Arc,
@@ -123,6 +124,8 @@ pub trait Layer: Default + GlobalHooks + 'static {
 
     type InstanceInfo: InstanceInfo<LayerInfo = Self>;
     type DeviceInfo: DeviceInfo<LayerInfo = Self>;
+    type InstanceInfoContainer: Borrow<Self::InstanceInfo> + Sync + Send;
+    type DeviceInfoContainer: Borrow<Self::DeviceInfo> + Sync + Send;
 
     fn create_instance_info(
         &self,
@@ -130,7 +133,7 @@ pub trait Layer: Default + GlobalHooks + 'static {
         allocator: Option<&vk::AllocationCallbacks>,
         instance: Arc<ash::Instance>,
         next_get_instance_proc_addr: vk::PFN_vkGetInstanceProcAddr,
-    ) -> Self::InstanceInfo;
+    ) -> Self::InstanceInfoContainer;
 
     fn create_device_info(
         &self,
@@ -139,7 +142,7 @@ pub trait Layer: Default + GlobalHooks + 'static {
         allocator: Option<&vk::AllocationCallbacks>,
         device: Arc<ash::Device>,
         next_get_device_proc_addr: vk::PFN_vkGetDeviceProcAddr,
-    ) -> Self::DeviceInfo;
+    ) -> Self::DeviceInfoContainer;
 
     fn hooked_commands(&self) -> Box<dyn Iterator<Item = LayerVulkanCommand> + '_> {
         Box::new(

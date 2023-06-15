@@ -40,7 +40,7 @@ use super::LayerResult;
 //   supported yet.
 // * vkBuildAccelerationStructuresKHR: Dynamic multi-dimensional array bindings are not supported
 //   yet.
-#[derive(PartialOrd, Ord, PartialEq, Eq, Hash, Clone)]
+#[derive(Debug, PartialOrd, Ord, PartialEq, Eq, Hash, Clone)]
 pub enum VulkanCommand {
     CreateInstance,
     GetPhysicalDeviceFeatures,

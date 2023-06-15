@@ -75,7 +75,7 @@ class LayerTraitGenerator(OutputGenerator):
             DispatchChainType.DEVICE: ["pub trait DeviceHooks: Send + Sync {"],
         }
         command_enum = [
-            "#[derive(PartialOrd, Ord, PartialEq, Eq, Hash, Clone)]",
+            "#[derive(Debug, PartialOrd, Ord, PartialEq, Eq, Hash, Clone)]",
             "pub enum VulkanCommand {",
         ]
 

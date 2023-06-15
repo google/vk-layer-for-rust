@@ -42,6 +42,7 @@ pub use generated::{
     layer_trait::{DeviceHooks, GlobalHooks, InstanceHooks, VulkanCommand as LayerVulkanCommand},
     DeviceInfo, InstanceInfo, Layer, LayerResult,
 };
+pub use vulkan_layer_macros::auto_instanceinfo_impl;
 
 fn as_i8_slice(input: &CString) -> &[i8] {
     let bytes = input.as_bytes();
@@ -140,28 +141,28 @@ impl DispatchableObject for vk::Queue {
     type DispatchKey = DeviceDispatchKey;
 }
 
-struct InstanceInfoWrapper<T: InstanceInfo> {
+struct InstanceInfoWrapper<T: Layer> {
     get_instance_proc_addr: vk::PFN_vkGetInstanceProcAddr,
     dispatch_table: InstanceDispatchTable,
     api_version: ApiVersion,
     enabled_extensions: BTreeSet<Extension>,
-    customized_info: T,
+    customized_info: T::InstanceInfoContainer,
 }
 
 struct PhysicalDeviceInfoWrapper {
     owner_instance: vk::Instance,
 }
 
-struct DeviceInfoWrapper<T: DeviceInfo> {
+struct DeviceInfoWrapper<T: Layer> {
     dispatch_table: DeviceDispatchTable,
     get_device_proc_addr: vk::PFN_vkGetDeviceProcAddr,
-    customized_info: T,
+    customized_info: T::DeviceInfoContainer,
 }
 
 pub struct Global<T: Layer> {
-    instance_map: Mutex<BTreeMap<InstanceDispatchKey, Arc<InstanceInfoWrapper<T::InstanceInfo>>>>,
+    instance_map: Mutex<BTreeMap<InstanceDispatchKey, Arc<InstanceInfoWrapper<T>>>>,
     physical_device_map: Mutex<BTreeMap<vk::PhysicalDevice, Arc<PhysicalDeviceInfoWrapper>>>,
-    device_map: Mutex<BTreeMap<DeviceDispatchKey, Arc<DeviceInfoWrapper<T::DeviceInfo>>>>,
+    device_map: Mutex<BTreeMap<DeviceDispatchKey, Arc<DeviceInfoWrapper<T>>>>,
     pub layer_info: T,
     // TODO: use normal Vec instead, so that we know when the initialization happens.
     instance_commands: OnceCell<Vec<VulkanCommand>>,
@@ -191,7 +192,7 @@ impl<T: Layer> Global<T> {
     fn get_instance_info(
         &self,
         instance: impl DispatchableObject<DispatchKey = InstanceDispatchKey>,
-    ) -> Option<Arc<InstanceInfoWrapper<T::InstanceInfo>>> {
+    ) -> Option<Arc<InstanceInfoWrapper<T>>> {
         self.instance_map
             .lock()
             .unwrap()
@@ -225,7 +226,7 @@ impl<T: Layer> Global<T> {
     fn get_device_info(
         &self,
         device: impl DispatchableObject<DispatchKey = DeviceDispatchKey>,
-    ) -> Option<Arc<DeviceInfoWrapper<T::DeviceInfo>>> {
+    ) -> Option<Arc<DeviceInfoWrapper<T>>> {
         self.device_map
             .lock()
             .unwrap()
@@ -809,6 +810,7 @@ impl<T: Layer> Global<T> {
         if global.get_instance_addr_proc_hooked {
             if let LayerResult::Handled(res) = instance_info
                 .customized_info
+                .borrow()
                 .hooks()
                 .get_instance_proc_addr(name)
             {
@@ -872,6 +874,7 @@ impl<T: Layer> Global<T> {
         let device_info = global.get_device_info(device)?;
         if let LayerResult::Handled(res) = device_info
             .customized_info
+            .borrow()
             .hooks()
             .get_device_proc_addr(name)
         {
