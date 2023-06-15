@@ -16,13 +16,19 @@ from generator import OutputGenerator
 import reg
 import sys
 from typing import Optional
-from vk_xml_util import (VkXmlCommand, RustMethod, DispatchChainType,
-                         UnhandledCommand, generate_unhandled_command_comments, VulkanAliases,
-                         write_license, snake_case_to_upper_camel_case)
+from vk_xml_util import (
+    VkXmlCommand,
+    RustMethod,
+    DispatchChainType,
+    UnhandledCommand,
+    generate_unhandled_command_comments,
+    VulkanAliases,
+    write_license,
+    snake_case_to_upper_camel_case,
+)
 
 
 class LayerTraitGenerator(OutputGenerator):
-
     def __init__(self, err_file=sys.stderr, warn_file=sys.stderr, diag_file=sys.stdout):
         super().__init__(err_file, warn_file, diag_file)
         self.all_commands: dict[DispatchChainType, dict[str, RustMethod]] = {}
@@ -36,13 +42,17 @@ class LayerTraitGenerator(OutputGenerator):
         self.newline()
         self.outFile.write("// This file is generated from the Vulkan XML API registry.\n")
         self.outFile.write("#![allow(clippy::too_many_arguments)]\n")
-        self.outFile.write('\n'.join([
-            "use std::ffi::{c_int, c_void};",
-            "",
-            "use ash::{vk, prelude::VkResult};",
-            "",
-            "use super::LayerResult;"
-        ]))
+        self.outFile.write(
+            "\n".join(
+                [
+                    "use std::ffi::{c_int, c_void};",
+                    "",
+                    "use ash::{vk, prelude::VkResult};",
+                    "",
+                    "use super::LayerResult;",
+                ]
+            )
+        )
         self.newline()
         self.newline()
 
@@ -74,9 +84,9 @@ class LayerTraitGenerator(OutputGenerator):
                 if name not in not_aliased_commands:
                     continue
                 dispatch_chain_type_to_lines[dispatch_type] += [
-                    f'    {command.to_string()} {{',
-                    f'        LayerResult::Unhandled',
-                    f'    }}',
+                    f"    {command.to_string()} {{",
+                    f"        LayerResult::Unhandled",
+                    f"    }}",
                 ]
                 command_enum.append(f"    {snake_case_to_upper_camel_case(command.name)},")
         command_enum += ["}"]
@@ -86,7 +96,7 @@ class LayerTraitGenerator(OutputGenerator):
 
         for dispatch_chain_type in sorted(list(dispatch_chain_type_to_lines.keys())):
             lines = dispatch_chain_type_to_lines[dispatch_chain_type]
-            self.outFile.write('\n'.join(lines))
+            self.outFile.write("\n".join(lines))
             self.newline()
             self.outFile.write("}\n")
             self.newline()
@@ -124,7 +134,8 @@ class LayerTraitGenerator(OutputGenerator):
 
         if dispatch_chain_type is None:
             self.unhandled_commands[name] = UnhandledCommand(
-                name=name, reason="Unknown dispatch chain type")
+                name=name, reason="Unknown dispatch chain type"
+            )
             return
 
         self.command_aliases.add_alias(name, alias)

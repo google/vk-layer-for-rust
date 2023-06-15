@@ -73,6 +73,7 @@ class VulkanAliases:
                 return suffix_order.index(suffix)
             except ValueError:
                 return len(suffix_order)
+
         name_rank = calculate_rank(name_suffix)
         alias_rank = calculate_rank(alias_suffix)
         (parent_node, child_node) = (name_root_node, alias_root_node)
@@ -148,7 +149,7 @@ def camel_case_to_snake_case(input: str) -> str:
     res = input[0].lower()
     for prev, cur, next in zip(input, input[1:], input[2:]):
         if cur.isupper() and (next.islower() or not prev.isupper()):
-            res += f'_{cur.lower()}'
+            res += f"_{cur.lower()}"
         else:
             res += cur.lower()
     return res + input[-1].lower()
@@ -159,9 +160,9 @@ def snake_case_to_upper_camel_case(input: str) -> str:
         return input.upper()
     output = input[0].upper()
     for prev, cur, next in zip(input, input[1:], input[2:]):
-        if cur == '_' and next != '_':
+        if cur == "_" and next != "_":
             continue
-        if prev == '_':
+        if prev == "_":
             output += cur.upper()
             continue
         output += cur
@@ -177,99 +178,102 @@ def escape_rust_keywords(id: str) -> str:
 
 def write_license(file):
     today = datetime.date.today()
-    file.write("".join([
-        f'// Copyright {today.year} Google LLC\n',
-        '//\n',
-        '// Licensed under the Apache License, Version 2.0 (the "License");\n',
-        '// you may not use this file except in compliance with the License.\n',
-        '// You may obtain a copy of the License at\n',
-        '//\n',
-        '//     http://www.apache.org/licenses/LICENSE-2.0\n',
-        '//\n',
-        '// Unless required by applicable law or agreed to in writing, software\n',
-        '// distributed under the License is distributed on an "AS IS" BASIS,\n',
-        '// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n',
-        '// See the License for the specific language governing permissions and\n',
-        '// limitations under the License.\n',
-    ]))
+    file.write(
+        "".join(
+            [
+                f"// Copyright {today.year} Google LLC\n",
+                "//\n",
+                '// Licensed under the Apache License, Version 2.0 (the "License");\n',
+                "// you may not use this file except in compliance with the License.\n",
+                "// You may obtain a copy of the License at\n",
+                "//\n",
+                "//     http://www.apache.org/licenses/LICENSE-2.0\n",
+                "//\n",
+                "// Unless required by applicable law or agreed to in writing, software\n",
+                '// distributed under the License is distributed on an "AS IS" BASIS,\n',
+                "// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n",
+                "// See the License for the specific language governing permissions and\n",
+                "// limitations under the License.\n",
+            ]
+        )
+    )
 
 
 opaque_type_map = {
-    'void': "c_void",
+    "void": "c_void",
     # from "xcb/xcb.h"
-    'xcb_connection_t': 'vk::xcb_connection_t',
+    "xcb_connection_t": "vk::xcb_connection_t",
     # from "wayland-client.h"
-    'wl_display': 'vk::wl_display',
-    'wl_surface': 'vk::wl_surface',
+    "wl_display": "vk::wl_display",
+    "wl_surface": "vk::wl_surface",
     # from "screen/screen.h"
-    '_screen_context': 'vk::_screen_context',
-    '_screen_window': 'vk::_screen_window',
+    "_screen_context": "vk::_screen_context",
+    "_screen_window": "vk::_screen_window",
     # from "windows.h"
-    'SECURITY_ATTRIBUTES': 'vk::SECURITY_ATTRIBUTES',
-
-    'ANativeWindow': 'vk::ANativeWindow',
-    'AHardwareBuffer': 'vk::AHardwareBuffer',
-    'CAMetalLayer': 'vk::CAMetalLayer',
+    "SECURITY_ATTRIBUTES": "vk::SECURITY_ATTRIBUTES",
+    "ANativeWindow": "vk::ANativeWindow",
+    "AHardwareBuffer": "vk::AHardwareBuffer",
+    "CAMetalLayer": "vk::CAMetalLayer",
 }
 
 primitive_type_map = {
-    'uint64_t': 'u64',
-    'uint32_t': 'u32',
-    'uint16_t': 'u16',
-    'int32_t': 'i32',
-    'char': 'c_char',
-    'size_t': 'usize',
-    'float': 'f32',
-    'int': 'c_int',
+    "uint64_t": "u64",
+    "uint32_t": "u32",
+    "uint16_t": "u16",
+    "int32_t": "i32",
+    "char": "c_char",
+    "size_t": "usize",
+    "float": "f32",
+    "int": "c_int",
 }
 
 
 def decayed_type_to_rust_type(decayed_type: str) -> str:
     manual_type_map = {
         # from "X11/Xlib.h"
-        'Display': 'vk::Display',
-        'VisualID': 'vk::VisualID',
-        'Window': 'vk::Window',
+        "Display": "vk::Display",
+        "VisualID": "vk::VisualID",
+        "Window": "vk::Window",
         # from "X11/extensions/Xrandr.h"
-        'RROutput': 'vk::RROutput',
+        "RROutput": "vk::RROutput",
         # from "windows.h"
-        'HINSTANCE': 'vk::HINSTANCE',
-        'HWND': 'vk::HWND',
-        'HMONITOR': 'vk::HMONITOR',
-        'HANDLE': 'vk::HANDLE',
-        'DWORD': 'vk::DWORD',
-        'LPCWSTR': 'vk::LPCWSTR',
+        "HINSTANCE": "vk::HINSTANCE",
+        "HWND": "vk::HWND",
+        "HMONITOR": "vk::HMONITOR",
+        "HANDLE": "vk::HANDLE",
+        "DWORD": "vk::DWORD",
+        "LPCWSTR": "vk::LPCWSTR",
         # from "xcb/xcb.h"
-        'xcb_visualid_t': 'vk::xcb_visualid_t',
-        'xcb_window_t': 'vk::xcb_window_t',
+        "xcb_visualid_t": "vk::xcb_visualid_t",
+        "xcb_window_t": "vk::xcb_window_t",
         # from "directfb.h"
-        'IDirectFB': 'vk::IDirectFB',
-        'IDirectFBSurface': 'vk::IDirectFBSurface',
+        "IDirectFB": "vk::IDirectFB",
+        "IDirectFBSurface": "vk::IDirectFBSurface",
         # from "zircon/types.h"
-        'zx_handle_t': 'vk::zx_handle_t',
+        "zx_handle_t": "vk::zx_handle_t",
         # from "ggp_c/vulkan_types.h"
-        'GgpStreamDescriptor': 'vk::GgpStreamDescriptor',
-        'GgpFrameToken': 'vk::GgpFrameToken',
+        "GgpStreamDescriptor": "vk::GgpStreamDescriptor",
+        "GgpFrameToken": "vk::GgpFrameToken",
     }
     manual_type_map |= opaque_type_map | primitive_type_map
     try_manual_type = manual_type_map.get(decayed_type)
     if try_manual_type is not None:
         return try_manual_type
-    if decayed_type.startswith('Vk'):
-        possible_suffixes = ['KHR', 'EXT']
-        suffix = ''
+    if decayed_type.startswith("Vk"):
+        possible_suffixes = ["KHR", "EXT"]
+        suffix = ""
         for possible_suffix in possible_suffixes:
             if decayed_type.endswith(possible_suffix):
                 suffix = possible_suffix
                 break
         decayed_type_without_suffix = decayed_type.removesuffix(suffix)
         # ash binding doesn't have the flag bits types.
-        if decayed_type_without_suffix.endswith('FlagBits'):
+        if decayed_type_without_suffix.endswith("FlagBits"):
             return f'vk::{decayed_type_without_suffix[2:].removesuffix("FlagBits")}Flags{suffix}'
-        return f'vk::{decayed_type[2:]}'
-    if decayed_type.startswith('PFN_vk'):
-        return f'vk::{decayed_type}'
-    logging.fatal(f'Unknown type: {decayed_type}')
+        return f"vk::{decayed_type[2:]}"
+    if decayed_type.startswith("PFN_vk"):
+        return f"vk::{decayed_type}"
+    logging.fatal(f"Unknown type: {decayed_type}")
     raise RuntimeError(f"Unknown type: {decayed_type}")
 
 
@@ -309,12 +313,12 @@ class VkXmlType:
             return False
         if not isinstance(self.reg_type_info, reg.TypeInfo):
             return False
-        return self.reg_type_info.elem.get('category') == 'struct'
+        return self.reg_type_info.elem.get("category") == "struct"
 
 
 def get_param_decayed_type(param: Element) -> str:
-    type_element = param.find('type')
-    return ''.join(type_element.itertext()).strip()
+    type_element = param.find("type")
+    return "".join(type_element.itertext()).strip()
 
 
 class VkXmlParam(NamedTuple):
@@ -327,76 +331,82 @@ class VkXmlParam(NamedTuple):
         param: Element,
         decayed_type_info: reg.TypeInfo | reg.GroupInfo,
     ) -> VkXmlParam:
-        type_element = param.find('type')
+        type_element = param.find("type")
 
-        name_element = param.find('name')
+        name_element = param.find("name")
 
-        param_name = ''.join(name_element.itertext()).strip()
+        param_name = "".join(name_element.itertext()).strip()
         decayed_type = get_param_decayed_type(param)
 
         dimensions: list[int] = []
         if name_element.tail is not None and name_element.tail.strip() != "":
             tail = name_element.tail.strip()
-            assert re.match(r'^\[\d+?\]$', tail) is not None, f'Unexpected name tail: {tail}'
-            dimensions = [int(d) for d in tail.removeprefix('[').removesuffix(']').split('][')]
+            assert re.match(r"^\[\d+?\]$", tail) is not None, f"Unexpected name tail: {tail}"
+            dimensions = [int(d) for d in tail.removeprefix("[").removesuffix("]").split("][")]
 
-        optional_attr = param.get('optional')
+        optional_attr = param.get("optional")
         is_optionals = []
         if optional_attr is not None:
-            for is_optional in [is_optional.strip() for is_optional in optional_attr.split(',')]:
-                if is_optional == 'true':
+            for is_optional in [is_optional.strip() for is_optional in optional_attr.split(",")]:
+                if is_optional == "true":
                     is_optionals.append(True)
-                elif is_optional == 'false':
+                elif is_optional == "false":
                     is_optionals.append(False)
                 else:
-                    assert False, f'Unexpected optional attribute: {optional_attr}'
+                    assert False, f"Unexpected optional attribute: {optional_attr}"
         is_consts: list[bool] = []
         const_or_stars = type_element.tail.strip()
         while len(const_or_stars) > 0:
-            if const_or_stars.endswith('const'):
+            if const_or_stars.endswith("const"):
                 is_consts.append(True)
             else:
                 is_consts.append(False)
-            const_or_stars = const_or_stars.removesuffix('const')
+            const_or_stars = const_or_stars.removesuffix("const")
             const_or_stars = const_or_stars.strip()
-            assert const_or_stars.endswith('*'), f"Unknown type: {''.join(param.itertext())}"
-            const_or_stars = const_or_stars.removesuffix('*')
+            assert const_or_stars.endswith("*"), f"Unknown type: {''.join(param.itertext())}"
+            const_or_stars = const_or_stars.removesuffix("*")
             const_or_stars = const_or_stars.strip()
 
         last_is_const = False
         if param.text is not None:
             type_prefix = param.text.strip()
-            type_prefix = type_prefix.removesuffix('struct')
+            type_prefix = type_prefix.removesuffix("struct")
             type_prefix = type_prefix.strip()
             if type_prefix != "":
-                assert type_prefix == 'const', f"Unknown type: {''.join(param.itertext())}"
+                assert type_prefix == "const", f"Unknown type: {''.join(param.itertext())}"
                 last_is_const = True
         is_consts.append(last_is_const)
 
         assert len(is_optionals) <= len(is_consts), (
             "Length of optional attributes is greater than the levels of pointers unexpectedly in "
-            f"param: {ElementTree.tostring(param, encoding='unicode')}.")
+            f"param: {ElementTree.tostring(param, encoding='unicode')}."
+        )
         is_optionals += [False] * (len(is_consts) - len(is_optionals))
-        vk_xml_type = VkXmlType(is_const=is_consts.pop(),
-                                is_optional=is_optionals.pop(), name=decayed_type,
-                                reg_type_info=decayed_type_info, dimensions=dimensions)
+        vk_xml_type = VkXmlType(
+            is_const=is_consts.pop(),
+            is_optional=is_optionals.pop(),
+            name=decayed_type,
+            reg_type_info=decayed_type_info,
+            dimensions=dimensions,
+        )
         for _ in range(len(is_consts)):
-            vk_xml_type = VkXmlType(is_const=is_consts.pop(),
-                                    is_optional=is_optionals.pop(), points_to=vk_xml_type)
+            vk_xml_type = VkXmlType(
+                is_const=is_consts.pop(), is_optional=is_optionals.pop(), points_to=vk_xml_type
+            )
 
-        len_attr = param.get('len')
+        len_attr = param.get("len")
         len_var = None
         if len_attr is not None:
             len_attr = len_attr.strip()
-            if len_attr.startswith('latexmath:'):
-                altlen_attr = param.get('altlen')
+            if len_attr.startswith("latexmath:"):
+                altlen_attr = param.get("altlen")
                 assert altlen_attr is not None, "Expect latexmath len comes with altlen"
                 len_var = altlen_attr
                 vk_xml_type.len = VkXmlLenKind.VARIABLE
             else:
-                assert ',' not in len_attr, "Multi-dimentional array unimplemented."
+                assert "," not in len_attr, "Multi-dimentional array unimplemented."
                 assert len_attr != "1", "Unsupported length attribute: 1"
-                if len_attr == 'null-terminated':
+                if len_attr == "null-terminated":
                     vk_xml_type.len = VkXmlLenKind.NULL_TERMINATED
                 else:
                     vk_xml_type.len = VkXmlLenKind.VARIABLE
@@ -411,16 +421,18 @@ class VkXmlCommand(NamedTuple):
     parameters: list[VkXmlParam]
 
     @staticmethod
-    def from_cmd_info(cmdinfo: reg.CmdInfo, typeinfos: dict[str, reg.TypeInfo | reg.GroupInfo]) -> VkXmlCommand:
+    def from_cmd_info(
+        cmdinfo: reg.CmdInfo, typeinfos: dict[str, reg.TypeInfo | reg.GroupInfo]
+    ) -> VkXmlCommand:
         params: list[VkXmlParam] = []
         for param in cmdinfo.getParams():
             typename = get_param_decayed_type(param)
             assert typename in typeinfos, f"Unknown type: {typename}"
             typeinfo = typeinfos[typename]
             params.append(VkXmlParam.from_param_element(param, typeinfo))
-        return_type = cmdinfo.elem.find('proto/type').text.strip()
+        return_type = cmdinfo.elem.find("proto/type").text.strip()
         xmlElem = cmdinfo.elem
-        name = xmlElem.get('name')
+        name = xmlElem.get("name")
         assert name is not None, f"CmdInfo doesn't have a name: {ElementTree.tostring(xmlElem)}"
         return VkXmlCommand(return_type=return_type, name=name, parameters=params)
 
@@ -435,11 +447,11 @@ class VkXmlCommand(NamedTuple):
             return DispatchChainType.GLOBAL
         elif len(self.parameters) > 0 and self.parameters[0].type.name is not None:
             type_to_dispatch_chain = {
-                'VkInstance': DispatchChainType.INSTANCE,
-                'VkPhysicalDevice': DispatchChainType.INSTANCE,
-                'VkDevice': DispatchChainType.DEVICE,
-                'VkCommandBuffer': DispatchChainType.DEVICE,
-                'VkQueue': DispatchChainType.DEVICE,
+                "VkInstance": DispatchChainType.INSTANCE,
+                "VkPhysicalDevice": DispatchChainType.INSTANCE,
+                "VkDevice": DispatchChainType.DEVICE,
+                "VkCommandBuffer": DispatchChainType.DEVICE,
+                "VkQueue": DispatchChainType.DEVICE,
             }
             return type_to_dispatch_chain.get(self.parameters[0].type.name)
         return None
@@ -464,7 +476,8 @@ class RustType(NamedTuple):
 
     @staticmethod
     def __handle_array_type(
-            vk_xml_type: VkXmlType, from_vk_xml_type: Callable[[VkXmlType], RustType]) -> VkXmlType:
+        vk_xml_type: VkXmlType, from_vk_xml_type: Callable[[VkXmlType], RustType]
+    ) -> VkXmlType:
         assert len(vk_xml_type.dimensions) > 0, "vk_xml_type must be an array type"
         dimensions = vk_xml_type.dimensions.copy()
         array_length = dimensions.pop()
@@ -488,37 +501,43 @@ class RustType(NamedTuple):
     @staticmethod
     def from_vk_xml_type(vk_xml_type: VkXmlType) -> RustType:
         if len(vk_xml_type.dimensions) > 0:
-            return RustType(refers_to=RustType.__handle_array_type(
-                vk_xml_type, RustType.from_vk_xml_type)._replace(is_root=False))
-
-        if vk_xml_type.name is not None:
-            name = 'bool' if vk_xml_type.name == 'VkBool32' else decayed_type_to_rust_type(
-                vk_xml_type.name)
             return RustType(
-                is_const=vk_xml_type.is_const,
-                is_optional=vk_xml_type.is_optional,
-                name=name
+                refers_to=RustType.__handle_array_type(
+                    vk_xml_type, RustType.from_vk_xml_type
+                )._replace(is_root=False)
             )
 
-        assert vk_xml_type.points_to is not None, (
-            "A VkXmlType is either a basic type or a pointer type.")
+        if vk_xml_type.name is not None:
+            name = (
+                "bool"
+                if vk_xml_type.name == "VkBool32"
+                else decayed_type_to_rust_type(vk_xml_type.name)
+            )
+            return RustType(
+                is_const=vk_xml_type.is_const, is_optional=vk_xml_type.is_optional, name=name
+            )
+
+        assert (
+            vk_xml_type.points_to is not None
+        ), "A VkXmlType is either a basic type or a pointer type."
 
         if vk_xml_type.len == VkXmlLenKind.NULL_TERMINATED:
-            assert (vk_xml_type.points_to is not None and vk_xml_type.points_to.name ==
-                    'char' and vk_xml_type.points_to.is_const == True), ("null-terminated only "
-                                                                         "supports const char* "
-                                                                         "type.")
+            assert (
+                vk_xml_type.points_to is not None
+                and vk_xml_type.points_to.name == "char"
+                and vk_xml_type.points_to.is_const == True
+            ), "null-terminated only supports const char* type."
             return RustType(
-                is_optional=vk_xml_type.is_optional,
-                refers_to=RustType(name="str", is_root=False)
+                is_optional=vk_xml_type.is_optional, refers_to=RustType(name="str", is_root=False)
             )
         elif vk_xml_type.len == VkXmlLenKind.VARIABLE:
             element_vk_xml_type = vk_xml_type.points_to
             element_rust_type: RustType = None
-            if element_vk_xml_type.name == 'void':
+            if element_vk_xml_type.name == "void":
                 # void* is actually an array of zero-able bytes
-                element_rust_type = RustType(name='u8', is_optional=True,
-                                             is_const=element_vk_xml_type.is_const)
+                element_rust_type = RustType(
+                    name="u8", is_optional=True, is_const=element_vk_xml_type.is_const
+                )
             else:
                 element_rust_type = RustType.from_vk_xml_type(element_vk_xml_type)
             element_rust_type = element_rust_type._replace(is_root=False)
@@ -547,26 +566,31 @@ class RustType(NamedTuple):
     @staticmethod
     def from_vk_xml_type_for_ffi(vk_xml_type: VkXmlType) -> RustType:
         if len(vk_xml_type.dimensions) > 0:
-            return RustType(points_to=RustType.__handle_array_type(
-                vk_xml_type, RustType.from_vk_xml_type_for_ffi)._replace(is_root=False))
+            return RustType(
+                points_to=RustType.__handle_array_type(
+                    vk_xml_type, RustType.from_vk_xml_type_for_ffi
+                )._replace(is_root=False)
+            )
 
         if vk_xml_type.name is not None:
             return RustType(
                 is_const=vk_xml_type.is_const,
                 # Suppress the generation of Option<T> at the FFI boundary.
                 is_optional=False,
-                name=decayed_type_to_rust_type(vk_xml_type.name)
+                name=decayed_type_to_rust_type(vk_xml_type.name),
             )
 
-        assert vk_xml_type.points_to is not None, (
-            "A VkXmlType is either a basic type or a pointer type.")
+        assert (
+            vk_xml_type.points_to is not None
+        ), "A VkXmlType is either a basic type or a pointer type."
 
         # Suppress the generation of Option<T>
         return RustType(
             is_const=vk_xml_type.is_const,
             is_optional=False,
-            points_to=RustType.from_vk_xml_type_for_ffi(
-                vk_xml_type.points_to)._replace(is_root=False),
+            points_to=RustType.from_vk_xml_type_for_ffi(vk_xml_type.points_to)._replace(
+                is_root=False
+            ),
         )
 
     def to_string(self) -> str:
@@ -577,7 +601,7 @@ class RustType(NamedTuple):
 
         def wrap_option(inner: str) -> str:
             if self.is_optional:
-                return f'Option<{inner}>'
+                return f"Option<{inner}>"
             else:
                 return inner
 
@@ -587,21 +611,23 @@ class RustType(NamedTuple):
         assert inner_type.name != "bool", "This interface breaks the ABI, and won't be effcient."
 
         if self.points_to is not None:
+
             def add_pointer(inner: str) -> str:
                 if self.points_to.is_const:
-                    return f'*const {inner}'
+                    return f"*const {inner}"
                 else:
-                    return f'*mut {inner}'
+                    return f"*mut {inner}"
+
             return wrap_option(add_pointer(self.points_to.to_string()))
         elif self.slice_of is not None:
-            mut_mod = '' if self.slice_of.is_const else 'mut '
+            mut_mod = "" if self.slice_of.is_const else "mut "
             return wrap_option(f"&'static {mut_mod}[{self.slice_of.to_string()}]")
         elif self.refers_to is not None:
-            mut_mod = '' if self.refers_to.is_const else 'mut '
+            mut_mod = "" if self.refers_to.is_const else "mut "
             return wrap_option(f"&'static {mut_mod}{self.refers_to.to_string()}")
         elif self.array_info is not None:
             array_info = self.array_info
-            return wrap_option(f'[{array_info.element_type.to_string()}; {array_info.length}]')
+            return wrap_option(f"[{array_info.element_type.to_string()}; {array_info.length}]")
         else:
             assert False, "Unreachable"
 
@@ -612,17 +638,21 @@ class RustParam(NamedTuple):
 
     @staticmethod
     def from_vk_xml_param(vk_xml_param: VkXmlParam) -> RustParam:
-        return RustParam(name='_' + camel_case_to_snake_case(vk_xml_param.name),
-                         type=RustType.from_vk_xml_type(vk_xml_param.type))
+        return RustParam(
+            name="_" + camel_case_to_snake_case(vk_xml_param.name),
+            type=RustType.from_vk_xml_type(vk_xml_param.type),
+        )
 
     @staticmethod
     def from_vk_xml_param_for_ffi(vk_xml_param: VkXmlParam) -> RustParam:
-        return RustParam(name=escape_rust_keywords(camel_case_to_snake_case(vk_xml_param.name)),
-                         type=RustType.from_vk_xml_type_for_ffi(vk_xml_param.type))
+        return RustParam(
+            name=escape_rust_keywords(camel_case_to_snake_case(vk_xml_param.name)),
+            type=RustType.from_vk_xml_type_for_ffi(vk_xml_param.type),
+        )
 
     def to_string(self) -> str:
         param_type = self.type.to_string()
-        return f'{self.name}: {param_type}'
+        return f"{self.name}: {param_type}"
 
 
 class RustMethod(NamedTuple):
@@ -635,19 +665,20 @@ class RustMethod(NamedTuple):
         vk_xml_params = vk_xml_cmd.parameters
         len_params = [param.len_var for param in vk_xml_params if param.len_var is not None]
         not_len_xml_params = [param for param in vk_xml_params if param.name not in len_params]
-        rust_params: list[RustParam] = [RustParam.from_vk_xml_param(
-            vk_xml_param) for vk_xml_param in not_len_xml_params]
+        rust_params: list[RustParam] = [
+            RustParam.from_vk_xml_param(vk_xml_param) for vk_xml_param in not_len_xml_params
+        ]
         assert len(rust_params) > 0, "Unexpected command with 0 parameters."
 
         # Remove the leading vk::Instance or vk::Device parameter, since it should be included in
         # &self.
-        if rust_params[0].type.name in ['vk::Device', 'vk::Instance']:
+        if rust_params[0].type.name in ["vk::Device", "vk::Instance"]:
             rust_params = rust_params[1:]
 
         rust_return_type = None
         return_c_type = vk_xml_cmd.return_type
-        if return_c_type in ['VkResult', 'void']:
-            rust_return_type = '()'
+        if return_c_type in ["VkResult", "void"]:
+            rust_return_type = "()"
             # TODO: move the return parameter detection into VkXmlParam and support multiple out
             # parameters. In addition, we can share the return parameter test logic across different
             # generator class.
@@ -657,7 +688,9 @@ class RustMethod(NamedTuple):
                     # For struct type, we don't treat it as a return type given the complication of
                     # pNext chain of the return parameter, and possible input fields.
                     pass
-                elif last_param_type.refers_to is not None and not last_param_type.refers_to.is_const:
+                elif (
+                    last_param_type.refers_to is not None and not last_param_type.refers_to.is_const
+                ):
                     last_param = rust_params.pop()
                     rust_return_type = last_param.type.refers_to.to_string()
                 elif last_param_type.slice_of is not None and not last_param_type.slice_of.is_const:
@@ -665,22 +698,22 @@ class RustMethod(NamedTuple):
                     # TODO: returning Vec<_> could cause extra copy here compared to directly
                     # passing a mutable slice to the layer trait. Even worse, the layer won't be
                     # able to access the length of the passed in write buffer.
-                    rust_return_type = f'Vec<{last_param.type.slice_of.to_string()}>'
+                    rust_return_type = f"Vec<{last_param.type.slice_of.to_string()}>"
 
-            if return_c_type == 'VkResult':
-                rust_return_type = f'VkResult<{rust_return_type}>'
+            if return_c_type == "VkResult":
+                rust_return_type = f"VkResult<{rust_return_type}>"
             else:
-                assert return_c_type == 'void'
+                assert return_c_type == "void"
         else:
-            if return_c_type == 'VkBool32':
-                rust_return_type = 'bool'
+            if return_c_type == "VkBool32":
+                rust_return_type = "bool"
             else:
                 rust_return_type = decayed_type_to_rust_type(return_c_type)
 
-        rust_return_type = f'LayerResult<{rust_return_type}>'
+        rust_return_type = f"LayerResult<{rust_return_type}>"
 
         return RustMethod(
-            name=camel_case_to_snake_case(vk_xml_cmd.name.removeprefix('vk')),
+            name=camel_case_to_snake_case(vk_xml_cmd.name.removeprefix("vk")),
             return_type=rust_return_type,
             parameters=rust_params,
         )
@@ -705,25 +738,28 @@ class RustMethod(NamedTuple):
                 type_param = next(type_params)
                 type_params.send("Iterator<Item = bool> + 'static")
                 # Generic type for bool for efficient ABI breaking API.
-                return f'{param.name}: {type_param}'
+                return f"{param.name}: {type_param}"
             return param.to_string()
-        params = ', '.join([param_to_string(param) for param in self.parameters])
+
+        params = ", ".join([param_to_string(param) for param in self.parameters])
         # Prevent the Rust linter from complaining explicit -> ()
-        assert self.return_type != '()', ("Unexpected rust return type: (). All return type should "
-                                          "be LayerResult<T>")
+        assert (
+            self.return_type != "()"
+        ), "Unexpected rust return type: (). All return type should be LayerResult<T>"
         generic_params: str = ""
         if len(used_type_params) > 0:
             generic_params = ", ".join(
-                [f"{type_param.name}: {type_param.restriction}" for type_param in used_type_params])
-            generic_params  = f"<{generic_params}>"
-        return f'fn {self.name}{generic_params}(&self, {params}) -> {self.return_type}'
+                [f"{type_param.name}: {type_param.restriction}" for type_param in used_type_params]
+            )
+            generic_params = f"<{generic_params}>"
+        return f"fn {self.name}{generic_params}(&self, {params}) -> {self.return_type}"
 
 
 def generate_unhandled_command_comments(
-        unhandled_commands: list[UnhandledCommand],
-        indent: int = 0) -> str:
+    unhandled_commands: list[UnhandledCommand], indent: int = 0
+) -> str:
     if len(unhandled_commands) == 0:
-        return ''
+        return ""
     lines = ["// Unhandled commands:"]
-    lines += [f'// * {cmd.name}: {cmd.reason}' for cmd in unhandled_commands]
-    return ''.join([' ' * indent + line + "\n" for line in lines])
+    lines += [f"// * {cmd.name}: {cmd.reason}" for cmd in unhandled_commands]
+    return "".join([" " * indent + line + "\n" for line in lines])
