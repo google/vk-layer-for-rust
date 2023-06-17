@@ -432,9 +432,52 @@ mod get_instance_proc_addr {
             assert!(destroy_swapchain.is_some());
         }
 
-        #[test]
-        #[ignore]
-        fn test_should_call_into_next_get_proc_addr_with_unavailable_device_dispatch_command() {}
+        mod icd_unavaiilable_device_dispatch_command {
+            use super::*;
+            #[test]
+            fn test_should_return_null_if_layer_also_doesnt_implement_the_extension() {
+                #[derive(Default)]
+                struct Tag;
+                impl TestLayer for Tag {
+                    fn hooked_device_commands() -> &'static [LayerVulkanCommand] {
+                        &[LayerVulkanCommand::DestroySwapchainKhr]
+                    }
+                }
+                let ctx = vk::InstanceCreateInfo::builder().default_instance::<MockLayer<Tag>>();
+                let InstanceContext {
+                    instance,
+                    entry,
+                    next_entry,
+                    ..
+                } = ctx.as_ref();
+                let instance_data = unsafe { InstanceData::from_handle(instance.handle()) };
+                instance_data.set_available_device_extensions(&[]);
+
+                // The mock ICD should return NULL.
+                let destroy_swapchain = unsafe {
+                    next_entry.get_instance_proc_addr(
+                        instance.handle(),
+                        b"vkDestroySwapchainKHR\0".as_ptr() as *const i8,
+                    )
+                };
+                assert!(destroy_swapchain.is_none());
+
+                // The layer should also return NULL.
+                let destroy_swapchain = unsafe {
+                    entry.get_instance_proc_addr(
+                        instance.handle(),
+                        b"vkDestroySwapchainKHR\0".as_ptr() as *const i8,
+                    )
+                };
+                assert!(destroy_swapchain.is_none());
+            }
+
+            #[test]
+            #[ignore]
+            fn test_should_return_fp_if_layer_implements_the_extension() {
+                todo!("Can't implement until we allow our layer to add extensions.")
+            }
+        }
 
         #[test]
         #[ignore]

@@ -872,8 +872,13 @@ impl<T: Layer> Global<T> {
                 Err(_) => None,
             };
         if let Some(device_command) = device_command {
+            let next_proc_addr = get_next_proc_addr();
+            // This is an unavailable device command.
+            if next_proc_addr.is_none() {
+                return None;
+            }
             if !device_command.hooked {
-                return get_next_proc_addr();
+                return next_proc_addr;
             }
             return device_command.proc;
         }
