@@ -19,7 +19,7 @@ use std::{
     ffi::{c_char, c_void, CStr},
     pin::Pin,
     ptr::{null, null_mut, NonNull},
-    sync::Arc,
+    sync::{Arc, Mutex},
 };
 use vulkan_layer::{
     fill_vk_out_array,
@@ -119,6 +119,57 @@ pub struct DeviceContext {
 
 pub trait InstanceCreateInfoExt {
     fn default_instance<T: Layer>(self) -> Del<InstanceContext>;
+}
+
+#[repr(C)]
+struct InstanceDispatchTable(u32);
+impl Default for InstanceDispatchTable {
+    fn default() -> Self {
+        Self(0x10d0)
+    }
+}
+#[repr(C)]
+pub struct InstanceData {
+    // Pointer to dispatch_table, this is the ABI guaranteed by the Vulkan loader.
+    _dispatch_table: *const c_void,
+    dispatch_table: Pin<Box<InstanceDispatchTable>>,
+    version: ApiVersion,
+    enabled_extensions: BTreeSet<Extension>,
+    physical_devices: Box<[Pin<Box<PhysicalDeviceData>>]>,
+    available_device_extensions: Mutex<Option<BTreeSet<Extension>>>,
+}
+impl InstanceData {
+    #[deny(unsafe_op_in_unsafe_fn)]
+    pub unsafe fn from_handle<'a>(handle: vk::Instance) -> &'a Self {
+        unsafe { (handle.as_raw() as *const InstanceData).as_ref() }.unwrap()
+    }
+
+    pub fn set_available_device_extensions(&self, available_device_extensions: &[Extension]) {
+        let mut self_available_device_extensions = self.available_device_extensions.lock().unwrap();
+        *self_available_device_extensions =
+            Some(available_device_extensions.iter().cloned().collect());
+    }
+}
+
+#[repr(C)]
+struct PhysicalDeviceData {
+    // Should be the same as the owner VkInstance.
+    _dispatch_table: *const c_void,
+    owner_instance: vk::Instance,
+    queue_family_properties: Vec<vk::QueueFamilyProperties>,
+}
+impl PhysicalDeviceData {
+    #[deny(unsafe_op_in_unsafe_fn)]
+    unsafe fn from_handle<'a>(handle: vk::PhysicalDevice) -> &'a Self {
+        unsafe { (handle.as_raw() as *const PhysicalDeviceData).as_ref() }.unwrap()
+    }
+}
+#[repr(C)]
+struct DeviceDispatchTable(u32);
+impl Default for DeviceDispatchTable {
+    fn default() -> Self {
+        Self(0xa1de)
+    }
 }
 
 impl InstanceCreateInfoExt for vk::InstanceCreateInfoBuilder<'_> {
@@ -333,52 +384,22 @@ impl InstanceCreateInfoExt for vk::InstanceCreateInfoBuilder<'_> {
                                 features: [ApiVersion::V1_0.into()].into(),
                             },
                         ),
+                        (
+                            DestroySwapchainKhr.into(),
+                            VulkanCommand {
+                                proc: unsafe {
+                                    std::mem::transmute(
+                                        destroy_swapchain_khr as vk::PFN_vkDestroySwapchainKHR,
+                                    )
+                                },
+                                dispatch_kind: DispatchKind::Device,
+                                features: [Extension::KHRSwapchain.into()].into(),
+                            },
+                        ),
                     ]
                     .into_iter()
                     .collect()
                 });
-            #[repr(C)]
-            struct InstanceDispatchTable(u32);
-            impl Default for InstanceDispatchTable {
-                fn default() -> Self {
-                    Self(0x10d0)
-                }
-            }
-            #[repr(C)]
-            struct InstanceData {
-                // Pointer to dispatch_table, this is the ABI guaranteed by the Vulkan loader.
-                _dispatch_table: *const c_void,
-                dispatch_table: Pin<Box<InstanceDispatchTable>>,
-                version: ApiVersion,
-                enabled_extensions: BTreeSet<Extension>,
-                physical_devices: Box<[Pin<Box<PhysicalDeviceData>>]>,
-            }
-            impl InstanceData {
-                #[deny(unsafe_op_in_unsafe_fn)]
-                unsafe fn from_handle<'a>(handle: vk::Instance) -> &'a Self {
-                    unsafe { (handle.as_raw() as *const InstanceData).as_ref() }.unwrap()
-                }
-            }
-            #[repr(C)]
-            struct PhysicalDeviceData {
-                // Should be the same as the owner VkInstance.
-                _dispatch_table: *const c_void,
-                owner_instance: vk::Instance,
-                queue_family_properties: Vec<vk::QueueFamilyProperties>,
-            }
-            impl PhysicalDeviceData {
-                #[deny(unsafe_op_in_unsafe_fn)]
-                unsafe fn from_handle<'a>(handle: vk::PhysicalDevice) -> &'a Self {
-                    unsafe { (handle.as_raw() as *const PhysicalDeviceData).as_ref() }.unwrap()
-                }
-            }
-            #[repr(C)]
-            struct DeviceDispatchTable(u32);
-            impl Default for DeviceDispatchTable {
-                fn default() -> Self {
-                    Self(0xa1de)
-                }
-            }
             #[repr(C)]
             struct DeviceData {
                 // A pointer to dispatch_table.
@@ -426,6 +447,7 @@ impl InstanceCreateInfoExt for vk::InstanceCreateInfoBuilder<'_> {
                         .unwrap_or(ApiVersion::V1_0),
                     enabled_extensions,
                     physical_devices: Default::default(),
+                    available_device_extensions: Default::default(),
                 });
                 let instance_raw_handle = Box::into_raw(instance_data);
                 let instance_handle = vk::Instance::from_raw(instance_raw_handle as _);
@@ -621,6 +643,13 @@ impl InstanceCreateInfoExt for vk::InstanceCreateInfoBuilder<'_> {
                 }
                 unimplemented!()
             }
+            extern "system" fn destroy_swapchain_khr(
+                _: vk::Device,
+                _: vk::SwapchainKHR,
+                _: *const vk::AllocationCallbacks,
+            ) {
+                unimplemented!()
+            }
             let name = unsafe { CStr::from_ptr(p_name) }.to_str().unwrap();
             let command = VULKAN_COMMANDS.get(&name.into())?;
             let instance_data = if instance == vk::Instance::null() {
@@ -632,16 +661,43 @@ impl InstanceCreateInfoExt for vk::InstanceCreateInfoBuilder<'_> {
                 unsafe { InstanceData::from_handle(instance) }
             };
 
-            if let DispatchKind::Global = command.dispatch_kind {
-                return None;
+            match command.dispatch_kind {
+                DispatchKind::Global => None,
+                DispatchKind::Instance => {
+                    if !command.features.is_command_enabled(
+                        &instance_data.version,
+                        &instance_data.enabled_extensions,
+                    ) {
+                        return None;
+                    }
+                    command.proc
+                }
+                DispatchKind::Device => {
+                    let available_extensions =
+                        instance_data.available_device_extensions.lock().unwrap();
+                    let enabled = if let Some(available_extensions) = available_extensions.as_ref()
+                    {
+                        command
+                            .features
+                            .is_command_enabled(&instance_data.version, available_extensions)
+                    } else {
+                        // available_device_extensions is not set. Assume all extensions to be
+                        // enabled.
+                        command.features.iter().any(|feature| {
+                            if let Feature::Core(api_version) = feature {
+                                if api_version > &instance_data.version {
+                                    return false;
+                                }
+                            }
+                            true
+                        })
+                    };
+                    if !enabled {
+                        return None;
+                    }
+                    command.proc
+                }
             }
-            if !command
-                .features
-                .is_command_enabled(&instance_data.version, &instance_data.enabled_extensions)
-            {
-                return None;
-            }
-            command.proc
         }
         let entry = create_entry::<T>();
         let mut layer_link = VkLayerInstanceLink {

@@ -116,7 +116,7 @@ class CommandDispatchInfo:
     @staticmethod
     def get_feature_enum_lines(dispatch_infos: list[CommandDispatchInfo]) -> list[str]:
         extension_enum_lines = [
-            "#[derive(PartialEq, Eq, PartialOrd, Ord)]",
+            "#[derive(PartialEq, Eq, PartialOrd, Ord, Clone)]",
             "pub enum Extension {",
         ]
         extension_enum_try_from_lines = [

@@ -18,11 +18,15 @@ use std::{
     ffi::{CStr, CString},
     ptr::null,
 };
-use vulkan_layer::{test_utils::TestLayer, Global, Layer, LayerResult, LayerVulkanCommand};
+use vulkan_layer::{
+    test_utils::TestLayer, Extension, Global, Layer, LayerResult, LayerVulkanCommand,
+};
 
 pub mod utils;
 
-use utils::{create_entry, DeviceContext, InstanceContext, InstanceCreateInfoExt, MockLayer};
+use utils::{
+    create_entry, DeviceContext, InstanceContext, InstanceCreateInfoExt, InstanceData, MockLayer,
+};
 
 use crate::utils::DelInstanceContextExt;
 
@@ -388,8 +392,45 @@ mod get_instance_proc_addr {
         }
 
         #[test]
-        #[ignore]
-        fn test_should_return_fp_with_available_device_dispatch_command() {}
+        fn test_should_return_fp_with_available_device_dispatch_command() {
+            #[derive(Default)]
+            struct Tag;
+            impl TestLayer for Tag {}
+            let ctx = vk::InstanceCreateInfo::builder().default_instance::<MockLayer<Tag>>();
+            let InstanceContext {
+                instance, entry, ..
+            } = ctx.as_ref();
+            let instance_data = unsafe { InstanceData::from_handle(instance.handle()) };
+            instance_data.set_available_device_extensions(&[Extension::KHRSwapchain]);
+            let destroy_swapchain = unsafe {
+                entry.get_instance_proc_addr(
+                    instance.handle(),
+                    b"vkDestroySwapchainKHR\0".as_ptr() as *const i8,
+                )
+            };
+            assert!(destroy_swapchain.is_some());
+
+            #[derive(Default)]
+            struct Tag2;
+            impl TestLayer for Tag2 {
+                fn hooked_device_commands() -> &'static [LayerVulkanCommand] {
+                    &[LayerVulkanCommand::DestroySwapchainKhr]
+                }
+            }
+            let ctx = vk::InstanceCreateInfo::builder().default_instance::<MockLayer<Tag2>>();
+            let InstanceContext {
+                instance, entry, ..
+            } = ctx.as_ref();
+            let instance_data = unsafe { InstanceData::from_handle(instance.handle()) };
+            instance_data.set_available_device_extensions(&[Extension::KHRSwapchain]);
+            let destroy_swapchain = unsafe {
+                entry.get_instance_proc_addr(
+                    instance.handle(),
+                    b"vkDestroySwapchainKHR\0".as_ptr() as *const i8,
+                )
+            };
+            assert!(destroy_swapchain.is_some());
+        }
 
         #[test]
         #[ignore]

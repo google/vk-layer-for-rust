@@ -33,7 +33,7 @@ use crate::{
     LayerResult, LayerVulkanCommand,
 };
 
-#[derive(PartialEq, Eq, PartialOrd, Ord)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone)]
 pub enum Extension {
     KHRSurface,
     KHRSwapchain,
