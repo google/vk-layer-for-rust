@@ -41,7 +41,7 @@ pub enum TryFromVulkanCommandError {
     UnknownExtension(String),
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone)]
 pub enum Feature {
     Core(ApiVersion),
     Extension(Extension),
