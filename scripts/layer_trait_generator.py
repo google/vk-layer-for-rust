@@ -49,7 +49,7 @@ class LayerTraitGenerator(OutputGenerator):
                     "",
                     "use ash::{vk, prelude::VkResult};",
                     "",
-                    "use super::LayerResult;",
+                    "use super::{LayerResult, TryFromVulkanCommandError};",
                 ]
             )
         )
@@ -78,6 +78,13 @@ class LayerTraitGenerator(OutputGenerator):
             "#[derive(Debug, PartialOrd, Ord, PartialEq, Eq, Hash, Clone)]",
             "pub enum VulkanCommand {",
         ]
+        try_from_command_impl = [
+            "impl TryFrom<&str> for VulkanCommand {",
+            "    type Error = TryFromVulkanCommandError;",
+            "",
+            "    fn try_from(value: &str) -> Result<Self, Self::Error> {",
+            "        match value {",
+        ]
 
         for dispatch_type, commands in self.all_commands.items():
             for name, command in commands.items():
@@ -88,9 +95,23 @@ class LayerTraitGenerator(OutputGenerator):
                     f"        LayerResult::Unhandled",
                     f"    }}",
                 ]
-                command_enum.append(f"    {snake_case_to_upper_camel_case(command.name)},")
+                original_name = command.vk_xml_cmd.name
+                enum_variant_name = snake_case_to_upper_camel_case(command.name)
+                command_enum.append(f"    {enum_variant_name},")
+                try_from_command_impl.append(
+                    f'            "{original_name}" => Ok(VulkanCommand::{enum_variant_name}),'
+                )
         command_enum += ["}"]
+        try_from_command_impl += [
+            "            _ => Err(TryFromVulkanCommandError::UnknownExtension(value.to_owned())),",
+            "        }",
+            "    }",
+            "}",
+        ]
         self.outFile.write("\n".join(command_enum))
+        self.newline()
+        self.newline()
+        self.outFile.write("\n".join(try_from_command_impl))
         self.newline()
         self.newline()
 

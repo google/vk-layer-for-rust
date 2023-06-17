@@ -117,7 +117,7 @@ class CommandDispatchInfo:
     def get_feature_enum_lines(dispatch_infos: list[CommandDispatchInfo]) -> list[str]:
         extension_enum_lines = [
             "#[derive(PartialEq, Eq, PartialOrd, Ord)]",
-            "pub(crate) enum Extension {",
+            "pub enum Extension {",
         ]
         extension_enum_try_from_lines = [
             "impl TryFrom<&str> for Extension {",
@@ -146,16 +146,11 @@ class CommandDispatchInfo:
             "    }",
             "}",
         ]
-        feature_enum_lines = [
-            "#[derive(PartialEq, Eq, PartialOrd, Ord)]pub(crate) enum Feature {",
-            "    Core(ApiVersion),    Extension(Extension),}",
-        ]
         return (
             extension_enum_lines
             + ["\n"]
             + extension_enum_try_from_lines
             + ["\n"]
-            + feature_enum_lines
         )
 
     @staticmethod
@@ -703,7 +698,7 @@ class GlobalSimpleInterceptGenerator(OutputGenerator):
                     ),
                     (
                         "use super::{get_instance_proc_addr_loader, get_device_proc_addr_loader, "
-                        "VulkanCommand, TryFromExtensionError, ApiVersion};"
+                        "VulkanCommand, TryFromExtensionError, ApiVersion, Feature};"
                     ),
                     "",
                 ]

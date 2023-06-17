@@ -25,8 +25,8 @@ use std::{
 };
 
 use super::{
-    get_device_proc_addr_loader, get_instance_proc_addr_loader, ApiVersion, TryFromExtensionError,
-    VulkanCommand,
+    get_device_proc_addr_loader, get_instance_proc_addr_loader, ApiVersion, Feature,
+    TryFromExtensionError, VulkanCommand,
 };
 use crate::{
     fill_vk_out_array, DeviceHooks, DeviceInfo, Global, InstanceHooks, InstanceInfo, Layer,
@@ -34,7 +34,7 @@ use crate::{
 };
 
 #[derive(PartialEq, Eq, PartialOrd, Ord)]
-pub(crate) enum Extension {
+pub enum Extension {
     KHRSurface,
     KHRSwapchain,
     KHRDisplay,
@@ -751,12 +751,6 @@ impl TryFrom<&str> for Extension {
             _ => Err(TryFromExtensionError::UnknownExtension(value.to_owned())),
         }
     }
-}
-
-#[derive(PartialEq, Eq, PartialOrd, Ord)]
-pub(crate) enum Feature {
-    Core(ApiVersion),
-    Extension(Extension),
 }
 
 pub(crate) struct DeviceDispatchTable {

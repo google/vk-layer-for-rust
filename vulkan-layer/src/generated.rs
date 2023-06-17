@@ -24,7 +24,7 @@ use ash::vk;
 pub mod global_simple_intercept;
 pub mod layer_trait;
 
-use global_simple_intercept::Feature;
+use global_simple_intercept::Extension;
 use layer_trait::{DeviceHooks, GlobalHooks, InstanceHooks, VulkanCommand as LayerVulkanCommand};
 use smallvec::SmallVec;
 use thiserror::Error;
@@ -35,12 +35,41 @@ pub enum TryFromExtensionError {
     UnknownExtension(String),
 }
 
+#[derive(Error, Debug)]
+pub enum TryFromVulkanCommandError {
+    #[error("unknown command `{0}`")]
+    UnknownExtension(String),
+}
+
+#[derive(PartialEq, Eq, PartialOrd, Ord)]
+pub enum Feature {
+    Core(ApiVersion),
+    Extension(Extension),
+}
+
+impl From<ApiVersion> for Feature {
+    fn from(value: ApiVersion) -> Self {
+        Self::Core(value)
+    }
+}
+
+impl From<Extension> for Feature {
+    fn from(value: Extension) -> Self {
+        Self::Extension(value)
+    }
+}
+
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
-pub(crate) struct ApiVersion {
+pub struct ApiVersion {
     // At most 7 bits
     pub major: u8,
     // At most 10 bits
     pub minor: u16,
+}
+
+impl ApiVersion {
+    pub const V1_0: Self = Self { major: 1, minor: 0 };
+    pub const V1_1: Self = Self { major: 1, minor: 1 };
 }
 
 impl From<u32> for ApiVersion {
@@ -97,22 +126,20 @@ fn get_device_proc_addr_loader(
 }
 
 pub trait DeviceInfo: Send + Sync {
-    type LayerInfo: Layer<DeviceInfo = Self>;
     type HooksType: DeviceHooks;
     type HooksRefType<'a>: Deref<Target = Self::HooksType> + 'a
     where
         Self: 'a;
-    fn hooked_commands(layer: &Self::LayerInfo) -> &[LayerVulkanCommand];
+    fn hooked_commands() -> &'static [LayerVulkanCommand];
     fn hooks(&self) -> Self::HooksRefType<'_>;
 }
 
 pub trait InstanceInfo: Send + Sync {
-    type LayerInfo: Layer<InstanceInfo = Self>;
     type HooksType: InstanceHooks;
     type HooksRefType<'a>: Deref<Target = Self::HooksType> + 'a
     where
         Self: 'a;
-    fn hooked_commands(layer: &Self::LayerInfo) -> &[LayerVulkanCommand];
+    fn hooked_commands() -> &'static [LayerVulkanCommand];
     fn hooks(&self) -> Self::HooksRefType<'_>;
 }
 
@@ -122,8 +149,8 @@ pub trait Layer: Default + GlobalHooks + 'static {
     const IMPLEMENTATION_VERSION: u32;
     const LAYER_DESCRIPTION: &'static str;
 
-    type InstanceInfo: InstanceInfo<LayerInfo = Self>;
-    type DeviceInfo: DeviceInfo<LayerInfo = Self>;
+    type InstanceInfo: InstanceInfo;
+    type DeviceInfo: DeviceInfo;
     type InstanceInfoContainer: Borrow<Self::InstanceInfo> + Sync + Send;
     type DeviceInfoContainer: Borrow<Self::DeviceInfo> + Sync + Send;
 
@@ -144,11 +171,19 @@ pub trait Layer: Default + GlobalHooks + 'static {
         next_get_device_proc_addr: vk::PFN_vkGetDeviceProcAddr,
     ) -> Self::DeviceInfoContainer;
 
+    fn hooked_instance_commands(&self) -> &[LayerVulkanCommand] {
+        Self::InstanceInfo::hooked_commands()
+    }
+
+    fn hooked_device_commands(&self) -> &[LayerVulkanCommand] {
+        Self::DeviceInfo::hooked_commands()
+    }
+
     fn hooked_commands(&self) -> Box<dyn Iterator<Item = LayerVulkanCommand> + '_> {
         Box::new(
-            Self::DeviceInfo::hooked_commands(self)
+            self.hooked_device_commands()
                 .iter()
-                .chain(Self::InstanceInfo::hooked_commands(self))
+                .chain(self.hooked_instance_commands())
                 .cloned(),
         )
     }

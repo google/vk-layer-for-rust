@@ -16,13 +16,12 @@ use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
 use syn::Type;
 
-pub fn dummy_autoinfo_impl(name: &Type, layer_name: &Type) -> TokenStream2 {
+pub fn dummy_autoinfo_impl(name: &Type) -> TokenStream2 {
     quote! {
         impl ::vulkan_layer::InstanceInfo for #name {
-            type LayerInfo = #layer_name;
             type HooksType = Self;
             type HooksRefType<'a> = &'a Self;
-            fn hooked_commands(_: &Self::LayerInfo) -> &[::vulkan_layer::LayerVulkanCommand] {
+            fn hooked_commands() -> &'static [::vulkan_layer::LayerVulkanCommand] {
                 unimplemented!()
             }
 

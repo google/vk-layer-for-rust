@@ -34,13 +34,14 @@ pub mod test_utils;
 mod vk_utils;
 
 use bindings::{VkLayerDeviceCreateInfo, VkLayerFunction, VkLayerInstanceCreateInfo};
-use generated::{
-    global_simple_intercept::{DeviceDispatchTable, Extension, Feature, InstanceDispatchTable},
-    ApiVersion, VulkanCommand,
-};
 pub use generated::{
+    global_simple_intercept::Extension,
     layer_trait::{DeviceHooks, GlobalHooks, InstanceHooks, VulkanCommand as LayerVulkanCommand},
-    DeviceInfo, InstanceInfo, Layer, LayerResult,
+    ApiVersion, DeviceInfo, Feature, InstanceInfo, Layer, LayerResult,
+};
+use generated::{
+    global_simple_intercept::{DeviceDispatchTable, InstanceDispatchTable},
+    VulkanCommand,
 };
 pub use vulkan_layer_macros::auto_instanceinfo_impl;
 
@@ -49,11 +50,36 @@ fn as_i8_slice(input: &CString) -> &[i8] {
     unsafe { std::slice::from_raw_parts(bytes.as_ptr() as *const i8, bytes.len()) }
 }
 
+pub trait IsCommandEnabled {
+    fn is_command_enabled(
+        self,
+        api_version: &ApiVersion,
+        enabled_extensions: &BTreeSet<Extension>,
+    ) -> bool;
+}
+
+impl<'a, T: IntoIterator<Item = &'a Feature>> IsCommandEnabled for T {
+    fn is_command_enabled(
+        self,
+        api_version: &ApiVersion,
+        enabled_extensions: &BTreeSet<Extension>,
+    ) -> bool {
+        self.into_iter().any(|feature| match feature {
+            Feature::Extension(extension) => enabled_extensions.contains(extension),
+            Feature::Core(version) => version <= api_version,
+        })
+    }
+}
+
 /// # Safety
 /// p_count must be a valid pointer to a u32. If p_count doesn't reference 0, and p_out is not null,
 /// p_out must be a valid pointer to *p_count number of T's.
 #[deny(unsafe_op_in_unsafe_fn)]
-unsafe fn fill_vk_out_array<T, U>(out: &[T], mut p_count: NonNull<U>, p_out: *mut T) -> vk::Result
+pub unsafe fn fill_vk_out_array<T, U>(
+    out: &[T],
+    mut p_count: NonNull<U>,
+    p_out: *mut T,
+) -> vk::Result
 where
     T: Clone,
     U: TryFrom<usize> + TryInto<usize> + Zero + Copy,
@@ -830,15 +856,10 @@ impl<T: Layer> Global<T> {
             if !instance_command.hooked {
                 return get_next_proc_addr();
             }
-            let enabled = instance_command
-                .features
-                .iter()
-                .any(|feature| match feature {
-                    Feature::Extension(extension) => {
-                        instance_info.enabled_extensions.contains(extension)
-                    }
-                    Feature::Core(version) => *version <= instance_info.api_version,
-                });
+            let enabled = instance_command.features.is_command_enabled(
+                &instance_info.api_version,
+                &instance_info.enabled_extensions,
+            );
             if !enabled {
                 return get_next_proc_addr();
             }
@@ -880,13 +901,20 @@ impl<T: Layer> Global<T> {
         {
             return res;
         }
-        if let Ok(index) = global
+        let get_next_device_proc_addr =
+            || unsafe { (device_info.get_device_proc_addr)(device, p_name) };
+        let command = if let Ok(index) = global
             .get_device_commands()
             .binary_search_by_key(&name, |VulkanCommand { name, .. }| name)
         {
-            return global.get_device_commands()[index].proc;
+            &global.get_device_commands()[index]
+        } else {
+            return get_next_device_proc_addr();
+        };
+        if !command.hooked {
+            return get_next_device_proc_addr();
         }
-        unsafe { (device_info.get_device_proc_addr)(device, p_name) }
+        command.proc
     }
 }
 

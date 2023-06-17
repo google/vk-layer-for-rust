@@ -15,7 +15,7 @@
 use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
 use std::iter::zip;
-use syn::{spanned::Spanned, Error, Ident, ImplItem, ItemImpl, Type};
+use syn::{spanned::Spanned, Error, Ident, ImplItem, ItemImpl};
 
 fn snake_case_to_upper_camel_case(input: &str) -> String {
     let first_char = match input.chars().next() {
@@ -41,7 +41,7 @@ fn snake_case_to_upper_camel_case(input: &str) -> String {
     res
 }
 
-pub fn autoinfo_impl(item: &ItemImpl, layer_type: &Type) -> Result<TokenStream2, Error> {
+pub fn autoinfo_impl(item: &ItemImpl) -> Result<TokenStream2, Error> {
     let type_name = item.self_ty.as_ref();
     let hooked_commands = item.items.iter().filter_map(|item| {
         let function = if let ImplItem::Fn(function) = item {
@@ -56,10 +56,9 @@ pub fn autoinfo_impl(item: &ItemImpl, layer_type: &Type) -> Result<TokenStream2,
     });
     Ok(quote! {
         impl ::vulkan_layer::InstanceInfo for #type_name {
-            type LayerInfo = #layer_type;
             type HooksType = Self;
             type HooksRefType<'a> = &'a Self;
-            fn hooked_commands(_: &Self::LayerInfo) -> &[::vulkan_layer::LayerVulkanCommand] {
+            fn hooked_commands() -> &'static [::vulkan_layer::LayerVulkanCommand] {
                 &[#(#hooked_commands),*]
             }
 

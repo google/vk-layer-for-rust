@@ -15,18 +15,17 @@
 use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
-use syn::{parse_macro_input, ItemImpl, Type};
+use syn::{parse_macro_input, ItemImpl};
 
 mod details;
 mod dummy;
 
 #[proc_macro_attribute]
-pub fn auto_instanceinfo_impl(attr: TokenStream, item: TokenStream) -> TokenStream {
-    let layer_name = parse_macro_input!(attr as Type);
+pub fn auto_instanceinfo_impl(_: TokenStream, item: TokenStream) -> TokenStream {
     let original_item: TokenStream2 = item.clone().into();
     let input = parse_macro_input!(item as ItemImpl);
-    let to_append = details::autoinfo_impl(&input, &layer_name).unwrap_or_else(|e| {
-        let dummy = dummy::dummy_autoinfo_impl(&input.self_ty, &layer_name);
+    let to_append = details::autoinfo_impl(&input).unwrap_or_else(|e| {
+        let dummy = dummy::dummy_autoinfo_impl(&input.self_ty);
         let compile_error = e.to_compile_error();
         quote! {
             #dummy

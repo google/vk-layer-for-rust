@@ -13,17 +13,21 @@
 // limitations under the License.
 
 use ash::vk::{self, Handle};
+use once_cell::sync::Lazy;
 use std::{
-    collections::HashSet,
+    collections::{BTreeMap, BTreeSet},
     ffi::{c_char, c_void, CStr},
-    ptr::{null, null_mut},
+    pin::Pin,
+    ptr::{null, null_mut, NonNull},
     sync::Arc,
 };
 use vulkan_layer::{
+    fill_vk_out_array,
     test_utils::{
-        TestLayerWrapper, VkLayerFunction, VkLayerInstanceCreateInfo, VkLayerInstanceLink,
+        Del, TestLayerWrapper, VkLayerDeviceCreateInfo, VkLayerDeviceLink, VkLayerFunction,
+        VkLayerInstanceCreateInfo, VkLayerInstanceLink,
     },
-    Global, Layer,
+    ApiVersion, Extension, Feature, Global, IsCommandEnabled, Layer, LayerVulkanCommand,
 };
 
 pub type MockLayer<T> = Arc<TestLayerWrapper<T>>;
@@ -36,27 +40,359 @@ pub fn create_entry<T: Layer>() -> ash::Entry {
     }
 }
 
-pub struct Context {
+pub struct InstanceContext {
     pub entry: ash::Entry,
     pub instance: ash::Instance,
     pub next_entry: ash::Entry,
 }
 
+pub trait DelInstanceContextExt {
+    fn default_device<U: Layer>(self) -> Del<DeviceContext>;
+}
+
+impl DelInstanceContextExt for Del<InstanceContext> {
+    fn default_device<U: Layer>(self) -> Del<DeviceContext> {
+        let physical_device = unsafe {
+            self.instance
+                .enumerate_physical_devices()
+                .unwrap()
+                .into_iter()
+                .next()
+                .unwrap()
+        };
+        assert!(
+            unsafe {
+                self.instance
+                    .get_physical_device_queue_family_properties(physical_device)
+            }
+            .len()
+                >= 1
+        );
+        let queue_priorities = [1.0];
+        let queue_create_infos = [vk::DeviceQueueCreateInfo::builder()
+            .queue_family_index(0)
+            .queue_priorities(&queue_priorities)
+            .build()];
+        let get_device_proc_addr = unsafe {
+            self.next_entry.get_instance_proc_addr(
+                self.instance.handle(),
+                std::mem::transmute(b"vkGetDeviceProcAddr\0".as_ptr()),
+            )
+        }
+        .unwrap();
+        let get_device_proc_addr: vk::PFN_vkGetDeviceProcAddr =
+            unsafe { std::mem::transmute(get_device_proc_addr) };
+        let mut layer_link = VkLayerDeviceLink {
+            pNext: null_mut(),
+            pfnNextGetInstanceProcAddr: self.next_entry.static_fn().get_instance_proc_addr,
+            pfnNextGetDeviceProcAddr: get_device_proc_addr,
+        };
+        let mut layer_create_info = VkLayerDeviceCreateInfo {
+            sType: vk::StructureType::LOADER_DEVICE_CREATE_INFO,
+            pNext: null(),
+            function: VkLayerFunction::VK_LAYER_LINK_INFO,
+            u: Default::default(),
+        };
+        layer_create_info.u.pLayerInfo = &mut layer_link as *mut _;
+        let device_create_info = vk::DeviceCreateInfo::builder()
+            .queue_create_infos(&queue_create_infos)
+            .push_next(&mut layer_create_info);
+        let device = unsafe {
+            self.instance
+                .create_device(physical_device, &device_create_info, None)
+        }
+        .unwrap();
+        let device_context = DeviceContext {
+            device,
+            instance_context: self,
+        };
+        Del::new(device_context, move |device_context| unsafe {
+            device_context.device.destroy_device(None)
+        })
+    }
+}
+
+pub struct DeviceContext {
+    pub device: ash::Device,
+    pub instance_context: Del<InstanceContext>,
+}
+
 pub trait InstanceCreateInfoExt {
-    fn with_instance<T: Layer>(self, f: impl FnOnce(&Context));
+    fn default_instance<T: Layer>(self) -> Del<InstanceContext>;
 }
 
 impl InstanceCreateInfoExt for vk::InstanceCreateInfoBuilder<'_> {
-    fn with_instance<T: Layer>(self, f: impl FnOnce(&Context)) {
+    fn default_instance<T: Layer>(self) -> Del<InstanceContext> {
         extern "system" fn get_instance_proc_addr(
             instance: vk::Instance,
             p_name: *const i8,
         ) -> vk::PFN_vkVoidFunction {
+            enum DispatchKind {
+                Global,
+                Instance,
+                Device,
+            }
+            #[derive(Debug, PartialOrd, Ord, PartialEq, Eq)]
+            enum VulkanCommandName {
+                LayerCommand(LayerVulkanCommand),
+                Other(String),
+            }
+            impl From<&str> for VulkanCommandName {
+                fn from(value: &str) -> Self {
+                    if let Ok(layer_command) = value.try_into() {
+                        return Self::LayerCommand(layer_command);
+                    }
+                    Self::Other(value.to_owned())
+                }
+            }
+            impl From<LayerVulkanCommand> for VulkanCommandName {
+                fn from(value: LayerVulkanCommand) -> Self {
+                    Self::LayerCommand(value)
+                }
+            }
+            struct VulkanCommand {
+                proc: vk::PFN_vkVoidFunction,
+                dispatch_kind: DispatchKind,
+                features: BTreeSet<Feature>,
+            }
+            static VULKAN_COMMANDS: Lazy<BTreeMap<VulkanCommandName, VulkanCommand>> =
+                Lazy::new(|| {
+                    use LayerVulkanCommand::*;
+                    [
+                        (
+                            CreateInstance.into(),
+                            VulkanCommand {
+                                proc: unsafe {
+                                    std::mem::transmute(create_instance as vk::PFN_vkCreateInstance)
+                                },
+                                dispatch_kind: DispatchKind::Global,
+                                features: [ApiVersion::V1_0.into()].into(),
+                            },
+                        ),
+                        (
+                            "vkDestroyDevice".into(),
+                            VulkanCommand {
+                                proc: unsafe {
+                                    std::mem::transmute(destroy_device as vk::PFN_vkDestroyDevice)
+                                },
+                                dispatch_kind: DispatchKind::Device,
+                                features: [ApiVersion::V1_0.into()].into(),
+                            },
+                        ),
+                        (
+                            CreateDevice.into(),
+                            VulkanCommand {
+                                proc: unsafe {
+                                    std::mem::transmute(create_device as vk::PFN_vkCreateDevice)
+                                },
+                                dispatch_kind: DispatchKind::Instance,
+                                features: [ApiVersion::V1_0.into()].into(),
+                            },
+                        ),
+                        (
+                            "vkEnumeratePhysicalDeviceGroups".into(),
+                            VulkanCommand {
+                                proc: unsafe {
+                                    std::mem::transmute(
+                                        enumerate_physical_device_groups
+                                            as vk::PFN_vkEnumeratePhysicalDeviceGroups,
+                                    )
+                                },
+                                dispatch_kind: DispatchKind::Instance,
+                                features: [
+                                    ApiVersion::V1_1.into(),
+                                    Extension::KHRDeviceGroupCreation.into(),
+                                ]
+                                .into(),
+                            },
+                        ),
+                        (
+                            "vkEnumeratePhysicalDevices".into(),
+                            VulkanCommand {
+                                proc: unsafe {
+                                    std::mem::transmute(
+                                        enumerate_physical_devices
+                                            as vk::PFN_vkEnumeratePhysicalDevices,
+                                    )
+                                },
+                                dispatch_kind: DispatchKind::Instance,
+                                features: [ApiVersion::V1_0.into()].into(),
+                            },
+                        ),
+                        (
+                            GetDeviceProcAddr.into(),
+                            VulkanCommand {
+                                proc: unsafe {
+                                    std::mem::transmute(
+                                        get_device_proc_addr as vk::PFN_vkGetDeviceProcAddr,
+                                    )
+                                },
+                                dispatch_kind: DispatchKind::Device,
+                                features: [ApiVersion::V1_0.into()].into(),
+                            },
+                        ),
+                        (
+                            GetInstanceProcAddr.into(),
+                            VulkanCommand {
+                                proc: unsafe {
+                                    std::mem::transmute(
+                                        get_instance_proc_addr as vk::PFN_vkGetInstanceProcAddr,
+                                    )
+                                },
+                                dispatch_kind: DispatchKind::Instance,
+                                features: [ApiVersion::V1_0.into()].into(),
+                            },
+                        ),
+                        (
+                            "vkEnumerateDeviceLayerProperties".into(),
+                            VulkanCommand {
+                                proc: unsafe {
+                                    std::mem::transmute(
+                                        enumerate_device_layer_properties
+                                            as vk::PFN_vkEnumerateDeviceLayerProperties,
+                                    )
+                                },
+                                dispatch_kind: DispatchKind::Instance,
+                                features: [ApiVersion::V1_0.into()].into(),
+                            },
+                        ),
+                        (
+                            "vkEnumerateDeviceExtensionProperties".into(),
+                            VulkanCommand {
+                                proc: unsafe {
+                                    std::mem::transmute(
+                                        enumerate_device_extension_properties
+                                            as vk::PFN_vkEnumerateDeviceExtensionProperties,
+                                    )
+                                },
+                                dispatch_kind: DispatchKind::Instance,
+                                features: [ApiVersion::V1_0.into()].into(),
+                            },
+                        ),
+                        (
+                            "vkDestroyInstance".into(),
+                            VulkanCommand {
+                                proc: unsafe {
+                                    std::mem::transmute(
+                                        destroy_instance as vk::PFN_vkDestroyInstance,
+                                    )
+                                },
+                                dispatch_kind: DispatchKind::Instance,
+                                features: [ApiVersion::V1_0.into()].into(),
+                            },
+                        ),
+                        (
+                            GetPhysicalDeviceSparseImageFormatProperties2.into(),
+                            VulkanCommand {
+                                proc: unsafe {
+                                    std::mem::transmute(
+                                    get_physical_device_sparse_image_format_properties2
+                                        as vk::PFN_vkGetPhysicalDeviceSparseImageFormatProperties2,
+                                )
+                                },
+                                dispatch_kind: DispatchKind::Instance,
+                                features: [
+                                    ApiVersion::V1_1.into(),
+                                    Extension::KHRGetPhysicalDeviceProperties2.into(),
+                                ]
+                                .into(),
+                            },
+                        ),
+                        (
+                            DestroySurfaceKhr.into(),
+                            VulkanCommand {
+                                proc: unsafe {
+                                    std::mem::transmute(
+                                        destroy_surface_khr as vk::PFN_vkDestroySurfaceKHR,
+                                    )
+                                },
+                                dispatch_kind: DispatchKind::Instance,
+                                features: [Extension::KHRSurface.into()].into(),
+                            },
+                        ),
+                        (
+                            GetPhysicalDeviceQueueFamilyProperties.into(),
+                            VulkanCommand {
+                                proc: unsafe {
+                                    std::mem::transmute(
+                                        get_physical_device_queue_family_properties
+                                            as vk::PFN_vkGetPhysicalDeviceQueueFamilyProperties,
+                                    )
+                                },
+                                dispatch_kind: DispatchKind::Instance,
+                                features: [ApiVersion::V1_0.into()].into(),
+                            },
+                        ),
+                        (
+                            DestroyImage.into(),
+                            VulkanCommand {
+                                proc: unsafe {
+                                    std::mem::transmute(destroy_image as vk::PFN_vkDestroyImage)
+                                },
+                                dispatch_kind: DispatchKind::Device,
+                                features: [ApiVersion::V1_0.into()].into(),
+                            },
+                        ),
+                    ]
+                    .into_iter()
+                    .collect()
+                });
+            #[repr(C)]
+            struct InstanceDispatchTable(u32);
+            impl Default for InstanceDispatchTable {
+                fn default() -> Self {
+                    Self(0x10d0)
+                }
+            }
             #[repr(C)]
             struct InstanceData {
+                // Pointer to dispatch_table, this is the ABI guaranteed by the Vulkan loader.
                 _dispatch_table: *const c_void,
-                version: u32,
-                enabled_extensions: HashSet<String>,
+                dispatch_table: Pin<Box<InstanceDispatchTable>>,
+                version: ApiVersion,
+                enabled_extensions: BTreeSet<Extension>,
+                physical_devices: Box<[Pin<Box<PhysicalDeviceData>>]>,
+            }
+            impl InstanceData {
+                #[deny(unsafe_op_in_unsafe_fn)]
+                unsafe fn from_handle<'a>(handle: vk::Instance) -> &'a Self {
+                    unsafe { (handle.as_raw() as *const InstanceData).as_ref() }.unwrap()
+                }
+            }
+            #[repr(C)]
+            struct PhysicalDeviceData {
+                // Should be the same as the owner VkInstance.
+                _dispatch_table: *const c_void,
+                owner_instance: vk::Instance,
+                queue_family_properties: Vec<vk::QueueFamilyProperties>,
+            }
+            impl PhysicalDeviceData {
+                #[deny(unsafe_op_in_unsafe_fn)]
+                unsafe fn from_handle<'a>(handle: vk::PhysicalDevice) -> &'a Self {
+                    unsafe { (handle.as_raw() as *const PhysicalDeviceData).as_ref() }.unwrap()
+                }
+            }
+            #[repr(C)]
+            struct DeviceDispatchTable(u32);
+            impl Default for DeviceDispatchTable {
+                fn default() -> Self {
+                    Self(0xa1de)
+                }
+            }
+            #[repr(C)]
+            struct DeviceData {
+                // A pointer to dispatch_table.
+                _dispatch_table: *const c_void,
+                dispatch_table: Pin<Box<DeviceDispatchTable>>,
+                owner_physical_device: vk::PhysicalDevice,
+                api_veersion: ApiVersion,
+                enabled_extensions: BTreeSet<Extension>,
+            }
+            impl DeviceData {
+                #[deny(unsafe_op_in_unsafe_fn)]
+                unsafe fn from_handle<'a>(handle: vk::Device) -> &'a Self {
+                    unsafe { (handle.as_raw() as *const DeviceData).as_ref() }.unwrap()
+                }
             }
             extern "system" fn create_instance(
                 create_info: *const vk::InstanceCreateInfo,
@@ -72,22 +408,44 @@ impl InstanceCreateInfoExt for vk::InstanceCreateInfoBuilder<'_> {
                     )
                 }
                 .iter()
-                .map(|enabled_extension| {
-                    unsafe { CStr::from_ptr(*enabled_extension) }
+                .filter_map(|enabled_extension| {
+                    let extension = unsafe { CStr::from_ptr(*enabled_extension) }
                         .to_owned()
                         .into_string()
-                        .unwrap()
+                        .unwrap();
+                    extension.as_str().try_into().ok()
                 })
                 .collect::<_>();
-                let inner: Box<InstanceData> = Box::new(InstanceData {
-                    _dispatch_table: 1234 as *const c_void,
+                let dispatch_table =
+                    Box::into_pin(Box::<InstanceDispatchTable>::new(Default::default()));
+                let instance_data: Box<InstanceData> = Box::new(InstanceData {
+                    _dispatch_table: dispatch_table.as_ref().get_ref() as *const _ as *const c_void,
+                    dispatch_table,
                     version: application_info
-                        .map(|application_info| application_info.api_version)
-                        .unwrap_or(vk::API_VERSION_1_0),
+                        .map(|application_info| application_info.api_version.try_into().unwrap())
+                        .unwrap_or(ApiVersion::V1_0),
                     enabled_extensions,
+                    physical_devices: Default::default(),
                 });
-                *unsafe { instance.as_mut() }.unwrap() =
-                    vk::Instance::from_raw(Box::leak(inner) as *mut _ as _);
+                let instance_raw_handle = Box::into_raw(instance_data);
+                let instance_handle = vk::Instance::from_raw(instance_raw_handle as _);
+                let instance_data = unsafe { instance_raw_handle.as_mut() }.unwrap();
+                instance_data.physical_devices = Box::new([Box::new(PhysicalDeviceData {
+                    _dispatch_table: instance_data._dispatch_table,
+                    owner_instance: instance_handle,
+                    queue_family_properties: vec![vk::QueueFamilyProperties {
+                        queue_flags: vk::QueueFlags::GRAPHICS | vk::QueueFlags::TRANSFER,
+                        queue_count: 1,
+                        timestamp_valid_bits: 0,
+                        min_image_transfer_granularity: vk::Extent3D::builder()
+                            .width(0)
+                            .height(0)
+                            .depth(0)
+                            .build(),
+                    }],
+                })
+                .into()]);
+                *unsafe { instance.as_mut() }.unwrap() = instance_handle;
                 vk::Result::SUCCESS
             }
             extern "system" fn destroy_instance(
@@ -131,17 +489,64 @@ impl InstanceCreateInfoExt for vk::InstanceCreateInfoBuilder<'_> {
                 unimplemented!()
             }
             extern "system" fn get_device_proc_addr(
-                _: vk::Device,
-                _name: *const c_char,
+                device: vk::Device,
+                p_name: *const c_char,
             ) -> vk::PFN_vkVoidFunction {
-                unimplemented!()
+                assert_ne!(device, vk::Device::null());
+                let device_data = unsafe { DeviceData::from_handle(device) };
+                let name = unsafe { CStr::from_ptr(p_name) }.to_str().unwrap();
+                let command = VULKAN_COMMANDS.get(&name.into())?;
+                if !command
+                    .features
+                    .is_command_enabled(&device_data.api_veersion, &device_data.enabled_extensions)
+                {
+                    return None;
+                }
+                command.proc
             }
             extern "system" fn enumerate_physical_devices(
-                _: vk::Instance,
-                _physical_device_count: *mut u32,
-                _physical_devices: *mut vk::PhysicalDevice,
+                instance: vk::Instance,
+                physical_device_count: *mut u32,
+                physical_devices: *mut vk::PhysicalDevice,
             ) -> vk::Result {
-                unimplemented!()
+                let all_physical_devices = unsafe { InstanceData::from_handle(instance) }
+                    .physical_devices
+                    .iter()
+                    .map(|physical_device_data| {
+                        let physical_device_data_ptr =
+                            physical_device_data.as_ref().get_ref() as *const PhysicalDeviceData;
+                        vk::PhysicalDevice::from_raw(physical_device_data_ptr as _)
+                    })
+                    .collect::<Vec<_>>();
+                let physical_device_count = NonNull::new(physical_device_count).unwrap();
+                unsafe {
+                    fill_vk_out_array(
+                        &all_physical_devices,
+                        physical_device_count,
+                        physical_devices,
+                    )
+                }
+            }
+            extern "system" fn get_physical_device_queue_family_properties(
+                physical_device: vk::PhysicalDevice,
+                p_queue_family_property_count: *mut u32,
+                p_queue_family_properties: *mut vk::QueueFamilyProperties,
+            ) {
+                let physical_device_data =
+                    unsafe { PhysicalDeviceData::from_handle(physical_device) };
+                let p_queue_family_property_count =
+                    NonNull::new(p_queue_family_property_count).unwrap();
+                assert!(
+                    unsafe {
+                        fill_vk_out_array(
+                            &physical_device_data.queue_family_properties,
+                            p_queue_family_property_count,
+                            p_queue_family_properties,
+                        )
+                    }
+                    .as_raw()
+                        >= 0
+                );
             }
             extern "system" fn enumerate_physical_device_groups(
                 _: vk::Instance,
@@ -151,101 +556,92 @@ impl InstanceCreateInfoExt for vk::InstanceCreateInfoBuilder<'_> {
                 unimplemented!()
             }
             extern "system" fn create_device(
-                _: vk::PhysicalDevice,
-                _: *const vk::DeviceCreateInfo,
+                physical_device: vk::PhysicalDevice,
+                device_create_info: *const vk::DeviceCreateInfo,
                 _: *const vk::AllocationCallbacks,
-                _: *mut vk::Device,
+                device: *mut vk::Device,
             ) -> vk::Result {
-                unimplemented!()
+                let dispatch_table =
+                    Box::into_pin(Box::<DeviceDispatchTable>::new(Default::default()));
+                let physical_device_data =
+                    unsafe { PhysicalDeviceData::from_handle(physical_device) };
+                let instance_data =
+                    unsafe { InstanceData::from_handle(physical_device_data.owner_instance) };
+                let device_create_info = unsafe { device_create_info.as_ref() }.unwrap();
+                let enabled_extensions = unsafe {
+                    std::slice::from_raw_parts(
+                        device_create_info.pp_enabled_extension_names,
+                        device_create_info
+                            .enabled_extension_count
+                            .try_into()
+                            .unwrap(),
+                    )
+                }
+                .iter()
+                .map(|extension_name| {
+                    unsafe { CStr::from_ptr(*extension_name) }
+                        .to_str()
+                        .unwrap()
+                        .try_into()
+                })
+                .collect::<Vec<Result<Extension, _>>>();
+                if enabled_extensions.iter().any(Result::is_err) {
+                    return vk::Result::ERROR_EXTENSION_NOT_PRESENT;
+                }
+                let enabled_extensions = enabled_extensions
+                    .into_iter()
+                    .filter_map(Result::ok)
+                    .collect();
+                let device_info = DeviceData {
+                    _dispatch_table: dispatch_table.as_ref().get_ref() as *const _ as *const c_void,
+                    dispatch_table,
+                    owner_physical_device: physical_device,
+                    api_veersion: instance_data.version,
+                    enabled_extensions,
+                };
+                let device_info = Box::new(device_info);
+                *unsafe { device.as_mut() }.unwrap() =
+                    vk::Device::from_raw(Box::into_raw(device_info) as _);
+                vk::Result::SUCCESS
             }
-            extern "system" fn destroy_device(_: vk::Device, _: *const vk::AllocationCallbacks) {
+            extern "system" fn destroy_device(
+                device: vk::Device,
+                _: *const vk::AllocationCallbacks,
+            ) {
+                let inner = unsafe { Box::from_raw(device.as_raw() as *mut DeviceData) };
+                drop(inner);
+            }
+            extern "system" fn destroy_image(
+                _: vk::Device,
+                image: vk::Image,
+                _: *const vk::AllocationCallbacks,
+            ) {
+                if image == vk::Image::null() {
+                    return;
+                }
                 unimplemented!()
             }
             let name = unsafe { CStr::from_ptr(p_name) }.to_str().unwrap();
-            if instance == vk::Instance::null() {
-                match name {
-                    "vkCreateInstance" => Some(unsafe {
-                        std::mem::transmute(create_instance as vk::PFN_vkCreateInstance)
-                    }),
+            let command = VULKAN_COMMANDS.get(&name.into())?;
+            let instance_data = if instance == vk::Instance::null() {
+                return match command.dispatch_kind {
+                    DispatchKind::Global => command.proc,
                     _ => None,
-                }
+                };
             } else {
-                let instance_data =
-                    unsafe { (instance.as_raw() as *const InstanceData).as_ref() }.unwrap();
-                match name {
-                    "vkDestroyDevice" => Some(unsafe {
-                        std::mem::transmute(destroy_device as vk::PFN_vkDestroyDevice)
-                    }),
-                    "vkCreateDevice" => Some(unsafe {
-                        std::mem::transmute(create_device as vk::PFN_vkCreateDevice)
-                    }),
-                    "vkEnumeratePhysicalDeviceGroups" => {
-                        if instance_data.version >= vk::API_VERSION_1_1 {
-                            Some(unsafe {
-                                std::mem::transmute(
-                                    enumerate_physical_device_groups
-                                        as vk::PFN_vkEnumeratePhysicalDeviceGroups,
-                                )
-                            })
-                        } else {
-                            None
-                        }
-                    }
-                    "vkEnumeratePhysicalDevices" => Some(unsafe {
-                        std::mem::transmute(
-                            enumerate_physical_devices as vk::PFN_vkEnumeratePhysicalDevices,
-                        )
-                    }),
-                    "vkGetDeviceProcAddr" => Some(unsafe {
-                        std::mem::transmute(get_device_proc_addr as vk::PFN_vkGetDeviceProcAddr)
-                    }),
-                    "vkGetInstanceProcAddr" => Some(unsafe {
-                        std::mem::transmute(get_instance_proc_addr as vk::PFN_vkGetInstanceProcAddr)
-                    }),
-                    "vkEnumerateDeviceLayerProperties" => Some(unsafe {
-                        std::mem::transmute(
-                            enumerate_device_layer_properties
-                                as vk::PFN_vkEnumerateDeviceLayerProperties,
-                        )
-                    }),
-                    "vkEnumerateDeviceExtensionProperties" => Some(unsafe {
-                        std::mem::transmute(
-                            enumerate_device_extension_properties
-                                as vk::PFN_vkEnumerateDeviceExtensionProperties,
-                        )
-                    }),
-                    "vkDestroyInstance" => Some(unsafe {
-                        std::mem::transmute(destroy_instance as vk::PFN_vkDestroyInstance)
-                    }),
-                    "vkGetPhysicalDeviceSparseImageFormatProperties2" => {
-                        if instance_data.version >= vk::API_VERSION_1_1 {
-                            Some(unsafe {
-                                std::mem::transmute(
-                                    get_physical_device_sparse_image_format_properties2
-                                        as vk::PFN_vkGetPhysicalDeviceSparseImageFormatProperties2,
-                                )
-                            })
-                        } else {
-                            None
-                        }
-                    }
-                    "vkDestroySurfaceKHR" => {
-                        if instance_data
-                            .enabled_extensions
-                            .contains(vk::KhrSurfaceFn::name().to_str().unwrap())
-                        {
-                            Some(unsafe {
-                                std::mem::transmute(
-                                    destroy_surface_khr as vk::PFN_vkDestroySurfaceKHR,
-                                )
-                            })
-                        } else {
-                            None
-                        }
-                    }
-                    _ => None,
-                }
+                unsafe { InstanceData::from_handle(instance) }
+            };
+
+            if let DispatchKind::Global = command.dispatch_kind {
+                return None;
             }
+            if !command
+                .features
+                .is_command_enabled(&instance_data.version, &instance_data.enabled_extensions)
+            {
+                return None;
+            }
+            command.proc
         }
         let entry = create_entry::<T>();
         let mut layer_link = VkLayerInstanceLink {
@@ -264,7 +660,7 @@ impl InstanceCreateInfoExt for vk::InstanceCreateInfoBuilder<'_> {
         let create_instance_info = self.push_next(&mut layer_create_info);
         let instance = unsafe { entry.create_instance(&create_instance_info, None) }.unwrap();
         assert_ne!(instance.handle(), vk::Instance::null());
-        let context = Context {
+        let context = InstanceContext {
             entry,
             instance,
             next_entry: unsafe {
@@ -273,7 +669,8 @@ impl InstanceCreateInfoExt for vk::InstanceCreateInfoBuilder<'_> {
                 })
             },
         };
-        f(&context);
-        unsafe { context.instance.destroy_instance(None) };
+        Del::new(context, move |context| {
+            unsafe { context.instance.destroy_instance(None) };
+        })
     }
 }

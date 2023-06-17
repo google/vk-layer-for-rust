@@ -659,6 +659,7 @@ class RustMethod(NamedTuple):
     return_type: str
     name: str
     parameters: list[RustParam]
+    vk_xml_cmd: VkXmlCommand
 
     @staticmethod
     def from_vk_xml_command(vk_xml_cmd: VkXmlCommand) -> RustMethod:
@@ -716,6 +717,7 @@ class RustMethod(NamedTuple):
             name=camel_case_to_snake_case(vk_xml_cmd.name.removeprefix("vk")),
             return_type=rust_return_type,
             parameters=rust_params,
+            vk_xml_cmd=vk_xml_cmd,
         )
 
     def to_string(self) -> str:

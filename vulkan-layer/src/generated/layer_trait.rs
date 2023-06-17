@@ -18,7 +18,7 @@ use std::ffi::{c_int, c_void};
 
 use ash::{prelude::VkResult, vk};
 
-use super::LayerResult;
+use super::{LayerResult, TryFromVulkanCommandError};
 
 // Unhandled commands:
 // * vkMapMemory2KHR: The ash Rust binding doesn't have proper bindings yet.
@@ -576,6 +576,836 @@ pub enum VulkanCommand {
     CmdDrawMeshTasksExt,
     CmdDrawMeshTasksIndirectExt,
     CmdDrawMeshTasksIndirectCountExt,
+}
+
+impl TryFrom<&str> for VulkanCommand {
+    type Error = TryFromVulkanCommandError;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        match value {
+            "vkCreateInstance" => Ok(VulkanCommand::CreateInstance),
+            "vkGetPhysicalDeviceFeatures" => Ok(VulkanCommand::GetPhysicalDeviceFeatures),
+            "vkGetPhysicalDeviceFormatProperties" => {
+                Ok(VulkanCommand::GetPhysicalDeviceFormatProperties)
+            }
+            "vkGetPhysicalDeviceImageFormatProperties" => {
+                Ok(VulkanCommand::GetPhysicalDeviceImageFormatProperties)
+            }
+            "vkGetPhysicalDeviceProperties" => Ok(VulkanCommand::GetPhysicalDeviceProperties),
+            "vkGetPhysicalDeviceQueueFamilyProperties" => {
+                Ok(VulkanCommand::GetPhysicalDeviceQueueFamilyProperties)
+            }
+            "vkGetPhysicalDeviceMemoryProperties" => {
+                Ok(VulkanCommand::GetPhysicalDeviceMemoryProperties)
+            }
+            "vkGetInstanceProcAddr" => Ok(VulkanCommand::GetInstanceProcAddr),
+            "vkCreateDevice" => Ok(VulkanCommand::CreateDevice),
+            "vkGetPhysicalDeviceSparseImageFormatProperties" => {
+                Ok(VulkanCommand::GetPhysicalDeviceSparseImageFormatProperties)
+            }
+            "vkGetPhysicalDeviceFeatures2" => Ok(VulkanCommand::GetPhysicalDeviceFeatures2),
+            "vkGetPhysicalDeviceProperties2" => Ok(VulkanCommand::GetPhysicalDeviceProperties2),
+            "vkGetPhysicalDeviceFormatProperties2" => {
+                Ok(VulkanCommand::GetPhysicalDeviceFormatProperties2)
+            }
+            "vkGetPhysicalDeviceImageFormatProperties2" => {
+                Ok(VulkanCommand::GetPhysicalDeviceImageFormatProperties2)
+            }
+            "vkGetPhysicalDeviceQueueFamilyProperties2" => {
+                Ok(VulkanCommand::GetPhysicalDeviceQueueFamilyProperties2)
+            }
+            "vkGetPhysicalDeviceMemoryProperties2" => {
+                Ok(VulkanCommand::GetPhysicalDeviceMemoryProperties2)
+            }
+            "vkGetPhysicalDeviceSparseImageFormatProperties2" => {
+                Ok(VulkanCommand::GetPhysicalDeviceSparseImageFormatProperties2)
+            }
+            "vkGetPhysicalDeviceExternalBufferProperties" => {
+                Ok(VulkanCommand::GetPhysicalDeviceExternalBufferProperties)
+            }
+            "vkGetPhysicalDeviceExternalFenceProperties" => {
+                Ok(VulkanCommand::GetPhysicalDeviceExternalFenceProperties)
+            }
+            "vkGetPhysicalDeviceExternalSemaphoreProperties" => {
+                Ok(VulkanCommand::GetPhysicalDeviceExternalSemaphoreProperties)
+            }
+            "vkGetPhysicalDeviceToolProperties" => {
+                Ok(VulkanCommand::GetPhysicalDeviceToolProperties)
+            }
+            "vkDestroySurfaceKHR" => Ok(VulkanCommand::DestroySurfaceKhr),
+            "vkGetPhysicalDeviceSurfaceSupportKHR" => {
+                Ok(VulkanCommand::GetPhysicalDeviceSurfaceSupportKhr)
+            }
+            "vkGetPhysicalDeviceSurfaceCapabilitiesKHR" => {
+                Ok(VulkanCommand::GetPhysicalDeviceSurfaceCapabilitiesKhr)
+            }
+            "vkGetPhysicalDeviceSurfaceFormatsKHR" => {
+                Ok(VulkanCommand::GetPhysicalDeviceSurfaceFormatsKhr)
+            }
+            "vkGetPhysicalDeviceSurfacePresentModesKHR" => {
+                Ok(VulkanCommand::GetPhysicalDeviceSurfacePresentModesKhr)
+            }
+            "vkGetPhysicalDevicePresentRectanglesKHR" => {
+                Ok(VulkanCommand::GetPhysicalDevicePresentRectanglesKhr)
+            }
+            "vkGetPhysicalDeviceDisplayPropertiesKHR" => {
+                Ok(VulkanCommand::GetPhysicalDeviceDisplayPropertiesKhr)
+            }
+            "vkGetPhysicalDeviceDisplayPlanePropertiesKHR" => {
+                Ok(VulkanCommand::GetPhysicalDeviceDisplayPlanePropertiesKhr)
+            }
+            "vkGetDisplayPlaneSupportedDisplaysKHR" => {
+                Ok(VulkanCommand::GetDisplayPlaneSupportedDisplaysKhr)
+            }
+            "vkGetDisplayModePropertiesKHR" => Ok(VulkanCommand::GetDisplayModePropertiesKhr),
+            "vkCreateDisplayModeKHR" => Ok(VulkanCommand::CreateDisplayModeKhr),
+            "vkGetDisplayPlaneCapabilitiesKHR" => Ok(VulkanCommand::GetDisplayPlaneCapabilitiesKhr),
+            "vkCreateDisplayPlaneSurfaceKHR" => Ok(VulkanCommand::CreateDisplayPlaneSurfaceKhr),
+            "vkCreateXlibSurfaceKHR" => Ok(VulkanCommand::CreateXlibSurfaceKhr),
+            "vkGetPhysicalDeviceXlibPresentationSupportKHR" => {
+                Ok(VulkanCommand::GetPhysicalDeviceXlibPresentationSupportKhr)
+            }
+            "vkCreateXcbSurfaceKHR" => Ok(VulkanCommand::CreateXcbSurfaceKhr),
+            "vkGetPhysicalDeviceXcbPresentationSupportKHR" => {
+                Ok(VulkanCommand::GetPhysicalDeviceXcbPresentationSupportKhr)
+            }
+            "vkCreateWaylandSurfaceKHR" => Ok(VulkanCommand::CreateWaylandSurfaceKhr),
+            "vkGetPhysicalDeviceWaylandPresentationSupportKHR" => {
+                Ok(VulkanCommand::GetPhysicalDeviceWaylandPresentationSupportKhr)
+            }
+            "vkCreateAndroidSurfaceKHR" => Ok(VulkanCommand::CreateAndroidSurfaceKhr),
+            "vkCreateWin32SurfaceKHR" => Ok(VulkanCommand::CreateWin32SurfaceKhr),
+            "vkGetPhysicalDeviceWin32PresentationSupportKHR" => {
+                Ok(VulkanCommand::GetPhysicalDeviceWin32PresentationSupportKhr)
+            }
+            "vkGetPhysicalDeviceVideoCapabilitiesKHR" => {
+                Ok(VulkanCommand::GetPhysicalDeviceVideoCapabilitiesKhr)
+            }
+            "vkGetPhysicalDeviceVideoFormatPropertiesKHR" => {
+                Ok(VulkanCommand::GetPhysicalDeviceVideoFormatPropertiesKhr)
+            }
+            "vkEnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHR" => {
+                Ok(VulkanCommand::EnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKhr)
+            }
+            "vkGetPhysicalDeviceQueueFamilyPerformanceQueryPassesKHR" => {
+                Ok(VulkanCommand::GetPhysicalDeviceQueueFamilyPerformanceQueryPassesKhr)
+            }
+            "vkGetPhysicalDeviceSurfaceCapabilities2KHR" => {
+                Ok(VulkanCommand::GetPhysicalDeviceSurfaceCapabilities2Khr)
+            }
+            "vkGetPhysicalDeviceSurfaceFormats2KHR" => {
+                Ok(VulkanCommand::GetPhysicalDeviceSurfaceFormats2Khr)
+            }
+            "vkGetPhysicalDeviceDisplayProperties2KHR" => {
+                Ok(VulkanCommand::GetPhysicalDeviceDisplayProperties2Khr)
+            }
+            "vkGetPhysicalDeviceDisplayPlaneProperties2KHR" => {
+                Ok(VulkanCommand::GetPhysicalDeviceDisplayPlaneProperties2Khr)
+            }
+            "vkGetDisplayModeProperties2KHR" => Ok(VulkanCommand::GetDisplayModeProperties2Khr),
+            "vkGetDisplayPlaneCapabilities2KHR" => {
+                Ok(VulkanCommand::GetDisplayPlaneCapabilities2Khr)
+            }
+            "vkGetPhysicalDeviceFragmentShadingRatesKHR" => {
+                Ok(VulkanCommand::GetPhysicalDeviceFragmentShadingRatesKhr)
+            }
+            "vkCreateDebugReportCallbackEXT" => Ok(VulkanCommand::CreateDebugReportCallbackExt),
+            "vkDestroyDebugReportCallbackEXT" => Ok(VulkanCommand::DestroyDebugReportCallbackExt),
+            "vkDebugReportMessageEXT" => Ok(VulkanCommand::DebugReportMessageExt),
+            "vkCreateStreamDescriptorSurfaceGGP" => {
+                Ok(VulkanCommand::CreateStreamDescriptorSurfaceGgp)
+            }
+            "vkGetPhysicalDeviceExternalImageFormatPropertiesNV" => {
+                Ok(VulkanCommand::GetPhysicalDeviceExternalImageFormatPropertiesNv)
+            }
+            "vkCreateViSurfaceNN" => Ok(VulkanCommand::CreateViSurfaceNn),
+            "vkReleaseDisplayEXT" => Ok(VulkanCommand::ReleaseDisplayExt),
+            "vkAcquireXlibDisplayEXT" => Ok(VulkanCommand::AcquireXlibDisplayExt),
+            "vkGetRandROutputDisplayEXT" => Ok(VulkanCommand::GetRandROutputDisplayExt),
+            "vkGetPhysicalDeviceSurfaceCapabilities2EXT" => {
+                Ok(VulkanCommand::GetPhysicalDeviceSurfaceCapabilities2Ext)
+            }
+            "vkCreateIOSSurfaceMVK" => Ok(VulkanCommand::CreateIosSurfaceMvk),
+            "vkCreateMacOSSurfaceMVK" => Ok(VulkanCommand::CreateMacOsSurfaceMvk),
+            "vkCreateDebugUtilsMessengerEXT" => Ok(VulkanCommand::CreateDebugUtilsMessengerExt),
+            "vkDestroyDebugUtilsMessengerEXT" => Ok(VulkanCommand::DestroyDebugUtilsMessengerExt),
+            "vkSubmitDebugUtilsMessageEXT" => Ok(VulkanCommand::SubmitDebugUtilsMessageExt),
+            "vkGetPhysicalDeviceMultisamplePropertiesEXT" => {
+                Ok(VulkanCommand::GetPhysicalDeviceMultisamplePropertiesExt)
+            }
+            "vkGetPhysicalDeviceCalibrateableTimeDomainsEXT" => {
+                Ok(VulkanCommand::GetPhysicalDeviceCalibrateableTimeDomainsExt)
+            }
+            "vkCreateImagePipeSurfaceFUCHSIA" => Ok(VulkanCommand::CreateImagePipeSurfaceFuchsia),
+            "vkCreateMetalSurfaceEXT" => Ok(VulkanCommand::CreateMetalSurfaceExt),
+            "vkGetPhysicalDeviceCooperativeMatrixPropertiesNV" => {
+                Ok(VulkanCommand::GetPhysicalDeviceCooperativeMatrixPropertiesNv)
+            }
+            "vkGetPhysicalDeviceSupportedFramebufferMixedSamplesCombinationsNV" => {
+                Ok(VulkanCommand::GetPhysicalDeviceSupportedFramebufferMixedSamplesCombinationsNv)
+            }
+            "vkGetPhysicalDeviceSurfacePresentModes2EXT" => {
+                Ok(VulkanCommand::GetPhysicalDeviceSurfacePresentModes2Ext)
+            }
+            "vkCreateHeadlessSurfaceEXT" => Ok(VulkanCommand::CreateHeadlessSurfaceExt),
+            "vkAcquireDrmDisplayEXT" => Ok(VulkanCommand::AcquireDrmDisplayExt),
+            "vkGetDrmDisplayEXT" => Ok(VulkanCommand::GetDrmDisplayExt),
+            "vkAcquireWinrtDisplayNV" => Ok(VulkanCommand::AcquireWinrtDisplayNv),
+            "vkGetWinrtDisplayNV" => Ok(VulkanCommand::GetWinrtDisplayNv),
+            "vkCreateDirectFBSurfaceEXT" => Ok(VulkanCommand::CreateDirectFbSurfaceExt),
+            "vkGetPhysicalDeviceDirectFBPresentationSupportEXT" => {
+                Ok(VulkanCommand::GetPhysicalDeviceDirectFbPresentationSupportExt)
+            }
+            "vkCreateScreenSurfaceQNX" => Ok(VulkanCommand::CreateScreenSurfaceQnx),
+            "vkGetPhysicalDeviceScreenPresentationSupportQNX" => {
+                Ok(VulkanCommand::GetPhysicalDeviceScreenPresentationSupportQnx)
+            }
+            "vkGetPhysicalDeviceOpticalFlowImageFormatsNV" => {
+                Ok(VulkanCommand::GetPhysicalDeviceOpticalFlowImageFormatsNv)
+            }
+            "vkGetDeviceProcAddr" => Ok(VulkanCommand::GetDeviceProcAddr),
+            "vkGetDeviceQueue" => Ok(VulkanCommand::GetDeviceQueue),
+            "vkQueueSubmit" => Ok(VulkanCommand::QueueSubmit),
+            "vkQueueWaitIdle" => Ok(VulkanCommand::QueueWaitIdle),
+            "vkDeviceWaitIdle" => Ok(VulkanCommand::DeviceWaitIdle),
+            "vkAllocateMemory" => Ok(VulkanCommand::AllocateMemory),
+            "vkFreeMemory" => Ok(VulkanCommand::FreeMemory),
+            "vkMapMemory" => Ok(VulkanCommand::MapMemory),
+            "vkUnmapMemory" => Ok(VulkanCommand::UnmapMemory),
+            "vkFlushMappedMemoryRanges" => Ok(VulkanCommand::FlushMappedMemoryRanges),
+            "vkInvalidateMappedMemoryRanges" => Ok(VulkanCommand::InvalidateMappedMemoryRanges),
+            "vkGetDeviceMemoryCommitment" => Ok(VulkanCommand::GetDeviceMemoryCommitment),
+            "vkBindBufferMemory" => Ok(VulkanCommand::BindBufferMemory),
+            "vkBindImageMemory" => Ok(VulkanCommand::BindImageMemory),
+            "vkGetBufferMemoryRequirements" => Ok(VulkanCommand::GetBufferMemoryRequirements),
+            "vkGetImageMemoryRequirements" => Ok(VulkanCommand::GetImageMemoryRequirements),
+            "vkGetImageSparseMemoryRequirements" => {
+                Ok(VulkanCommand::GetImageSparseMemoryRequirements)
+            }
+            "vkQueueBindSparse" => Ok(VulkanCommand::QueueBindSparse),
+            "vkCreateFence" => Ok(VulkanCommand::CreateFence),
+            "vkDestroyFence" => Ok(VulkanCommand::DestroyFence),
+            "vkResetFences" => Ok(VulkanCommand::ResetFences),
+            "vkGetFenceStatus" => Ok(VulkanCommand::GetFenceStatus),
+            "vkWaitForFences" => Ok(VulkanCommand::WaitForFences),
+            "vkCreateSemaphore" => Ok(VulkanCommand::CreateSemaphore),
+            "vkDestroySemaphore" => Ok(VulkanCommand::DestroySemaphore),
+            "vkCreateEvent" => Ok(VulkanCommand::CreateEvent),
+            "vkDestroyEvent" => Ok(VulkanCommand::DestroyEvent),
+            "vkGetEventStatus" => Ok(VulkanCommand::GetEventStatus),
+            "vkSetEvent" => Ok(VulkanCommand::SetEvent),
+            "vkResetEvent" => Ok(VulkanCommand::ResetEvent),
+            "vkCreateQueryPool" => Ok(VulkanCommand::CreateQueryPool),
+            "vkDestroyQueryPool" => Ok(VulkanCommand::DestroyQueryPool),
+            "vkGetQueryPoolResults" => Ok(VulkanCommand::GetQueryPoolResults),
+            "vkCreateBuffer" => Ok(VulkanCommand::CreateBuffer),
+            "vkDestroyBuffer" => Ok(VulkanCommand::DestroyBuffer),
+            "vkCreateBufferView" => Ok(VulkanCommand::CreateBufferView),
+            "vkDestroyBufferView" => Ok(VulkanCommand::DestroyBufferView),
+            "vkCreateImage" => Ok(VulkanCommand::CreateImage),
+            "vkDestroyImage" => Ok(VulkanCommand::DestroyImage),
+            "vkGetImageSubresourceLayout" => Ok(VulkanCommand::GetImageSubresourceLayout),
+            "vkCreateImageView" => Ok(VulkanCommand::CreateImageView),
+            "vkDestroyImageView" => Ok(VulkanCommand::DestroyImageView),
+            "vkCreateShaderModule" => Ok(VulkanCommand::CreateShaderModule),
+            "vkDestroyShaderModule" => Ok(VulkanCommand::DestroyShaderModule),
+            "vkCreatePipelineCache" => Ok(VulkanCommand::CreatePipelineCache),
+            "vkDestroyPipelineCache" => Ok(VulkanCommand::DestroyPipelineCache),
+            "vkGetPipelineCacheData" => Ok(VulkanCommand::GetPipelineCacheData),
+            "vkMergePipelineCaches" => Ok(VulkanCommand::MergePipelineCaches),
+            "vkCreateGraphicsPipelines" => Ok(VulkanCommand::CreateGraphicsPipelines),
+            "vkCreateComputePipelines" => Ok(VulkanCommand::CreateComputePipelines),
+            "vkDestroyPipeline" => Ok(VulkanCommand::DestroyPipeline),
+            "vkCreatePipelineLayout" => Ok(VulkanCommand::CreatePipelineLayout),
+            "vkDestroyPipelineLayout" => Ok(VulkanCommand::DestroyPipelineLayout),
+            "vkCreateSampler" => Ok(VulkanCommand::CreateSampler),
+            "vkDestroySampler" => Ok(VulkanCommand::DestroySampler),
+            "vkCreateDescriptorSetLayout" => Ok(VulkanCommand::CreateDescriptorSetLayout),
+            "vkDestroyDescriptorSetLayout" => Ok(VulkanCommand::DestroyDescriptorSetLayout),
+            "vkCreateDescriptorPool" => Ok(VulkanCommand::CreateDescriptorPool),
+            "vkDestroyDescriptorPool" => Ok(VulkanCommand::DestroyDescriptorPool),
+            "vkResetDescriptorPool" => Ok(VulkanCommand::ResetDescriptorPool),
+            "vkAllocateDescriptorSets" => Ok(VulkanCommand::AllocateDescriptorSets),
+            "vkFreeDescriptorSets" => Ok(VulkanCommand::FreeDescriptorSets),
+            "vkUpdateDescriptorSets" => Ok(VulkanCommand::UpdateDescriptorSets),
+            "vkCreateFramebuffer" => Ok(VulkanCommand::CreateFramebuffer),
+            "vkDestroyFramebuffer" => Ok(VulkanCommand::DestroyFramebuffer),
+            "vkCreateRenderPass" => Ok(VulkanCommand::CreateRenderPass),
+            "vkDestroyRenderPass" => Ok(VulkanCommand::DestroyRenderPass),
+            "vkGetRenderAreaGranularity" => Ok(VulkanCommand::GetRenderAreaGranularity),
+            "vkCreateCommandPool" => Ok(VulkanCommand::CreateCommandPool),
+            "vkDestroyCommandPool" => Ok(VulkanCommand::DestroyCommandPool),
+            "vkResetCommandPool" => Ok(VulkanCommand::ResetCommandPool),
+            "vkAllocateCommandBuffers" => Ok(VulkanCommand::AllocateCommandBuffers),
+            "vkFreeCommandBuffers" => Ok(VulkanCommand::FreeCommandBuffers),
+            "vkBeginCommandBuffer" => Ok(VulkanCommand::BeginCommandBuffer),
+            "vkEndCommandBuffer" => Ok(VulkanCommand::EndCommandBuffer),
+            "vkResetCommandBuffer" => Ok(VulkanCommand::ResetCommandBuffer),
+            "vkCmdBindPipeline" => Ok(VulkanCommand::CmdBindPipeline),
+            "vkCmdSetViewport" => Ok(VulkanCommand::CmdSetViewport),
+            "vkCmdSetScissor" => Ok(VulkanCommand::CmdSetScissor),
+            "vkCmdSetLineWidth" => Ok(VulkanCommand::CmdSetLineWidth),
+            "vkCmdSetDepthBias" => Ok(VulkanCommand::CmdSetDepthBias),
+            "vkCmdSetBlendConstants" => Ok(VulkanCommand::CmdSetBlendConstants),
+            "vkCmdSetDepthBounds" => Ok(VulkanCommand::CmdSetDepthBounds),
+            "vkCmdSetStencilCompareMask" => Ok(VulkanCommand::CmdSetStencilCompareMask),
+            "vkCmdSetStencilWriteMask" => Ok(VulkanCommand::CmdSetStencilWriteMask),
+            "vkCmdSetStencilReference" => Ok(VulkanCommand::CmdSetStencilReference),
+            "vkCmdBindDescriptorSets" => Ok(VulkanCommand::CmdBindDescriptorSets),
+            "vkCmdBindIndexBuffer" => Ok(VulkanCommand::CmdBindIndexBuffer),
+            "vkCmdBindVertexBuffers" => Ok(VulkanCommand::CmdBindVertexBuffers),
+            "vkCmdDraw" => Ok(VulkanCommand::CmdDraw),
+            "vkCmdDrawIndexed" => Ok(VulkanCommand::CmdDrawIndexed),
+            "vkCmdDrawIndirect" => Ok(VulkanCommand::CmdDrawIndirect),
+            "vkCmdDrawIndexedIndirect" => Ok(VulkanCommand::CmdDrawIndexedIndirect),
+            "vkCmdDispatch" => Ok(VulkanCommand::CmdDispatch),
+            "vkCmdDispatchIndirect" => Ok(VulkanCommand::CmdDispatchIndirect),
+            "vkCmdCopyBuffer" => Ok(VulkanCommand::CmdCopyBuffer),
+            "vkCmdCopyImage" => Ok(VulkanCommand::CmdCopyImage),
+            "vkCmdBlitImage" => Ok(VulkanCommand::CmdBlitImage),
+            "vkCmdCopyBufferToImage" => Ok(VulkanCommand::CmdCopyBufferToImage),
+            "vkCmdCopyImageToBuffer" => Ok(VulkanCommand::CmdCopyImageToBuffer),
+            "vkCmdUpdateBuffer" => Ok(VulkanCommand::CmdUpdateBuffer),
+            "vkCmdFillBuffer" => Ok(VulkanCommand::CmdFillBuffer),
+            "vkCmdClearColorImage" => Ok(VulkanCommand::CmdClearColorImage),
+            "vkCmdClearDepthStencilImage" => Ok(VulkanCommand::CmdClearDepthStencilImage),
+            "vkCmdClearAttachments" => Ok(VulkanCommand::CmdClearAttachments),
+            "vkCmdResolveImage" => Ok(VulkanCommand::CmdResolveImage),
+            "vkCmdSetEvent" => Ok(VulkanCommand::CmdSetEvent),
+            "vkCmdResetEvent" => Ok(VulkanCommand::CmdResetEvent),
+            "vkCmdWaitEvents" => Ok(VulkanCommand::CmdWaitEvents),
+            "vkCmdPipelineBarrier" => Ok(VulkanCommand::CmdPipelineBarrier),
+            "vkCmdBeginQuery" => Ok(VulkanCommand::CmdBeginQuery),
+            "vkCmdEndQuery" => Ok(VulkanCommand::CmdEndQuery),
+            "vkCmdResetQueryPool" => Ok(VulkanCommand::CmdResetQueryPool),
+            "vkCmdWriteTimestamp" => Ok(VulkanCommand::CmdWriteTimestamp),
+            "vkCmdCopyQueryPoolResults" => Ok(VulkanCommand::CmdCopyQueryPoolResults),
+            "vkCmdPushConstants" => Ok(VulkanCommand::CmdPushConstants),
+            "vkCmdBeginRenderPass" => Ok(VulkanCommand::CmdBeginRenderPass),
+            "vkCmdNextSubpass" => Ok(VulkanCommand::CmdNextSubpass),
+            "vkCmdEndRenderPass" => Ok(VulkanCommand::CmdEndRenderPass),
+            "vkCmdExecuteCommands" => Ok(VulkanCommand::CmdExecuteCommands),
+            "vkBindBufferMemory2" => Ok(VulkanCommand::BindBufferMemory2),
+            "vkBindImageMemory2" => Ok(VulkanCommand::BindImageMemory2),
+            "vkGetDeviceGroupPeerMemoryFeatures" => {
+                Ok(VulkanCommand::GetDeviceGroupPeerMemoryFeatures)
+            }
+            "vkCmdSetDeviceMask" => Ok(VulkanCommand::CmdSetDeviceMask),
+            "vkCmdDispatchBase" => Ok(VulkanCommand::CmdDispatchBase),
+            "vkGetImageMemoryRequirements2" => Ok(VulkanCommand::GetImageMemoryRequirements2),
+            "vkGetBufferMemoryRequirements2" => Ok(VulkanCommand::GetBufferMemoryRequirements2),
+            "vkGetImageSparseMemoryRequirements2" => {
+                Ok(VulkanCommand::GetImageSparseMemoryRequirements2)
+            }
+            "vkTrimCommandPool" => Ok(VulkanCommand::TrimCommandPool),
+            "vkGetDeviceQueue2" => Ok(VulkanCommand::GetDeviceQueue2),
+            "vkCreateSamplerYcbcrConversion" => Ok(VulkanCommand::CreateSamplerYcbcrConversion),
+            "vkDestroySamplerYcbcrConversion" => Ok(VulkanCommand::DestroySamplerYcbcrConversion),
+            "vkCreateDescriptorUpdateTemplate" => Ok(VulkanCommand::CreateDescriptorUpdateTemplate),
+            "vkDestroyDescriptorUpdateTemplate" => {
+                Ok(VulkanCommand::DestroyDescriptorUpdateTemplate)
+            }
+            "vkUpdateDescriptorSetWithTemplate" => {
+                Ok(VulkanCommand::UpdateDescriptorSetWithTemplate)
+            }
+            "vkGetDescriptorSetLayoutSupport" => Ok(VulkanCommand::GetDescriptorSetLayoutSupport),
+            "vkCmdDrawIndirectCount" => Ok(VulkanCommand::CmdDrawIndirectCount),
+            "vkCmdDrawIndexedIndirectCount" => Ok(VulkanCommand::CmdDrawIndexedIndirectCount),
+            "vkCreateRenderPass2" => Ok(VulkanCommand::CreateRenderPass2),
+            "vkCmdBeginRenderPass2" => Ok(VulkanCommand::CmdBeginRenderPass2),
+            "vkCmdNextSubpass2" => Ok(VulkanCommand::CmdNextSubpass2),
+            "vkCmdEndRenderPass2" => Ok(VulkanCommand::CmdEndRenderPass2),
+            "vkResetQueryPool" => Ok(VulkanCommand::ResetQueryPool),
+            "vkGetSemaphoreCounterValue" => Ok(VulkanCommand::GetSemaphoreCounterValue),
+            "vkWaitSemaphores" => Ok(VulkanCommand::WaitSemaphores),
+            "vkSignalSemaphore" => Ok(VulkanCommand::SignalSemaphore),
+            "vkGetBufferDeviceAddress" => Ok(VulkanCommand::GetBufferDeviceAddress),
+            "vkGetBufferOpaqueCaptureAddress" => Ok(VulkanCommand::GetBufferOpaqueCaptureAddress),
+            "vkGetDeviceMemoryOpaqueCaptureAddress" => {
+                Ok(VulkanCommand::GetDeviceMemoryOpaqueCaptureAddress)
+            }
+            "vkCreatePrivateDataSlot" => Ok(VulkanCommand::CreatePrivateDataSlot),
+            "vkDestroyPrivateDataSlot" => Ok(VulkanCommand::DestroyPrivateDataSlot),
+            "vkSetPrivateData" => Ok(VulkanCommand::SetPrivateData),
+            "vkGetPrivateData" => Ok(VulkanCommand::GetPrivateData),
+            "vkCmdSetEvent2" => Ok(VulkanCommand::CmdSetEvent2),
+            "vkCmdResetEvent2" => Ok(VulkanCommand::CmdResetEvent2),
+            "vkCmdWaitEvents2" => Ok(VulkanCommand::CmdWaitEvents2),
+            "vkCmdPipelineBarrier2" => Ok(VulkanCommand::CmdPipelineBarrier2),
+            "vkCmdWriteTimestamp2" => Ok(VulkanCommand::CmdWriteTimestamp2),
+            "vkQueueSubmit2" => Ok(VulkanCommand::QueueSubmit2),
+            "vkCmdCopyBuffer2" => Ok(VulkanCommand::CmdCopyBuffer2),
+            "vkCmdCopyImage2" => Ok(VulkanCommand::CmdCopyImage2),
+            "vkCmdCopyBufferToImage2" => Ok(VulkanCommand::CmdCopyBufferToImage2),
+            "vkCmdCopyImageToBuffer2" => Ok(VulkanCommand::CmdCopyImageToBuffer2),
+            "vkCmdBlitImage2" => Ok(VulkanCommand::CmdBlitImage2),
+            "vkCmdResolveImage2" => Ok(VulkanCommand::CmdResolveImage2),
+            "vkCmdBeginRendering" => Ok(VulkanCommand::CmdBeginRendering),
+            "vkCmdEndRendering" => Ok(VulkanCommand::CmdEndRendering),
+            "vkCmdSetCullMode" => Ok(VulkanCommand::CmdSetCullMode),
+            "vkCmdSetFrontFace" => Ok(VulkanCommand::CmdSetFrontFace),
+            "vkCmdSetPrimitiveTopology" => Ok(VulkanCommand::CmdSetPrimitiveTopology),
+            "vkCmdSetViewportWithCount" => Ok(VulkanCommand::CmdSetViewportWithCount),
+            "vkCmdSetScissorWithCount" => Ok(VulkanCommand::CmdSetScissorWithCount),
+            "vkCmdBindVertexBuffers2" => Ok(VulkanCommand::CmdBindVertexBuffers2),
+            "vkCmdSetDepthTestEnable" => Ok(VulkanCommand::CmdSetDepthTestEnable),
+            "vkCmdSetDepthWriteEnable" => Ok(VulkanCommand::CmdSetDepthWriteEnable),
+            "vkCmdSetDepthCompareOp" => Ok(VulkanCommand::CmdSetDepthCompareOp),
+            "vkCmdSetDepthBoundsTestEnable" => Ok(VulkanCommand::CmdSetDepthBoundsTestEnable),
+            "vkCmdSetStencilTestEnable" => Ok(VulkanCommand::CmdSetStencilTestEnable),
+            "vkCmdSetStencilOp" => Ok(VulkanCommand::CmdSetStencilOp),
+            "vkCmdSetRasterizerDiscardEnable" => Ok(VulkanCommand::CmdSetRasterizerDiscardEnable),
+            "vkCmdSetDepthBiasEnable" => Ok(VulkanCommand::CmdSetDepthBiasEnable),
+            "vkCmdSetPrimitiveRestartEnable" => Ok(VulkanCommand::CmdSetPrimitiveRestartEnable),
+            "vkGetDeviceBufferMemoryRequirements" => {
+                Ok(VulkanCommand::GetDeviceBufferMemoryRequirements)
+            }
+            "vkGetDeviceImageMemoryRequirements" => {
+                Ok(VulkanCommand::GetDeviceImageMemoryRequirements)
+            }
+            "vkGetDeviceImageSparseMemoryRequirements" => {
+                Ok(VulkanCommand::GetDeviceImageSparseMemoryRequirements)
+            }
+            "vkCreateSwapchainKHR" => Ok(VulkanCommand::CreateSwapchainKhr),
+            "vkDestroySwapchainKHR" => Ok(VulkanCommand::DestroySwapchainKhr),
+            "vkGetSwapchainImagesKHR" => Ok(VulkanCommand::GetSwapchainImagesKhr),
+            "vkAcquireNextImageKHR" => Ok(VulkanCommand::AcquireNextImageKhr),
+            "vkQueuePresentKHR" => Ok(VulkanCommand::QueuePresentKhr),
+            "vkGetDeviceGroupPresentCapabilitiesKHR" => {
+                Ok(VulkanCommand::GetDeviceGroupPresentCapabilitiesKhr)
+            }
+            "vkGetDeviceGroupSurfacePresentModesKHR" => {
+                Ok(VulkanCommand::GetDeviceGroupSurfacePresentModesKhr)
+            }
+            "vkAcquireNextImage2KHR" => Ok(VulkanCommand::AcquireNextImage2Khr),
+            "vkCreateSharedSwapchainsKHR" => Ok(VulkanCommand::CreateSharedSwapchainsKhr),
+            "vkCreateVideoSessionKHR" => Ok(VulkanCommand::CreateVideoSessionKhr),
+            "vkDestroyVideoSessionKHR" => Ok(VulkanCommand::DestroyVideoSessionKhr),
+            "vkGetVideoSessionMemoryRequirementsKHR" => {
+                Ok(VulkanCommand::GetVideoSessionMemoryRequirementsKhr)
+            }
+            "vkBindVideoSessionMemoryKHR" => Ok(VulkanCommand::BindVideoSessionMemoryKhr),
+            "vkCreateVideoSessionParametersKHR" => {
+                Ok(VulkanCommand::CreateVideoSessionParametersKhr)
+            }
+            "vkUpdateVideoSessionParametersKHR" => {
+                Ok(VulkanCommand::UpdateVideoSessionParametersKhr)
+            }
+            "vkDestroyVideoSessionParametersKHR" => {
+                Ok(VulkanCommand::DestroyVideoSessionParametersKhr)
+            }
+            "vkCmdBeginVideoCodingKHR" => Ok(VulkanCommand::CmdBeginVideoCodingKhr),
+            "vkCmdEndVideoCodingKHR" => Ok(VulkanCommand::CmdEndVideoCodingKhr),
+            "vkCmdControlVideoCodingKHR" => Ok(VulkanCommand::CmdControlVideoCodingKhr),
+            "vkCmdDecodeVideoKHR" => Ok(VulkanCommand::CmdDecodeVideoKhr),
+            "vkGetMemoryWin32HandleKHR" => Ok(VulkanCommand::GetMemoryWin32HandleKhr),
+            "vkGetMemoryWin32HandlePropertiesKHR" => {
+                Ok(VulkanCommand::GetMemoryWin32HandlePropertiesKhr)
+            }
+            "vkGetMemoryFdKHR" => Ok(VulkanCommand::GetMemoryFdKhr),
+            "vkGetMemoryFdPropertiesKHR" => Ok(VulkanCommand::GetMemoryFdPropertiesKhr),
+            "vkImportSemaphoreWin32HandleKHR" => Ok(VulkanCommand::ImportSemaphoreWin32HandleKhr),
+            "vkGetSemaphoreWin32HandleKHR" => Ok(VulkanCommand::GetSemaphoreWin32HandleKhr),
+            "vkImportSemaphoreFdKHR" => Ok(VulkanCommand::ImportSemaphoreFdKhr),
+            "vkGetSemaphoreFdKHR" => Ok(VulkanCommand::GetSemaphoreFdKhr),
+            "vkCmdPushDescriptorSetKHR" => Ok(VulkanCommand::CmdPushDescriptorSetKhr),
+            "vkCmdPushDescriptorSetWithTemplateKHR" => {
+                Ok(VulkanCommand::CmdPushDescriptorSetWithTemplateKhr)
+            }
+            "vkGetSwapchainStatusKHR" => Ok(VulkanCommand::GetSwapchainStatusKhr),
+            "vkImportFenceWin32HandleKHR" => Ok(VulkanCommand::ImportFenceWin32HandleKhr),
+            "vkGetFenceWin32HandleKHR" => Ok(VulkanCommand::GetFenceWin32HandleKhr),
+            "vkImportFenceFdKHR" => Ok(VulkanCommand::ImportFenceFdKhr),
+            "vkGetFenceFdKHR" => Ok(VulkanCommand::GetFenceFdKhr),
+            "vkAcquireProfilingLockKHR" => Ok(VulkanCommand::AcquireProfilingLockKhr),
+            "vkReleaseProfilingLockKHR" => Ok(VulkanCommand::ReleaseProfilingLockKhr),
+            "vkCmdSetFragmentShadingRateKHR" => Ok(VulkanCommand::CmdSetFragmentShadingRateKhr),
+            "vkWaitForPresentKHR" => Ok(VulkanCommand::WaitForPresentKhr),
+            "vkCreateDeferredOperationKHR" => Ok(VulkanCommand::CreateDeferredOperationKhr),
+            "vkDestroyDeferredOperationKHR" => Ok(VulkanCommand::DestroyDeferredOperationKhr),
+            "vkGetDeferredOperationMaxConcurrencyKHR" => {
+                Ok(VulkanCommand::GetDeferredOperationMaxConcurrencyKhr)
+            }
+            "vkGetDeferredOperationResultKHR" => Ok(VulkanCommand::GetDeferredOperationResultKhr),
+            "vkDeferredOperationJoinKHR" => Ok(VulkanCommand::DeferredOperationJoinKhr),
+            "vkGetPipelineExecutablePropertiesKHR" => {
+                Ok(VulkanCommand::GetPipelineExecutablePropertiesKhr)
+            }
+            "vkGetPipelineExecutableStatisticsKHR" => {
+                Ok(VulkanCommand::GetPipelineExecutableStatisticsKhr)
+            }
+            "vkGetPipelineExecutableInternalRepresentationsKHR" => {
+                Ok(VulkanCommand::GetPipelineExecutableInternalRepresentationsKhr)
+            }
+            "vkCmdEncodeVideoKHR" => Ok(VulkanCommand::CmdEncodeVideoKhr),
+            "vkCmdWriteBufferMarker2AMD" => Ok(VulkanCommand::CmdWriteBufferMarker2Amd),
+            "vkGetQueueCheckpointData2NV" => Ok(VulkanCommand::GetQueueCheckpointData2Nv),
+            "vkCmdTraceRaysIndirect2KHR" => Ok(VulkanCommand::CmdTraceRaysIndirect2Khr),
+            "vkGetSwapchainGrallocUsageANDROID" => {
+                Ok(VulkanCommand::GetSwapchainGrallocUsageAndroid)
+            }
+            "vkAcquireImageANDROID" => Ok(VulkanCommand::AcquireImageAndroid),
+            "vkQueueSignalReleaseImageANDROID" => Ok(VulkanCommand::QueueSignalReleaseImageAndroid),
+            "vkGetSwapchainGrallocUsage2ANDROID" => {
+                Ok(VulkanCommand::GetSwapchainGrallocUsage2Android)
+            }
+            "vkDebugMarkerSetObjectTagEXT" => Ok(VulkanCommand::DebugMarkerSetObjectTagExt),
+            "vkDebugMarkerSetObjectNameEXT" => Ok(VulkanCommand::DebugMarkerSetObjectNameExt),
+            "vkCmdDebugMarkerBeginEXT" => Ok(VulkanCommand::CmdDebugMarkerBeginExt),
+            "vkCmdDebugMarkerEndEXT" => Ok(VulkanCommand::CmdDebugMarkerEndExt),
+            "vkCmdDebugMarkerInsertEXT" => Ok(VulkanCommand::CmdDebugMarkerInsertExt),
+            "vkCmdBindTransformFeedbackBuffersEXT" => {
+                Ok(VulkanCommand::CmdBindTransformFeedbackBuffersExt)
+            }
+            "vkCmdBeginTransformFeedbackEXT" => Ok(VulkanCommand::CmdBeginTransformFeedbackExt),
+            "vkCmdEndTransformFeedbackEXT" => Ok(VulkanCommand::CmdEndTransformFeedbackExt),
+            "vkCmdBeginQueryIndexedEXT" => Ok(VulkanCommand::CmdBeginQueryIndexedExt),
+            "vkCmdEndQueryIndexedEXT" => Ok(VulkanCommand::CmdEndQueryIndexedExt),
+            "vkCmdDrawIndirectByteCountEXT" => Ok(VulkanCommand::CmdDrawIndirectByteCountExt),
+            "vkCreateCuModuleNVX" => Ok(VulkanCommand::CreateCuModuleNvx),
+            "vkCreateCuFunctionNVX" => Ok(VulkanCommand::CreateCuFunctionNvx),
+            "vkDestroyCuModuleNVX" => Ok(VulkanCommand::DestroyCuModuleNvx),
+            "vkDestroyCuFunctionNVX" => Ok(VulkanCommand::DestroyCuFunctionNvx),
+            "vkCmdCuLaunchKernelNVX" => Ok(VulkanCommand::CmdCuLaunchKernelNvx),
+            "vkGetImageViewHandleNVX" => Ok(VulkanCommand::GetImageViewHandleNvx),
+            "vkGetImageViewAddressNVX" => Ok(VulkanCommand::GetImageViewAddressNvx),
+            "vkGetShaderInfoAMD" => Ok(VulkanCommand::GetShaderInfoAmd),
+            "vkGetMemoryWin32HandleNV" => Ok(VulkanCommand::GetMemoryWin32HandleNv),
+            "vkCmdBeginConditionalRenderingEXT" => {
+                Ok(VulkanCommand::CmdBeginConditionalRenderingExt)
+            }
+            "vkCmdEndConditionalRenderingEXT" => Ok(VulkanCommand::CmdEndConditionalRenderingExt),
+            "vkCmdSetViewportWScalingNV" => Ok(VulkanCommand::CmdSetViewportWScalingNv),
+            "vkDisplayPowerControlEXT" => Ok(VulkanCommand::DisplayPowerControlExt),
+            "vkRegisterDeviceEventEXT" => Ok(VulkanCommand::RegisterDeviceEventExt),
+            "vkRegisterDisplayEventEXT" => Ok(VulkanCommand::RegisterDisplayEventExt),
+            "vkGetSwapchainCounterEXT" => Ok(VulkanCommand::GetSwapchainCounterExt),
+            "vkGetRefreshCycleDurationGOOGLE" => Ok(VulkanCommand::GetRefreshCycleDurationGoogle),
+            "vkGetPastPresentationTimingGOOGLE" => {
+                Ok(VulkanCommand::GetPastPresentationTimingGoogle)
+            }
+            "vkCmdSetDiscardRectangleEXT" => Ok(VulkanCommand::CmdSetDiscardRectangleExt),
+            "vkSetHdrMetadataEXT" => Ok(VulkanCommand::SetHdrMetadataExt),
+            "vkSetDebugUtilsObjectNameEXT" => Ok(VulkanCommand::SetDebugUtilsObjectNameExt),
+            "vkSetDebugUtilsObjectTagEXT" => Ok(VulkanCommand::SetDebugUtilsObjectTagExt),
+            "vkQueueBeginDebugUtilsLabelEXT" => Ok(VulkanCommand::QueueBeginDebugUtilsLabelExt),
+            "vkQueueEndDebugUtilsLabelEXT" => Ok(VulkanCommand::QueueEndDebugUtilsLabelExt),
+            "vkQueueInsertDebugUtilsLabelEXT" => Ok(VulkanCommand::QueueInsertDebugUtilsLabelExt),
+            "vkCmdBeginDebugUtilsLabelEXT" => Ok(VulkanCommand::CmdBeginDebugUtilsLabelExt),
+            "vkCmdEndDebugUtilsLabelEXT" => Ok(VulkanCommand::CmdEndDebugUtilsLabelExt),
+            "vkCmdInsertDebugUtilsLabelEXT" => Ok(VulkanCommand::CmdInsertDebugUtilsLabelExt),
+            "vkGetAndroidHardwareBufferPropertiesANDROID" => {
+                Ok(VulkanCommand::GetAndroidHardwareBufferPropertiesAndroid)
+            }
+            "vkGetMemoryAndroidHardwareBufferANDROID" => {
+                Ok(VulkanCommand::GetMemoryAndroidHardwareBufferAndroid)
+            }
+            "vkCmdSetSampleLocationsEXT" => Ok(VulkanCommand::CmdSetSampleLocationsExt),
+            "vkGetImageDrmFormatModifierPropertiesEXT" => {
+                Ok(VulkanCommand::GetImageDrmFormatModifierPropertiesExt)
+            }
+            "vkCreateValidationCacheEXT" => Ok(VulkanCommand::CreateValidationCacheExt),
+            "vkDestroyValidationCacheEXT" => Ok(VulkanCommand::DestroyValidationCacheExt),
+            "vkMergeValidationCachesEXT" => Ok(VulkanCommand::MergeValidationCachesExt),
+            "vkGetValidationCacheDataEXT" => Ok(VulkanCommand::GetValidationCacheDataExt),
+            "vkCmdBindShadingRateImageNV" => Ok(VulkanCommand::CmdBindShadingRateImageNv),
+            "vkCmdSetViewportShadingRatePaletteNV" => {
+                Ok(VulkanCommand::CmdSetViewportShadingRatePaletteNv)
+            }
+            "vkCmdSetCoarseSampleOrderNV" => Ok(VulkanCommand::CmdSetCoarseSampleOrderNv),
+            "vkCreateAccelerationStructureNV" => Ok(VulkanCommand::CreateAccelerationStructureNv),
+            "vkDestroyAccelerationStructureNV" => Ok(VulkanCommand::DestroyAccelerationStructureNv),
+            "vkGetAccelerationStructureMemoryRequirementsNV" => {
+                Ok(VulkanCommand::GetAccelerationStructureMemoryRequirementsNv)
+            }
+            "vkBindAccelerationStructureMemoryNV" => {
+                Ok(VulkanCommand::BindAccelerationStructureMemoryNv)
+            }
+            "vkCmdBuildAccelerationStructureNV" => {
+                Ok(VulkanCommand::CmdBuildAccelerationStructureNv)
+            }
+            "vkCmdCopyAccelerationStructureNV" => Ok(VulkanCommand::CmdCopyAccelerationStructureNv),
+            "vkCmdTraceRaysNV" => Ok(VulkanCommand::CmdTraceRaysNv),
+            "vkCreateRayTracingPipelinesNV" => Ok(VulkanCommand::CreateRayTracingPipelinesNv),
+            "vkGetRayTracingShaderGroupHandlesKHR" => {
+                Ok(VulkanCommand::GetRayTracingShaderGroupHandlesKhr)
+            }
+            "vkGetAccelerationStructureHandleNV" => {
+                Ok(VulkanCommand::GetAccelerationStructureHandleNv)
+            }
+            "vkCmdWriteAccelerationStructuresPropertiesNV" => {
+                Ok(VulkanCommand::CmdWriteAccelerationStructuresPropertiesNv)
+            }
+            "vkCompileDeferredNV" => Ok(VulkanCommand::CompileDeferredNv),
+            "vkGetMemoryHostPointerPropertiesEXT" => {
+                Ok(VulkanCommand::GetMemoryHostPointerPropertiesExt)
+            }
+            "vkCmdWriteBufferMarkerAMD" => Ok(VulkanCommand::CmdWriteBufferMarkerAmd),
+            "vkGetCalibratedTimestampsEXT" => Ok(VulkanCommand::GetCalibratedTimestampsExt),
+            "vkCmdDrawMeshTasksNV" => Ok(VulkanCommand::CmdDrawMeshTasksNv),
+            "vkCmdDrawMeshTasksIndirectNV" => Ok(VulkanCommand::CmdDrawMeshTasksIndirectNv),
+            "vkCmdDrawMeshTasksIndirectCountNV" => {
+                Ok(VulkanCommand::CmdDrawMeshTasksIndirectCountNv)
+            }
+            "vkCmdSetExclusiveScissorNV" => Ok(VulkanCommand::CmdSetExclusiveScissorNv),
+            "vkCmdSetCheckpointNV" => Ok(VulkanCommand::CmdSetCheckpointNv),
+            "vkGetQueueCheckpointDataNV" => Ok(VulkanCommand::GetQueueCheckpointDataNv),
+            "vkInitializePerformanceApiINTEL" => Ok(VulkanCommand::InitializePerformanceApiIntel),
+            "vkUninitializePerformanceApiINTEL" => {
+                Ok(VulkanCommand::UninitializePerformanceApiIntel)
+            }
+            "vkCmdSetPerformanceMarkerINTEL" => Ok(VulkanCommand::CmdSetPerformanceMarkerIntel),
+            "vkCmdSetPerformanceStreamMarkerINTEL" => {
+                Ok(VulkanCommand::CmdSetPerformanceStreamMarkerIntel)
+            }
+            "vkCmdSetPerformanceOverrideINTEL" => Ok(VulkanCommand::CmdSetPerformanceOverrideIntel),
+            "vkAcquirePerformanceConfigurationINTEL" => {
+                Ok(VulkanCommand::AcquirePerformanceConfigurationIntel)
+            }
+            "vkReleasePerformanceConfigurationINTEL" => {
+                Ok(VulkanCommand::ReleasePerformanceConfigurationIntel)
+            }
+            "vkQueueSetPerformanceConfigurationINTEL" => {
+                Ok(VulkanCommand::QueueSetPerformanceConfigurationIntel)
+            }
+            "vkGetPerformanceParameterINTEL" => Ok(VulkanCommand::GetPerformanceParameterIntel),
+            "vkSetLocalDimmingAMD" => Ok(VulkanCommand::SetLocalDimmingAmd),
+            "vkAcquireFullScreenExclusiveModeEXT" => {
+                Ok(VulkanCommand::AcquireFullScreenExclusiveModeExt)
+            }
+            "vkReleaseFullScreenExclusiveModeEXT" => {
+                Ok(VulkanCommand::ReleaseFullScreenExclusiveModeExt)
+            }
+            "vkGetDeviceGroupSurfacePresentModes2EXT" => {
+                Ok(VulkanCommand::GetDeviceGroupSurfacePresentModes2Ext)
+            }
+            "vkCmdSetLineStippleEXT" => Ok(VulkanCommand::CmdSetLineStippleExt),
+            "vkReleaseSwapchainImagesEXT" => Ok(VulkanCommand::ReleaseSwapchainImagesExt),
+            "vkGetGeneratedCommandsMemoryRequirementsNV" => {
+                Ok(VulkanCommand::GetGeneratedCommandsMemoryRequirementsNv)
+            }
+            "vkCmdPreprocessGeneratedCommandsNV" => {
+                Ok(VulkanCommand::CmdPreprocessGeneratedCommandsNv)
+            }
+            "vkCmdExecuteGeneratedCommandsNV" => Ok(VulkanCommand::CmdExecuteGeneratedCommandsNv),
+            "vkCmdBindPipelineShaderGroupNV" => Ok(VulkanCommand::CmdBindPipelineShaderGroupNv),
+            "vkCreateIndirectCommandsLayoutNV" => Ok(VulkanCommand::CreateIndirectCommandsLayoutNv),
+            "vkDestroyIndirectCommandsLayoutNV" => {
+                Ok(VulkanCommand::DestroyIndirectCommandsLayoutNv)
+            }
+            "vkExportMetalObjectsEXT" => Ok(VulkanCommand::ExportMetalObjectsExt),
+            "vkGetDescriptorSetLayoutSizeEXT" => Ok(VulkanCommand::GetDescriptorSetLayoutSizeExt),
+            "vkGetDescriptorSetLayoutBindingOffsetEXT" => {
+                Ok(VulkanCommand::GetDescriptorSetLayoutBindingOffsetExt)
+            }
+            "vkGetDescriptorEXT" => Ok(VulkanCommand::GetDescriptorExt),
+            "vkCmdBindDescriptorBuffersEXT" => Ok(VulkanCommand::CmdBindDescriptorBuffersExt),
+            "vkCmdSetDescriptorBufferOffsetsEXT" => {
+                Ok(VulkanCommand::CmdSetDescriptorBufferOffsetsExt)
+            }
+            "vkCmdBindDescriptorBufferEmbeddedSamplersEXT" => {
+                Ok(VulkanCommand::CmdBindDescriptorBufferEmbeddedSamplersExt)
+            }
+            "vkGetBufferOpaqueCaptureDescriptorDataEXT" => {
+                Ok(VulkanCommand::GetBufferOpaqueCaptureDescriptorDataExt)
+            }
+            "vkGetImageOpaqueCaptureDescriptorDataEXT" => {
+                Ok(VulkanCommand::GetImageOpaqueCaptureDescriptorDataExt)
+            }
+            "vkGetImageViewOpaqueCaptureDescriptorDataEXT" => {
+                Ok(VulkanCommand::GetImageViewOpaqueCaptureDescriptorDataExt)
+            }
+            "vkGetSamplerOpaqueCaptureDescriptorDataEXT" => {
+                Ok(VulkanCommand::GetSamplerOpaqueCaptureDescriptorDataExt)
+            }
+            "vkGetAccelerationStructureOpaqueCaptureDescriptorDataEXT" => {
+                Ok(VulkanCommand::GetAccelerationStructureOpaqueCaptureDescriptorDataExt)
+            }
+            "vkCmdSetFragmentShadingRateEnumNV" => {
+                Ok(VulkanCommand::CmdSetFragmentShadingRateEnumNv)
+            }
+            "vkGetImageSubresourceLayout2EXT" => Ok(VulkanCommand::GetImageSubresourceLayout2Ext),
+            "vkCmdSetVertexInputEXT" => Ok(VulkanCommand::CmdSetVertexInputExt),
+            "vkGetMemoryZirconHandleFUCHSIA" => Ok(VulkanCommand::GetMemoryZirconHandleFuchsia),
+            "vkGetMemoryZirconHandlePropertiesFUCHSIA" => {
+                Ok(VulkanCommand::GetMemoryZirconHandlePropertiesFuchsia)
+            }
+            "vkImportSemaphoreZirconHandleFUCHSIA" => {
+                Ok(VulkanCommand::ImportSemaphoreZirconHandleFuchsia)
+            }
+            "vkGetSemaphoreZirconHandleFUCHSIA" => {
+                Ok(VulkanCommand::GetSemaphoreZirconHandleFuchsia)
+            }
+            "vkCreateBufferCollectionFUCHSIA" => Ok(VulkanCommand::CreateBufferCollectionFuchsia),
+            "vkSetBufferCollectionImageConstraintsFUCHSIA" => {
+                Ok(VulkanCommand::SetBufferCollectionImageConstraintsFuchsia)
+            }
+            "vkSetBufferCollectionBufferConstraintsFUCHSIA" => {
+                Ok(VulkanCommand::SetBufferCollectionBufferConstraintsFuchsia)
+            }
+            "vkDestroyBufferCollectionFUCHSIA" => Ok(VulkanCommand::DestroyBufferCollectionFuchsia),
+            "vkGetBufferCollectionPropertiesFUCHSIA" => {
+                Ok(VulkanCommand::GetBufferCollectionPropertiesFuchsia)
+            }
+            "vkGetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI" => {
+                Ok(VulkanCommand::GetDeviceSubpassShadingMaxWorkgroupSizeHuawei)
+            }
+            "vkCmdSubpassShadingHUAWEI" => Ok(VulkanCommand::CmdSubpassShadingHuawei),
+            "vkCmdBindInvocationMaskHUAWEI" => Ok(VulkanCommand::CmdBindInvocationMaskHuawei),
+            "vkGetMemoryRemoteAddressNV" => Ok(VulkanCommand::GetMemoryRemoteAddressNv),
+            "vkGetPipelinePropertiesEXT" => Ok(VulkanCommand::GetPipelinePropertiesExt),
+            "vkCmdSetPatchControlPointsEXT" => Ok(VulkanCommand::CmdSetPatchControlPointsExt),
+            "vkCmdSetLogicOpEXT" => Ok(VulkanCommand::CmdSetLogicOpExt),
+            "vkCmdSetColorWriteEnableEXT" => Ok(VulkanCommand::CmdSetColorWriteEnableExt),
+            "vkCmdDrawMultiEXT" => Ok(VulkanCommand::CmdDrawMultiExt),
+            "vkCmdDrawMultiIndexedEXT" => Ok(VulkanCommand::CmdDrawMultiIndexedExt),
+            "vkCreateMicromapEXT" => Ok(VulkanCommand::CreateMicromapExt),
+            "vkDestroyMicromapEXT" => Ok(VulkanCommand::DestroyMicromapExt),
+            "vkCmdBuildMicromapsEXT" => Ok(VulkanCommand::CmdBuildMicromapsExt),
+            "vkBuildMicromapsEXT" => Ok(VulkanCommand::BuildMicromapsExt),
+            "vkCopyMicromapEXT" => Ok(VulkanCommand::CopyMicromapExt),
+            "vkCopyMicromapToMemoryEXT" => Ok(VulkanCommand::CopyMicromapToMemoryExt),
+            "vkCopyMemoryToMicromapEXT" => Ok(VulkanCommand::CopyMemoryToMicromapExt),
+            "vkWriteMicromapsPropertiesEXT" => Ok(VulkanCommand::WriteMicromapsPropertiesExt),
+            "vkCmdCopyMicromapEXT" => Ok(VulkanCommand::CmdCopyMicromapExt),
+            "vkCmdCopyMicromapToMemoryEXT" => Ok(VulkanCommand::CmdCopyMicromapToMemoryExt),
+            "vkCmdCopyMemoryToMicromapEXT" => Ok(VulkanCommand::CmdCopyMemoryToMicromapExt),
+            "vkCmdWriteMicromapsPropertiesEXT" => Ok(VulkanCommand::CmdWriteMicromapsPropertiesExt),
+            "vkGetDeviceMicromapCompatibilityEXT" => {
+                Ok(VulkanCommand::GetDeviceMicromapCompatibilityExt)
+            }
+            "vkGetMicromapBuildSizesEXT" => Ok(VulkanCommand::GetMicromapBuildSizesExt),
+            "vkSetDeviceMemoryPriorityEXT" => Ok(VulkanCommand::SetDeviceMemoryPriorityExt),
+            "vkGetDescriptorSetLayoutHostMappingInfoVALVE" => {
+                Ok(VulkanCommand::GetDescriptorSetLayoutHostMappingInfoValve)
+            }
+            "vkGetDescriptorSetHostMappingVALVE" => {
+                Ok(VulkanCommand::GetDescriptorSetHostMappingValve)
+            }
+            "vkCmdCopyMemoryIndirectNV" => Ok(VulkanCommand::CmdCopyMemoryIndirectNv),
+            "vkCmdCopyMemoryToImageIndirectNV" => Ok(VulkanCommand::CmdCopyMemoryToImageIndirectNv),
+            "vkCmdDecompressMemoryNV" => Ok(VulkanCommand::CmdDecompressMemoryNv),
+            "vkCmdDecompressMemoryIndirectCountNV" => {
+                Ok(VulkanCommand::CmdDecompressMemoryIndirectCountNv)
+            }
+            "vkCmdSetTessellationDomainOriginEXT" => {
+                Ok(VulkanCommand::CmdSetTessellationDomainOriginExt)
+            }
+            "vkCmdSetDepthClampEnableEXT" => Ok(VulkanCommand::CmdSetDepthClampEnableExt),
+            "vkCmdSetPolygonModeEXT" => Ok(VulkanCommand::CmdSetPolygonModeExt),
+            "vkCmdSetRasterizationSamplesEXT" => Ok(VulkanCommand::CmdSetRasterizationSamplesExt),
+            "vkCmdSetSampleMaskEXT" => Ok(VulkanCommand::CmdSetSampleMaskExt),
+            "vkCmdSetAlphaToCoverageEnableEXT" => Ok(VulkanCommand::CmdSetAlphaToCoverageEnableExt),
+            "vkCmdSetAlphaToOneEnableEXT" => Ok(VulkanCommand::CmdSetAlphaToOneEnableExt),
+            "vkCmdSetLogicOpEnableEXT" => Ok(VulkanCommand::CmdSetLogicOpEnableExt),
+            "vkCmdSetColorBlendEnableEXT" => Ok(VulkanCommand::CmdSetColorBlendEnableExt),
+            "vkCmdSetColorBlendEquationEXT" => Ok(VulkanCommand::CmdSetColorBlendEquationExt),
+            "vkCmdSetColorWriteMaskEXT" => Ok(VulkanCommand::CmdSetColorWriteMaskExt),
+            "vkCmdSetRasterizationStreamEXT" => Ok(VulkanCommand::CmdSetRasterizationStreamExt),
+            "vkCmdSetConservativeRasterizationModeEXT" => {
+                Ok(VulkanCommand::CmdSetConservativeRasterizationModeExt)
+            }
+            "vkCmdSetExtraPrimitiveOverestimationSizeEXT" => {
+                Ok(VulkanCommand::CmdSetExtraPrimitiveOverestimationSizeExt)
+            }
+            "vkCmdSetDepthClipEnableEXT" => Ok(VulkanCommand::CmdSetDepthClipEnableExt),
+            "vkCmdSetSampleLocationsEnableEXT" => Ok(VulkanCommand::CmdSetSampleLocationsEnableExt),
+            "vkCmdSetColorBlendAdvancedEXT" => Ok(VulkanCommand::CmdSetColorBlendAdvancedExt),
+            "vkCmdSetProvokingVertexModeEXT" => Ok(VulkanCommand::CmdSetProvokingVertexModeExt),
+            "vkCmdSetLineRasterizationModeEXT" => Ok(VulkanCommand::CmdSetLineRasterizationModeExt),
+            "vkCmdSetLineStippleEnableEXT" => Ok(VulkanCommand::CmdSetLineStippleEnableExt),
+            "vkCmdSetDepthClipNegativeOneToOneEXT" => {
+                Ok(VulkanCommand::CmdSetDepthClipNegativeOneToOneExt)
+            }
+            "vkCmdSetViewportWScalingEnableNV" => Ok(VulkanCommand::CmdSetViewportWScalingEnableNv),
+            "vkCmdSetViewportSwizzleNV" => Ok(VulkanCommand::CmdSetViewportSwizzleNv),
+            "vkCmdSetCoverageToColorEnableNV" => Ok(VulkanCommand::CmdSetCoverageToColorEnableNv),
+            "vkCmdSetCoverageToColorLocationNV" => {
+                Ok(VulkanCommand::CmdSetCoverageToColorLocationNv)
+            }
+            "vkCmdSetCoverageModulationModeNV" => Ok(VulkanCommand::CmdSetCoverageModulationModeNv),
+            "vkCmdSetCoverageModulationTableEnableNV" => {
+                Ok(VulkanCommand::CmdSetCoverageModulationTableEnableNv)
+            }
+            "vkCmdSetCoverageModulationTableNV" => {
+                Ok(VulkanCommand::CmdSetCoverageModulationTableNv)
+            }
+            "vkCmdSetShadingRateImageEnableNV" => Ok(VulkanCommand::CmdSetShadingRateImageEnableNv),
+            "vkCmdSetRepresentativeFragmentTestEnableNV" => {
+                Ok(VulkanCommand::CmdSetRepresentativeFragmentTestEnableNv)
+            }
+            "vkCmdSetCoverageReductionModeNV" => Ok(VulkanCommand::CmdSetCoverageReductionModeNv),
+            "vkGetShaderModuleIdentifierEXT" => Ok(VulkanCommand::GetShaderModuleIdentifierExt),
+            "vkGetShaderModuleCreateInfoIdentifierEXT" => {
+                Ok(VulkanCommand::GetShaderModuleCreateInfoIdentifierExt)
+            }
+            "vkCreateOpticalFlowSessionNV" => Ok(VulkanCommand::CreateOpticalFlowSessionNv),
+            "vkDestroyOpticalFlowSessionNV" => Ok(VulkanCommand::DestroyOpticalFlowSessionNv),
+            "vkBindOpticalFlowSessionImageNV" => Ok(VulkanCommand::BindOpticalFlowSessionImageNv),
+            "vkCmdOpticalFlowExecuteNV" => Ok(VulkanCommand::CmdOpticalFlowExecuteNv),
+            "vkGetFramebufferTilePropertiesQCOM" => {
+                Ok(VulkanCommand::GetFramebufferTilePropertiesQcom)
+            }
+            "vkGetDynamicRenderingTilePropertiesQCOM" => {
+                Ok(VulkanCommand::GetDynamicRenderingTilePropertiesQcom)
+            }
+            "vkCreateAccelerationStructureKHR" => Ok(VulkanCommand::CreateAccelerationStructureKhr),
+            "vkDestroyAccelerationStructureKHR" => {
+                Ok(VulkanCommand::DestroyAccelerationStructureKhr)
+            }
+            "vkCopyAccelerationStructureKHR" => Ok(VulkanCommand::CopyAccelerationStructureKhr),
+            "vkCopyAccelerationStructureToMemoryKHR" => {
+                Ok(VulkanCommand::CopyAccelerationStructureToMemoryKhr)
+            }
+            "vkCopyMemoryToAccelerationStructureKHR" => {
+                Ok(VulkanCommand::CopyMemoryToAccelerationStructureKhr)
+            }
+            "vkWriteAccelerationStructuresPropertiesKHR" => {
+                Ok(VulkanCommand::WriteAccelerationStructuresPropertiesKhr)
+            }
+            "vkCmdCopyAccelerationStructureKHR" => {
+                Ok(VulkanCommand::CmdCopyAccelerationStructureKhr)
+            }
+            "vkCmdCopyAccelerationStructureToMemoryKHR" => {
+                Ok(VulkanCommand::CmdCopyAccelerationStructureToMemoryKhr)
+            }
+            "vkCmdCopyMemoryToAccelerationStructureKHR" => {
+                Ok(VulkanCommand::CmdCopyMemoryToAccelerationStructureKhr)
+            }
+            "vkGetAccelerationStructureDeviceAddressKHR" => {
+                Ok(VulkanCommand::GetAccelerationStructureDeviceAddressKhr)
+            }
+            "vkCmdWriteAccelerationStructuresPropertiesKHR" => {
+                Ok(VulkanCommand::CmdWriteAccelerationStructuresPropertiesKhr)
+            }
+            "vkGetDeviceAccelerationStructureCompatibilityKHR" => {
+                Ok(VulkanCommand::GetDeviceAccelerationStructureCompatibilityKhr)
+            }
+            "vkGetAccelerationStructureBuildSizesKHR" => {
+                Ok(VulkanCommand::GetAccelerationStructureBuildSizesKhr)
+            }
+            "vkCmdTraceRaysKHR" => Ok(VulkanCommand::CmdTraceRaysKhr),
+            "vkCreateRayTracingPipelinesKHR" => Ok(VulkanCommand::CreateRayTracingPipelinesKhr),
+            "vkGetRayTracingCaptureReplayShaderGroupHandlesKHR" => {
+                Ok(VulkanCommand::GetRayTracingCaptureReplayShaderGroupHandlesKhr)
+            }
+            "vkCmdTraceRaysIndirectKHR" => Ok(VulkanCommand::CmdTraceRaysIndirectKhr),
+            "vkGetRayTracingShaderGroupStackSizeKHR" => {
+                Ok(VulkanCommand::GetRayTracingShaderGroupStackSizeKhr)
+            }
+            "vkCmdSetRayTracingPipelineStackSizeKHR" => {
+                Ok(VulkanCommand::CmdSetRayTracingPipelineStackSizeKhr)
+            }
+            "vkCmdDrawMeshTasksEXT" => Ok(VulkanCommand::CmdDrawMeshTasksExt),
+            "vkCmdDrawMeshTasksIndirectEXT" => Ok(VulkanCommand::CmdDrawMeshTasksIndirectExt),
+            "vkCmdDrawMeshTasksIndirectCountEXT" => {
+                Ok(VulkanCommand::CmdDrawMeshTasksIndirectCountExt)
+            }
+            _ => Err(TryFromVulkanCommandError::UnknownExtension(
+                value.to_owned(),
+            )),
+        }
+    }
 }
 
 pub trait DeviceHooks: Send + Sync {

@@ -1,5 +1,6 @@
 use crate::{
-    DeviceInfo, GlobalHooks, InstanceHooks, InstanceInfo, Layer, LayerResult, LayerVulkanCommand,
+    DeviceHooks, DeviceInfo, GlobalHooks, InstanceHooks, InstanceInfo, Layer, LayerResult,
+    LayerVulkanCommand,
 };
 use ash::vk;
 use mockall::mock;
@@ -12,12 +13,22 @@ use std::{
 };
 
 pub use crate::bindings::{
-    VkLayerDeviceCreateInfo, VkLayerFunction, VkLayerInstanceCreateInfo, VkLayerInstanceLink,
+    VkLayerDeviceCreateInfo, VkLayerDeviceLink, VkLayerFunction, VkLayerInstanceCreateInfo,
+    VkLayerInstanceLink,
 };
 
 pub struct Del<T> {
     data: T,
     deleter: Option<Box<dyn FnOnce(&mut T) + Send + Sync>>,
+}
+
+impl<T> Del<T> {
+    pub fn new(data: T, deleter: impl FnOnce(&mut T) + Send + Sync + 'static) -> Self {
+        Del {
+            data,
+            deleter: Some(Box::new(deleter)),
+        }
+    }
 }
 
 impl<T> Deref for Del<T> {
@@ -34,14 +45,17 @@ impl<T> Drop for Del<T> {
     }
 }
 
+impl<T> AsRef<T> for Del<T> {
+    fn as_ref(&self) -> &T {
+        self.deref()
+    }
+}
+
 pub struct ArcDel<T>(pub Arc<Del<T>>);
 
 impl<T> ArcDel<T> {
     fn new(data: T, deleter: impl FnOnce(&mut T) + Send + Sync + 'static) -> Self {
-        ArcDel(Arc::new(Del {
-            data,
-            deleter: Some(Box::new(deleter)),
-        }))
+        ArcDel(Arc::new(Del::new(data, deleter)))
     }
 }
 
@@ -51,9 +65,12 @@ impl<T> Borrow<T> for ArcDel<T> {
     }
 }
 
-#[derive(Default)]
-pub struct MockDeviceHooks {}
-impl crate::DeviceHooks for MockDeviceHooks {}
+impl<T: Default> Default for ArcDel<T> {
+    fn default() -> Self {
+        Self(Arc::new(Del::new(Default::default(), |_| {})))
+    }
+}
+
 pub struct MockGlobalHooks {}
 impl crate::GlobalHooks for MockGlobalHooks {}
 // We don't automock the original trait, because that hurts compilation speed significantly.
@@ -68,6 +85,17 @@ mock! {
     }
 }
 
+mock! {
+    pub DeviceHooks {}
+    impl DeviceHooks for DeviceHooks {
+        fn destroy_image(
+            &self,
+            _image: vk::Image,
+            _p_allocator: Option<&'static vk::AllocationCallbacks>,
+        ) -> LayerResult<()>;
+    }
+}
+
 #[derive(Default)]
 pub struct MockInstanceInfo<T: TestLayer> {
     pub mock_hooks: Mutex<MockInstanceHooks>,
@@ -75,11 +103,10 @@ pub struct MockInstanceInfo<T: TestLayer> {
 }
 
 impl<T: TestLayer> InstanceInfo for MockInstanceInfo<T> {
-    type LayerInfo = Arc<TestLayerWrapper<T, Self>>;
     type HooksType = MockInstanceHooks;
     type HooksRefType<'a> = MutexGuard<'a, MockInstanceHooks>;
-    fn hooked_commands(layer: &Self::LayerInfo) -> &[LayerVulkanCommand] {
-        layer.inner.hooked_instance_commands()
+    fn hooked_commands() -> &'static [LayerVulkanCommand] {
+        T::hooked_instance_commands()
     }
 
     fn hooks(&self) -> Self::HooksRefType<'_> {
@@ -88,17 +115,16 @@ impl<T: TestLayer> InstanceInfo for MockInstanceInfo<T> {
 }
 
 #[derive(Default)]
-pub struct MockDeviceInfo<T: Layer<DeviceInfo = Self> + Send> {
-    mock_hooks: Arc<Mutex<MockDeviceHooks>>,
+pub struct MockDeviceInfo<T: TestLayer> {
+    pub mock_hooks: Mutex<MockDeviceHooks>,
     _marker: PhantomData<T>,
 }
 
-impl<T: Layer<DeviceInfo = Self> + Send> DeviceInfo for MockDeviceInfo<T> {
-    type LayerInfo = T;
+impl<T: TestLayer> DeviceInfo for MockDeviceInfo<T> {
     type HooksType = MockDeviceHooks;
     type HooksRefType<'a> = MutexGuard<'a, MockDeviceHooks>;
-    fn hooked_commands(_: &Self::LayerInfo) -> &[LayerVulkanCommand] {
-        &[]
+    fn hooked_commands() -> &'static [LayerVulkanCommand] {
+        T::hooked_device_commands()
     }
 
     fn hooks(&self) -> Self::HooksRefType<'_> {
@@ -113,25 +139,36 @@ pub trait TestLayer: Send + Sync + Default + 'static {
     const SPEC_VERSION: u32 = vk::API_VERSION_1_1;
 
     // Will only be used when work with MockInstanceInfo<Self> and TestLayerWrapper so that we can
-    // use an actual InstanceInfo with TestLayer and TestLayerWrapper.
-    fn hooked_instance_commands(&self) -> &[LayerVulkanCommand] {
+    // use TestLayer and TestLayerWrapper with an actual InstanceInfo type that implements the
+    // hooked_commands interface.
+    fn hooked_instance_commands() -> &'static [LayerVulkanCommand] {
+        &[]
+    }
+
+    // Will only be used when work with MockDeviceInfo<Self> and TestLayerWrapper so that we can
+    // use TestLayer and TestLayerWrapper with an actual DeviceInfo type that implements the
+    // hooked_commands interface.
+    fn hooked_device_commands() -> &'static [LayerVulkanCommand] {
         &[]
     }
 }
 
-pub struct TestLayerWrapper<T, U = MockInstanceInfo<T>>
+pub struct TestLayerWrapper<T, U = MockInstanceInfo<T>, V = MockDeviceInfo<T>>
 where
     T: TestLayer,
     U: InstanceInfo + 'static,
+    V: DeviceInfo + 'static,
 {
-    inner: T,
     instances: Mutex<HashMap<vk::Instance, Weak<Del<U>>>>,
+    devices: Mutex<HashMap<vk::Device, Weak<Del<V>>>>,
+    _marker: PhantomData<T>,
 }
 
-impl<T, U> TestLayerWrapper<T, U>
+impl<T, U, V> TestLayerWrapper<T, U, V>
 where
     T: TestLayer,
     U: InstanceInfo + 'static,
+    V: DeviceInfo + 'static,
 {
     pub fn get_instance_info(&self, instance: vk::Instance) -> Option<Arc<impl Deref<Target = U>>> {
         self.instances
@@ -140,36 +177,48 @@ where
             .get(&instance)
             .and_then(Weak::upgrade)
     }
+
+    pub fn get_device_info(&self, device: vk::Device) -> Option<Arc<impl Deref<Target = V>>> {
+        self.devices
+            .lock()
+            .unwrap()
+            .get(&device)
+            .and_then(Weak::upgrade)
+    }
 }
 
-impl<T, U> Default for TestLayerWrapper<T, U>
+impl<T, U, V> Default for TestLayerWrapper<T, U, V>
 where
     T: TestLayer,
     U: InstanceInfo + 'static,
+    V: DeviceInfo + 'static,
 {
     fn default() -> Self {
         Self {
-            inner: Default::default(),
             instances: Default::default(),
+            devices: Default::default(),
+            _marker: Default::default(),
         }
     }
 }
 
-impl<T, U> GlobalHooks for Arc<TestLayerWrapper<T, U>>
+impl<T, U, V> GlobalHooks for Arc<TestLayerWrapper<T, U, V>>
 where
     T: TestLayer,
     U: InstanceInfo + 'static,
+    V: DeviceInfo + 'static,
 {
 }
 
-impl<T, U> Layer for Arc<TestLayerWrapper<T, U>>
+impl<T, U, V> Layer for Arc<TestLayerWrapper<T, U, V>>
 where
     T: TestLayer,
-    U: InstanceInfo<LayerInfo = Self> + Default + 'static,
+    U: InstanceInfo + Default + 'static,
+    V: DeviceInfo + Default + 'static,
 {
-    type DeviceInfo = MockDeviceInfo<Self>;
+    type DeviceInfo = V;
     type InstanceInfo = U;
-    type DeviceInfoContainer = Self::DeviceInfo;
+    type DeviceInfoContainer = ArcDel<Self::DeviceInfo>;
     type InstanceInfoContainer = ArcDel<Self::InstanceInfo>;
 
     const LAYER_NAME: &'static str = <T as TestLayer>::LAYER_NAME;
@@ -182,10 +231,23 @@ where
         _physical_device: vk::PhysicalDevice,
         _create_info: &vk::DeviceCreateInfo,
         _allocator: Option<&vk::AllocationCallbacks>,
-        _device: Arc<ash::Device>,
+        device: Arc<ash::Device>,
         _next_get_device_proc_addr: vk::PFN_vkGetDeviceProcAddr,
-    ) -> Self::DeviceInfo {
-        Default::default()
+    ) -> ArcDel<Self::DeviceInfo> {
+        let weak_layer = Arc::downgrade(self);
+        let device_handle = device.handle();
+        let device_info = ArcDel::new(Default::default(), move |_| {
+            let layer = match weak_layer.upgrade() {
+                Some(layer) => layer,
+                None => return,
+            };
+            layer.devices.lock().unwrap().remove(&device_handle);
+        });
+        self.devices
+            .lock()
+            .unwrap()
+            .insert(device.handle(), Arc::downgrade(&device_info.0));
+        device_info
     }
 
     fn create_instance_info(
