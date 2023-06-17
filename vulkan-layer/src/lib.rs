@@ -51,6 +51,7 @@ fn as_i8_slice(input: &CString) -> &[i8] {
 }
 
 pub trait IsCommandEnabled {
+    #[allow(clippy::wrong_self_convention)]
     fn is_command_enabled(
         self,
         api_version: &ApiVersion,
@@ -872,13 +873,10 @@ impl<T: Layer> Global<T> {
                 Err(_) => None,
             };
         if let Some(device_command) = device_command {
-            let next_proc_addr = get_next_proc_addr();
-            // This is an unavailable device command.
-            if next_proc_addr.is_none() {
-                return None;
-            }
+            // If the next proc addr can't find it, this is an unavailable device command.
+            let next_proc_addr = get_next_proc_addr()?;
             if !device_command.hooked {
-                return next_proc_addr;
+                return Some(next_proc_addr);
             }
             return device_command.proc;
         }

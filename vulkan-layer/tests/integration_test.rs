@@ -480,8 +480,45 @@ mod get_instance_proc_addr {
         }
 
         #[test]
-        #[ignore]
-        fn test_should_call_into_next_get_instance_proc_addr_with_unknown_name() {}
+        fn test_should_call_into_next_get_instance_proc_addr_with_unknown_name() {
+            let new_command_name = "vkTestCommand";
+            extern "system" fn test_command() {
+                unimplemented!()
+            }
+            let test_command = test_command as unsafe extern "system" fn();
+
+            #[derive(Default)]
+            struct Tag;
+            impl TestLayer for Tag {}
+            let ctx = vk::InstanceCreateInfo::builder().default_instance::<MockLayer<Tag>>();
+            let InstanceContext {
+                instance,
+                entry,
+                next_entry,
+                ..
+            } = ctx.as_ref();
+            let instance_data = unsafe { InstanceData::from_handle(instance.handle()) };
+            instance_data.add_instance_command(new_command_name, Some(test_command));
+            let new_command_name_cstr = CString::new(new_command_name).unwrap();
+
+            // Check what mock ICD returns.
+            let actual_new_command = unsafe {
+                next_entry.get_instance_proc_addr(instance.handle(), new_command_name_cstr.as_ptr())
+            };
+            assert_eq!(
+                actual_new_command.map(|fp| fp as u64),
+                Some(test_command as u64)
+            );
+
+            // Check what the layer returns.
+            let actual_new_command = unsafe {
+                entry.get_instance_proc_addr(instance.handle(), new_command_name_cstr.as_ptr())
+            };
+            assert_eq!(
+                actual_new_command.map(|fp| fp as u64),
+                Some(test_command as u64)
+            );
+        }
 
         #[test]
         #[ignore]

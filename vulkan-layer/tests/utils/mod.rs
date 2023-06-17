@@ -610,8 +610,8 @@ extern "system" fn get_instance_proc_addr(
 ) -> vk::PFN_vkVoidFunction {
     let name = unsafe { CStr::from_ptr(p_name) }.to_str().unwrap();
     let name = name.into();
-    let command = VULKAN_COMMANDS.get(&name)?;
     let instance_data = if instance == vk::Instance::null() {
+        let command = VULKAN_COMMANDS.get(&name)?;
         return match command.dispatch_kind {
             DispatchKind::Global => command.proc,
             _ => None,
