@@ -146,12 +146,7 @@ class CommandDispatchInfo:
             "    }",
             "}",
         ]
-        return (
-            extension_enum_lines
-            + ["\n"]
-            + extension_enum_try_from_lines
-            + ["\n"]
-        )
+        return extension_enum_lines + ["\n"] + extension_enum_try_from_lines + ["\n"]
 
     @staticmethod
     def get_disapatch_tables_impl_lines(

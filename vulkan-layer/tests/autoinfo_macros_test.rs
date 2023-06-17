@@ -12,40 +12,62 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use ash::vk;
 use std::sync::Arc;
 use vulkan_layer::{
-    auto_instanceinfo_impl,
-    test_utils::{TestLayer, TestLayerWrapper},
-    Global, InstanceHooks, Layer, LayerVulkanCommand,
+    auto_deviceinfo_impl, auto_instanceinfo_impl,
+    test_utils::{MockInstanceInfo, TestLayer, TestLayerWrapper},
+    DeviceHooks, Global, InstanceHooks, Layer, LayerResult, LayerVulkanCommand,
 };
 
-mod instance_info {
+#[test]
+fn test_auto_instanceinfo_should_intercept_hooked_proc() {
+    #[derive(Default)]
+    struct Tag;
+    impl TestLayer for Tag {}
 
-    use super::*;
-
-    #[test]
-    fn test_should_intercept_hooked_proc() {
-        #[derive(Default)]
-        struct Tag;
-        impl TestLayer for Tag {}
-
-        type MockLayer = Arc<TestLayerWrapper<Tag, TestInstanceInfo>>;
-        #[derive(Default)]
-        struct TestInstanceInfo;
-        #[auto_instanceinfo_impl(MockLayer)]
-        impl InstanceHooks for TestInstanceInfo {
-            fn destroy_surface_khr(
-                &self,
-                _: ash::vk::SurfaceKHR,
-                _: Option<&'static ash::vk::AllocationCallbacks>,
-            ) -> vulkan_layer::LayerResult<()> {
-                unimplemented!()
-            }
+    type MockLayer = Arc<TestLayerWrapper<Tag, TestInstanceInfo>>;
+    #[derive(Default)]
+    struct TestInstanceInfo;
+    #[auto_instanceinfo_impl]
+    impl InstanceHooks for TestInstanceInfo {
+        fn destroy_surface_khr(
+            &self,
+            _: vk::SurfaceKHR,
+            _: Option<&'static vk::AllocationCallbacks>,
+        ) -> LayerResult<()> {
+            unimplemented!()
         }
-        let hooked_commands = &Global::<MockLayer>::instance()
-            .layer_info
-            .hooked_commands()
-            .collect::<Vec<_>>();
-        assert_eq!(hooked_commands, &[LayerVulkanCommand::DestroySurfaceKhr]);
     }
+    let hooked_commands = &Global::<MockLayer>::instance()
+        .layer_info
+        .hooked_commands()
+        .collect::<Vec<_>>();
+    assert_eq!(hooked_commands, &[LayerVulkanCommand::DestroySurfaceKhr]);
+}
+
+#[test]
+fn test_auto_deviceinfo_should_intercept_hooked_proc() {
+    #[derive(Default)]
+    struct Tag;
+    impl TestLayer for Tag {}
+
+    type MockLayer = Arc<TestLayerWrapper<Tag, MockInstanceInfo<Tag>, TestDeviceInfo>>;
+    #[derive(Default)]
+    struct TestDeviceInfo;
+    #[auto_deviceinfo_impl]
+    impl DeviceHooks for TestDeviceInfo {
+        fn destroy_image(
+            &self,
+            _image: vk::Image,
+            _p_allocator: Option<&'static vk::AllocationCallbacks>,
+        ) -> LayerResult<()> {
+            unimplemented!()
+        }
+    }
+    let hooked_commands = &Global::<MockLayer>::instance()
+        .layer_info
+        .hooked_commands()
+        .collect::<Vec<_>>();
+    assert_eq!(hooked_commands, &[LayerVulkanCommand::DestroyImage]);
 }

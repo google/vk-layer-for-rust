@@ -24,8 +24,29 @@ mod dummy;
 pub fn auto_instanceinfo_impl(_: TokenStream, item: TokenStream) -> TokenStream {
     let original_item: TokenStream2 = item.clone().into();
     let input = parse_macro_input!(item as ItemImpl);
-    let to_append = details::autoinfo_impl(&input).unwrap_or_else(|e| {
-        let dummy = dummy::dummy_autoinfo_impl(&input.self_ty);
+    let target_trait = quote!(::vulkan_layer::InstanceInfo);
+    let to_append = details::autoinfo_impl(&input, &target_trait).unwrap_or_else(|e| {
+        let dummy = dummy::dummy_autoinfo_impl(&input.self_ty, &target_trait);
+        let compile_error = e.to_compile_error();
+        quote! {
+            #dummy
+            #compile_error
+        }
+    });
+    quote! {
+        #original_item
+        #to_append
+    }
+    .into()
+}
+
+#[proc_macro_attribute]
+pub fn auto_deviceinfo_impl(_: TokenStream, item: TokenStream) -> TokenStream {
+    let original_item: TokenStream2 = item.clone().into();
+    let input = parse_macro_input!(item as ItemImpl);
+    let target_trait = quote!(::vulkan_layer::DeviceInfo);
+    let to_append = details::autoinfo_impl(&input, &target_trait).unwrap_or_else(|e| {
+        let dummy = dummy::dummy_autoinfo_impl(&input.self_ty, &target_trait);
         let compile_error = e.to_compile_error();
         quote! {
             #dummy
