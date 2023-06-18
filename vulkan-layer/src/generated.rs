@@ -143,6 +143,9 @@ pub trait InstanceInfo: Send + Sync {
     fn hooks(&self) -> Self::HooksRefType<'_>;
 }
 
+// TODO: move GlobalHooks to this file, because how we should inject into the GlobalHooks can be
+// very different from the original API. We need to pass the next vkGetInstanceProcAddr to
+// the create_instance hook.
 pub trait Layer: Default + GlobalHooks + 'static {
     const LAYER_NAME: &'static str;
     const SPEC_VERSION: u32;
@@ -179,10 +182,15 @@ pub trait Layer: Default + GlobalHooks + 'static {
         Self::DeviceInfo::hooked_commands()
     }
 
+    fn hooked_global_commands(&self) -> &[LayerVulkanCommand] {
+        &[]
+    }
+
     fn hooked_commands(&self) -> Box<dyn Iterator<Item = LayerVulkanCommand> + '_> {
         Box::new(
-            self.hooked_device_commands()
+            self.hooked_global_commands()
                 .iter()
+                .chain(self.hooked_device_commands())
                 .chain(self.hooked_instance_commands())
                 .cloned(),
         )

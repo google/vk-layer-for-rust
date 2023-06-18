@@ -22,10 +22,11 @@ use std::{
     collections::{BTreeMap, BTreeSet},
     ffi::{c_char, c_void, CStr, CString},
     fmt::Debug,
+    mem::MaybeUninit,
     ptr::{null_mut, NonNull},
     sync::{Arc, Mutex},
 };
-use vk_utils::VulkanBaseOutStructChain;
+pub use vk_utils::{VulkanBaseInStructChain, VulkanBaseOutStructChain};
 
 mod bindings;
 mod generated;
@@ -275,7 +276,7 @@ impl<T: Layer> Global<T> {
     extern "system" fn create_instance(
         create_info: *const vk::InstanceCreateInfo,
         allocator: *const vk::AllocationCallbacks,
-        instance: *mut vk::Instance,
+        p_instance: *mut vk::Instance,
     ) -> vk::Result {
         let p_next_chain = unsafe { create_info.as_ref() }
             .map(|create_info| create_info.p_next as *mut vk::BaseOutStructure)
@@ -312,20 +313,49 @@ impl<T: Layer> Global<T> {
             layer_info.pfnNextGetInstanceProcAddr;
         *unsafe { layer_create_info.u.pLayerInfo.as_mut() } = layer_info.pNext;
 
-        let get_proc_addr = |name: &CStr| -> *const c_void {
-            unsafe {
-                std::mem::transmute(get_instance_proc_addr(vk::Instance::null(), name.as_ptr()))
+        let global = Self::instance();
+        let hooked = global
+            .layer_info
+            .hooked_commands()
+            .find(|command| command == &LayerVulkanCommand::CreateInstance)
+            .is_some();
+        let layer_result = if hooked {
+            global
+                .layer_info
+                .create_instance(unsafe { create_info.as_ref() }.unwrap(), unsafe {
+                    allocator.as_ref()
+                })
+        } else {
+            LayerResult::Unhandled
+        };
+
+        let instance = match layer_result {
+            LayerResult::Handled(Ok(instance)) => instance,
+            LayerResult::Handled(Err(e)) => return e,
+            LayerResult::Unhandled => {
+                let get_proc_addr = |name: &CStr| -> *const c_void {
+                    unsafe {
+                        std::mem::transmute(get_instance_proc_addr(
+                            vk::Instance::null(),
+                            name.as_ptr(),
+                        ))
+                    }
+                };
+                let entry = vk::EntryFnV1_0::load(get_proc_addr);
+
+                let mut instance = MaybeUninit::<vk::Instance>::uninit();
+                // TODO: allow the layer trait to intercept the creation
+                let ret: vk::Result = unsafe {
+                    (entry.create_instance)(create_info, allocator, instance.as_mut_ptr())
+                };
+                if !matches!(ret, vk::Result::SUCCESS) {
+                    return ret;
+                }
+                unsafe { instance.assume_init() }
             }
         };
-        let entry = vk::EntryFnV1_0::load(get_proc_addr);
 
-        // TODO: allow the layer trait to intercept the creation
-        let ret: vk::Result = unsafe { (entry.create_instance)(create_info, allocator, instance) };
-        if !matches!(ret, vk::Result::SUCCESS) {
-            return ret;
-        }
-
-        let instance: vk::Instance = *unsafe { instance.as_ref() }.unwrap();
+        *unsafe { p_instance.as_mut() }.unwrap() = instance;
         let ash_instance = unsafe {
             ash::Instance::load(
                 &ash::vk::StaticFn {
@@ -365,7 +395,6 @@ impl<T: Layer> Global<T> {
         };
         {
             let key = instance.get_dispatch_key();
-            let global = Self::instance();
             let mut instance_map = global.instance_map.lock().unwrap();
             if instance_map.contains_key(&key) {
                 error!(

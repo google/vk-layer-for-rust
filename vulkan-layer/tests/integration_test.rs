@@ -13,19 +13,25 @@
 // limitations under the License.
 
 use ash::vk;
-use mockall::predicate::{eq, function};
+use mockall::{
+    predicate::{always, eq, function},
+    Predicate,
+};
 use std::{
     ffi::{CStr, CString},
-    ptr::null,
+    ptr::{null, null_mut},
+    sync::Arc,
 };
 use vulkan_layer::{
-    test_utils::TestLayer, Extension, Global, Layer, LayerResult, LayerVulkanCommand,
+    test_utils::{TestLayer, VkLayerFunction, VkLayerInstanceCreateInfo, VkLayerInstanceLink},
+    Extension, Global, Layer, LayerResult, LayerVulkanCommand, VulkanBaseInStructChain,
 };
 
 pub mod utils;
 
 use utils::{
-    create_entry, DeviceContext, InstanceContext, InstanceCreateInfoExt, InstanceData, MockLayer,
+    create_entry, get_instance_proc_addr, DeviceContext, InstanceContext, InstanceCreateInfoExt,
+    InstanceData, MockLayer,
 };
 
 use crate::utils::DelInstanceContextExt;
@@ -521,33 +527,154 @@ mod get_instance_proc_addr {
         }
 
         #[test]
-        #[ignore]
-        fn test_should_return_null_with_unsupported_device_commands() {}
+        fn test_should_return_null_with_unsupported_device_commands() {
+            #[derive(Default)]
+            struct Tag;
+            impl TestLayer for Tag {
+                fn hooked_device_commands() -> &'static [LayerVulkanCommand] {
+                    &[LayerVulkanCommand::DestroySwapchainKhr]
+                }
+            }
+            let ctx = vk::InstanceCreateInfo::builder().default_instance::<MockLayer<Tag>>();
+            let InstanceContext {
+                entry, instance, ..
+            } = ctx.as_ref();
+            unsafe { InstanceData::from_handle(instance.handle()) }
+                .set_available_device_extensions(&[]);
+            let destroy_swapchain = unsafe {
+                entry.get_instance_proc_addr(
+                    instance.handle(),
+                    b"vkDestroySwapchainKHR\0".as_ptr() as *const i8,
+                )
+            };
+            assert!(destroy_swapchain.is_none());
+        }
+    }
+}
+
+mod create_destroy_instance {
+
+    use super::*;
+    #[test]
+    fn test_should_move_layer_instance_link_forward() {
+        #[derive(Default)]
+        struct Tag1;
+        impl TestLayer for Tag1 {
+            fn hooked_global_commands() -> &'static [LayerVulkanCommand] {
+                &[LayerVulkanCommand::CreateInstance]
+            }
+        }
+        let entry_layer1 = create_entry::<MockLayer<Tag1>>();
+
+        #[derive(Default)]
+        struct Tag2;
+        impl TestLayer for Tag2 {
+            fn hooked_global_commands() -> &'static [LayerVulkanCommand] {
+                &[LayerVulkanCommand::CreateInstance]
+            }
+        }
+        let entry_layer2 = create_entry::<MockLayer<Tag2>>();
+
+        let mut second_layer_link = VkLayerInstanceLink {
+            pNext: null_mut(),
+            pfnNextGetInstanceProcAddr: get_instance_proc_addr as vk::PFN_vkGetInstanceProcAddr,
+            pfnNextGetPhysicalDeviceProcAddr: None,
+        };
+        let mut first_layer_link = VkLayerInstanceLink {
+            pNext: &mut second_layer_link,
+            pfnNextGetInstanceProcAddr: entry_layer2.static_fn().get_instance_proc_addr
+                as vk::PFN_vkGetInstanceProcAddr,
+            pfnNextGetPhysicalDeviceProcAddr: None,
+        };
+        let mut layer_create_info = VkLayerInstanceCreateInfo {
+            sType: vk::StructureType::LOADER_INSTANCE_CREATE_INFO,
+            pNext: null(),
+            function: VkLayerFunction::VK_LAYER_LINK_INFO,
+            u: Default::default(),
+        };
+        *unsafe { layer_create_info.u.pLayerInfo.as_mut() } = &mut first_layer_link;
+        let create_instance_info =
+            vk::InstanceCreateInfo::builder().push_next(&mut layer_create_info);
+
+        fn match_layer_link_head(
+            layer_link: Option<&VkLayerInstanceLink>,
+        ) -> impl Predicate<vk::InstanceCreateInfo> {
+            let layer_link_ptr = layer_link.map_or(0, |layer_link| layer_link as *const _ as u64);
+            function(move |create_info: &vk::InstanceCreateInfo| {
+                let mut p_next_chain: VulkanBaseInStructChain =
+                    unsafe { (create_info.p_next as *const vk::BaseInStructure).as_ref() }.into();
+                let layer_link_head = p_next_chain.find_map(|in_struct| {
+                    let in_struct = in_struct as *const vk::BaseInStructure;
+                    let layer_instance_create_info = unsafe {
+                        ash::match_in_struct!(match in_struct {
+                            in_struct @ VkLayerInstanceCreateInfo => {
+                                in_struct
+                            }
+                            _ => {
+                                return None;
+                            }
+                        })
+                    };
+                    if layer_instance_create_info.function != VkLayerFunction::VK_LAYER_LINK_INFO {
+                        return None;
+                    }
+                    Some(*unsafe { layer_instance_create_info.u.pLayerInfo.as_ref() })
+                });
+                let layer_link_head = match layer_link_head {
+                    Some(head) => head,
+                    None => return false,
+                };
+                layer_link_head as u64 == layer_link_ptr
+            })
+        }
+
+        {
+            let layer1_info = Arc::clone(&Global::<MockLayer<Tag1>>::instance().layer_info);
+            let layer2_info = Arc::clone(&Global::<MockLayer<Tag2>>::instance().layer_info);
+            {
+                let mut layer1_global_hooks = layer1_info.global_hooks.lock().unwrap();
+                layer1_global_hooks
+                    .expect_create_instance()
+                    .with(match_layer_link_head(Some(&second_layer_link)), always())
+                    .once()
+                    .return_const(LayerResult::Unhandled);
+            }
+            {
+                let mut layer2_global_hooks = layer2_info.global_hooks.lock().unwrap();
+                layer2_global_hooks
+                    .expect_create_instance()
+                    .with(match_layer_link_head(None), always())
+                    .once()
+                    .return_const(LayerResult::Unhandled);
+            }
+
+            let instance =
+                unsafe { entry_layer1.create_instance(&create_instance_info, None) }.unwrap();
+            {
+                layer1_info.global_hooks.lock().unwrap().checkpoint();
+                layer2_info.global_hooks.lock().unwrap().checkpoint();
+            }
+            unsafe { instance.destroy_instance(None) };
+        }
     }
 
     #[test]
     #[ignore]
-    fn test_should_move_layer_instance_link_forward() {
+    fn test_create_instance_with_0_api_version() {
         todo!()
     }
-}
 
-#[test]
-#[ignore]
-fn test_create_instance_with_0_api_version() {
-    todo!()
-}
+    #[test]
+    #[ignore]
+    fn test_destroy_instance_with_null_handle() {
+        todo!()
+    }
 
-#[test]
-#[ignore]
-fn test_destroy_instance_with_null_handle() {
-    todo!()
-}
-
-#[test]
-#[ignore]
-fn test_destroy_instance_will_actually_destroy_underlying_instance_info() {
-    todo!()
+    #[test]
+    #[ignore]
+    fn test_destroy_instance_will_actually_destroy_underlying_instance_info() {
+        todo!()
+    }
 }
 
 #[test]

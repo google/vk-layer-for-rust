@@ -2,7 +2,7 @@ use crate::{
     DeviceHooks, DeviceInfo, GlobalHooks, InstanceHooks, InstanceInfo, Layer, LayerResult,
     LayerVulkanCommand,
 };
-use ash::vk;
+use ash::{prelude::VkResult, vk};
 use mockall::mock;
 use std::{
     borrow::Borrow,
@@ -71,8 +71,17 @@ impl<T: Default> Default for ArcDel<T> {
     }
 }
 
-pub struct MockGlobalHooks {}
-impl crate::GlobalHooks for MockGlobalHooks {}
+mock! {
+    pub GlobalHooks {}
+    impl GlobalHooks for GlobalHooks {
+        fn create_instance(
+            &self,
+            _p_create_info: &'static vk::InstanceCreateInfo,
+            _p_allocator: Option<&'static vk::AllocationCallbacks>,
+        ) -> LayerResult<VkResult<vk::Instance>>;
+    }
+}
+
 // We don't automock the original trait, because that hurts compilation speed significantly.
 mock! {
     pub InstanceHooks {}
@@ -138,6 +147,10 @@ pub trait TestLayer: Send + Sync + Default + 'static {
     const IMPLEMENTATION_VERSION: u32 = 1;
     const SPEC_VERSION: u32 = vk::API_VERSION_1_1;
 
+    fn hooked_global_commands() -> &'static [LayerVulkanCommand] {
+        &[]
+    }
+
     // Will only be used when work with MockInstanceInfo<Self> and TestLayerWrapper so that we can
     // use TestLayer and TestLayerWrapper with an actual InstanceInfo type that implements the
     // hooked_commands interface.
@@ -161,6 +174,7 @@ where
 {
     instances: Mutex<HashMap<vk::Instance, Weak<Del<U>>>>,
     devices: Mutex<HashMap<vk::Device, Weak<Del<V>>>>,
+    pub global_hooks: Mutex<MockGlobalHooks>,
     _marker: PhantomData<T>,
 }
 
@@ -197,6 +211,7 @@ where
         Self {
             instances: Default::default(),
             devices: Default::default(),
+            global_hooks: Default::default(),
             _marker: Default::default(),
         }
     }
@@ -208,6 +223,16 @@ where
     U: InstanceInfo + 'static,
     V: DeviceInfo + 'static,
 {
+    fn create_instance(
+        &self,
+        p_create_info: &'static vk::InstanceCreateInfo,
+        p_allocator: Option<&'static vk::AllocationCallbacks>,
+    ) -> LayerResult<VkResult<vk::Instance>> {
+        self.global_hooks
+            .lock()
+            .unwrap()
+            .create_instance(p_create_info, p_allocator)
+    }
 }
 
 impl<T, U, V> Layer for Arc<TestLayerWrapper<T, U, V>>
@@ -225,6 +250,10 @@ where
     const LAYER_DESCRIPTION: &'static str = <T as TestLayer>::LAYER_DESCRIPTION;
     const IMPLEMENTATION_VERSION: u32 = <T as TestLayer>::IMPLEMENTATION_VERSION;
     const SPEC_VERSION: u32 = <T as TestLayer>::SPEC_VERSION;
+
+    fn hooked_global_commands(&self) -> &[LayerVulkanCommand] {
+        T::hooked_global_commands()
+    }
 
     fn create_device_info(
         &self,

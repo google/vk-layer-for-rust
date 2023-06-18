@@ -14,7 +14,7 @@
 
 use ash::vk;
 
-pub(crate) struct VulkanBaseOutStructChain<'a> {
+pub struct VulkanBaseOutStructChain<'a> {
     next: Option<&'a mut vk::BaseOutStructure>,
 }
 
@@ -30,6 +30,27 @@ impl<'a> Iterator for VulkanBaseOutStructChain<'a> {
     fn next(&mut self) -> Option<Self::Item> {
         self.next.take().map(|element| {
             self.next = unsafe { element.p_next.as_mut() };
+            element
+        })
+    }
+}
+
+pub struct VulkanBaseInStructChain<'a> {
+    next: Option<&'a vk::BaseInStructure>,
+}
+
+impl<'a> From<Option<&'a vk::BaseInStructure>> for VulkanBaseInStructChain<'a> {
+    fn from(next: Option<&'a vk::BaseInStructure>) -> Self {
+        Self { next }
+    }
+}
+
+impl<'a> Iterator for VulkanBaseInStructChain<'a> {
+    type Item = &'a vk::BaseInStructure;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.next.take().map(|element| {
+            self.next = unsafe { element.p_next.as_ref() };
             element
         })
     }

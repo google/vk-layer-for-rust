@@ -604,7 +604,7 @@ static VULKAN_COMMANDS: Lazy<BTreeMap<VulkanCommandName, VulkanCommand>> = Lazy:
     commands.into_iter().collect()
 });
 
-extern "system" fn get_instance_proc_addr(
+pub extern "system" fn get_instance_proc_addr(
     instance: vk::Instance,
     p_name: *const i8,
 ) -> vk::PFN_vkVoidFunction {
@@ -765,7 +765,7 @@ impl InstanceCreateInfoExt for vk::InstanceCreateInfoBuilder<'_> {
             function: VkLayerFunction::VK_LAYER_LINK_INFO,
             u: Default::default(),
         };
-        *unsafe { layer_create_info.u.pLayerInfo.as_mut() } = &mut layer_link as *mut _;
+        *unsafe { layer_create_info.u.pLayerInfo.as_mut() } = &mut layer_link;
 
         let create_instance_info = self.push_next(&mut layer_create_info);
         let instance = unsafe { entry.create_instance(&create_instance_info, None) }.unwrap();
