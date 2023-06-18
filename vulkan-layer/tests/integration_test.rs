@@ -665,7 +665,7 @@ mod create_destroy_instance {
             let layer1_info = Arc::clone(&Global::<MockLayer<Tag1>>::instance().layer_info);
             let layer2_info = Arc::clone(&Global::<MockLayer<Tag2>>::instance().layer_info);
             {
-                let mut layer1_global_hooks = layer1_info.global_hooks.lock().unwrap();
+                let mut layer1_global_hooks = layer1_info.get_global_hooks();
                 layer1_global_hooks
                     .expect_create_instance()
                     .withf_st(match_create_instance(
@@ -676,7 +676,7 @@ mod create_destroy_instance {
                     .return_const(LayerResult::Unhandled);
             }
             {
-                let mut layer2_global_hooks = layer2_info.global_hooks.lock().unwrap();
+                let mut layer2_global_hooks = layer2_info.get_global_hooks();
                 layer2_global_hooks
                     .expect_create_instance()
                     .withf_st(match_create_instance(None, &second_layer_link))
@@ -687,8 +687,8 @@ mod create_destroy_instance {
             let instance =
                 unsafe { entry_layer1.create_instance(&create_instance_info, None) }.unwrap();
             {
-                layer1_info.global_hooks.lock().unwrap().checkpoint();
-                layer2_info.global_hooks.lock().unwrap().checkpoint();
+                layer1_info.get_global_hooks().checkpoint();
+                layer2_info.get_global_hooks().checkpoint();
             }
             unsafe { instance.destroy_instance(None) };
         }

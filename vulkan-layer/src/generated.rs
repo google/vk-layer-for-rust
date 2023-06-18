@@ -144,7 +144,7 @@ pub trait InstanceInfo: Send + Sync {
     fn hooks(&self) -> Self::HooksRefType<'_>;
 }
 
-pub trait GlobalHooks: Sync {
+pub trait GlobalHooks: Send + Sync {
     fn create_instance(
         &self,
         _p_create_info: &'static vk::InstanceCreateInfo,
@@ -155,16 +155,32 @@ pub trait GlobalHooks: Sync {
     }
 }
 
-pub trait Layer: Default + GlobalHooks + 'static {
+pub trait GlobalHooksInfo: Send + Sync {
+    type HookType: GlobalHooks;
+    type HooksRefType<'a>: Deref<Target = Self::HookType> + 'a
+    where
+        Self: 'a;
+    fn hooked_commands() -> &'static [LayerVulkanCommand];
+    fn hooks(&self) -> Self::HooksRefType<'_>;
+}
+
+pub trait Layer: Sync + Default + 'static {
     const LAYER_NAME: &'static str;
     const SPEC_VERSION: u32;
     const IMPLEMENTATION_VERSION: u32;
     const LAYER_DESCRIPTION: &'static str;
 
+    type GlobalHooksInfo: GlobalHooksInfo;
     type InstanceInfo: InstanceInfo;
     type DeviceInfo: DeviceInfo;
     type InstanceInfoContainer: Borrow<Self::InstanceInfo> + Sync + Send;
     type DeviceInfoContainer: Borrow<Self::DeviceInfo> + Sync + Send;
+
+    fn get_global_hooks_info(&self) -> &Self::GlobalHooksInfo;
+
+    fn get_global_hooks(&self) -> <Self::GlobalHooksInfo as GlobalHooksInfo>::HooksRefType<'_> {
+        self.get_global_hooks_info().hooks()
+    }
 
     fn create_instance_info(
         &self,
@@ -192,7 +208,7 @@ pub trait Layer: Default + GlobalHooks + 'static {
     }
 
     fn hooked_global_commands(&self) -> &[LayerVulkanCommand] {
-        &[]
+        Self::GlobalHooksInfo::hooked_commands()
     }
 
     fn hooked_commands(&self) -> Box<dyn Iterator<Item = LayerVulkanCommand> + '_> {

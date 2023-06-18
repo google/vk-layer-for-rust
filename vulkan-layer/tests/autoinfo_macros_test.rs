@@ -16,7 +16,7 @@ use ash::vk;
 use std::sync::Arc;
 use vulkan_layer::{
     auto_deviceinfo_impl, auto_instanceinfo_impl,
-    test_utils::{MockInstanceInfo, TestLayer, TestLayerWrapper},
+    test_utils::{MockGlobalHooksInfo, MockInstanceInfo, TestLayer, TestLayerWrapper},
     DeviceHooks, Global, InstanceHooks, Layer, LayerResult, LayerVulkanCommand,
 };
 
@@ -26,7 +26,7 @@ fn test_auto_instanceinfo_should_intercept_hooked_proc() {
     struct Tag;
     impl TestLayer for Tag {}
 
-    type MockLayer = Arc<TestLayerWrapper<Tag, TestInstanceInfo>>;
+    type MockLayer = Arc<TestLayerWrapper<Tag, MockGlobalHooksInfo<Tag>, TestInstanceInfo>>;
     #[derive(Default)]
     struct TestInstanceInfo;
     #[auto_instanceinfo_impl]
@@ -52,7 +52,8 @@ fn test_auto_deviceinfo_should_intercept_hooked_proc() {
     struct Tag;
     impl TestLayer for Tag {}
 
-    type MockLayer = Arc<TestLayerWrapper<Tag, MockInstanceInfo<Tag>, TestDeviceInfo>>;
+    type MockLayer =
+        Arc<TestLayerWrapper<Tag, MockGlobalHooksInfo<Tag>, MockInstanceInfo<Tag>, TestDeviceInfo>>;
     #[derive(Default)]
     struct TestDeviceInfo;
     #[auto_deviceinfo_impl]

@@ -12,11 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::{
-    DeviceInfo, GlobalHooks, InstanceInfo, Layer, LayerResult, LayerVulkanCommand,
-    VkLayerInstanceLink,
-};
-use ash::{prelude::VkResult, vk};
+use crate::{generated::GlobalHooksInfo, DeviceInfo, InstanceInfo, Layer, LayerVulkanCommand};
+use ash::vk;
 use mockall::mock;
 use std::{
     borrow::Borrow,
@@ -144,6 +141,24 @@ impl<T: TestLayer> DeviceInfo for MockDeviceInfo<T> {
     }
 }
 
+#[derive(Default)]
+pub struct MockGlobalHooksInfo<T: TestLayer> {
+    pub mock_hooks: Mutex<MockGlobalHooks>,
+    _marker: PhantomData<T>,
+}
+
+impl<T: TestLayer> GlobalHooksInfo for MockGlobalHooksInfo<T> {
+    type HookType = MockGlobalHooks;
+    type HooksRefType<'a> = MutexGuard<'a, MockGlobalHooks>;
+    fn hooked_commands() -> &'static [LayerVulkanCommand] {
+        T::hooked_global_commands()
+    }
+
+    fn hooks(&self) -> Self::HooksRefType<'_> {
+        self.mock_hooks.lock().unwrap()
+    }
+}
+
 pub trait TestLayer: Send + Sync + Default + 'static {
     const LAYER_NAME: &'static str = "VK_LAYER_GOOGLE_test";
     const LAYER_DESCRIPTION: &'static str = "";
@@ -169,25 +184,31 @@ pub trait TestLayer: Send + Sync + Default + 'static {
     }
 }
 
-pub struct TestLayerWrapper<T, U = MockInstanceInfo<T>, V = MockDeviceInfo<T>>
-where
+pub struct TestLayerWrapper<
+    T,
+    U = MockGlobalHooksInfo<T>,
+    V = MockInstanceInfo<T>,
+    W = MockDeviceInfo<T>,
+> where
     T: TestLayer,
-    U: InstanceInfo + 'static,
-    V: DeviceInfo + 'static,
+    U: GlobalHooksInfo + 'static,
+    V: InstanceInfo + 'static,
+    W: DeviceInfo + 'static,
 {
-    instances: Mutex<HashMap<vk::Instance, Weak<Del<U>>>>,
-    devices: Mutex<HashMap<vk::Device, Weak<Del<V>>>>,
-    pub global_hooks: Mutex<MockGlobalHooks>,
+    global_hooks_info: U,
+    instances: Mutex<HashMap<vk::Instance, Weak<Del<V>>>>,
+    devices: Mutex<HashMap<vk::Device, Weak<Del<W>>>>,
     _marker: PhantomData<T>,
 }
 
-impl<T, U, V> TestLayerWrapper<T, U, V>
+impl<T, U, V, W> TestLayerWrapper<T, U, V, W>
 where
     T: TestLayer,
-    U: InstanceInfo + 'static,
-    V: DeviceInfo + 'static,
+    U: GlobalHooksInfo + 'static,
+    V: InstanceInfo + 'static,
+    W: DeviceInfo + 'static,
 {
-    pub fn get_instance_info(&self, instance: vk::Instance) -> Option<Arc<impl Deref<Target = U>>> {
+    pub fn get_instance_info(&self, instance: vk::Instance) -> Option<Arc<impl Deref<Target = V>>> {
         self.instances
             .lock()
             .unwrap()
@@ -195,7 +216,7 @@ where
             .and_then(Weak::upgrade)
     }
 
-    pub fn get_device_info(&self, device: vk::Device) -> Option<Arc<impl Deref<Target = V>>> {
+    pub fn get_device_info(&self, device: vk::Device) -> Option<Arc<impl Deref<Target = W>>> {
         self.devices
             .lock()
             .unwrap()
@@ -204,60 +225,43 @@ where
     }
 }
 
-impl<T, U, V> Default for TestLayerWrapper<T, U, V>
+impl<T, U, V, W> Default for TestLayerWrapper<T, U, V, W>
 where
     T: TestLayer,
-    U: InstanceInfo + 'static,
-    V: DeviceInfo + 'static,
+    U: GlobalHooksInfo + Default + 'static,
+    V: InstanceInfo + 'static,
+    W: DeviceInfo + 'static,
 {
     fn default() -> Self {
         Self {
+            global_hooks_info: Default::default(),
             instances: Default::default(),
             devices: Default::default(),
-            global_hooks: Default::default(),
             _marker: Default::default(),
         }
     }
 }
 
-impl<T, U, V> GlobalHooks for Arc<TestLayerWrapper<T, U, V>>
+impl<T, U, V, W> Layer for Arc<TestLayerWrapper<T, U, V, W>>
 where
     T: TestLayer,
-    U: InstanceInfo + 'static,
-    V: DeviceInfo + 'static,
+    U: GlobalHooksInfo + Default + 'static,
+    V: InstanceInfo + Default + 'static,
+    W: DeviceInfo + Default + 'static,
 {
-    fn create_instance(
-        &self,
-        p_create_info: &'static vk::InstanceCreateInfo,
-        layer_instance_link: &VkLayerInstanceLink,
-        p_allocator: Option<&'static vk::AllocationCallbacks>,
-    ) -> LayerResult<VkResult<vk::Instance>> {
-        self.global_hooks.lock().unwrap().create_instance(
-            p_create_info,
-            layer_instance_link,
-            p_allocator,
-        )
-    }
-}
-
-impl<T, U, V> Layer for Arc<TestLayerWrapper<T, U, V>>
-where
-    T: TestLayer,
-    U: InstanceInfo + Default + 'static,
-    V: DeviceInfo + Default + 'static,
-{
-    type DeviceInfo = V;
-    type InstanceInfo = U;
-    type DeviceInfoContainer = ArcDel<Self::DeviceInfo>;
+    type GlobalHooksInfo = U;
+    type InstanceInfo = V;
+    type DeviceInfo = W;
     type InstanceInfoContainer = ArcDel<Self::InstanceInfo>;
+    type DeviceInfoContainer = ArcDel<Self::DeviceInfo>;
 
     const LAYER_NAME: &'static str = <T as TestLayer>::LAYER_NAME;
     const LAYER_DESCRIPTION: &'static str = <T as TestLayer>::LAYER_DESCRIPTION;
     const IMPLEMENTATION_VERSION: u32 = <T as TestLayer>::IMPLEMENTATION_VERSION;
     const SPEC_VERSION: u32 = <T as TestLayer>::SPEC_VERSION;
 
-    fn hooked_global_commands(&self) -> &[LayerVulkanCommand] {
-        T::hooked_global_commands()
+    fn get_global_hooks_info(&self) -> &Self::GlobalHooksInfo {
+        &self.global_hooks_info
     }
 
     fn create_device_info(

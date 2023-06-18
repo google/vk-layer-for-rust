@@ -320,7 +320,7 @@ impl<T: Layer> Global<T> {
             .hooked_commands()
             .any(|command| command == LayerVulkanCommand::CreateInstance);
         let layer_result = if hooked {
-            global.layer_info.create_instance(
+            global.layer_info.get_global_hooks().create_instance(
                 unsafe { create_info.as_ref() }.unwrap(),
                 layer_info,
                 unsafe { allocator.as_ref() },
