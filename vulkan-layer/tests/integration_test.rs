@@ -705,9 +705,23 @@ mod create_destroy_instance {
     }
 
     #[test]
-    #[ignore]
     fn test_destroy_instance_will_actually_destroy_underlying_instance_info() {
-        todo!()
+        #[derive(Default)]
+        struct Tag;
+        impl TestLayer for Tag {}
+
+        {
+            let ctx = vk::InstanceCreateInfo::builder().default_instance::<MockLayer<Tag>>();
+            let InstanceContext { instance, .. } = ctx.as_ref();
+            let instance_data = Global::<MockLayer<Tag>>::instance()
+                .layer_info
+                .get_instance_info(instance.handle())
+                .unwrap();
+            instance_data.with_mock_drop(|mock_drop| {
+                mock_drop.expect_drop().once().return_const(());
+            });
+            // Calling vkDestroyInstance through RAII.
+        }
     }
 }
 

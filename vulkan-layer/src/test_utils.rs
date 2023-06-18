@@ -17,6 +17,7 @@ use crate::{
     VkLayerInstanceLink,
 };
 use ash::{prelude::VkResult, vk};
+use mockall::mock;
 use std::{
     borrow::Borrow,
     collections::HashMap,
@@ -91,10 +92,26 @@ impl<T: Default> Default for ArcDel<T> {
     }
 }
 
+mock! {
+    pub Drop {}
+    impl Drop for Drop {
+        fn drop(&mut self);
+    }
+}
+
 #[derive(Default)]
 pub struct MockInstanceInfo<T: TestLayer> {
     pub mock_hooks: Mutex<MockInstanceHooks>,
+    mock_drop: Mutex<Option<MockDrop>>,
     _marker: PhantomData<T>,
+}
+
+impl<T: TestLayer> MockInstanceInfo<T> {
+    pub fn with_mock_drop(&self, f: impl FnOnce(&mut MockDrop)) {
+        let mut mock_drop = self.mock_drop.lock().unwrap();
+        let mock_drop = mock_drop.get_or_insert_with(Default::default);
+        f(mock_drop);
+    }
 }
 
 impl<T: TestLayer> InstanceInfo for MockInstanceInfo<T> {
