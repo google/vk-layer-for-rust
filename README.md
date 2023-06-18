@@ -53,17 +53,20 @@ TODO
 
 - [x] Allow interception of `vkGet*ProcAddr` will fix this issue. Handle the case where the underlying driver returns a null pointer to function. Currently we still return a valid function pointer, however the Android loader may test the returned function pointer to decide if such function is supported.
 - [x] Set up `Android.bp` to build in an Android tree.
-    - [ ] Upgrade ash in aosp, and remove vulkano, so that we can build from aosp/master.
+  - [ ] Upgrade ash in aosp, and remove vulkano, so that we can build from aosp/master.
 - [x] Auto-generate the binding from [`vk_layer.h`](https://github.com/KhronosGroup/Vulkan-Headers/blob/9e61870ecbd32514113b467e0a0c46f60ed222c7/include/vulkan/vk_layer.h).
 - [x] Auto-generate the `global_simple_intercept.rs` from `vk.xml`.
 - [x] Auto-generate the `layer_trait.rs` file from `vk.xml`.
-- [ ] Use a attribute macro to track which function is implemented in the `LayerTrait`, and don't inject all other functions for performance.
-- [ ] Release global resources when the dynamic library is unloaded. Use platform specific way. This is a more serious issue for Android, because Vulkan is a SP-HAL that can be loaded into and unloaded from the process multiple times.
+- [x] Use a attribute macro to track which function is implemented in the `LayerTrait`, and don't inject all other functions for performance.
+- [ ] Do not auto generate global commands: the interfaces are always different.
+- [ ] Release global resources when the dynamic library is unloaded. Use platform specific way. This is a more serious issue for Android, because Vulkan is a SP-HAL that can be loaded into and unloaded from the process multiple times. We can use `Mutex<Option<Box<T>>>` for that.
 - [ ] Use procedure macro to generate the export functions in `lib.rs` file for the layer user.
 - [ ] Use the xtask workflow to generate the layer json file.
 - [ ] Support the latest layer interface version. Currently 2 is the latest version. e.g. correctly handle the `vk_layerGetPhysicalDeviceProcAddr` case.
 - [ ] Allow intercepting [pre-instance functions](https://github.com/KhronosGroup/Vulkan-Loader/blob/0c63db1aeda6916690b863688fa6cdf2ac1f790b/docs/LoaderLayerInterface.md#pre-instance-functions).
 - [ ] Add docstring to generated `layer_trait.rs` file.
 - [ ] Testing
-    - [ ] e2e test: the test boundary is the Vulkan layer ABI. The Vulkan loader and the mock ICD will be used for testing. Write a `cdylib` crate named `tests`, with a layer that is allowed to customize the behavior through a function exported as a dynamic library symbol. We run different tests in different processes. For different tests, we customize the layer differently, and asserts either inside the customization point or after it returns, e.g. to test initialization and destruction on DLL loading and unloading time, we can customize the ctor and the drop implementation for the layer, then load and unload the Vulkan library then verify if the ctor is called the same time as the drop. We also need to create a `e2e` task to build the DLL, generate the json, set the environement variables, and spawn tests in different processes(cargo-nextest can be used here since it runs tests in their own process).
-    - [ ] `vulkan-layer` level integration test: the test boundary is the public interface of the `vulkan-layer` crate. Neither Vulkan loader nor Vulkan ICD is involved. This type of test is still meaningful compared with the e2e test, because we can't customize the behavior of the Vulkan ICD(at least not until the mock ICD supports that). In this integration test, we can customize the behavior of the next layer function. And since the Vulkan loader is not involved, a test failure is easier to understand. We can share common test code with the `tests` crate for e2e test.
+  - [ ] e2e test: the test boundary is the Vulkan layer ABI. The Vulkan loader and the mock ICD will be used for testing. Write a `cdylib` crate named `tests`, with a layer that is allowed to customize the behavior through a function exported as a dynamic library symbol. We run different tests in different processes. For different tests, we customize the layer differently, and asserts either inside the customization point or after it returns, e.g. to test initialization and destruction on DLL loading and unloading time, we can customize the ctor and the drop implementation for the layer, then load and unload the Vulkan library then verify if the ctor is called the same time as the drop. We also need to create a `e2e` task to build the DLL, generate the json, set the environement variables, and spawn tests in different processes(cargo-nextest can be used here since it runs tests in their own process).
+  - [x] `vulkan-layer` level integration test
+- [ ] Investigate slow compile speed for integration test
+- [ ] Handle different enum underlying representation: generate `VkLayerFunction` in platform specific files, and also stop using `include!` which could confuse the `rust-analyzer`.
