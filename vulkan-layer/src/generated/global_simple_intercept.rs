@@ -1174,6190 +1174,5942 @@ impl InstanceDispatchTable {
 //   yet.
 
 impl<T: Layer> Global<T> {
-    pub(crate) fn get_device_commands(&self) -> &[VulkanCommand] {
-        self.device_commands.get_or_init(|| {
-            let hooked_commands = self.layer_info.hooked_commands().collect::<HashSet<_>>();
-            vec![
-                VulkanCommand {
-                    name: "vkAcquireFullScreenExclusiveModeEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTFullScreenExclusive)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::AcquireFullScreenExclusiveModeExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::acquire_full_screen_exclusive_mode_ext
-                                as vk::PFN_vkAcquireFullScreenExclusiveModeEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkAcquireImageANDROID",
-                    features: smallvec![Feature::Extension(Extension::ANDROIDNativeBuffer)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::AcquireImageAndroid),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::acquire_image_android as vk::PFN_vkAcquireImageANDROID,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkAcquireNextImage2KHR",
-                    features: smallvec![
-                        Feature::Extension(Extension::KHRSwapchain),
-                        Feature::Extension(Extension::KHRDeviceGroup)
-                    ],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::AcquireNextImage2Khr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::acquire_next_image2_khr as vk::PFN_vkAcquireNextImage2KHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkAcquireNextImageKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRSwapchain)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::AcquireNextImageKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::acquire_next_image_khr as vk::PFN_vkAcquireNextImageKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkAcquirePerformanceConfigurationINTEL",
-                    features: smallvec![Feature::Extension(Extension::INTELPerformanceQuery)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::AcquirePerformanceConfigurationIntel),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::acquire_performance_configuration_intel
-                                as vk::PFN_vkAcquirePerformanceConfigurationINTEL,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkAcquireProfilingLockKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRPerformanceQuery)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::AcquireProfilingLockKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::acquire_profiling_lock_khr as vk::PFN_vkAcquireProfilingLockKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkAllocateCommandBuffers",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::AllocateCommandBuffers),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::allocate_command_buffers as vk::PFN_vkAllocateCommandBuffers,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkAllocateDescriptorSets",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::AllocateDescriptorSets),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::allocate_descriptor_sets as vk::PFN_vkAllocateDescriptorSets,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkAllocateMemory",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::AllocateMemory),
-                    proc: unsafe {
-                        std::mem::transmute(Self::allocate_memory as vk::PFN_vkAllocateMemory)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkBeginCommandBuffer",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::BeginCommandBuffer),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::begin_command_buffer as vk::PFN_vkBeginCommandBuffer,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkBindAccelerationStructureMemoryNV",
-                    features: smallvec![Feature::Extension(Extension::NVRayTracing)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::BindAccelerationStructureMemoryNv),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::bind_acceleration_structure_memory_nv
-                                as vk::PFN_vkBindAccelerationStructureMemoryNV,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkBindBufferMemory",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::BindBufferMemory),
-                    proc: unsafe {
-                        std::mem::transmute(Self::bind_buffer_memory as vk::PFN_vkBindBufferMemory)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkBindBufferMemory2",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::BindBufferMemory2),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::bind_buffer_memory2 as vk::PFN_vkBindBufferMemory2,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkBindBufferMemory2KHR",
-                    features: smallvec![Feature::Extension(Extension::KHRBindMemory2)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::BindBufferMemory2),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::bind_buffer_memory2 as vk::PFN_vkBindBufferMemory2,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkBindImageMemory",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::BindImageMemory),
-                    proc: unsafe {
-                        std::mem::transmute(Self::bind_image_memory as vk::PFN_vkBindImageMemory)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkBindImageMemory2",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::BindImageMemory2),
-                    proc: unsafe {
-                        std::mem::transmute(Self::bind_image_memory2 as vk::PFN_vkBindImageMemory2)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkBindImageMemory2KHR",
-                    features: smallvec![Feature::Extension(Extension::KHRBindMemory2)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::BindImageMemory2),
-                    proc: unsafe {
-                        std::mem::transmute(Self::bind_image_memory2 as vk::PFN_vkBindImageMemory2)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkBindOpticalFlowSessionImageNV",
-                    features: smallvec![Feature::Extension(Extension::NVOpticalFlow)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::BindOpticalFlowSessionImageNv),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::bind_optical_flow_session_image_nv
-                                as vk::PFN_vkBindOpticalFlowSessionImageNV,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkBindVideoSessionMemoryKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRVideoQueue)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::BindVideoSessionMemoryKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::bind_video_session_memory_khr
-                                as vk::PFN_vkBindVideoSessionMemoryKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkBuildMicromapsEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTOpacityMicromap)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::BuildMicromapsExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::build_micromaps_ext as vk::PFN_vkBuildMicromapsEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdBeginConditionalRenderingEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTConditionalRendering)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdBeginConditionalRenderingExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_begin_conditional_rendering_ext
-                                as vk::PFN_vkCmdBeginConditionalRenderingEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdBeginDebugUtilsLabelEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTDebugUtils)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdBeginDebugUtilsLabelExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_begin_debug_utils_label_ext
-                                as vk::PFN_vkCmdBeginDebugUtilsLabelEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdBeginQuery",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBeginQuery),
-                    proc: unsafe {
-                        std::mem::transmute(Self::cmd_begin_query as vk::PFN_vkCmdBeginQuery)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdBeginQueryIndexedEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTTransformFeedback)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBeginQueryIndexedExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_begin_query_indexed_ext as vk::PFN_vkCmdBeginQueryIndexedEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdBeginRenderPass",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBeginRenderPass),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_begin_render_pass as vk::PFN_vkCmdBeginRenderPass,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdBeginRenderPass2",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 2 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBeginRenderPass2),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_begin_render_pass2 as vk::PFN_vkCmdBeginRenderPass2,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdBeginRenderPass2KHR",
-                    features: smallvec![Feature::Extension(Extension::KHRCreateRenderpass2)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBeginRenderPass2),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_begin_render_pass2 as vk::PFN_vkCmdBeginRenderPass2,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdBeginRendering",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBeginRendering),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_begin_rendering as vk::PFN_vkCmdBeginRendering,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdBeginRenderingKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRDynamicRendering)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBeginRendering),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_begin_rendering as vk::PFN_vkCmdBeginRendering,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdBeginTransformFeedbackEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTTransformFeedback)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdBeginTransformFeedbackExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_begin_transform_feedback_ext
-                                as vk::PFN_vkCmdBeginTransformFeedbackEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdBeginVideoCodingKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRVideoQueue)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBeginVideoCodingKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_begin_video_coding_khr as vk::PFN_vkCmdBeginVideoCodingKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdBindDescriptorBufferEmbeddedSamplersEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTDescriptorBuffer)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdBindDescriptorBufferEmbeddedSamplersExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_bind_descriptor_buffer_embedded_samplers_ext
-                                as vk::PFN_vkCmdBindDescriptorBufferEmbeddedSamplersEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdBindDescriptorBuffersEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTDescriptorBuffer)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdBindDescriptorBuffersExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_bind_descriptor_buffers_ext
-                                as vk::PFN_vkCmdBindDescriptorBuffersEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdBindDescriptorSets",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBindDescriptorSets),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_bind_descriptor_sets as vk::PFN_vkCmdBindDescriptorSets,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdBindIndexBuffer",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBindIndexBuffer),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_bind_index_buffer as vk::PFN_vkCmdBindIndexBuffer,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdBindInvocationMaskHUAWEI",
-                    features: smallvec![Feature::Extension(Extension::HUAWEIInvocationMask)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdBindInvocationMaskHuawei),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_bind_invocation_mask_huawei
-                                as vk::PFN_vkCmdBindInvocationMaskHUAWEI,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdBindPipeline",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBindPipeline),
-                    proc: unsafe {
-                        std::mem::transmute(Self::cmd_bind_pipeline as vk::PFN_vkCmdBindPipeline)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdBindPipelineShaderGroupNV",
-                    features: smallvec![Feature::Extension(Extension::NVDeviceGeneratedCommands)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdBindPipelineShaderGroupNv),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_bind_pipeline_shader_group_nv
-                                as vk::PFN_vkCmdBindPipelineShaderGroupNV,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdBindShadingRateImageNV",
-                    features: smallvec![Feature::Extension(Extension::NVShadingRateImage)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdBindShadingRateImageNv),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_bind_shading_rate_image_nv
-                                as vk::PFN_vkCmdBindShadingRateImageNV,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdBindTransformFeedbackBuffersEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTTransformFeedback)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdBindTransformFeedbackBuffersExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_bind_transform_feedback_buffers_ext
-                                as vk::PFN_vkCmdBindTransformFeedbackBuffersEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdBindVertexBuffers",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBindVertexBuffers),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_bind_vertex_buffers as vk::PFN_vkCmdBindVertexBuffers,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdBindVertexBuffers2",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBindVertexBuffers2),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_bind_vertex_buffers2 as vk::PFN_vkCmdBindVertexBuffers2,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdBindVertexBuffers2EXT",
-                    features: smallvec![
-                        Feature::Extension(Extension::EXTExtendedDynamicState),
-                        Feature::Extension(Extension::EXTShaderObject)
-                    ],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBindVertexBuffers2),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_bind_vertex_buffers2 as vk::PFN_vkCmdBindVertexBuffers2,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdBlitImage",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBlitImage),
-                    proc: unsafe {
-                        std::mem::transmute(Self::cmd_blit_image as vk::PFN_vkCmdBlitImage)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdBlitImage2",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBlitImage2),
-                    proc: unsafe {
-                        std::mem::transmute(Self::cmd_blit_image2 as vk::PFN_vkCmdBlitImage2)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdBlitImage2KHR",
-                    features: smallvec![Feature::Extension(Extension::KHRCopyCommands2)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBlitImage2),
-                    proc: unsafe {
-                        std::mem::transmute(Self::cmd_blit_image2 as vk::PFN_vkCmdBlitImage2)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdBuildAccelerationStructureNV",
-                    features: smallvec![Feature::Extension(Extension::NVRayTracing)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdBuildAccelerationStructureNv),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_build_acceleration_structure_nv
-                                as vk::PFN_vkCmdBuildAccelerationStructureNV,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdBuildMicromapsEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTOpacityMicromap)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBuildMicromapsExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_build_micromaps_ext as vk::PFN_vkCmdBuildMicromapsEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdClearAttachments",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdClearAttachments),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_clear_attachments as vk::PFN_vkCmdClearAttachments,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdClearColorImage",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdClearColorImage),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_clear_color_image as vk::PFN_vkCmdClearColorImage,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdClearDepthStencilImage",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdClearDepthStencilImage),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_clear_depth_stencil_image
-                                as vk::PFN_vkCmdClearDepthStencilImage,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdControlVideoCodingKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRVideoQueue)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdControlVideoCodingKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_control_video_coding_khr
-                                as vk::PFN_vkCmdControlVideoCodingKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdCopyAccelerationStructureKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRAccelerationStructure)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdCopyAccelerationStructureKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_copy_acceleration_structure_khr
-                                as vk::PFN_vkCmdCopyAccelerationStructureKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdCopyAccelerationStructureNV",
-                    features: smallvec![Feature::Extension(Extension::NVRayTracing)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdCopyAccelerationStructureNv),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_copy_acceleration_structure_nv
-                                as vk::PFN_vkCmdCopyAccelerationStructureNV,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdCopyAccelerationStructureToMemoryKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRAccelerationStructure)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdCopyAccelerationStructureToMemoryKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_copy_acceleration_structure_to_memory_khr
-                                as vk::PFN_vkCmdCopyAccelerationStructureToMemoryKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdCopyBuffer",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdCopyBuffer),
-                    proc: unsafe {
-                        std::mem::transmute(Self::cmd_copy_buffer as vk::PFN_vkCmdCopyBuffer)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdCopyBuffer2",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdCopyBuffer2),
-                    proc: unsafe {
-                        std::mem::transmute(Self::cmd_copy_buffer2 as vk::PFN_vkCmdCopyBuffer2)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdCopyBuffer2KHR",
-                    features: smallvec![Feature::Extension(Extension::KHRCopyCommands2)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdCopyBuffer2),
-                    proc: unsafe {
-                        std::mem::transmute(Self::cmd_copy_buffer2 as vk::PFN_vkCmdCopyBuffer2)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdCopyBufferToImage",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdCopyBufferToImage),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_copy_buffer_to_image as vk::PFN_vkCmdCopyBufferToImage,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdCopyBufferToImage2",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdCopyBufferToImage2),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_copy_buffer_to_image2 as vk::PFN_vkCmdCopyBufferToImage2,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdCopyBufferToImage2KHR",
-                    features: smallvec![Feature::Extension(Extension::KHRCopyCommands2)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdCopyBufferToImage2),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_copy_buffer_to_image2 as vk::PFN_vkCmdCopyBufferToImage2,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdCopyImage",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdCopyImage),
-                    proc: unsafe {
-                        std::mem::transmute(Self::cmd_copy_image as vk::PFN_vkCmdCopyImage)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdCopyImage2",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdCopyImage2),
-                    proc: unsafe {
-                        std::mem::transmute(Self::cmd_copy_image2 as vk::PFN_vkCmdCopyImage2)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdCopyImage2KHR",
-                    features: smallvec![Feature::Extension(Extension::KHRCopyCommands2)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdCopyImage2),
-                    proc: unsafe {
-                        std::mem::transmute(Self::cmd_copy_image2 as vk::PFN_vkCmdCopyImage2)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdCopyImageToBuffer",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdCopyImageToBuffer),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_copy_image_to_buffer as vk::PFN_vkCmdCopyImageToBuffer,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdCopyImageToBuffer2",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdCopyImageToBuffer2),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_copy_image_to_buffer2 as vk::PFN_vkCmdCopyImageToBuffer2,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdCopyImageToBuffer2KHR",
-                    features: smallvec![Feature::Extension(Extension::KHRCopyCommands2)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdCopyImageToBuffer2),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_copy_image_to_buffer2 as vk::PFN_vkCmdCopyImageToBuffer2,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdCopyMemoryIndirectNV",
-                    features: smallvec![Feature::Extension(Extension::NVCopyMemoryIndirect)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdCopyMemoryIndirectNv),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_copy_memory_indirect_nv as vk::PFN_vkCmdCopyMemoryIndirectNV,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdCopyMemoryToAccelerationStructureKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRAccelerationStructure)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdCopyMemoryToAccelerationStructureKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_copy_memory_to_acceleration_structure_khr
-                                as vk::PFN_vkCmdCopyMemoryToAccelerationStructureKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdCopyMemoryToImageIndirectNV",
-                    features: smallvec![Feature::Extension(Extension::NVCopyMemoryIndirect)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdCopyMemoryToImageIndirectNv),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_copy_memory_to_image_indirect_nv
-                                as vk::PFN_vkCmdCopyMemoryToImageIndirectNV,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdCopyMemoryToMicromapEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTOpacityMicromap)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdCopyMemoryToMicromapExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_copy_memory_to_micromap_ext
-                                as vk::PFN_vkCmdCopyMemoryToMicromapEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdCopyMicromapEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTOpacityMicromap)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdCopyMicromapExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_copy_micromap_ext as vk::PFN_vkCmdCopyMicromapEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdCopyMicromapToMemoryEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTOpacityMicromap)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdCopyMicromapToMemoryExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_copy_micromap_to_memory_ext
-                                as vk::PFN_vkCmdCopyMicromapToMemoryEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdCopyQueryPoolResults",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdCopyQueryPoolResults),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_copy_query_pool_results as vk::PFN_vkCmdCopyQueryPoolResults,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdCuLaunchKernelNVX",
-                    features: smallvec![Feature::Extension(Extension::NVXBinaryImport)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdCuLaunchKernelNvx),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_cu_launch_kernel_nvx as vk::PFN_vkCmdCuLaunchKernelNVX,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdDebugMarkerBeginEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTDebugMarker)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDebugMarkerBeginExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_debug_marker_begin_ext as vk::PFN_vkCmdDebugMarkerBeginEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdDebugMarkerEndEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTDebugMarker)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDebugMarkerEndExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_debug_marker_end_ext as vk::PFN_vkCmdDebugMarkerEndEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdDebugMarkerInsertEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTDebugMarker)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDebugMarkerInsertExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_debug_marker_insert_ext as vk::PFN_vkCmdDebugMarkerInsertEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdDecodeVideoKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRVideoDecodeQueue)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDecodeVideoKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_decode_video_khr as vk::PFN_vkCmdDecodeVideoKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdDecompressMemoryIndirectCountNV",
-                    features: smallvec![Feature::Extension(Extension::NVMemoryDecompression)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdDecompressMemoryIndirectCountNv),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_decompress_memory_indirect_count_nv
-                                as vk::PFN_vkCmdDecompressMemoryIndirectCountNV,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdDecompressMemoryNV",
-                    features: smallvec![Feature::Extension(Extension::NVMemoryDecompression)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDecompressMemoryNv),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_decompress_memory_nv as vk::PFN_vkCmdDecompressMemoryNV,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdDispatch",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDispatch),
-                    proc: unsafe {
-                        std::mem::transmute(Self::cmd_dispatch as vk::PFN_vkCmdDispatch)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdDispatchBase",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDispatchBase),
-                    proc: unsafe {
-                        std::mem::transmute(Self::cmd_dispatch_base as vk::PFN_vkCmdDispatchBase)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdDispatchBaseKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRDeviceGroup)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDispatchBase),
-                    proc: unsafe {
-                        std::mem::transmute(Self::cmd_dispatch_base as vk::PFN_vkCmdDispatchBase)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdDispatchIndirect",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDispatchIndirect),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_dispatch_indirect as vk::PFN_vkCmdDispatchIndirect,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdDraw",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDraw),
-                    proc: unsafe { std::mem::transmute(Self::cmd_draw as vk::PFN_vkCmdDraw) },
-                },
-                VulkanCommand {
-                    name: "vkCmdDrawIndexed",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDrawIndexed),
-                    proc: unsafe {
-                        std::mem::transmute(Self::cmd_draw_indexed as vk::PFN_vkCmdDrawIndexed)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdDrawIndexedIndirect",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDrawIndexedIndirect),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_draw_indexed_indirect as vk::PFN_vkCmdDrawIndexedIndirect,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdDrawIndexedIndirectCount",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 2 })],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdDrawIndexedIndirectCount),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_draw_indexed_indirect_count
-                                as vk::PFN_vkCmdDrawIndexedIndirectCount,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdDrawIndexedIndirectCountAMD",
-                    features: smallvec![Feature::Extension(Extension::AMDDrawIndirectCount)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdDrawIndexedIndirectCount),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_draw_indexed_indirect_count
-                                as vk::PFN_vkCmdDrawIndexedIndirectCount,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdDrawIndexedIndirectCountKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRDrawIndirectCount)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdDrawIndexedIndirectCount),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_draw_indexed_indirect_count
-                                as vk::PFN_vkCmdDrawIndexedIndirectCount,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdDrawIndirect",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDrawIndirect),
-                    proc: unsafe {
-                        std::mem::transmute(Self::cmd_draw_indirect as vk::PFN_vkCmdDrawIndirect)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdDrawIndirectByteCountEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTTransformFeedback)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdDrawIndirectByteCountExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_draw_indirect_byte_count_ext
-                                as vk::PFN_vkCmdDrawIndirectByteCountEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdDrawIndirectCount",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 2 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDrawIndirectCount),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_draw_indirect_count as vk::PFN_vkCmdDrawIndirectCount,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdDrawIndirectCountAMD",
-                    features: smallvec![Feature::Extension(Extension::AMDDrawIndirectCount)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDrawIndirectCount),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_draw_indirect_count as vk::PFN_vkCmdDrawIndirectCount,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdDrawIndirectCountKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRDrawIndirectCount)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDrawIndirectCount),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_draw_indirect_count as vk::PFN_vkCmdDrawIndirectCount,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdDrawMeshTasksEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTMeshShader)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDrawMeshTasksExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_draw_mesh_tasks_ext as vk::PFN_vkCmdDrawMeshTasksEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdDrawMeshTasksIndirectCountEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTMeshShader)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdDrawMeshTasksIndirectCountExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_draw_mesh_tasks_indirect_count_ext
-                                as vk::PFN_vkCmdDrawMeshTasksIndirectCountEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdDrawMeshTasksIndirectCountNV",
-                    features: smallvec![Feature::Extension(Extension::NVMeshShader)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdDrawMeshTasksIndirectCountNv),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_draw_mesh_tasks_indirect_count_nv
-                                as vk::PFN_vkCmdDrawMeshTasksIndirectCountNV,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdDrawMeshTasksIndirectEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTMeshShader)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdDrawMeshTasksIndirectExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_draw_mesh_tasks_indirect_ext
-                                as vk::PFN_vkCmdDrawMeshTasksIndirectEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdDrawMeshTasksIndirectNV",
-                    features: smallvec![Feature::Extension(Extension::NVMeshShader)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdDrawMeshTasksIndirectNv),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_draw_mesh_tasks_indirect_nv
-                                as vk::PFN_vkCmdDrawMeshTasksIndirectNV,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdDrawMeshTasksNV",
-                    features: smallvec![Feature::Extension(Extension::NVMeshShader)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDrawMeshTasksNv),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_draw_mesh_tasks_nv as vk::PFN_vkCmdDrawMeshTasksNV,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdDrawMultiEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTMultiDraw)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDrawMultiExt),
-                    proc: unsafe {
-                        std::mem::transmute(Self::cmd_draw_multi_ext as vk::PFN_vkCmdDrawMultiEXT)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdDrawMultiIndexedEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTMultiDraw)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDrawMultiIndexedExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_draw_multi_indexed_ext as vk::PFN_vkCmdDrawMultiIndexedEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdEncodeVideoKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRVideoEncodeQueue)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdEncodeVideoKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_encode_video_khr as vk::PFN_vkCmdEncodeVideoKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdEndConditionalRenderingEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTConditionalRendering)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdEndConditionalRenderingExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_end_conditional_rendering_ext
-                                as vk::PFN_vkCmdEndConditionalRenderingEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdEndDebugUtilsLabelEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTDebugUtils)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdEndDebugUtilsLabelExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_end_debug_utils_label_ext
-                                as vk::PFN_vkCmdEndDebugUtilsLabelEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdEndQuery",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdEndQuery),
-                    proc: unsafe {
-                        std::mem::transmute(Self::cmd_end_query as vk::PFN_vkCmdEndQuery)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdEndQueryIndexedEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTTransformFeedback)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdEndQueryIndexedExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_end_query_indexed_ext as vk::PFN_vkCmdEndQueryIndexedEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdEndRenderPass",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdEndRenderPass),
-                    proc: unsafe {
-                        std::mem::transmute(Self::cmd_end_render_pass as vk::PFN_vkCmdEndRenderPass)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdEndRenderPass2",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 2 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdEndRenderPass2),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_end_render_pass2 as vk::PFN_vkCmdEndRenderPass2,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdEndRenderPass2KHR",
-                    features: smallvec![Feature::Extension(Extension::KHRCreateRenderpass2)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdEndRenderPass2),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_end_render_pass2 as vk::PFN_vkCmdEndRenderPass2,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdEndRendering",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdEndRendering),
-                    proc: unsafe {
-                        std::mem::transmute(Self::cmd_end_rendering as vk::PFN_vkCmdEndRendering)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdEndRenderingKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRDynamicRendering)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdEndRendering),
-                    proc: unsafe {
-                        std::mem::transmute(Self::cmd_end_rendering as vk::PFN_vkCmdEndRendering)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdEndTransformFeedbackEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTTransformFeedback)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdEndTransformFeedbackExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_end_transform_feedback_ext
-                                as vk::PFN_vkCmdEndTransformFeedbackEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdEndVideoCodingKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRVideoQueue)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdEndVideoCodingKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_end_video_coding_khr as vk::PFN_vkCmdEndVideoCodingKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdExecuteCommands",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdExecuteCommands),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_execute_commands as vk::PFN_vkCmdExecuteCommands,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdExecuteGeneratedCommandsNV",
-                    features: smallvec![Feature::Extension(Extension::NVDeviceGeneratedCommands)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdExecuteGeneratedCommandsNv),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_execute_generated_commands_nv
-                                as vk::PFN_vkCmdExecuteGeneratedCommandsNV,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdFillBuffer",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdFillBuffer),
-                    proc: unsafe {
-                        std::mem::transmute(Self::cmd_fill_buffer as vk::PFN_vkCmdFillBuffer)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdInsertDebugUtilsLabelEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTDebugUtils)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdInsertDebugUtilsLabelExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_insert_debug_utils_label_ext
-                                as vk::PFN_vkCmdInsertDebugUtilsLabelEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdNextSubpass",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdNextSubpass),
-                    proc: unsafe {
-                        std::mem::transmute(Self::cmd_next_subpass as vk::PFN_vkCmdNextSubpass)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdNextSubpass2",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 2 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdNextSubpass2),
-                    proc: unsafe {
-                        std::mem::transmute(Self::cmd_next_subpass2 as vk::PFN_vkCmdNextSubpass2)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdNextSubpass2KHR",
-                    features: smallvec![Feature::Extension(Extension::KHRCreateRenderpass2)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdNextSubpass2),
-                    proc: unsafe {
-                        std::mem::transmute(Self::cmd_next_subpass2 as vk::PFN_vkCmdNextSubpass2)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdOpticalFlowExecuteNV",
-                    features: smallvec![Feature::Extension(Extension::NVOpticalFlow)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdOpticalFlowExecuteNv),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_optical_flow_execute_nv as vk::PFN_vkCmdOpticalFlowExecuteNV,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdPipelineBarrier",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdPipelineBarrier),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_pipeline_barrier as vk::PFN_vkCmdPipelineBarrier,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdPipelineBarrier2",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdPipelineBarrier2),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_pipeline_barrier2 as vk::PFN_vkCmdPipelineBarrier2,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdPipelineBarrier2KHR",
-                    features: smallvec![Feature::Extension(Extension::KHRSynchronization2)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdPipelineBarrier2),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_pipeline_barrier2 as vk::PFN_vkCmdPipelineBarrier2,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdPreprocessGeneratedCommandsNV",
-                    features: smallvec![Feature::Extension(Extension::NVDeviceGeneratedCommands)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdPreprocessGeneratedCommandsNv),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_preprocess_generated_commands_nv
-                                as vk::PFN_vkCmdPreprocessGeneratedCommandsNV,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdPushConstants",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdPushConstants),
-                    proc: unsafe {
-                        std::mem::transmute(Self::cmd_push_constants as vk::PFN_vkCmdPushConstants)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdPushDescriptorSetKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRPushDescriptor)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdPushDescriptorSetKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_push_descriptor_set_khr as vk::PFN_vkCmdPushDescriptorSetKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdPushDescriptorSetWithTemplateKHR",
-                    features: smallvec![
-                        Feature::Extension(Extension::KHRPushDescriptor),
-                        Feature::Extension(Extension::KHRDescriptorUpdateTemplate)
-                    ],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdPushDescriptorSetWithTemplateKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_push_descriptor_set_with_template_khr
-                                as vk::PFN_vkCmdPushDescriptorSetWithTemplateKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdResetEvent",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdResetEvent),
-                    proc: unsafe {
-                        std::mem::transmute(Self::cmd_reset_event as vk::PFN_vkCmdResetEvent)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdResetEvent2",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdResetEvent2),
-                    proc: unsafe {
-                        std::mem::transmute(Self::cmd_reset_event2 as vk::PFN_vkCmdResetEvent2)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdResetEvent2KHR",
-                    features: smallvec![Feature::Extension(Extension::KHRSynchronization2)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdResetEvent2),
-                    proc: unsafe {
-                        std::mem::transmute(Self::cmd_reset_event2 as vk::PFN_vkCmdResetEvent2)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdResetQueryPool",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdResetQueryPool),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_reset_query_pool as vk::PFN_vkCmdResetQueryPool,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdResolveImage",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdResolveImage),
-                    proc: unsafe {
-                        std::mem::transmute(Self::cmd_resolve_image as vk::PFN_vkCmdResolveImage)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdResolveImage2",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdResolveImage2),
-                    proc: unsafe {
-                        std::mem::transmute(Self::cmd_resolve_image2 as vk::PFN_vkCmdResolveImage2)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdResolveImage2KHR",
-                    features: smallvec![Feature::Extension(Extension::KHRCopyCommands2)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdResolveImage2),
-                    proc: unsafe {
-                        std::mem::transmute(Self::cmd_resolve_image2 as vk::PFN_vkCmdResolveImage2)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetAlphaToCoverageEnableEXT",
-                    features: smallvec![
-                        Feature::Extension(Extension::EXTExtendedDynamicState3),
-                        Feature::Extension(Extension::EXTShaderObject)
-                    ],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdSetAlphaToCoverageEnableExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_alpha_to_coverage_enable_ext
-                                as vk::PFN_vkCmdSetAlphaToCoverageEnableEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetAlphaToOneEnableEXT",
-                    features: smallvec![
-                        Feature::Extension(Extension::EXTExtendedDynamicState3),
-                        Feature::Extension(Extension::EXTShaderObject)
-                    ],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdSetAlphaToOneEnableExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_alpha_to_one_enable_ext
-                                as vk::PFN_vkCmdSetAlphaToOneEnableEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetBlendConstants",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetBlendConstants),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_blend_constants as vk::PFN_vkCmdSetBlendConstants,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetCheckpointNV",
-                    features: smallvec![Feature::Extension(
-                        Extension::NVDeviceDiagnosticCheckpoints
-                    )],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetCheckpointNv),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_checkpoint_nv as vk::PFN_vkCmdSetCheckpointNV,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetCoarseSampleOrderNV",
-                    features: smallvec![Feature::Extension(Extension::NVShadingRateImage)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdSetCoarseSampleOrderNv),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_coarse_sample_order_nv
-                                as vk::PFN_vkCmdSetCoarseSampleOrderNV,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetColorBlendAdvancedEXT",
-                    features: smallvec![
-                        Feature::Extension(Extension::EXTExtendedDynamicState3),
-                        Feature::Extension(Extension::EXTShaderObject)
-                    ],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdSetColorBlendAdvancedExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_color_blend_advanced_ext
-                                as vk::PFN_vkCmdSetColorBlendAdvancedEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetColorBlendEnableEXT",
-                    features: smallvec![
-                        Feature::Extension(Extension::EXTExtendedDynamicState3),
-                        Feature::Extension(Extension::EXTShaderObject)
-                    ],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdSetColorBlendEnableExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_color_blend_enable_ext
-                                as vk::PFN_vkCmdSetColorBlendEnableEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetColorBlendEquationEXT",
-                    features: smallvec![
-                        Feature::Extension(Extension::EXTExtendedDynamicState3),
-                        Feature::Extension(Extension::EXTShaderObject)
-                    ],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdSetColorBlendEquationExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_color_blend_equation_ext
-                                as vk::PFN_vkCmdSetColorBlendEquationEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetColorWriteEnableEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTColorWriteEnable)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdSetColorWriteEnableExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_color_write_enable_ext
-                                as vk::PFN_vkCmdSetColorWriteEnableEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetColorWriteMaskEXT",
-                    features: smallvec![
-                        Feature::Extension(Extension::EXTExtendedDynamicState3),
-                        Feature::Extension(Extension::EXTShaderObject)
-                    ],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetColorWriteMaskExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_color_write_mask_ext as vk::PFN_vkCmdSetColorWriteMaskEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetConservativeRasterizationModeEXT",
-                    features: smallvec![
-                        Feature::Extension(Extension::EXTExtendedDynamicState3),
-                        Feature::Extension(Extension::EXTShaderObject)
-                    ],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdSetConservativeRasterizationModeExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_conservative_rasterization_mode_ext
-                                as vk::PFN_vkCmdSetConservativeRasterizationModeEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetCoverageModulationModeNV",
-                    features: smallvec![
-                        Feature::Extension(Extension::EXTExtendedDynamicState3),
-                        Feature::Extension(Extension::EXTShaderObject)
-                    ],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdSetCoverageModulationModeNv),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_coverage_modulation_mode_nv
-                                as vk::PFN_vkCmdSetCoverageModulationModeNV,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetCoverageModulationTableEnableNV",
-                    features: smallvec![
-                        Feature::Extension(Extension::EXTExtendedDynamicState3),
-                        Feature::Extension(Extension::EXTShaderObject)
-                    ],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdSetCoverageModulationTableEnableNv),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_coverage_modulation_table_enable_nv
-                                as vk::PFN_vkCmdSetCoverageModulationTableEnableNV,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetCoverageModulationTableNV",
-                    features: smallvec![
-                        Feature::Extension(Extension::EXTExtendedDynamicState3),
-                        Feature::Extension(Extension::EXTShaderObject)
-                    ],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdSetCoverageModulationTableNv),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_coverage_modulation_table_nv
-                                as vk::PFN_vkCmdSetCoverageModulationTableNV,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetCoverageReductionModeNV",
-                    features: smallvec![
-                        Feature::Extension(Extension::EXTExtendedDynamicState3),
-                        Feature::Extension(Extension::EXTShaderObject)
-                    ],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdSetCoverageReductionModeNv),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_coverage_reduction_mode_nv
-                                as vk::PFN_vkCmdSetCoverageReductionModeNV,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetCoverageToColorEnableNV",
-                    features: smallvec![
-                        Feature::Extension(Extension::EXTExtendedDynamicState3),
-                        Feature::Extension(Extension::EXTShaderObject)
-                    ],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdSetCoverageToColorEnableNv),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_coverage_to_color_enable_nv
-                                as vk::PFN_vkCmdSetCoverageToColorEnableNV,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetCoverageToColorLocationNV",
-                    features: smallvec![
-                        Feature::Extension(Extension::EXTExtendedDynamicState3),
-                        Feature::Extension(Extension::EXTShaderObject)
-                    ],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdSetCoverageToColorLocationNv),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_coverage_to_color_location_nv
-                                as vk::PFN_vkCmdSetCoverageToColorLocationNV,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetCullMode",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetCullMode),
-                    proc: unsafe {
-                        std::mem::transmute(Self::cmd_set_cull_mode as vk::PFN_vkCmdSetCullMode)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetCullModeEXT",
-                    features: smallvec![
-                        Feature::Extension(Extension::EXTExtendedDynamicState),
-                        Feature::Extension(Extension::EXTShaderObject)
-                    ],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetCullMode),
-                    proc: unsafe {
-                        std::mem::transmute(Self::cmd_set_cull_mode as vk::PFN_vkCmdSetCullMode)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetDepthBias",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetDepthBias),
-                    proc: unsafe {
-                        std::mem::transmute(Self::cmd_set_depth_bias as vk::PFN_vkCmdSetDepthBias)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetDepthBiasEnable",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetDepthBiasEnable),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_depth_bias_enable as vk::PFN_vkCmdSetDepthBiasEnable,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetDepthBiasEnableEXT",
-                    features: smallvec![
-                        Feature::Extension(Extension::EXTExtendedDynamicState2),
-                        Feature::Extension(Extension::EXTShaderObject)
-                    ],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetDepthBiasEnable),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_depth_bias_enable as vk::PFN_vkCmdSetDepthBiasEnable,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetDepthBounds",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetDepthBounds),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_depth_bounds as vk::PFN_vkCmdSetDepthBounds,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetDepthBoundsTestEnable",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdSetDepthBoundsTestEnable),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_depth_bounds_test_enable
-                                as vk::PFN_vkCmdSetDepthBoundsTestEnable,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetDepthBoundsTestEnableEXT",
-                    features: smallvec![
-                        Feature::Extension(Extension::EXTExtendedDynamicState),
-                        Feature::Extension(Extension::EXTShaderObject)
-                    ],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdSetDepthBoundsTestEnable),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_depth_bounds_test_enable
-                                as vk::PFN_vkCmdSetDepthBoundsTestEnable,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetDepthClampEnableEXT",
-                    features: smallvec![
-                        Feature::Extension(Extension::EXTExtendedDynamicState3),
-                        Feature::Extension(Extension::EXTShaderObject)
-                    ],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdSetDepthClampEnableExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_depth_clamp_enable_ext
-                                as vk::PFN_vkCmdSetDepthClampEnableEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetDepthClipEnableEXT",
-                    features: smallvec![
-                        Feature::Extension(Extension::EXTExtendedDynamicState3),
-                        Feature::Extension(Extension::EXTShaderObject)
-                    ],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetDepthClipEnableExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_depth_clip_enable_ext
-                                as vk::PFN_vkCmdSetDepthClipEnableEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetDepthClipNegativeOneToOneEXT",
-                    features: smallvec![
-                        Feature::Extension(Extension::EXTExtendedDynamicState3),
-                        Feature::Extension(Extension::EXTShaderObject)
-                    ],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdSetDepthClipNegativeOneToOneExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_depth_clip_negative_one_to_one_ext
-                                as vk::PFN_vkCmdSetDepthClipNegativeOneToOneEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetDepthCompareOp",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetDepthCompareOp),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_depth_compare_op as vk::PFN_vkCmdSetDepthCompareOp,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetDepthCompareOpEXT",
-                    features: smallvec![
-                        Feature::Extension(Extension::EXTExtendedDynamicState),
-                        Feature::Extension(Extension::EXTShaderObject)
-                    ],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetDepthCompareOp),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_depth_compare_op as vk::PFN_vkCmdSetDepthCompareOp,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetDepthTestEnable",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetDepthTestEnable),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_depth_test_enable as vk::PFN_vkCmdSetDepthTestEnable,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetDepthTestEnableEXT",
-                    features: smallvec![
-                        Feature::Extension(Extension::EXTExtendedDynamicState),
-                        Feature::Extension(Extension::EXTShaderObject)
-                    ],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetDepthTestEnable),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_depth_test_enable as vk::PFN_vkCmdSetDepthTestEnable,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetDepthWriteEnable",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetDepthWriteEnable),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_depth_write_enable as vk::PFN_vkCmdSetDepthWriteEnable,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetDepthWriteEnableEXT",
-                    features: smallvec![
-                        Feature::Extension(Extension::EXTExtendedDynamicState),
-                        Feature::Extension(Extension::EXTShaderObject)
-                    ],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetDepthWriteEnable),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_depth_write_enable as vk::PFN_vkCmdSetDepthWriteEnable,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetDescriptorBufferOffsetsEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTDescriptorBuffer)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdSetDescriptorBufferOffsetsExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_descriptor_buffer_offsets_ext
-                                as vk::PFN_vkCmdSetDescriptorBufferOffsetsEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetDeviceMask",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetDeviceMask),
-                    proc: unsafe {
-                        std::mem::transmute(Self::cmd_set_device_mask as vk::PFN_vkCmdSetDeviceMask)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetDeviceMaskKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRDeviceGroup)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetDeviceMask),
-                    proc: unsafe {
-                        std::mem::transmute(Self::cmd_set_device_mask as vk::PFN_vkCmdSetDeviceMask)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetDiscardRectangleEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTDiscardRectangles)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdSetDiscardRectangleExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_discard_rectangle_ext
-                                as vk::PFN_vkCmdSetDiscardRectangleEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetEvent",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetEvent),
-                    proc: unsafe {
-                        std::mem::transmute(Self::cmd_set_event as vk::PFN_vkCmdSetEvent)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetEvent2",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetEvent2),
-                    proc: unsafe {
-                        std::mem::transmute(Self::cmd_set_event2 as vk::PFN_vkCmdSetEvent2)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetEvent2KHR",
-                    features: smallvec![Feature::Extension(Extension::KHRSynchronization2)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetEvent2),
-                    proc: unsafe {
-                        std::mem::transmute(Self::cmd_set_event2 as vk::PFN_vkCmdSetEvent2)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetExclusiveScissorNV",
-                    features: smallvec![Feature::Extension(Extension::NVScissorExclusive)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetExclusiveScissorNv),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_exclusive_scissor_nv
-                                as vk::PFN_vkCmdSetExclusiveScissorNV,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetExtraPrimitiveOverestimationSizeEXT",
-                    features: smallvec![
-                        Feature::Extension(Extension::EXTExtendedDynamicState3),
-                        Feature::Extension(Extension::EXTShaderObject)
-                    ],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdSetExtraPrimitiveOverestimationSizeExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_extra_primitive_overestimation_size_ext
-                                as vk::PFN_vkCmdSetExtraPrimitiveOverestimationSizeEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetFragmentShadingRateEnumNV",
-                    features: smallvec![Feature::Extension(Extension::NVFragmentShadingRateEnums)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdSetFragmentShadingRateEnumNv),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_fragment_shading_rate_enum_nv
-                                as vk::PFN_vkCmdSetFragmentShadingRateEnumNV,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetFragmentShadingRateKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRFragmentShadingRate)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdSetFragmentShadingRateKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_fragment_shading_rate_khr
-                                as vk::PFN_vkCmdSetFragmentShadingRateKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetFrontFace",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetFrontFace),
-                    proc: unsafe {
-                        std::mem::transmute(Self::cmd_set_front_face as vk::PFN_vkCmdSetFrontFace)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetFrontFaceEXT",
-                    features: smallvec![
-                        Feature::Extension(Extension::EXTExtendedDynamicState),
-                        Feature::Extension(Extension::EXTShaderObject)
-                    ],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetFrontFace),
-                    proc: unsafe {
-                        std::mem::transmute(Self::cmd_set_front_face as vk::PFN_vkCmdSetFrontFace)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetLineRasterizationModeEXT",
-                    features: smallvec![
-                        Feature::Extension(Extension::EXTExtendedDynamicState3),
-                        Feature::Extension(Extension::EXTShaderObject)
-                    ],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdSetLineRasterizationModeExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_line_rasterization_mode_ext
-                                as vk::PFN_vkCmdSetLineRasterizationModeEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetLineStippleEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTLineRasterization)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetLineStippleExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_line_stipple_ext as vk::PFN_vkCmdSetLineStippleEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetLineStippleEnableEXT",
-                    features: smallvec![
-                        Feature::Extension(Extension::EXTExtendedDynamicState3),
-                        Feature::Extension(Extension::EXTShaderObject)
-                    ],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdSetLineStippleEnableExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_line_stipple_enable_ext
-                                as vk::PFN_vkCmdSetLineStippleEnableEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetLineWidth",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetLineWidth),
-                    proc: unsafe {
-                        std::mem::transmute(Self::cmd_set_line_width as vk::PFN_vkCmdSetLineWidth)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetLogicOpEXT",
-                    features: smallvec![
-                        Feature::Extension(Extension::EXTExtendedDynamicState2),
-                        Feature::Extension(Extension::EXTShaderObject)
-                    ],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetLogicOpExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_logic_op_ext as vk::PFN_vkCmdSetLogicOpEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetLogicOpEnableEXT",
-                    features: smallvec![
-                        Feature::Extension(Extension::EXTExtendedDynamicState3),
-                        Feature::Extension(Extension::EXTShaderObject)
-                    ],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetLogicOpEnableExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_logic_op_enable_ext as vk::PFN_vkCmdSetLogicOpEnableEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetPatchControlPointsEXT",
-                    features: smallvec![
-                        Feature::Extension(Extension::EXTExtendedDynamicState2),
-                        Feature::Extension(Extension::EXTShaderObject)
-                    ],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdSetPatchControlPointsExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_patch_control_points_ext
-                                as vk::PFN_vkCmdSetPatchControlPointsEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetPerformanceMarkerINTEL",
-                    features: smallvec![Feature::Extension(Extension::INTELPerformanceQuery)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdSetPerformanceMarkerIntel),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_performance_marker_intel
-                                as vk::PFN_vkCmdSetPerformanceMarkerINTEL,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetPerformanceOverrideINTEL",
-                    features: smallvec![Feature::Extension(Extension::INTELPerformanceQuery)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdSetPerformanceOverrideIntel),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_performance_override_intel
-                                as vk::PFN_vkCmdSetPerformanceOverrideINTEL,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetPerformanceStreamMarkerINTEL",
-                    features: smallvec![Feature::Extension(Extension::INTELPerformanceQuery)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdSetPerformanceStreamMarkerIntel),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_performance_stream_marker_intel
-                                as vk::PFN_vkCmdSetPerformanceStreamMarkerINTEL,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetPolygonModeEXT",
-                    features: smallvec![
-                        Feature::Extension(Extension::EXTExtendedDynamicState3),
-                        Feature::Extension(Extension::EXTShaderObject)
-                    ],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetPolygonModeExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_polygon_mode_ext as vk::PFN_vkCmdSetPolygonModeEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetPrimitiveRestartEnable",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdSetPrimitiveRestartEnable),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_primitive_restart_enable
-                                as vk::PFN_vkCmdSetPrimitiveRestartEnable,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetPrimitiveRestartEnableEXT",
-                    features: smallvec![
-                        Feature::Extension(Extension::EXTExtendedDynamicState2),
-                        Feature::Extension(Extension::EXTShaderObject)
-                    ],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdSetPrimitiveRestartEnable),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_primitive_restart_enable
-                                as vk::PFN_vkCmdSetPrimitiveRestartEnable,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetPrimitiveTopology",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetPrimitiveTopology),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_primitive_topology as vk::PFN_vkCmdSetPrimitiveTopology,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetPrimitiveTopologyEXT",
-                    features: smallvec![
-                        Feature::Extension(Extension::EXTExtendedDynamicState),
-                        Feature::Extension(Extension::EXTShaderObject)
-                    ],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetPrimitiveTopology),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_primitive_topology as vk::PFN_vkCmdSetPrimitiveTopology,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetProvokingVertexModeEXT",
-                    features: smallvec![
-                        Feature::Extension(Extension::EXTExtendedDynamicState3),
-                        Feature::Extension(Extension::EXTShaderObject)
-                    ],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdSetProvokingVertexModeExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_provoking_vertex_mode_ext
-                                as vk::PFN_vkCmdSetProvokingVertexModeEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetRasterizationSamplesEXT",
-                    features: smallvec![
-                        Feature::Extension(Extension::EXTExtendedDynamicState3),
-                        Feature::Extension(Extension::EXTShaderObject)
-                    ],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdSetRasterizationSamplesExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_rasterization_samples_ext
-                                as vk::PFN_vkCmdSetRasterizationSamplesEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetRasterizationStreamEXT",
-                    features: smallvec![
-                        Feature::Extension(Extension::EXTExtendedDynamicState3),
-                        Feature::Extension(Extension::EXTShaderObject)
-                    ],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdSetRasterizationStreamExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_rasterization_stream_ext
-                                as vk::PFN_vkCmdSetRasterizationStreamEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetRasterizerDiscardEnable",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdSetRasterizerDiscardEnable),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_rasterizer_discard_enable
-                                as vk::PFN_vkCmdSetRasterizerDiscardEnable,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetRasterizerDiscardEnableEXT",
-                    features: smallvec![
-                        Feature::Extension(Extension::EXTExtendedDynamicState2),
-                        Feature::Extension(Extension::EXTShaderObject)
-                    ],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdSetRasterizerDiscardEnable),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_rasterizer_discard_enable
-                                as vk::PFN_vkCmdSetRasterizerDiscardEnable,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetRayTracingPipelineStackSizeKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRRayTracingPipeline)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdSetRayTracingPipelineStackSizeKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_ray_tracing_pipeline_stack_size_khr
-                                as vk::PFN_vkCmdSetRayTracingPipelineStackSizeKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetRepresentativeFragmentTestEnableNV",
-                    features: smallvec![
-                        Feature::Extension(Extension::EXTExtendedDynamicState3),
-                        Feature::Extension(Extension::EXTShaderObject)
-                    ],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdSetRepresentativeFragmentTestEnableNv),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_representative_fragment_test_enable_nv
-                                as vk::PFN_vkCmdSetRepresentativeFragmentTestEnableNV,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetSampleLocationsEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTSampleLocations)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetSampleLocationsExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_sample_locations_ext
-                                as vk::PFN_vkCmdSetSampleLocationsEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetSampleLocationsEnableEXT",
-                    features: smallvec![
-                        Feature::Extension(Extension::EXTExtendedDynamicState3),
-                        Feature::Extension(Extension::EXTShaderObject)
-                    ],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdSetSampleLocationsEnableExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_sample_locations_enable_ext
-                                as vk::PFN_vkCmdSetSampleLocationsEnableEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetSampleMaskEXT",
-                    features: smallvec![
-                        Feature::Extension(Extension::EXTExtendedDynamicState3),
-                        Feature::Extension(Extension::EXTShaderObject)
-                    ],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetSampleMaskExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_sample_mask_ext as vk::PFN_vkCmdSetSampleMaskEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetScissor",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetScissor),
-                    proc: unsafe {
-                        std::mem::transmute(Self::cmd_set_scissor as vk::PFN_vkCmdSetScissor)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetScissorWithCount",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetScissorWithCount),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_scissor_with_count as vk::PFN_vkCmdSetScissorWithCount,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetScissorWithCountEXT",
-                    features: smallvec![
-                        Feature::Extension(Extension::EXTExtendedDynamicState),
-                        Feature::Extension(Extension::EXTShaderObject)
-                    ],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetScissorWithCount),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_scissor_with_count as vk::PFN_vkCmdSetScissorWithCount,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetShadingRateImageEnableNV",
-                    features: smallvec![
-                        Feature::Extension(Extension::EXTExtendedDynamicState3),
-                        Feature::Extension(Extension::EXTShaderObject)
-                    ],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdSetShadingRateImageEnableNv),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_shading_rate_image_enable_nv
-                                as vk::PFN_vkCmdSetShadingRateImageEnableNV,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetStencilCompareMask",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetStencilCompareMask),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_stencil_compare_mask
-                                as vk::PFN_vkCmdSetStencilCompareMask,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetStencilOp",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetStencilOp),
-                    proc: unsafe {
-                        std::mem::transmute(Self::cmd_set_stencil_op as vk::PFN_vkCmdSetStencilOp)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetStencilOpEXT",
-                    features: smallvec![
-                        Feature::Extension(Extension::EXTExtendedDynamicState),
-                        Feature::Extension(Extension::EXTShaderObject)
-                    ],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetStencilOp),
-                    proc: unsafe {
-                        std::mem::transmute(Self::cmd_set_stencil_op as vk::PFN_vkCmdSetStencilOp)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetStencilReference",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetStencilReference),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_stencil_reference as vk::PFN_vkCmdSetStencilReference,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetStencilTestEnable",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetStencilTestEnable),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_stencil_test_enable as vk::PFN_vkCmdSetStencilTestEnable,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetStencilTestEnableEXT",
-                    features: smallvec![
-                        Feature::Extension(Extension::EXTExtendedDynamicState),
-                        Feature::Extension(Extension::EXTShaderObject)
-                    ],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetStencilTestEnable),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_stencil_test_enable as vk::PFN_vkCmdSetStencilTestEnable,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetStencilWriteMask",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetStencilWriteMask),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_stencil_write_mask as vk::PFN_vkCmdSetStencilWriteMask,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetTessellationDomainOriginEXT",
-                    features: smallvec![
-                        Feature::Extension(Extension::EXTExtendedDynamicState3),
-                        Feature::Extension(Extension::EXTShaderObject)
-                    ],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdSetTessellationDomainOriginExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_tessellation_domain_origin_ext
-                                as vk::PFN_vkCmdSetTessellationDomainOriginEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetVertexInputEXT",
-                    features: smallvec![
-                        Feature::Extension(Extension::EXTVertexInputDynamicState),
-                        Feature::Extension(Extension::EXTShaderObject)
-                    ],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetVertexInputExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_vertex_input_ext as vk::PFN_vkCmdSetVertexInputEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetViewport",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetViewport),
-                    proc: unsafe {
-                        std::mem::transmute(Self::cmd_set_viewport as vk::PFN_vkCmdSetViewport)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetViewportShadingRatePaletteNV",
-                    features: smallvec![Feature::Extension(Extension::NVShadingRateImage)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdSetViewportShadingRatePaletteNv),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_viewport_shading_rate_palette_nv
-                                as vk::PFN_vkCmdSetViewportShadingRatePaletteNV,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetViewportSwizzleNV",
-                    features: smallvec![
-                        Feature::Extension(Extension::EXTExtendedDynamicState3),
-                        Feature::Extension(Extension::EXTShaderObject)
-                    ],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetViewportSwizzleNv),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_viewport_swizzle_nv as vk::PFN_vkCmdSetViewportSwizzleNV,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetViewportWScalingEnableNV",
-                    features: smallvec![
-                        Feature::Extension(Extension::EXTExtendedDynamicState3),
-                        Feature::Extension(Extension::EXTShaderObject)
-                    ],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdSetViewportWScalingEnableNv),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_viewport_w_scaling_enable_nv
-                                as vk::PFN_vkCmdSetViewportWScalingEnableNV,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetViewportWScalingNV",
-                    features: smallvec![Feature::Extension(Extension::NVClipSpaceWScaling)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetViewportWScalingNv),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_viewport_w_scaling_nv
-                                as vk::PFN_vkCmdSetViewportWScalingNV,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetViewportWithCount",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetViewportWithCount),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_viewport_with_count as vk::PFN_vkCmdSetViewportWithCount,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSetViewportWithCountEXT",
-                    features: smallvec![
-                        Feature::Extension(Extension::EXTExtendedDynamicState),
-                        Feature::Extension(Extension::EXTShaderObject)
-                    ],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetViewportWithCount),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_set_viewport_with_count as vk::PFN_vkCmdSetViewportWithCount,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdSubpassShadingHUAWEI",
-                    features: smallvec![Feature::Extension(Extension::HUAWEISubpassShading)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSubpassShadingHuawei),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_subpass_shading_huawei as vk::PFN_vkCmdSubpassShadingHUAWEI,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdTraceRaysIndirect2KHR",
-                    features: smallvec![Feature::Extension(Extension::KHRRayTracingMaintenance1)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdTraceRaysIndirect2Khr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_trace_rays_indirect2_khr
-                                as vk::PFN_vkCmdTraceRaysIndirect2KHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdTraceRaysIndirectKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRRayTracingPipeline)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdTraceRaysIndirectKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_trace_rays_indirect_khr as vk::PFN_vkCmdTraceRaysIndirectKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdTraceRaysKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRRayTracingPipeline)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdTraceRaysKhr),
-                    proc: unsafe {
-                        std::mem::transmute(Self::cmd_trace_rays_khr as vk::PFN_vkCmdTraceRaysKHR)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdTraceRaysNV",
-                    features: smallvec![Feature::Extension(Extension::NVRayTracing)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdTraceRaysNv),
-                    proc: unsafe {
-                        std::mem::transmute(Self::cmd_trace_rays_nv as vk::PFN_vkCmdTraceRaysNV)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdUpdateBuffer",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdUpdateBuffer),
-                    proc: unsafe {
-                        std::mem::transmute(Self::cmd_update_buffer as vk::PFN_vkCmdUpdateBuffer)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdWaitEvents",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdWaitEvents),
-                    proc: unsafe {
-                        std::mem::transmute(Self::cmd_wait_events as vk::PFN_vkCmdWaitEvents)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdWaitEvents2",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdWaitEvents2),
-                    proc: unsafe {
-                        std::mem::transmute(Self::cmd_wait_events2 as vk::PFN_vkCmdWaitEvents2)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdWaitEvents2KHR",
-                    features: smallvec![Feature::Extension(Extension::KHRSynchronization2)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdWaitEvents2),
-                    proc: unsafe {
-                        std::mem::transmute(Self::cmd_wait_events2 as vk::PFN_vkCmdWaitEvents2)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdWriteAccelerationStructuresPropertiesKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRAccelerationStructure)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdWriteAccelerationStructuresPropertiesKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_write_acceleration_structures_properties_khr
-                                as vk::PFN_vkCmdWriteAccelerationStructuresPropertiesKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdWriteAccelerationStructuresPropertiesNV",
-                    features: smallvec![Feature::Extension(Extension::NVRayTracing)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdWriteAccelerationStructuresPropertiesNv),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_write_acceleration_structures_properties_nv
-                                as vk::PFN_vkCmdWriteAccelerationStructuresPropertiesNV,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdWriteBufferMarker2AMD",
-                    features: smallvec![Feature::Extension(Extension::KHRSynchronization2)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdWriteBufferMarker2Amd),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_write_buffer_marker2_amd
-                                as vk::PFN_vkCmdWriteBufferMarker2AMD,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdWriteBufferMarkerAMD",
-                    features: smallvec![Feature::Extension(Extension::AMDBufferMarker)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdWriteBufferMarkerAmd),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_write_buffer_marker_amd as vk::PFN_vkCmdWriteBufferMarkerAMD,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdWriteMicromapsPropertiesEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTOpacityMicromap)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CmdWriteMicromapsPropertiesExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_write_micromaps_properties_ext
-                                as vk::PFN_vkCmdWriteMicromapsPropertiesEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdWriteTimestamp",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdWriteTimestamp),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_write_timestamp as vk::PFN_vkCmdWriteTimestamp,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdWriteTimestamp2",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdWriteTimestamp2),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_write_timestamp2 as vk::PFN_vkCmdWriteTimestamp2,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCmdWriteTimestamp2KHR",
-                    features: smallvec![Feature::Extension(Extension::KHRSynchronization2)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CmdWriteTimestamp2),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::cmd_write_timestamp2 as vk::PFN_vkCmdWriteTimestamp2,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCompileDeferredNV",
-                    features: smallvec![Feature::Extension(Extension::NVRayTracing)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CompileDeferredNv),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::compile_deferred_nv as vk::PFN_vkCompileDeferredNV,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCopyAccelerationStructureKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRAccelerationStructure)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CopyAccelerationStructureKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::copy_acceleration_structure_khr
-                                as vk::PFN_vkCopyAccelerationStructureKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCopyAccelerationStructureToMemoryKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRAccelerationStructure)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CopyAccelerationStructureToMemoryKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::copy_acceleration_structure_to_memory_khr
-                                as vk::PFN_vkCopyAccelerationStructureToMemoryKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCopyMemoryToAccelerationStructureKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRAccelerationStructure)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CopyMemoryToAccelerationStructureKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::copy_memory_to_acceleration_structure_khr
-                                as vk::PFN_vkCopyMemoryToAccelerationStructureKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCopyMemoryToMicromapEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTOpacityMicromap)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CopyMemoryToMicromapExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::copy_memory_to_micromap_ext as vk::PFN_vkCopyMemoryToMicromapEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCopyMicromapEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTOpacityMicromap)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CopyMicromapExt),
-                    proc: unsafe {
-                        std::mem::transmute(Self::copy_micromap_ext as vk::PFN_vkCopyMicromapEXT)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCopyMicromapToMemoryEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTOpacityMicromap)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CopyMicromapToMemoryExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::copy_micromap_to_memory_ext as vk::PFN_vkCopyMicromapToMemoryEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCreateAccelerationStructureKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRAccelerationStructure)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CreateAccelerationStructureKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::create_acceleration_structure_khr
-                                as vk::PFN_vkCreateAccelerationStructureKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCreateAccelerationStructureNV",
-                    features: smallvec![Feature::Extension(Extension::NVRayTracing)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CreateAccelerationStructureNv),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::create_acceleration_structure_nv
-                                as vk::PFN_vkCreateAccelerationStructureNV,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCreateBuffer",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CreateBuffer),
-                    proc: unsafe {
-                        std::mem::transmute(Self::create_buffer as vk::PFN_vkCreateBuffer)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCreateBufferCollectionFUCHSIA",
-                    features: smallvec![Feature::Extension(Extension::FUCHSIABufferCollection)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CreateBufferCollectionFuchsia),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::create_buffer_collection_fuchsia
-                                as vk::PFN_vkCreateBufferCollectionFUCHSIA,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCreateBufferView",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CreateBufferView),
-                    proc: unsafe {
-                        std::mem::transmute(Self::create_buffer_view as vk::PFN_vkCreateBufferView)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCreateCommandPool",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CreateCommandPool),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::create_command_pool as vk::PFN_vkCreateCommandPool,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCreateComputePipelines",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CreateComputePipelines),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::create_compute_pipelines as vk::PFN_vkCreateComputePipelines,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCreateCuFunctionNVX",
-                    features: smallvec![Feature::Extension(Extension::NVXBinaryImport)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CreateCuFunctionNvx),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::create_cu_function_nvx as vk::PFN_vkCreateCuFunctionNVX,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCreateCuModuleNVX",
-                    features: smallvec![Feature::Extension(Extension::NVXBinaryImport)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CreateCuModuleNvx),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::create_cu_module_nvx as vk::PFN_vkCreateCuModuleNVX,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCreateDeferredOperationKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRDeferredHostOperations)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CreateDeferredOperationKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::create_deferred_operation_khr
-                                as vk::PFN_vkCreateDeferredOperationKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCreateDescriptorPool",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CreateDescriptorPool),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::create_descriptor_pool as vk::PFN_vkCreateDescriptorPool,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCreateDescriptorSetLayout",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CreateDescriptorSetLayout),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::create_descriptor_set_layout
-                                as vk::PFN_vkCreateDescriptorSetLayout,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCreateDescriptorUpdateTemplate",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1 })],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CreateDescriptorUpdateTemplate),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::create_descriptor_update_template
-                                as vk::PFN_vkCreateDescriptorUpdateTemplate,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCreateDescriptorUpdateTemplateKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRDescriptorUpdateTemplate)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CreateDescriptorUpdateTemplate),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::create_descriptor_update_template
-                                as vk::PFN_vkCreateDescriptorUpdateTemplate,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCreateEvent",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CreateEvent),
-                    proc: unsafe {
-                        std::mem::transmute(Self::create_event as vk::PFN_vkCreateEvent)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCreateFence",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CreateFence),
-                    proc: unsafe {
-                        std::mem::transmute(Self::create_fence as vk::PFN_vkCreateFence)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCreateFramebuffer",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CreateFramebuffer),
-                    proc: unsafe {
-                        std::mem::transmute(Self::create_framebuffer as vk::PFN_vkCreateFramebuffer)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCreateGraphicsPipelines",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CreateGraphicsPipelines),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::create_graphics_pipelines as vk::PFN_vkCreateGraphicsPipelines,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCreateImage",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CreateImage),
-                    proc: unsafe {
-                        std::mem::transmute(Self::create_image as vk::PFN_vkCreateImage)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCreateImageView",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CreateImageView),
-                    proc: unsafe {
-                        std::mem::transmute(Self::create_image_view as vk::PFN_vkCreateImageView)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCreateIndirectCommandsLayoutNV",
-                    features: smallvec![Feature::Extension(Extension::NVDeviceGeneratedCommands)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CreateIndirectCommandsLayoutNv),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::create_indirect_commands_layout_nv
-                                as vk::PFN_vkCreateIndirectCommandsLayoutNV,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCreateMicromapEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTOpacityMicromap)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CreateMicromapExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::create_micromap_ext as vk::PFN_vkCreateMicromapEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCreateOpticalFlowSessionNV",
-                    features: smallvec![Feature::Extension(Extension::NVOpticalFlow)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CreateOpticalFlowSessionNv),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::create_optical_flow_session_nv
-                                as vk::PFN_vkCreateOpticalFlowSessionNV,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCreatePipelineCache",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CreatePipelineCache),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::create_pipeline_cache as vk::PFN_vkCreatePipelineCache,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCreatePipelineLayout",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CreatePipelineLayout),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::create_pipeline_layout as vk::PFN_vkCreatePipelineLayout,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCreatePrivateDataSlot",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CreatePrivateDataSlot),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::create_private_data_slot as vk::PFN_vkCreatePrivateDataSlot,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCreatePrivateDataSlotEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTPrivateData)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CreatePrivateDataSlot),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::create_private_data_slot as vk::PFN_vkCreatePrivateDataSlot,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCreateQueryPool",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CreateQueryPool),
-                    proc: unsafe {
-                        std::mem::transmute(Self::create_query_pool as vk::PFN_vkCreateQueryPool)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCreateRayTracingPipelinesKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRRayTracingPipeline)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CreateRayTracingPipelinesKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::create_ray_tracing_pipelines_khr
-                                as vk::PFN_vkCreateRayTracingPipelinesKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCreateRayTracingPipelinesNV",
-                    features: smallvec![Feature::Extension(Extension::NVRayTracing)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CreateRayTracingPipelinesNv),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::create_ray_tracing_pipelines_nv
-                                as vk::PFN_vkCreateRayTracingPipelinesNV,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCreateRenderPass",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CreateRenderPass),
-                    proc: unsafe {
-                        std::mem::transmute(Self::create_render_pass as vk::PFN_vkCreateRenderPass)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCreateRenderPass2",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 2 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CreateRenderPass2),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::create_render_pass2 as vk::PFN_vkCreateRenderPass2,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCreateRenderPass2KHR",
-                    features: smallvec![Feature::Extension(Extension::KHRCreateRenderpass2)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CreateRenderPass2),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::create_render_pass2 as vk::PFN_vkCreateRenderPass2,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCreateSampler",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CreateSampler),
-                    proc: unsafe {
-                        std::mem::transmute(Self::create_sampler as vk::PFN_vkCreateSampler)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCreateSamplerYcbcrConversion",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1 })],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CreateSamplerYcbcrConversion),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::create_sampler_ycbcr_conversion
-                                as vk::PFN_vkCreateSamplerYcbcrConversion,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCreateSamplerYcbcrConversionKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRSamplerYcbcrConversion)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CreateSamplerYcbcrConversion),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::create_sampler_ycbcr_conversion
-                                as vk::PFN_vkCreateSamplerYcbcrConversion,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCreateSemaphore",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CreateSemaphore),
-                    proc: unsafe {
-                        std::mem::transmute(Self::create_semaphore as vk::PFN_vkCreateSemaphore)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCreateShaderModule",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CreateShaderModule),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::create_shader_module as vk::PFN_vkCreateShaderModule,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCreateSharedSwapchainsKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRDisplaySwapchain)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CreateSharedSwapchainsKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::create_shared_swapchains_khr
-                                as vk::PFN_vkCreateSharedSwapchainsKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCreateSwapchainKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRSwapchain)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CreateSwapchainKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::create_swapchain_khr as vk::PFN_vkCreateSwapchainKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCreateValidationCacheEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTValidationCache)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CreateValidationCacheExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::create_validation_cache_ext as vk::PFN_vkCreateValidationCacheEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCreateVideoSessionKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRVideoQueue)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CreateVideoSessionKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::create_video_session_khr as vk::PFN_vkCreateVideoSessionKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkCreateVideoSessionParametersKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRVideoQueue)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::CreateVideoSessionParametersKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::create_video_session_parameters_khr
-                                as vk::PFN_vkCreateVideoSessionParametersKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkDebugMarkerSetObjectNameEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTDebugMarker)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::DebugMarkerSetObjectNameExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::debug_marker_set_object_name_ext
-                                as vk::PFN_vkDebugMarkerSetObjectNameEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkDebugMarkerSetObjectTagEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTDebugMarker)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::DebugMarkerSetObjectTagExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::debug_marker_set_object_tag_ext
-                                as vk::PFN_vkDebugMarkerSetObjectTagEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkDeferredOperationJoinKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRDeferredHostOperations)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::DeferredOperationJoinKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::deferred_operation_join_khr as vk::PFN_vkDeferredOperationJoinKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkDestroyAccelerationStructureKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRAccelerationStructure)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::DestroyAccelerationStructureKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::destroy_acceleration_structure_khr
-                                as vk::PFN_vkDestroyAccelerationStructureKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkDestroyAccelerationStructureNV",
-                    features: smallvec![Feature::Extension(Extension::NVRayTracing)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::DestroyAccelerationStructureNv),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::destroy_acceleration_structure_nv
-                                as vk::PFN_vkDestroyAccelerationStructureNV,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkDestroyBuffer",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyBuffer),
-                    proc: unsafe {
-                        std::mem::transmute(Self::destroy_buffer as vk::PFN_vkDestroyBuffer)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkDestroyBufferCollectionFUCHSIA",
-                    features: smallvec![Feature::Extension(Extension::FUCHSIABufferCollection)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::DestroyBufferCollectionFuchsia),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::destroy_buffer_collection_fuchsia
-                                as vk::PFN_vkDestroyBufferCollectionFUCHSIA,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkDestroyBufferView",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyBufferView),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::destroy_buffer_view as vk::PFN_vkDestroyBufferView,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkDestroyCommandPool",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyCommandPool),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::destroy_command_pool as vk::PFN_vkDestroyCommandPool,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkDestroyCuFunctionNVX",
-                    features: smallvec![Feature::Extension(Extension::NVXBinaryImport)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyCuFunctionNvx),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::destroy_cu_function_nvx as vk::PFN_vkDestroyCuFunctionNVX,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkDestroyCuModuleNVX",
-                    features: smallvec![Feature::Extension(Extension::NVXBinaryImport)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyCuModuleNvx),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::destroy_cu_module_nvx as vk::PFN_vkDestroyCuModuleNVX,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkDestroyDeferredOperationKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRDeferredHostOperations)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::DestroyDeferredOperationKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::destroy_deferred_operation_khr
-                                as vk::PFN_vkDestroyDeferredOperationKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkDestroyDescriptorPool",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyDescriptorPool),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::destroy_descriptor_pool as vk::PFN_vkDestroyDescriptorPool,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkDestroyDescriptorSetLayout",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::DestroyDescriptorSetLayout),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::destroy_descriptor_set_layout
-                                as vk::PFN_vkDestroyDescriptorSetLayout,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkDestroyDescriptorUpdateTemplate",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1 })],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::DestroyDescriptorUpdateTemplate),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::destroy_descriptor_update_template
-                                as vk::PFN_vkDestroyDescriptorUpdateTemplate,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkDestroyDescriptorUpdateTemplateKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRDescriptorUpdateTemplate)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::DestroyDescriptorUpdateTemplate),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::destroy_descriptor_update_template
-                                as vk::PFN_vkDestroyDescriptorUpdateTemplate,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkDestroyDevice",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: true,
-                    proc: unsafe {
-                        std::mem::transmute(Self::destroy_device as vk::PFN_vkDestroyDevice)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkDestroyEvent",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyEvent),
-                    proc: unsafe {
-                        std::mem::transmute(Self::destroy_event as vk::PFN_vkDestroyEvent)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkDestroyFence",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyFence),
-                    proc: unsafe {
-                        std::mem::transmute(Self::destroy_fence as vk::PFN_vkDestroyFence)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkDestroyFramebuffer",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyFramebuffer),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::destroy_framebuffer as vk::PFN_vkDestroyFramebuffer,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkDestroyImage",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyImage),
-                    proc: unsafe {
-                        std::mem::transmute(Self::destroy_image as vk::PFN_vkDestroyImage)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkDestroyImageView",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyImageView),
-                    proc: unsafe {
-                        std::mem::transmute(Self::destroy_image_view as vk::PFN_vkDestroyImageView)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkDestroyIndirectCommandsLayoutNV",
-                    features: smallvec![Feature::Extension(Extension::NVDeviceGeneratedCommands)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::DestroyIndirectCommandsLayoutNv),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::destroy_indirect_commands_layout_nv
-                                as vk::PFN_vkDestroyIndirectCommandsLayoutNV,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkDestroyMicromapEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTOpacityMicromap)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyMicromapExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::destroy_micromap_ext as vk::PFN_vkDestroyMicromapEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkDestroyOpticalFlowSessionNV",
-                    features: smallvec![Feature::Extension(Extension::NVOpticalFlow)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::DestroyOpticalFlowSessionNv),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::destroy_optical_flow_session_nv
-                                as vk::PFN_vkDestroyOpticalFlowSessionNV,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkDestroyPipeline",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyPipeline),
-                    proc: unsafe {
-                        std::mem::transmute(Self::destroy_pipeline as vk::PFN_vkDestroyPipeline)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkDestroyPipelineCache",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyPipelineCache),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::destroy_pipeline_cache as vk::PFN_vkDestroyPipelineCache,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkDestroyPipelineLayout",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyPipelineLayout),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::destroy_pipeline_layout as vk::PFN_vkDestroyPipelineLayout,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkDestroyPrivateDataSlot",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyPrivateDataSlot),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::destroy_private_data_slot as vk::PFN_vkDestroyPrivateDataSlot,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkDestroyPrivateDataSlotEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTPrivateData)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyPrivateDataSlot),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::destroy_private_data_slot as vk::PFN_vkDestroyPrivateDataSlot,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkDestroyQueryPool",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyQueryPool),
-                    proc: unsafe {
-                        std::mem::transmute(Self::destroy_query_pool as vk::PFN_vkDestroyQueryPool)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkDestroyRenderPass",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyRenderPass),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::destroy_render_pass as vk::PFN_vkDestroyRenderPass,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkDestroySampler",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::DestroySampler),
-                    proc: unsafe {
-                        std::mem::transmute(Self::destroy_sampler as vk::PFN_vkDestroySampler)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkDestroySamplerYcbcrConversion",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1 })],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::DestroySamplerYcbcrConversion),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::destroy_sampler_ycbcr_conversion
-                                as vk::PFN_vkDestroySamplerYcbcrConversion,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkDestroySamplerYcbcrConversionKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRSamplerYcbcrConversion)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::DestroySamplerYcbcrConversion),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::destroy_sampler_ycbcr_conversion
-                                as vk::PFN_vkDestroySamplerYcbcrConversion,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkDestroySemaphore",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::DestroySemaphore),
-                    proc: unsafe {
-                        std::mem::transmute(Self::destroy_semaphore as vk::PFN_vkDestroySemaphore)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkDestroyShaderModule",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyShaderModule),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::destroy_shader_module as vk::PFN_vkDestroyShaderModule,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkDestroySwapchainKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRSwapchain)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::DestroySwapchainKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::destroy_swapchain_khr as vk::PFN_vkDestroySwapchainKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkDestroyValidationCacheEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTValidationCache)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::DestroyValidationCacheExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::destroy_validation_cache_ext
-                                as vk::PFN_vkDestroyValidationCacheEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkDestroyVideoSessionKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRVideoQueue)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyVideoSessionKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::destroy_video_session_khr as vk::PFN_vkDestroyVideoSessionKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkDestroyVideoSessionParametersKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRVideoQueue)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::DestroyVideoSessionParametersKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::destroy_video_session_parameters_khr
-                                as vk::PFN_vkDestroyVideoSessionParametersKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkDeviceWaitIdle",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::DeviceWaitIdle),
-                    proc: unsafe {
-                        std::mem::transmute(Self::device_wait_idle as vk::PFN_vkDeviceWaitIdle)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkDisplayPowerControlEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTDisplayControl)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::DisplayPowerControlExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::display_power_control_ext as vk::PFN_vkDisplayPowerControlEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkEndCommandBuffer",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::EndCommandBuffer),
-                    proc: unsafe {
-                        std::mem::transmute(Self::end_command_buffer as vk::PFN_vkEndCommandBuffer)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkExportMetalObjectsEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTMetalObjects)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::ExportMetalObjectsExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::export_metal_objects_ext as vk::PFN_vkExportMetalObjectsEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkFlushMappedMemoryRanges",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::FlushMappedMemoryRanges),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::flush_mapped_memory_ranges as vk::PFN_vkFlushMappedMemoryRanges,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkFreeCommandBuffers",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::FreeCommandBuffers),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::free_command_buffers as vk::PFN_vkFreeCommandBuffers,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkFreeDescriptorSets",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::FreeDescriptorSets),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::free_descriptor_sets as vk::PFN_vkFreeDescriptorSets,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkFreeMemory",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::FreeMemory),
-                    proc: unsafe { std::mem::transmute(Self::free_memory as vk::PFN_vkFreeMemory) },
-                },
-                VulkanCommand {
-                    name: "vkGetAccelerationStructureBuildSizesKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRAccelerationStructure)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetAccelerationStructureBuildSizesKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_acceleration_structure_build_sizes_khr
-                                as vk::PFN_vkGetAccelerationStructureBuildSizesKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetAccelerationStructureDeviceAddressKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRAccelerationStructure)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetAccelerationStructureDeviceAddressKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_acceleration_structure_device_address_khr
-                                as vk::PFN_vkGetAccelerationStructureDeviceAddressKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetAccelerationStructureHandleNV",
-                    features: smallvec![Feature::Extension(Extension::NVRayTracing)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetAccelerationStructureHandleNv),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_acceleration_structure_handle_nv
-                                as vk::PFN_vkGetAccelerationStructureHandleNV,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetAccelerationStructureMemoryRequirementsNV",
-                    features: smallvec![Feature::Extension(Extension::NVRayTracing)],
-                    hooked: hooked_commands.contains(
-                        &LayerVulkanCommand::GetAccelerationStructureMemoryRequirementsNv,
-                    ),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_acceleration_structure_memory_requirements_nv
-                                as vk::PFN_vkGetAccelerationStructureMemoryRequirementsNV,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetAccelerationStructureOpaqueCaptureDescriptorDataEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTDescriptorBuffer)],
-                    hooked: hooked_commands.contains(
-                        &LayerVulkanCommand::GetAccelerationStructureOpaqueCaptureDescriptorDataExt,
-                    ),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_acceleration_structure_opaque_capture_descriptor_data_ext
-                                as vk::PFN_vkGetAccelerationStructureOpaqueCaptureDescriptorDataEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetAndroidHardwareBufferPropertiesANDROID",
-                    features: smallvec![Feature::Extension(
-                        Extension::ANDROIDExternalMemoryAndroidHardwareBuffer
-                    )],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetAndroidHardwareBufferPropertiesAndroid),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_android_hardware_buffer_properties_android
-                                as vk::PFN_vkGetAndroidHardwareBufferPropertiesANDROID,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetBufferCollectionPropertiesFUCHSIA",
-                    features: smallvec![Feature::Extension(Extension::FUCHSIABufferCollection)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetBufferCollectionPropertiesFuchsia),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_buffer_collection_properties_fuchsia
-                                as vk::PFN_vkGetBufferCollectionPropertiesFUCHSIA,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetBufferDeviceAddress",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 2 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetBufferDeviceAddress),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_buffer_device_address as vk::PFN_vkGetBufferDeviceAddress,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetBufferDeviceAddressEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTBufferDeviceAddress)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetBufferDeviceAddress),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_buffer_device_address as vk::PFN_vkGetBufferDeviceAddress,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetBufferDeviceAddressKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRBufferDeviceAddress)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetBufferDeviceAddress),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_buffer_device_address as vk::PFN_vkGetBufferDeviceAddress,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetBufferMemoryRequirements",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetBufferMemoryRequirements),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_buffer_memory_requirements
-                                as vk::PFN_vkGetBufferMemoryRequirements,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetBufferMemoryRequirements2",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1 })],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetBufferMemoryRequirements2),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_buffer_memory_requirements2
-                                as vk::PFN_vkGetBufferMemoryRequirements2,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetBufferMemoryRequirements2KHR",
-                    features: smallvec![Feature::Extension(Extension::KHRGetMemoryRequirements2)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetBufferMemoryRequirements2),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_buffer_memory_requirements2
-                                as vk::PFN_vkGetBufferMemoryRequirements2,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetBufferOpaqueCaptureAddress",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 2 })],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetBufferOpaqueCaptureAddress),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_buffer_opaque_capture_address
-                                as vk::PFN_vkGetBufferOpaqueCaptureAddress,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetBufferOpaqueCaptureAddressKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRBufferDeviceAddress)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetBufferOpaqueCaptureAddress),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_buffer_opaque_capture_address
-                                as vk::PFN_vkGetBufferOpaqueCaptureAddress,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetBufferOpaqueCaptureDescriptorDataEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTDescriptorBuffer)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetBufferOpaqueCaptureDescriptorDataExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_buffer_opaque_capture_descriptor_data_ext
-                                as vk::PFN_vkGetBufferOpaqueCaptureDescriptorDataEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetCalibratedTimestampsEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTCalibratedTimestamps)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetCalibratedTimestampsExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_calibrated_timestamps_ext
-                                as vk::PFN_vkGetCalibratedTimestampsEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetDeferredOperationMaxConcurrencyKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRDeferredHostOperations)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetDeferredOperationMaxConcurrencyKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_deferred_operation_max_concurrency_khr
-                                as vk::PFN_vkGetDeferredOperationMaxConcurrencyKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetDeferredOperationResultKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRDeferredHostOperations)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetDeferredOperationResultKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_deferred_operation_result_khr
-                                as vk::PFN_vkGetDeferredOperationResultKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetDescriptorEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTDescriptorBuffer)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetDescriptorExt),
-                    proc: unsafe {
-                        std::mem::transmute(Self::get_descriptor_ext as vk::PFN_vkGetDescriptorEXT)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetDescriptorSetHostMappingVALVE",
-                    features: smallvec![Feature::Extension(
-                        Extension::VALVEDescriptorSetHostMapping
-                    )],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetDescriptorSetHostMappingValve),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_descriptor_set_host_mapping_valve
-                                as vk::PFN_vkGetDescriptorSetHostMappingVALVE,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetDescriptorSetLayoutBindingOffsetEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTDescriptorBuffer)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetDescriptorSetLayoutBindingOffsetExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_descriptor_set_layout_binding_offset_ext
-                                as vk::PFN_vkGetDescriptorSetLayoutBindingOffsetEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetDescriptorSetLayoutHostMappingInfoVALVE",
-                    features: smallvec![Feature::Extension(
-                        Extension::VALVEDescriptorSetHostMapping
-                    )],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetDescriptorSetLayoutHostMappingInfoValve),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_descriptor_set_layout_host_mapping_info_valve
-                                as vk::PFN_vkGetDescriptorSetLayoutHostMappingInfoVALVE,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetDescriptorSetLayoutSizeEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTDescriptorBuffer)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetDescriptorSetLayoutSizeExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_descriptor_set_layout_size_ext
-                                as vk::PFN_vkGetDescriptorSetLayoutSizeEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetDescriptorSetLayoutSupport",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1 })],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetDescriptorSetLayoutSupport),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_descriptor_set_layout_support
-                                as vk::PFN_vkGetDescriptorSetLayoutSupport,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetDescriptorSetLayoutSupportKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRMaintenance3)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetDescriptorSetLayoutSupport),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_descriptor_set_layout_support
-                                as vk::PFN_vkGetDescriptorSetLayoutSupport,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetDeviceAccelerationStructureCompatibilityKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRAccelerationStructure)],
-                    hooked: hooked_commands.contains(
-                        &LayerVulkanCommand::GetDeviceAccelerationStructureCompatibilityKhr,
-                    ),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_device_acceleration_structure_compatibility_khr
-                                as vk::PFN_vkGetDeviceAccelerationStructureCompatibilityKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetDeviceBufferMemoryRequirements",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetDeviceBufferMemoryRequirements),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_device_buffer_memory_requirements
-                                as vk::PFN_vkGetDeviceBufferMemoryRequirements,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetDeviceBufferMemoryRequirementsKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRMaintenance4)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetDeviceBufferMemoryRequirements),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_device_buffer_memory_requirements
-                                as vk::PFN_vkGetDeviceBufferMemoryRequirements,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetDeviceGroupPeerMemoryFeatures",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1 })],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetDeviceGroupPeerMemoryFeatures),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_device_group_peer_memory_features
-                                as vk::PFN_vkGetDeviceGroupPeerMemoryFeatures,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetDeviceGroupPeerMemoryFeaturesKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRDeviceGroup)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetDeviceGroupPeerMemoryFeatures),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_device_group_peer_memory_features
-                                as vk::PFN_vkGetDeviceGroupPeerMemoryFeatures,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetDeviceGroupPresentCapabilitiesKHR",
-                    features: smallvec![
-                        Feature::Extension(Extension::KHRSwapchain),
-                        Feature::Extension(Extension::KHRDeviceGroup)
-                    ],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetDeviceGroupPresentCapabilitiesKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_device_group_present_capabilities_khr
-                                as vk::PFN_vkGetDeviceGroupPresentCapabilitiesKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetDeviceGroupSurfacePresentModes2EXT",
-                    features: smallvec![Feature::Extension(Extension::EXTFullScreenExclusive)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetDeviceGroupSurfacePresentModes2Ext),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_device_group_surface_present_modes2_ext
-                                as vk::PFN_vkGetDeviceGroupSurfacePresentModes2EXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetDeviceGroupSurfacePresentModesKHR",
-                    features: smallvec![
-                        Feature::Extension(Extension::KHRSwapchain),
-                        Feature::Extension(Extension::KHRDeviceGroup)
-                    ],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetDeviceGroupSurfacePresentModesKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_device_group_surface_present_modes_khr
-                                as vk::PFN_vkGetDeviceGroupSurfacePresentModesKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetDeviceImageMemoryRequirements",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetDeviceImageMemoryRequirements),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_device_image_memory_requirements
-                                as vk::PFN_vkGetDeviceImageMemoryRequirements,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetDeviceImageMemoryRequirementsKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRMaintenance4)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetDeviceImageMemoryRequirements),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_device_image_memory_requirements
-                                as vk::PFN_vkGetDeviceImageMemoryRequirements,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetDeviceImageSparseMemoryRequirements",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetDeviceImageSparseMemoryRequirements),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_device_image_sparse_memory_requirements
-                                as vk::PFN_vkGetDeviceImageSparseMemoryRequirements,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetDeviceImageSparseMemoryRequirementsKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRMaintenance4)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetDeviceImageSparseMemoryRequirements),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_device_image_sparse_memory_requirements
-                                as vk::PFN_vkGetDeviceImageSparseMemoryRequirements,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetDeviceMemoryCommitment",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetDeviceMemoryCommitment),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_device_memory_commitment
-                                as vk::PFN_vkGetDeviceMemoryCommitment,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetDeviceMemoryOpaqueCaptureAddress",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 2 })],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetDeviceMemoryOpaqueCaptureAddress),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_device_memory_opaque_capture_address
-                                as vk::PFN_vkGetDeviceMemoryOpaqueCaptureAddress,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetDeviceMemoryOpaqueCaptureAddressKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRBufferDeviceAddress)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetDeviceMemoryOpaqueCaptureAddress),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_device_memory_opaque_capture_address
-                                as vk::PFN_vkGetDeviceMemoryOpaqueCaptureAddress,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetDeviceMicromapCompatibilityEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTOpacityMicromap)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetDeviceMicromapCompatibilityExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_device_micromap_compatibility_ext
-                                as vk::PFN_vkGetDeviceMicromapCompatibilityEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetDeviceProcAddr",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: true,
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_device_proc_addr as vk::PFN_vkGetDeviceProcAddr,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetDeviceQueue",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetDeviceQueue),
-                    proc: unsafe {
-                        std::mem::transmute(Self::get_device_queue as vk::PFN_vkGetDeviceQueue)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetDeviceQueue2",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetDeviceQueue2),
-                    proc: unsafe {
-                        std::mem::transmute(Self::get_device_queue2 as vk::PFN_vkGetDeviceQueue2)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI",
-                    features: smallvec![Feature::Extension(Extension::HUAWEISubpassShading)],
-                    hooked: hooked_commands.contains(
-                        &LayerVulkanCommand::GetDeviceSubpassShadingMaxWorkgroupSizeHuawei,
-                    ),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_device_subpass_shading_max_workgroup_size_huawei
-                                as vk::PFN_vkGetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetDynamicRenderingTilePropertiesQCOM",
-                    features: smallvec![Feature::Extension(Extension::QCOMTileProperties)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetDynamicRenderingTilePropertiesQcom),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_dynamic_rendering_tile_properties_qcom
-                                as vk::PFN_vkGetDynamicRenderingTilePropertiesQCOM,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetEventStatus",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetEventStatus),
-                    proc: unsafe {
-                        std::mem::transmute(Self::get_event_status as vk::PFN_vkGetEventStatus)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetFenceFdKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRExternalFenceFd)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetFenceFdKhr),
-                    proc: unsafe {
-                        std::mem::transmute(Self::get_fence_fd_khr as vk::PFN_vkGetFenceFdKHR)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetFenceStatus",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetFenceStatus),
-                    proc: unsafe {
-                        std::mem::transmute(Self::get_fence_status as vk::PFN_vkGetFenceStatus)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetFenceWin32HandleKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRExternalFenceWin32)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetFenceWin32HandleKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_fence_win32_handle_khr as vk::PFN_vkGetFenceWin32HandleKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetFramebufferTilePropertiesQCOM",
-                    features: smallvec![Feature::Extension(Extension::QCOMTileProperties)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetFramebufferTilePropertiesQcom),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_framebuffer_tile_properties_qcom
-                                as vk::PFN_vkGetFramebufferTilePropertiesQCOM,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetGeneratedCommandsMemoryRequirementsNV",
-                    features: smallvec![Feature::Extension(Extension::NVDeviceGeneratedCommands)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetGeneratedCommandsMemoryRequirementsNv),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_generated_commands_memory_requirements_nv
-                                as vk::PFN_vkGetGeneratedCommandsMemoryRequirementsNV,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetImageDrmFormatModifierPropertiesEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTImageDrmFormatModifier)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetImageDrmFormatModifierPropertiesExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_image_drm_format_modifier_properties_ext
-                                as vk::PFN_vkGetImageDrmFormatModifierPropertiesEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetImageMemoryRequirements",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetImageMemoryRequirements),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_image_memory_requirements
-                                as vk::PFN_vkGetImageMemoryRequirements,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetImageMemoryRequirements2",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1 })],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetImageMemoryRequirements2),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_image_memory_requirements2
-                                as vk::PFN_vkGetImageMemoryRequirements2,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetImageMemoryRequirements2KHR",
-                    features: smallvec![Feature::Extension(Extension::KHRGetMemoryRequirements2)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetImageMemoryRequirements2),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_image_memory_requirements2
-                                as vk::PFN_vkGetImageMemoryRequirements2,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetImageOpaqueCaptureDescriptorDataEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTDescriptorBuffer)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetImageOpaqueCaptureDescriptorDataExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_image_opaque_capture_descriptor_data_ext
-                                as vk::PFN_vkGetImageOpaqueCaptureDescriptorDataEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetImageSparseMemoryRequirements",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetImageSparseMemoryRequirements),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_image_sparse_memory_requirements
-                                as vk::PFN_vkGetImageSparseMemoryRequirements,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetImageSparseMemoryRequirements2",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1 })],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetImageSparseMemoryRequirements2),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_image_sparse_memory_requirements2
-                                as vk::PFN_vkGetImageSparseMemoryRequirements2,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetImageSparseMemoryRequirements2KHR",
-                    features: smallvec![Feature::Extension(Extension::KHRGetMemoryRequirements2)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetImageSparseMemoryRequirements2),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_image_sparse_memory_requirements2
-                                as vk::PFN_vkGetImageSparseMemoryRequirements2,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetImageSubresourceLayout",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetImageSubresourceLayout),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_image_subresource_layout
-                                as vk::PFN_vkGetImageSubresourceLayout,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetImageSubresourceLayout2EXT",
-                    features: smallvec![Feature::Extension(Extension::EXTImageCompressionControl)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetImageSubresourceLayout2Ext),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_image_subresource_layout2_ext
-                                as vk::PFN_vkGetImageSubresourceLayout2EXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetImageViewAddressNVX",
-                    features: smallvec![Feature::Extension(Extension::NVXImageViewHandle)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetImageViewAddressNvx),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_image_view_address_nvx as vk::PFN_vkGetImageViewAddressNVX,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetImageViewHandleNVX",
-                    features: smallvec![Feature::Extension(Extension::NVXImageViewHandle)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetImageViewHandleNvx),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_image_view_handle_nvx as vk::PFN_vkGetImageViewHandleNVX,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetImageViewOpaqueCaptureDescriptorDataEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTDescriptorBuffer)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetImageViewOpaqueCaptureDescriptorDataExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_image_view_opaque_capture_descriptor_data_ext
-                                as vk::PFN_vkGetImageViewOpaqueCaptureDescriptorDataEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetMemoryAndroidHardwareBufferANDROID",
-                    features: smallvec![Feature::Extension(
-                        Extension::ANDROIDExternalMemoryAndroidHardwareBuffer
-                    )],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetMemoryAndroidHardwareBufferAndroid),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_memory_android_hardware_buffer_android
-                                as vk::PFN_vkGetMemoryAndroidHardwareBufferANDROID,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetMemoryFdKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRExternalMemoryFd)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetMemoryFdKhr),
-                    proc: unsafe {
-                        std::mem::transmute(Self::get_memory_fd_khr as vk::PFN_vkGetMemoryFdKHR)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetMemoryFdPropertiesKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRExternalMemoryFd)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetMemoryFdPropertiesKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_memory_fd_properties_khr
-                                as vk::PFN_vkGetMemoryFdPropertiesKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetMemoryHostPointerPropertiesEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTExternalMemoryHost)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetMemoryHostPointerPropertiesExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_memory_host_pointer_properties_ext
-                                as vk::PFN_vkGetMemoryHostPointerPropertiesEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetMemoryRemoteAddressNV",
-                    features: smallvec![Feature::Extension(Extension::NVExternalMemoryRdma)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetMemoryRemoteAddressNv),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_memory_remote_address_nv
-                                as vk::PFN_vkGetMemoryRemoteAddressNV,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetMemoryWin32HandleKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRExternalMemoryWin32)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetMemoryWin32HandleKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_memory_win32_handle_khr as vk::PFN_vkGetMemoryWin32HandleKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetMemoryWin32HandleNV",
-                    features: smallvec![Feature::Extension(Extension::NVExternalMemoryWin32)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetMemoryWin32HandleNv),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_memory_win32_handle_nv as vk::PFN_vkGetMemoryWin32HandleNV,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetMemoryWin32HandlePropertiesKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRExternalMemoryWin32)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetMemoryWin32HandlePropertiesKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_memory_win32_handle_properties_khr
-                                as vk::PFN_vkGetMemoryWin32HandlePropertiesKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetMemoryZirconHandleFUCHSIA",
-                    features: smallvec![Feature::Extension(Extension::FUCHSIAExternalMemory)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetMemoryZirconHandleFuchsia),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_memory_zircon_handle_fuchsia
-                                as vk::PFN_vkGetMemoryZirconHandleFUCHSIA,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetMemoryZirconHandlePropertiesFUCHSIA",
-                    features: smallvec![Feature::Extension(Extension::FUCHSIAExternalMemory)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetMemoryZirconHandlePropertiesFuchsia),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_memory_zircon_handle_properties_fuchsia
-                                as vk::PFN_vkGetMemoryZirconHandlePropertiesFUCHSIA,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetMicromapBuildSizesEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTOpacityMicromap)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetMicromapBuildSizesExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_micromap_build_sizes_ext
-                                as vk::PFN_vkGetMicromapBuildSizesEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetPastPresentationTimingGOOGLE",
-                    features: smallvec![Feature::Extension(Extension::GOOGLEDisplayTiming)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetPastPresentationTimingGoogle),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_past_presentation_timing_google
-                                as vk::PFN_vkGetPastPresentationTimingGOOGLE,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetPerformanceParameterINTEL",
-                    features: smallvec![Feature::Extension(Extension::INTELPerformanceQuery)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetPerformanceParameterIntel),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_performance_parameter_intel
-                                as vk::PFN_vkGetPerformanceParameterINTEL,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetPipelineCacheData",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPipelineCacheData),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_pipeline_cache_data as vk::PFN_vkGetPipelineCacheData,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetPipelineExecutableInternalRepresentationsKHR",
-                    features: smallvec![Feature::Extension(
-                        Extension::KHRPipelineExecutableProperties
-                    )],
-                    hooked: hooked_commands.contains(
-                        &LayerVulkanCommand::GetPipelineExecutableInternalRepresentationsKhr,
-                    ),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_pipeline_executable_internal_representations_khr
-                                as vk::PFN_vkGetPipelineExecutableInternalRepresentationsKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetPipelineExecutablePropertiesKHR",
-                    features: smallvec![Feature::Extension(
-                        Extension::KHRPipelineExecutableProperties
-                    )],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetPipelineExecutablePropertiesKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_pipeline_executable_properties_khr
-                                as vk::PFN_vkGetPipelineExecutablePropertiesKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetPipelineExecutableStatisticsKHR",
-                    features: smallvec![Feature::Extension(
-                        Extension::KHRPipelineExecutableProperties
-                    )],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetPipelineExecutableStatisticsKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_pipeline_executable_statistics_khr
-                                as vk::PFN_vkGetPipelineExecutableStatisticsKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetPipelinePropertiesEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTPipelineProperties)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPipelinePropertiesExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_pipeline_properties_ext as vk::PFN_vkGetPipelinePropertiesEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetPrivateData",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPrivateData),
-                    proc: unsafe {
-                        std::mem::transmute(Self::get_private_data as vk::PFN_vkGetPrivateData)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetPrivateDataEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTPrivateData)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPrivateData),
-                    proc: unsafe {
-                        std::mem::transmute(Self::get_private_data as vk::PFN_vkGetPrivateData)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetQueryPoolResults",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetQueryPoolResults),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_query_pool_results as vk::PFN_vkGetQueryPoolResults,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetQueueCheckpointData2NV",
-                    features: smallvec![Feature::Extension(Extension::KHRSynchronization2)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetQueueCheckpointData2Nv),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_queue_checkpoint_data2_nv
-                                as vk::PFN_vkGetQueueCheckpointData2NV,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetQueueCheckpointDataNV",
-                    features: smallvec![Feature::Extension(
-                        Extension::NVDeviceDiagnosticCheckpoints
-                    )],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetQueueCheckpointDataNv),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_queue_checkpoint_data_nv
-                                as vk::PFN_vkGetQueueCheckpointDataNV,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetRayTracingCaptureReplayShaderGroupHandlesKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRRayTracingPipeline)],
-                    hooked: hooked_commands.contains(
-                        &LayerVulkanCommand::GetRayTracingCaptureReplayShaderGroupHandlesKhr,
-                    ),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_ray_tracing_capture_replay_shader_group_handles_khr
-                                as vk::PFN_vkGetRayTracingCaptureReplayShaderGroupHandlesKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetRayTracingShaderGroupHandlesKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRRayTracingPipeline)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetRayTracingShaderGroupHandlesKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_ray_tracing_shader_group_handles_khr
-                                as vk::PFN_vkGetRayTracingShaderGroupHandlesKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetRayTracingShaderGroupHandlesNV",
-                    features: smallvec![Feature::Extension(Extension::NVRayTracing)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetRayTracingShaderGroupHandlesKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_ray_tracing_shader_group_handles_khr
-                                as vk::PFN_vkGetRayTracingShaderGroupHandlesKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetRayTracingShaderGroupStackSizeKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRRayTracingPipeline)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetRayTracingShaderGroupStackSizeKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_ray_tracing_shader_group_stack_size_khr
-                                as vk::PFN_vkGetRayTracingShaderGroupStackSizeKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetRefreshCycleDurationGOOGLE",
-                    features: smallvec![Feature::Extension(Extension::GOOGLEDisplayTiming)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetRefreshCycleDurationGoogle),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_refresh_cycle_duration_google
-                                as vk::PFN_vkGetRefreshCycleDurationGOOGLE,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetRenderAreaGranularity",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetRenderAreaGranularity),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_render_area_granularity as vk::PFN_vkGetRenderAreaGranularity,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetSamplerOpaqueCaptureDescriptorDataEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTDescriptorBuffer)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetSamplerOpaqueCaptureDescriptorDataExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_sampler_opaque_capture_descriptor_data_ext
-                                as vk::PFN_vkGetSamplerOpaqueCaptureDescriptorDataEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetSemaphoreCounterValue",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 2 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetSemaphoreCounterValue),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_semaphore_counter_value as vk::PFN_vkGetSemaphoreCounterValue,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetSemaphoreCounterValueKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRTimelineSemaphore)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetSemaphoreCounterValue),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_semaphore_counter_value as vk::PFN_vkGetSemaphoreCounterValue,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetSemaphoreFdKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRExternalSemaphoreFd)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetSemaphoreFdKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_semaphore_fd_khr as vk::PFN_vkGetSemaphoreFdKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetSemaphoreWin32HandleKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRExternalSemaphoreWin32)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetSemaphoreWin32HandleKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_semaphore_win32_handle_khr
-                                as vk::PFN_vkGetSemaphoreWin32HandleKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetSemaphoreZirconHandleFUCHSIA",
-                    features: smallvec![Feature::Extension(Extension::FUCHSIAExternalSemaphore)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetSemaphoreZirconHandleFuchsia),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_semaphore_zircon_handle_fuchsia
-                                as vk::PFN_vkGetSemaphoreZirconHandleFUCHSIA,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetShaderInfoAMD",
-                    features: smallvec![Feature::Extension(Extension::AMDShaderInfo)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetShaderInfoAmd),
-                    proc: unsafe {
-                        std::mem::transmute(Self::get_shader_info_amd as vk::PFN_vkGetShaderInfoAMD)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetShaderModuleCreateInfoIdentifierEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTShaderModuleIdentifier)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetShaderModuleCreateInfoIdentifierExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_shader_module_create_info_identifier_ext
-                                as vk::PFN_vkGetShaderModuleCreateInfoIdentifierEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetShaderModuleIdentifierEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTShaderModuleIdentifier)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetShaderModuleIdentifierExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_shader_module_identifier_ext
-                                as vk::PFN_vkGetShaderModuleIdentifierEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetSwapchainCounterEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTDisplayControl)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetSwapchainCounterExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_swapchain_counter_ext as vk::PFN_vkGetSwapchainCounterEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetSwapchainGrallocUsage2ANDROID",
-                    features: smallvec![Feature::Extension(Extension::ANDROIDNativeBuffer)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetSwapchainGrallocUsage2Android),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_swapchain_gralloc_usage2_android
-                                as vk::PFN_vkGetSwapchainGrallocUsage2ANDROID,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetSwapchainGrallocUsageANDROID",
-                    features: smallvec![Feature::Extension(Extension::ANDROIDNativeBuffer)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetSwapchainGrallocUsageAndroid),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_swapchain_gralloc_usage_android
-                                as vk::PFN_vkGetSwapchainGrallocUsageANDROID,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetSwapchainImagesKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRSwapchain)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetSwapchainImagesKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_swapchain_images_khr as vk::PFN_vkGetSwapchainImagesKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetSwapchainStatusKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRSharedPresentableImage)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetSwapchainStatusKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_swapchain_status_khr as vk::PFN_vkGetSwapchainStatusKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetValidationCacheDataEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTValidationCache)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetValidationCacheDataExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_validation_cache_data_ext
-                                as vk::PFN_vkGetValidationCacheDataEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkGetVideoSessionMemoryRequirementsKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRVideoQueue)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::GetVideoSessionMemoryRequirementsKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::get_video_session_memory_requirements_khr
-                                as vk::PFN_vkGetVideoSessionMemoryRequirementsKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkImportFenceFdKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRExternalFenceFd)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::ImportFenceFdKhr),
-                    proc: unsafe {
-                        std::mem::transmute(Self::import_fence_fd_khr as vk::PFN_vkImportFenceFdKHR)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkImportFenceWin32HandleKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRExternalFenceWin32)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::ImportFenceWin32HandleKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::import_fence_win32_handle_khr
-                                as vk::PFN_vkImportFenceWin32HandleKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkImportSemaphoreFdKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRExternalSemaphoreFd)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::ImportSemaphoreFdKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::import_semaphore_fd_khr as vk::PFN_vkImportSemaphoreFdKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkImportSemaphoreWin32HandleKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRExternalSemaphoreWin32)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::ImportSemaphoreWin32HandleKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::import_semaphore_win32_handle_khr
-                                as vk::PFN_vkImportSemaphoreWin32HandleKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkImportSemaphoreZirconHandleFUCHSIA",
-                    features: smallvec![Feature::Extension(Extension::FUCHSIAExternalSemaphore)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::ImportSemaphoreZirconHandleFuchsia),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::import_semaphore_zircon_handle_fuchsia
-                                as vk::PFN_vkImportSemaphoreZirconHandleFUCHSIA,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkInitializePerformanceApiINTEL",
-                    features: smallvec![Feature::Extension(Extension::INTELPerformanceQuery)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::InitializePerformanceApiIntel),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::initialize_performance_api_intel
-                                as vk::PFN_vkInitializePerformanceApiINTEL,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkInvalidateMappedMemoryRanges",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::InvalidateMappedMemoryRanges),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::invalidate_mapped_memory_ranges
-                                as vk::PFN_vkInvalidateMappedMemoryRanges,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkMapMemory",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::MapMemory),
-                    proc: unsafe { std::mem::transmute(Self::map_memory as vk::PFN_vkMapMemory) },
-                },
-                VulkanCommand {
-                    name: "vkMergePipelineCaches",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::MergePipelineCaches),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::merge_pipeline_caches as vk::PFN_vkMergePipelineCaches,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkMergeValidationCachesEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTValidationCache)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::MergeValidationCachesExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::merge_validation_caches_ext as vk::PFN_vkMergeValidationCachesEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkQueueBeginDebugUtilsLabelEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTDebugUtils)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::QueueBeginDebugUtilsLabelExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::queue_begin_debug_utils_label_ext
-                                as vk::PFN_vkQueueBeginDebugUtilsLabelEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkQueueBindSparse",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::QueueBindSparse),
-                    proc: unsafe {
-                        std::mem::transmute(Self::queue_bind_sparse as vk::PFN_vkQueueBindSparse)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkQueueEndDebugUtilsLabelEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTDebugUtils)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::QueueEndDebugUtilsLabelExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::queue_end_debug_utils_label_ext
-                                as vk::PFN_vkQueueEndDebugUtilsLabelEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkQueueInsertDebugUtilsLabelEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTDebugUtils)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::QueueInsertDebugUtilsLabelExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::queue_insert_debug_utils_label_ext
-                                as vk::PFN_vkQueueInsertDebugUtilsLabelEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkQueuePresentKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRSwapchain)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::QueuePresentKhr),
-                    proc: unsafe {
-                        std::mem::transmute(Self::queue_present_khr as vk::PFN_vkQueuePresentKHR)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkQueueSetPerformanceConfigurationINTEL",
-                    features: smallvec![Feature::Extension(Extension::INTELPerformanceQuery)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::QueueSetPerformanceConfigurationIntel),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::queue_set_performance_configuration_intel
-                                as vk::PFN_vkQueueSetPerformanceConfigurationINTEL,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkQueueSignalReleaseImageANDROID",
-                    features: smallvec![Feature::Extension(Extension::ANDROIDNativeBuffer)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::QueueSignalReleaseImageAndroid),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::queue_signal_release_image_android
-                                as vk::PFN_vkQueueSignalReleaseImageANDROID,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkQueueSubmit",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::QueueSubmit),
-                    proc: unsafe {
-                        std::mem::transmute(Self::queue_submit as vk::PFN_vkQueueSubmit)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkQueueSubmit2",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::QueueSubmit2),
-                    proc: unsafe {
-                        std::mem::transmute(Self::queue_submit2 as vk::PFN_vkQueueSubmit2)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkQueueSubmit2KHR",
-                    features: smallvec![Feature::Extension(Extension::KHRSynchronization2)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::QueueSubmit2),
-                    proc: unsafe {
-                        std::mem::transmute(Self::queue_submit2 as vk::PFN_vkQueueSubmit2)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkQueueWaitIdle",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::QueueWaitIdle),
-                    proc: unsafe {
-                        std::mem::transmute(Self::queue_wait_idle as vk::PFN_vkQueueWaitIdle)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkRegisterDeviceEventEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTDisplayControl)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::RegisterDeviceEventExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::register_device_event_ext as vk::PFN_vkRegisterDeviceEventEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkRegisterDisplayEventEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTDisplayControl)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::RegisterDisplayEventExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::register_display_event_ext as vk::PFN_vkRegisterDisplayEventEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkReleaseFullScreenExclusiveModeEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTFullScreenExclusive)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::ReleaseFullScreenExclusiveModeExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::release_full_screen_exclusive_mode_ext
-                                as vk::PFN_vkReleaseFullScreenExclusiveModeEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkReleasePerformanceConfigurationINTEL",
-                    features: smallvec![Feature::Extension(Extension::INTELPerformanceQuery)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::ReleasePerformanceConfigurationIntel),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::release_performance_configuration_intel
-                                as vk::PFN_vkReleasePerformanceConfigurationINTEL,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkReleaseProfilingLockKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRPerformanceQuery)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::ReleaseProfilingLockKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::release_profiling_lock_khr as vk::PFN_vkReleaseProfilingLockKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkReleaseSwapchainImagesEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTSwapchainMaintenance1)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::ReleaseSwapchainImagesExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::release_swapchain_images_ext
-                                as vk::PFN_vkReleaseSwapchainImagesEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkResetCommandBuffer",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::ResetCommandBuffer),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::reset_command_buffer as vk::PFN_vkResetCommandBuffer,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkResetCommandPool",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::ResetCommandPool),
-                    proc: unsafe {
-                        std::mem::transmute(Self::reset_command_pool as vk::PFN_vkResetCommandPool)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkResetDescriptorPool",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::ResetDescriptorPool),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::reset_descriptor_pool as vk::PFN_vkResetDescriptorPool,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkResetEvent",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::ResetEvent),
-                    proc: unsafe { std::mem::transmute(Self::reset_event as vk::PFN_vkResetEvent) },
-                },
-                VulkanCommand {
-                    name: "vkResetFences",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::ResetFences),
-                    proc: unsafe {
-                        std::mem::transmute(Self::reset_fences as vk::PFN_vkResetFences)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkResetQueryPool",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 2 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::ResetQueryPool),
-                    proc: unsafe {
-                        std::mem::transmute(Self::reset_query_pool as vk::PFN_vkResetQueryPool)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkResetQueryPoolEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTHostQueryReset)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::ResetQueryPool),
-                    proc: unsafe {
-                        std::mem::transmute(Self::reset_query_pool as vk::PFN_vkResetQueryPool)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkSetBufferCollectionBufferConstraintsFUCHSIA",
-                    features: smallvec![Feature::Extension(Extension::FUCHSIABufferCollection)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::SetBufferCollectionBufferConstraintsFuchsia),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::set_buffer_collection_buffer_constraints_fuchsia
-                                as vk::PFN_vkSetBufferCollectionBufferConstraintsFUCHSIA,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkSetBufferCollectionImageConstraintsFUCHSIA",
-                    features: smallvec![Feature::Extension(Extension::FUCHSIABufferCollection)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::SetBufferCollectionImageConstraintsFuchsia),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::set_buffer_collection_image_constraints_fuchsia
-                                as vk::PFN_vkSetBufferCollectionImageConstraintsFUCHSIA,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkSetDebugUtilsObjectNameEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTDebugUtils)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::SetDebugUtilsObjectNameExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::set_debug_utils_object_name_ext
-                                as vk::PFN_vkSetDebugUtilsObjectNameEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkSetDebugUtilsObjectTagEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTDebugUtils)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::SetDebugUtilsObjectTagExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::set_debug_utils_object_tag_ext
-                                as vk::PFN_vkSetDebugUtilsObjectTagEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkSetDeviceMemoryPriorityEXT",
-                    features: smallvec![Feature::Extension(
-                        Extension::EXTPageableDeviceLocalMemory
-                    )],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::SetDeviceMemoryPriorityExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::set_device_memory_priority_ext
-                                as vk::PFN_vkSetDeviceMemoryPriorityEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkSetEvent",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::SetEvent),
-                    proc: unsafe { std::mem::transmute(Self::set_event as vk::PFN_vkSetEvent) },
-                },
-                VulkanCommand {
-                    name: "vkSetHdrMetadataEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTHdrMetadata)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::SetHdrMetadataExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::set_hdr_metadata_ext as vk::PFN_vkSetHdrMetadataEXT,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkSetLocalDimmingAMD",
-                    features: smallvec![Feature::Extension(Extension::AMDDisplayNativeHdr)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::SetLocalDimmingAmd),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::set_local_dimming_amd as vk::PFN_vkSetLocalDimmingAMD,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkSetPrivateData",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::SetPrivateData),
-                    proc: unsafe {
-                        std::mem::transmute(Self::set_private_data as vk::PFN_vkSetPrivateData)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkSetPrivateDataEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTPrivateData)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::SetPrivateData),
-                    proc: unsafe {
-                        std::mem::transmute(Self::set_private_data as vk::PFN_vkSetPrivateData)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkSignalSemaphore",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 2 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::SignalSemaphore),
-                    proc: unsafe {
-                        std::mem::transmute(Self::signal_semaphore as vk::PFN_vkSignalSemaphore)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkSignalSemaphoreKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRTimelineSemaphore)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::SignalSemaphore),
-                    proc: unsafe {
-                        std::mem::transmute(Self::signal_semaphore as vk::PFN_vkSignalSemaphore)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkTrimCommandPool",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::TrimCommandPool),
-                    proc: unsafe {
-                        std::mem::transmute(Self::trim_command_pool as vk::PFN_vkTrimCommandPool)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkTrimCommandPoolKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRMaintenance1)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::TrimCommandPool),
-                    proc: unsafe {
-                        std::mem::transmute(Self::trim_command_pool as vk::PFN_vkTrimCommandPool)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkUninitializePerformanceApiINTEL",
-                    features: smallvec![Feature::Extension(Extension::INTELPerformanceQuery)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::UninitializePerformanceApiIntel),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::uninitialize_performance_api_intel
-                                as vk::PFN_vkUninitializePerformanceApiINTEL,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkUnmapMemory",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::UnmapMemory),
-                    proc: unsafe {
-                        std::mem::transmute(Self::unmap_memory as vk::PFN_vkUnmapMemory)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkUpdateDescriptorSetWithTemplate",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1 })],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::UpdateDescriptorSetWithTemplate),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::update_descriptor_set_with_template
-                                as vk::PFN_vkUpdateDescriptorSetWithTemplate,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkUpdateDescriptorSetWithTemplateKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRDescriptorUpdateTemplate)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::UpdateDescriptorSetWithTemplate),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::update_descriptor_set_with_template
-                                as vk::PFN_vkUpdateDescriptorSetWithTemplate,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkUpdateDescriptorSets",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::UpdateDescriptorSets),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::update_descriptor_sets as vk::PFN_vkUpdateDescriptorSets,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkUpdateVideoSessionParametersKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRVideoQueue)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::UpdateVideoSessionParametersKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::update_video_session_parameters_khr
-                                as vk::PFN_vkUpdateVideoSessionParametersKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkWaitForFences",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::WaitForFences),
-                    proc: unsafe {
-                        std::mem::transmute(Self::wait_for_fences as vk::PFN_vkWaitForFences)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkWaitForPresentKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRPresentWait)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::WaitForPresentKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::wait_for_present_khr as vk::PFN_vkWaitForPresentKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkWaitSemaphores",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 2 })],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::WaitSemaphores),
-                    proc: unsafe {
-                        std::mem::transmute(Self::wait_semaphores as vk::PFN_vkWaitSemaphores)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkWaitSemaphoresKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRTimelineSemaphore)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::WaitSemaphores),
-                    proc: unsafe {
-                        std::mem::transmute(Self::wait_semaphores as vk::PFN_vkWaitSemaphores)
-                    },
-                },
-                VulkanCommand {
-                    name: "vkWriteAccelerationStructuresPropertiesKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRAccelerationStructure)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::WriteAccelerationStructuresPropertiesKhr),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::write_acceleration_structures_properties_khr
-                                as vk::PFN_vkWriteAccelerationStructuresPropertiesKHR,
-                        )
-                    },
-                },
-                VulkanCommand {
-                    name: "vkWriteMicromapsPropertiesEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTOpacityMicromap)],
-                    hooked: hooked_commands
-                        .contains(&LayerVulkanCommand::WriteMicromapsPropertiesExt),
-                    proc: unsafe {
-                        std::mem::transmute(
-                            Self::write_micromaps_properties_ext
-                                as vk::PFN_vkWriteMicromapsPropertiesEXT,
-                        )
-                    },
-                },
-            ]
-        })
+    pub(crate) fn create_device_commands(layer_info: &T) -> Box<[VulkanCommand]> {
+        let hooked_commands = layer_info.hooked_commands().collect::<HashSet<_>>();
+        Box::new([
+            VulkanCommand {
+                name: "vkAcquireFullScreenExclusiveModeEXT",
+                features: smallvec![Feature::Extension(Extension::EXTFullScreenExclusive)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::AcquireFullScreenExclusiveModeExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::acquire_full_screen_exclusive_mode_ext
+                            as vk::PFN_vkAcquireFullScreenExclusiveModeEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkAcquireImageANDROID",
+                features: smallvec![Feature::Extension(Extension::ANDROIDNativeBuffer)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::AcquireImageAndroid),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::acquire_image_android as vk::PFN_vkAcquireImageANDROID,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkAcquireNextImage2KHR",
+                features: smallvec![
+                    Feature::Extension(Extension::KHRSwapchain),
+                    Feature::Extension(Extension::KHRDeviceGroup)
+                ],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::AcquireNextImage2Khr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::acquire_next_image2_khr as vk::PFN_vkAcquireNextImage2KHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkAcquireNextImageKHR",
+                features: smallvec![Feature::Extension(Extension::KHRSwapchain)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::AcquireNextImageKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::acquire_next_image_khr as vk::PFN_vkAcquireNextImageKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkAcquirePerformanceConfigurationINTEL",
+                features: smallvec![Feature::Extension(Extension::INTELPerformanceQuery)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::AcquirePerformanceConfigurationIntel),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::acquire_performance_configuration_intel
+                            as vk::PFN_vkAcquirePerformanceConfigurationINTEL,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkAcquireProfilingLockKHR",
+                features: smallvec![Feature::Extension(Extension::KHRPerformanceQuery)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::AcquireProfilingLockKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::acquire_profiling_lock_khr as vk::PFN_vkAcquireProfilingLockKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkAllocateCommandBuffers",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::AllocateCommandBuffers),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::allocate_command_buffers as vk::PFN_vkAllocateCommandBuffers,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkAllocateDescriptorSets",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::AllocateDescriptorSets),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::allocate_descriptor_sets as vk::PFN_vkAllocateDescriptorSets,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkAllocateMemory",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::AllocateMemory),
+                proc: unsafe {
+                    std::mem::transmute(Self::allocate_memory as vk::PFN_vkAllocateMemory)
+                },
+            },
+            VulkanCommand {
+                name: "vkBeginCommandBuffer",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::BeginCommandBuffer),
+                proc: unsafe {
+                    std::mem::transmute(Self::begin_command_buffer as vk::PFN_vkBeginCommandBuffer)
+                },
+            },
+            VulkanCommand {
+                name: "vkBindAccelerationStructureMemoryNV",
+                features: smallvec![Feature::Extension(Extension::NVRayTracing)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::BindAccelerationStructureMemoryNv),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::bind_acceleration_structure_memory_nv
+                            as vk::PFN_vkBindAccelerationStructureMemoryNV,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkBindBufferMemory",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::BindBufferMemory),
+                proc: unsafe {
+                    std::mem::transmute(Self::bind_buffer_memory as vk::PFN_vkBindBufferMemory)
+                },
+            },
+            VulkanCommand {
+                name: "vkBindBufferMemory2",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::BindBufferMemory2),
+                proc: unsafe {
+                    std::mem::transmute(Self::bind_buffer_memory2 as vk::PFN_vkBindBufferMemory2)
+                },
+            },
+            VulkanCommand {
+                name: "vkBindBufferMemory2KHR",
+                features: smallvec![Feature::Extension(Extension::KHRBindMemory2)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::BindBufferMemory2),
+                proc: unsafe {
+                    std::mem::transmute(Self::bind_buffer_memory2 as vk::PFN_vkBindBufferMemory2)
+                },
+            },
+            VulkanCommand {
+                name: "vkBindImageMemory",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::BindImageMemory),
+                proc: unsafe {
+                    std::mem::transmute(Self::bind_image_memory as vk::PFN_vkBindImageMemory)
+                },
+            },
+            VulkanCommand {
+                name: "vkBindImageMemory2",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::BindImageMemory2),
+                proc: unsafe {
+                    std::mem::transmute(Self::bind_image_memory2 as vk::PFN_vkBindImageMemory2)
+                },
+            },
+            VulkanCommand {
+                name: "vkBindImageMemory2KHR",
+                features: smallvec![Feature::Extension(Extension::KHRBindMemory2)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::BindImageMemory2),
+                proc: unsafe {
+                    std::mem::transmute(Self::bind_image_memory2 as vk::PFN_vkBindImageMemory2)
+                },
+            },
+            VulkanCommand {
+                name: "vkBindOpticalFlowSessionImageNV",
+                features: smallvec![Feature::Extension(Extension::NVOpticalFlow)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::BindOpticalFlowSessionImageNv),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::bind_optical_flow_session_image_nv
+                            as vk::PFN_vkBindOpticalFlowSessionImageNV,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkBindVideoSessionMemoryKHR",
+                features: smallvec![Feature::Extension(Extension::KHRVideoQueue)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::BindVideoSessionMemoryKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::bind_video_session_memory_khr as vk::PFN_vkBindVideoSessionMemoryKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkBuildMicromapsEXT",
+                features: smallvec![Feature::Extension(Extension::EXTOpacityMicromap)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::BuildMicromapsExt),
+                proc: unsafe {
+                    std::mem::transmute(Self::build_micromaps_ext as vk::PFN_vkBuildMicromapsEXT)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdBeginConditionalRenderingEXT",
+                features: smallvec![Feature::Extension(Extension::EXTConditionalRendering)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::CmdBeginConditionalRenderingExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_begin_conditional_rendering_ext
+                            as vk::PFN_vkCmdBeginConditionalRenderingEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdBeginDebugUtilsLabelEXT",
+                features: smallvec![Feature::Extension(Extension::EXTDebugUtils)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBeginDebugUtilsLabelExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_begin_debug_utils_label_ext
+                            as vk::PFN_vkCmdBeginDebugUtilsLabelEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdBeginQuery",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBeginQuery),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_begin_query as vk::PFN_vkCmdBeginQuery)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdBeginQueryIndexedEXT",
+                features: smallvec![Feature::Extension(Extension::EXTTransformFeedback)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBeginQueryIndexedExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_begin_query_indexed_ext as vk::PFN_vkCmdBeginQueryIndexedEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdBeginRenderPass",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBeginRenderPass),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_begin_render_pass as vk::PFN_vkCmdBeginRenderPass)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdBeginRenderPass2",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 2 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBeginRenderPass2),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_begin_render_pass2 as vk::PFN_vkCmdBeginRenderPass2,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdBeginRenderPass2KHR",
+                features: smallvec![Feature::Extension(Extension::KHRCreateRenderpass2)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBeginRenderPass2),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_begin_render_pass2 as vk::PFN_vkCmdBeginRenderPass2,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdBeginRendering",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBeginRendering),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_begin_rendering as vk::PFN_vkCmdBeginRendering)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdBeginRenderingKHR",
+                features: smallvec![Feature::Extension(Extension::KHRDynamicRendering)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBeginRendering),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_begin_rendering as vk::PFN_vkCmdBeginRendering)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdBeginTransformFeedbackEXT",
+                features: smallvec![Feature::Extension(Extension::EXTTransformFeedback)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBeginTransformFeedbackExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_begin_transform_feedback_ext
+                            as vk::PFN_vkCmdBeginTransformFeedbackEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdBeginVideoCodingKHR",
+                features: smallvec![Feature::Extension(Extension::KHRVideoQueue)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBeginVideoCodingKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_begin_video_coding_khr as vk::PFN_vkCmdBeginVideoCodingKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdBindDescriptorBufferEmbeddedSamplersEXT",
+                features: smallvec![Feature::Extension(Extension::EXTDescriptorBuffer)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::CmdBindDescriptorBufferEmbeddedSamplersExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_bind_descriptor_buffer_embedded_samplers_ext
+                            as vk::PFN_vkCmdBindDescriptorBufferEmbeddedSamplersEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdBindDescriptorBuffersEXT",
+                features: smallvec![Feature::Extension(Extension::EXTDescriptorBuffer)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBindDescriptorBuffersExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_bind_descriptor_buffers_ext
+                            as vk::PFN_vkCmdBindDescriptorBuffersEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdBindDescriptorSets",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBindDescriptorSets),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_bind_descriptor_sets as vk::PFN_vkCmdBindDescriptorSets,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdBindIndexBuffer",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBindIndexBuffer),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_bind_index_buffer as vk::PFN_vkCmdBindIndexBuffer)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdBindInvocationMaskHUAWEI",
+                features: smallvec![Feature::Extension(Extension::HUAWEIInvocationMask)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBindInvocationMaskHuawei),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_bind_invocation_mask_huawei
+                            as vk::PFN_vkCmdBindInvocationMaskHUAWEI,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdBindPipeline",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBindPipeline),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_bind_pipeline as vk::PFN_vkCmdBindPipeline)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdBindPipelineShaderGroupNV",
+                features: smallvec![Feature::Extension(Extension::NVDeviceGeneratedCommands)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBindPipelineShaderGroupNv),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_bind_pipeline_shader_group_nv
+                            as vk::PFN_vkCmdBindPipelineShaderGroupNV,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdBindShadingRateImageNV",
+                features: smallvec![Feature::Extension(Extension::NVShadingRateImage)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBindShadingRateImageNv),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_bind_shading_rate_image_nv as vk::PFN_vkCmdBindShadingRateImageNV,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdBindTransformFeedbackBuffersEXT",
+                features: smallvec![Feature::Extension(Extension::EXTTransformFeedback)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::CmdBindTransformFeedbackBuffersExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_bind_transform_feedback_buffers_ext
+                            as vk::PFN_vkCmdBindTransformFeedbackBuffersEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdBindVertexBuffers",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBindVertexBuffers),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_bind_vertex_buffers as vk::PFN_vkCmdBindVertexBuffers,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdBindVertexBuffers2",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBindVertexBuffers2),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_bind_vertex_buffers2 as vk::PFN_vkCmdBindVertexBuffers2,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdBindVertexBuffers2EXT",
+                features: smallvec![
+                    Feature::Extension(Extension::EXTExtendedDynamicState),
+                    Feature::Extension(Extension::EXTShaderObject)
+                ],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBindVertexBuffers2),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_bind_vertex_buffers2 as vk::PFN_vkCmdBindVertexBuffers2,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdBlitImage",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBlitImage),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_blit_image as vk::PFN_vkCmdBlitImage)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdBlitImage2",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBlitImage2),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_blit_image2 as vk::PFN_vkCmdBlitImage2)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdBlitImage2KHR",
+                features: smallvec![Feature::Extension(Extension::KHRCopyCommands2)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBlitImage2),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_blit_image2 as vk::PFN_vkCmdBlitImage2)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdBuildAccelerationStructureNV",
+                features: smallvec![Feature::Extension(Extension::NVRayTracing)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::CmdBuildAccelerationStructureNv),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_build_acceleration_structure_nv
+                            as vk::PFN_vkCmdBuildAccelerationStructureNV,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdBuildMicromapsEXT",
+                features: smallvec![Feature::Extension(Extension::EXTOpacityMicromap)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBuildMicromapsExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_build_micromaps_ext as vk::PFN_vkCmdBuildMicromapsEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdClearAttachments",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdClearAttachments),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_clear_attachments as vk::PFN_vkCmdClearAttachments,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdClearColorImage",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdClearColorImage),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_clear_color_image as vk::PFN_vkCmdClearColorImage)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdClearDepthStencilImage",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdClearDepthStencilImage),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_clear_depth_stencil_image as vk::PFN_vkCmdClearDepthStencilImage,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdControlVideoCodingKHR",
+                features: smallvec![Feature::Extension(Extension::KHRVideoQueue)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdControlVideoCodingKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_control_video_coding_khr as vk::PFN_vkCmdControlVideoCodingKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdCopyAccelerationStructureKHR",
+                features: smallvec![Feature::Extension(Extension::KHRAccelerationStructure)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::CmdCopyAccelerationStructureKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_copy_acceleration_structure_khr
+                            as vk::PFN_vkCmdCopyAccelerationStructureKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdCopyAccelerationStructureNV",
+                features: smallvec![Feature::Extension(Extension::NVRayTracing)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::CmdCopyAccelerationStructureNv),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_copy_acceleration_structure_nv
+                            as vk::PFN_vkCmdCopyAccelerationStructureNV,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdCopyAccelerationStructureToMemoryKHR",
+                features: smallvec![Feature::Extension(Extension::KHRAccelerationStructure)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::CmdCopyAccelerationStructureToMemoryKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_copy_acceleration_structure_to_memory_khr
+                            as vk::PFN_vkCmdCopyAccelerationStructureToMemoryKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdCopyBuffer",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdCopyBuffer),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_copy_buffer as vk::PFN_vkCmdCopyBuffer)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdCopyBuffer2",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdCopyBuffer2),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_copy_buffer2 as vk::PFN_vkCmdCopyBuffer2)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdCopyBuffer2KHR",
+                features: smallvec![Feature::Extension(Extension::KHRCopyCommands2)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdCopyBuffer2),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_copy_buffer2 as vk::PFN_vkCmdCopyBuffer2)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdCopyBufferToImage",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdCopyBufferToImage),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_copy_buffer_to_image as vk::PFN_vkCmdCopyBufferToImage,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdCopyBufferToImage2",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdCopyBufferToImage2),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_copy_buffer_to_image2 as vk::PFN_vkCmdCopyBufferToImage2,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdCopyBufferToImage2KHR",
+                features: smallvec![Feature::Extension(Extension::KHRCopyCommands2)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdCopyBufferToImage2),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_copy_buffer_to_image2 as vk::PFN_vkCmdCopyBufferToImage2,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdCopyImage",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdCopyImage),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_copy_image as vk::PFN_vkCmdCopyImage)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdCopyImage2",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdCopyImage2),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_copy_image2 as vk::PFN_vkCmdCopyImage2)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdCopyImage2KHR",
+                features: smallvec![Feature::Extension(Extension::KHRCopyCommands2)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdCopyImage2),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_copy_image2 as vk::PFN_vkCmdCopyImage2)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdCopyImageToBuffer",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdCopyImageToBuffer),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_copy_image_to_buffer as vk::PFN_vkCmdCopyImageToBuffer,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdCopyImageToBuffer2",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdCopyImageToBuffer2),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_copy_image_to_buffer2 as vk::PFN_vkCmdCopyImageToBuffer2,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdCopyImageToBuffer2KHR",
+                features: smallvec![Feature::Extension(Extension::KHRCopyCommands2)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdCopyImageToBuffer2),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_copy_image_to_buffer2 as vk::PFN_vkCmdCopyImageToBuffer2,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdCopyMemoryIndirectNV",
+                features: smallvec![Feature::Extension(Extension::NVCopyMemoryIndirect)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdCopyMemoryIndirectNv),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_copy_memory_indirect_nv as vk::PFN_vkCmdCopyMemoryIndirectNV,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdCopyMemoryToAccelerationStructureKHR",
+                features: smallvec![Feature::Extension(Extension::KHRAccelerationStructure)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::CmdCopyMemoryToAccelerationStructureKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_copy_memory_to_acceleration_structure_khr
+                            as vk::PFN_vkCmdCopyMemoryToAccelerationStructureKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdCopyMemoryToImageIndirectNV",
+                features: smallvec![Feature::Extension(Extension::NVCopyMemoryIndirect)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::CmdCopyMemoryToImageIndirectNv),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_copy_memory_to_image_indirect_nv
+                            as vk::PFN_vkCmdCopyMemoryToImageIndirectNV,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdCopyMemoryToMicromapEXT",
+                features: smallvec![Feature::Extension(Extension::EXTOpacityMicromap)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdCopyMemoryToMicromapExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_copy_memory_to_micromap_ext
+                            as vk::PFN_vkCmdCopyMemoryToMicromapEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdCopyMicromapEXT",
+                features: smallvec![Feature::Extension(Extension::EXTOpacityMicromap)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdCopyMicromapExt),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_copy_micromap_ext as vk::PFN_vkCmdCopyMicromapEXT)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdCopyMicromapToMemoryEXT",
+                features: smallvec![Feature::Extension(Extension::EXTOpacityMicromap)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdCopyMicromapToMemoryExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_copy_micromap_to_memory_ext
+                            as vk::PFN_vkCmdCopyMicromapToMemoryEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdCopyQueryPoolResults",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdCopyQueryPoolResults),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_copy_query_pool_results as vk::PFN_vkCmdCopyQueryPoolResults,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdCuLaunchKernelNVX",
+                features: smallvec![Feature::Extension(Extension::NVXBinaryImport)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdCuLaunchKernelNvx),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_cu_launch_kernel_nvx as vk::PFN_vkCmdCuLaunchKernelNVX,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdDebugMarkerBeginEXT",
+                features: smallvec![Feature::Extension(Extension::EXTDebugMarker)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDebugMarkerBeginExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_debug_marker_begin_ext as vk::PFN_vkCmdDebugMarkerBeginEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdDebugMarkerEndEXT",
+                features: smallvec![Feature::Extension(Extension::EXTDebugMarker)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDebugMarkerEndExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_debug_marker_end_ext as vk::PFN_vkCmdDebugMarkerEndEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdDebugMarkerInsertEXT",
+                features: smallvec![Feature::Extension(Extension::EXTDebugMarker)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDebugMarkerInsertExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_debug_marker_insert_ext as vk::PFN_vkCmdDebugMarkerInsertEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdDecodeVideoKHR",
+                features: smallvec![Feature::Extension(Extension::KHRVideoDecodeQueue)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDecodeVideoKhr),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_decode_video_khr as vk::PFN_vkCmdDecodeVideoKHR)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdDecompressMemoryIndirectCountNV",
+                features: smallvec![Feature::Extension(Extension::NVMemoryDecompression)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::CmdDecompressMemoryIndirectCountNv),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_decompress_memory_indirect_count_nv
+                            as vk::PFN_vkCmdDecompressMemoryIndirectCountNV,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdDecompressMemoryNV",
+                features: smallvec![Feature::Extension(Extension::NVMemoryDecompression)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDecompressMemoryNv),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_decompress_memory_nv as vk::PFN_vkCmdDecompressMemoryNV,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdDispatch",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDispatch),
+                proc: unsafe { std::mem::transmute(Self::cmd_dispatch as vk::PFN_vkCmdDispatch) },
+            },
+            VulkanCommand {
+                name: "vkCmdDispatchBase",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDispatchBase),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_dispatch_base as vk::PFN_vkCmdDispatchBase)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdDispatchBaseKHR",
+                features: smallvec![Feature::Extension(Extension::KHRDeviceGroup)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDispatchBase),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_dispatch_base as vk::PFN_vkCmdDispatchBase)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdDispatchIndirect",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDispatchIndirect),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_dispatch_indirect as vk::PFN_vkCmdDispatchIndirect,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdDraw",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDraw),
+                proc: unsafe { std::mem::transmute(Self::cmd_draw as vk::PFN_vkCmdDraw) },
+            },
+            VulkanCommand {
+                name: "vkCmdDrawIndexed",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDrawIndexed),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_draw_indexed as vk::PFN_vkCmdDrawIndexed)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdDrawIndexedIndirect",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDrawIndexedIndirect),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_draw_indexed_indirect as vk::PFN_vkCmdDrawIndexedIndirect,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdDrawIndexedIndirectCount",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 2 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDrawIndexedIndirectCount),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_draw_indexed_indirect_count
+                            as vk::PFN_vkCmdDrawIndexedIndirectCount,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdDrawIndexedIndirectCountAMD",
+                features: smallvec![Feature::Extension(Extension::AMDDrawIndirectCount)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDrawIndexedIndirectCount),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_draw_indexed_indirect_count
+                            as vk::PFN_vkCmdDrawIndexedIndirectCount,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdDrawIndexedIndirectCountKHR",
+                features: smallvec![Feature::Extension(Extension::KHRDrawIndirectCount)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDrawIndexedIndirectCount),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_draw_indexed_indirect_count
+                            as vk::PFN_vkCmdDrawIndexedIndirectCount,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdDrawIndirect",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDrawIndirect),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_draw_indirect as vk::PFN_vkCmdDrawIndirect)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdDrawIndirectByteCountEXT",
+                features: smallvec![Feature::Extension(Extension::EXTTransformFeedback)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDrawIndirectByteCountExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_draw_indirect_byte_count_ext
+                            as vk::PFN_vkCmdDrawIndirectByteCountEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdDrawIndirectCount",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 2 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDrawIndirectCount),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_draw_indirect_count as vk::PFN_vkCmdDrawIndirectCount,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdDrawIndirectCountAMD",
+                features: smallvec![Feature::Extension(Extension::AMDDrawIndirectCount)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDrawIndirectCount),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_draw_indirect_count as vk::PFN_vkCmdDrawIndirectCount,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdDrawIndirectCountKHR",
+                features: smallvec![Feature::Extension(Extension::KHRDrawIndirectCount)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDrawIndirectCount),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_draw_indirect_count as vk::PFN_vkCmdDrawIndirectCount,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdDrawMeshTasksEXT",
+                features: smallvec![Feature::Extension(Extension::EXTMeshShader)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDrawMeshTasksExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_draw_mesh_tasks_ext as vk::PFN_vkCmdDrawMeshTasksEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdDrawMeshTasksIndirectCountEXT",
+                features: smallvec![Feature::Extension(Extension::EXTMeshShader)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::CmdDrawMeshTasksIndirectCountExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_draw_mesh_tasks_indirect_count_ext
+                            as vk::PFN_vkCmdDrawMeshTasksIndirectCountEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdDrawMeshTasksIndirectCountNV",
+                features: smallvec![Feature::Extension(Extension::NVMeshShader)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::CmdDrawMeshTasksIndirectCountNv),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_draw_mesh_tasks_indirect_count_nv
+                            as vk::PFN_vkCmdDrawMeshTasksIndirectCountNV,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdDrawMeshTasksIndirectEXT",
+                features: smallvec![Feature::Extension(Extension::EXTMeshShader)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDrawMeshTasksIndirectExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_draw_mesh_tasks_indirect_ext
+                            as vk::PFN_vkCmdDrawMeshTasksIndirectEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdDrawMeshTasksIndirectNV",
+                features: smallvec![Feature::Extension(Extension::NVMeshShader)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDrawMeshTasksIndirectNv),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_draw_mesh_tasks_indirect_nv
+                            as vk::PFN_vkCmdDrawMeshTasksIndirectNV,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdDrawMeshTasksNV",
+                features: smallvec![Feature::Extension(Extension::NVMeshShader)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDrawMeshTasksNv),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_draw_mesh_tasks_nv as vk::PFN_vkCmdDrawMeshTasksNV,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdDrawMultiEXT",
+                features: smallvec![Feature::Extension(Extension::EXTMultiDraw)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDrawMultiExt),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_draw_multi_ext as vk::PFN_vkCmdDrawMultiEXT)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdDrawMultiIndexedEXT",
+                features: smallvec![Feature::Extension(Extension::EXTMultiDraw)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDrawMultiIndexedExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_draw_multi_indexed_ext as vk::PFN_vkCmdDrawMultiIndexedEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdEncodeVideoKHR",
+                features: smallvec![Feature::Extension(Extension::KHRVideoEncodeQueue)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdEncodeVideoKhr),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_encode_video_khr as vk::PFN_vkCmdEncodeVideoKHR)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdEndConditionalRenderingEXT",
+                features: smallvec![Feature::Extension(Extension::EXTConditionalRendering)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::CmdEndConditionalRenderingExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_end_conditional_rendering_ext
+                            as vk::PFN_vkCmdEndConditionalRenderingEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdEndDebugUtilsLabelEXT",
+                features: smallvec![Feature::Extension(Extension::EXTDebugUtils)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdEndDebugUtilsLabelExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_end_debug_utils_label_ext as vk::PFN_vkCmdEndDebugUtilsLabelEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdEndQuery",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdEndQuery),
+                proc: unsafe { std::mem::transmute(Self::cmd_end_query as vk::PFN_vkCmdEndQuery) },
+            },
+            VulkanCommand {
+                name: "vkCmdEndQueryIndexedEXT",
+                features: smallvec![Feature::Extension(Extension::EXTTransformFeedback)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdEndQueryIndexedExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_end_query_indexed_ext as vk::PFN_vkCmdEndQueryIndexedEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdEndRenderPass",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdEndRenderPass),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_end_render_pass as vk::PFN_vkCmdEndRenderPass)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdEndRenderPass2",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 2 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdEndRenderPass2),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_end_render_pass2 as vk::PFN_vkCmdEndRenderPass2)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdEndRenderPass2KHR",
+                features: smallvec![Feature::Extension(Extension::KHRCreateRenderpass2)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdEndRenderPass2),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_end_render_pass2 as vk::PFN_vkCmdEndRenderPass2)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdEndRendering",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdEndRendering),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_end_rendering as vk::PFN_vkCmdEndRendering)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdEndRenderingKHR",
+                features: smallvec![Feature::Extension(Extension::KHRDynamicRendering)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdEndRendering),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_end_rendering as vk::PFN_vkCmdEndRendering)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdEndTransformFeedbackEXT",
+                features: smallvec![Feature::Extension(Extension::EXTTransformFeedback)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdEndTransformFeedbackExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_end_transform_feedback_ext
+                            as vk::PFN_vkCmdEndTransformFeedbackEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdEndVideoCodingKHR",
+                features: smallvec![Feature::Extension(Extension::KHRVideoQueue)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdEndVideoCodingKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_end_video_coding_khr as vk::PFN_vkCmdEndVideoCodingKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdExecuteCommands",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdExecuteCommands),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_execute_commands as vk::PFN_vkCmdExecuteCommands)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdExecuteGeneratedCommandsNV",
+                features: smallvec![Feature::Extension(Extension::NVDeviceGeneratedCommands)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::CmdExecuteGeneratedCommandsNv),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_execute_generated_commands_nv
+                            as vk::PFN_vkCmdExecuteGeneratedCommandsNV,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdFillBuffer",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdFillBuffer),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_fill_buffer as vk::PFN_vkCmdFillBuffer)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdInsertDebugUtilsLabelEXT",
+                features: smallvec![Feature::Extension(Extension::EXTDebugUtils)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdInsertDebugUtilsLabelExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_insert_debug_utils_label_ext
+                            as vk::PFN_vkCmdInsertDebugUtilsLabelEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdNextSubpass",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdNextSubpass),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_next_subpass as vk::PFN_vkCmdNextSubpass)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdNextSubpass2",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 2 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdNextSubpass2),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_next_subpass2 as vk::PFN_vkCmdNextSubpass2)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdNextSubpass2KHR",
+                features: smallvec![Feature::Extension(Extension::KHRCreateRenderpass2)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdNextSubpass2),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_next_subpass2 as vk::PFN_vkCmdNextSubpass2)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdOpticalFlowExecuteNV",
+                features: smallvec![Feature::Extension(Extension::NVOpticalFlow)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdOpticalFlowExecuteNv),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_optical_flow_execute_nv as vk::PFN_vkCmdOpticalFlowExecuteNV,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdPipelineBarrier",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdPipelineBarrier),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_pipeline_barrier as vk::PFN_vkCmdPipelineBarrier)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdPipelineBarrier2",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdPipelineBarrier2),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_pipeline_barrier2 as vk::PFN_vkCmdPipelineBarrier2,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdPipelineBarrier2KHR",
+                features: smallvec![Feature::Extension(Extension::KHRSynchronization2)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdPipelineBarrier2),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_pipeline_barrier2 as vk::PFN_vkCmdPipelineBarrier2,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdPreprocessGeneratedCommandsNV",
+                features: smallvec![Feature::Extension(Extension::NVDeviceGeneratedCommands)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::CmdPreprocessGeneratedCommandsNv),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_preprocess_generated_commands_nv
+                            as vk::PFN_vkCmdPreprocessGeneratedCommandsNV,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdPushConstants",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdPushConstants),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_push_constants as vk::PFN_vkCmdPushConstants)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdPushDescriptorSetKHR",
+                features: smallvec![Feature::Extension(Extension::KHRPushDescriptor)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdPushDescriptorSetKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_push_descriptor_set_khr as vk::PFN_vkCmdPushDescriptorSetKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdPushDescriptorSetWithTemplateKHR",
+                features: smallvec![
+                    Feature::Extension(Extension::KHRPushDescriptor),
+                    Feature::Extension(Extension::KHRDescriptorUpdateTemplate)
+                ],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::CmdPushDescriptorSetWithTemplateKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_push_descriptor_set_with_template_khr
+                            as vk::PFN_vkCmdPushDescriptorSetWithTemplateKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdResetEvent",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdResetEvent),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_reset_event as vk::PFN_vkCmdResetEvent)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdResetEvent2",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdResetEvent2),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_reset_event2 as vk::PFN_vkCmdResetEvent2)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdResetEvent2KHR",
+                features: smallvec![Feature::Extension(Extension::KHRSynchronization2)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdResetEvent2),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_reset_event2 as vk::PFN_vkCmdResetEvent2)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdResetQueryPool",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdResetQueryPool),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_reset_query_pool as vk::PFN_vkCmdResetQueryPool)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdResolveImage",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdResolveImage),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_resolve_image as vk::PFN_vkCmdResolveImage)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdResolveImage2",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdResolveImage2),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_resolve_image2 as vk::PFN_vkCmdResolveImage2)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdResolveImage2KHR",
+                features: smallvec![Feature::Extension(Extension::KHRCopyCommands2)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdResolveImage2),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_resolve_image2 as vk::PFN_vkCmdResolveImage2)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetAlphaToCoverageEnableEXT",
+                features: smallvec![
+                    Feature::Extension(Extension::EXTExtendedDynamicState3),
+                    Feature::Extension(Extension::EXTShaderObject)
+                ],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::CmdSetAlphaToCoverageEnableExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_alpha_to_coverage_enable_ext
+                            as vk::PFN_vkCmdSetAlphaToCoverageEnableEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetAlphaToOneEnableEXT",
+                features: smallvec![
+                    Feature::Extension(Extension::EXTExtendedDynamicState3),
+                    Feature::Extension(Extension::EXTShaderObject)
+                ],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetAlphaToOneEnableExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_alpha_to_one_enable_ext
+                            as vk::PFN_vkCmdSetAlphaToOneEnableEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetBlendConstants",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetBlendConstants),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_blend_constants as vk::PFN_vkCmdSetBlendConstants,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetCheckpointNV",
+                features: smallvec![Feature::Extension(Extension::NVDeviceDiagnosticCheckpoints)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetCheckpointNv),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_set_checkpoint_nv as vk::PFN_vkCmdSetCheckpointNV)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetCoarseSampleOrderNV",
+                features: smallvec![Feature::Extension(Extension::NVShadingRateImage)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetCoarseSampleOrderNv),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_coarse_sample_order_nv as vk::PFN_vkCmdSetCoarseSampleOrderNV,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetColorBlendAdvancedEXT",
+                features: smallvec![
+                    Feature::Extension(Extension::EXTExtendedDynamicState3),
+                    Feature::Extension(Extension::EXTShaderObject)
+                ],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetColorBlendAdvancedExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_color_blend_advanced_ext
+                            as vk::PFN_vkCmdSetColorBlendAdvancedEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetColorBlendEnableEXT",
+                features: smallvec![
+                    Feature::Extension(Extension::EXTExtendedDynamicState3),
+                    Feature::Extension(Extension::EXTShaderObject)
+                ],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetColorBlendEnableExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_color_blend_enable_ext as vk::PFN_vkCmdSetColorBlendEnableEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetColorBlendEquationEXT",
+                features: smallvec![
+                    Feature::Extension(Extension::EXTExtendedDynamicState3),
+                    Feature::Extension(Extension::EXTShaderObject)
+                ],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetColorBlendEquationExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_color_blend_equation_ext
+                            as vk::PFN_vkCmdSetColorBlendEquationEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetColorWriteEnableEXT",
+                features: smallvec![Feature::Extension(Extension::EXTColorWriteEnable)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetColorWriteEnableExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_color_write_enable_ext as vk::PFN_vkCmdSetColorWriteEnableEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetColorWriteMaskEXT",
+                features: smallvec![
+                    Feature::Extension(Extension::EXTExtendedDynamicState3),
+                    Feature::Extension(Extension::EXTShaderObject)
+                ],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetColorWriteMaskExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_color_write_mask_ext as vk::PFN_vkCmdSetColorWriteMaskEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetConservativeRasterizationModeEXT",
+                features: smallvec![
+                    Feature::Extension(Extension::EXTExtendedDynamicState3),
+                    Feature::Extension(Extension::EXTShaderObject)
+                ],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::CmdSetConservativeRasterizationModeExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_conservative_rasterization_mode_ext
+                            as vk::PFN_vkCmdSetConservativeRasterizationModeEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetCoverageModulationModeNV",
+                features: smallvec![
+                    Feature::Extension(Extension::EXTExtendedDynamicState3),
+                    Feature::Extension(Extension::EXTShaderObject)
+                ],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::CmdSetCoverageModulationModeNv),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_coverage_modulation_mode_nv
+                            as vk::PFN_vkCmdSetCoverageModulationModeNV,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetCoverageModulationTableEnableNV",
+                features: smallvec![
+                    Feature::Extension(Extension::EXTExtendedDynamicState3),
+                    Feature::Extension(Extension::EXTShaderObject)
+                ],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::CmdSetCoverageModulationTableEnableNv),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_coverage_modulation_table_enable_nv
+                            as vk::PFN_vkCmdSetCoverageModulationTableEnableNV,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetCoverageModulationTableNV",
+                features: smallvec![
+                    Feature::Extension(Extension::EXTExtendedDynamicState3),
+                    Feature::Extension(Extension::EXTShaderObject)
+                ],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::CmdSetCoverageModulationTableNv),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_coverage_modulation_table_nv
+                            as vk::PFN_vkCmdSetCoverageModulationTableNV,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetCoverageReductionModeNV",
+                features: smallvec![
+                    Feature::Extension(Extension::EXTExtendedDynamicState3),
+                    Feature::Extension(Extension::EXTShaderObject)
+                ],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::CmdSetCoverageReductionModeNv),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_coverage_reduction_mode_nv
+                            as vk::PFN_vkCmdSetCoverageReductionModeNV,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetCoverageToColorEnableNV",
+                features: smallvec![
+                    Feature::Extension(Extension::EXTExtendedDynamicState3),
+                    Feature::Extension(Extension::EXTShaderObject)
+                ],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::CmdSetCoverageToColorEnableNv),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_coverage_to_color_enable_nv
+                            as vk::PFN_vkCmdSetCoverageToColorEnableNV,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetCoverageToColorLocationNV",
+                features: smallvec![
+                    Feature::Extension(Extension::EXTExtendedDynamicState3),
+                    Feature::Extension(Extension::EXTShaderObject)
+                ],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::CmdSetCoverageToColorLocationNv),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_coverage_to_color_location_nv
+                            as vk::PFN_vkCmdSetCoverageToColorLocationNV,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetCullMode",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetCullMode),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_set_cull_mode as vk::PFN_vkCmdSetCullMode)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetCullModeEXT",
+                features: smallvec![
+                    Feature::Extension(Extension::EXTExtendedDynamicState),
+                    Feature::Extension(Extension::EXTShaderObject)
+                ],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetCullMode),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_set_cull_mode as vk::PFN_vkCmdSetCullMode)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetDepthBias",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetDepthBias),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_set_depth_bias as vk::PFN_vkCmdSetDepthBias)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetDepthBiasEnable",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetDepthBiasEnable),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_depth_bias_enable as vk::PFN_vkCmdSetDepthBiasEnable,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetDepthBiasEnableEXT",
+                features: smallvec![
+                    Feature::Extension(Extension::EXTExtendedDynamicState2),
+                    Feature::Extension(Extension::EXTShaderObject)
+                ],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetDepthBiasEnable),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_depth_bias_enable as vk::PFN_vkCmdSetDepthBiasEnable,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetDepthBounds",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetDepthBounds),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_set_depth_bounds as vk::PFN_vkCmdSetDepthBounds)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetDepthBoundsTestEnable",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetDepthBoundsTestEnable),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_depth_bounds_test_enable
+                            as vk::PFN_vkCmdSetDepthBoundsTestEnable,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetDepthBoundsTestEnableEXT",
+                features: smallvec![
+                    Feature::Extension(Extension::EXTExtendedDynamicState),
+                    Feature::Extension(Extension::EXTShaderObject)
+                ],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetDepthBoundsTestEnable),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_depth_bounds_test_enable
+                            as vk::PFN_vkCmdSetDepthBoundsTestEnable,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetDepthClampEnableEXT",
+                features: smallvec![
+                    Feature::Extension(Extension::EXTExtendedDynamicState3),
+                    Feature::Extension(Extension::EXTShaderObject)
+                ],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetDepthClampEnableExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_depth_clamp_enable_ext as vk::PFN_vkCmdSetDepthClampEnableEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetDepthClipEnableEXT",
+                features: smallvec![
+                    Feature::Extension(Extension::EXTExtendedDynamicState3),
+                    Feature::Extension(Extension::EXTShaderObject)
+                ],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetDepthClipEnableExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_depth_clip_enable_ext as vk::PFN_vkCmdSetDepthClipEnableEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetDepthClipNegativeOneToOneEXT",
+                features: smallvec![
+                    Feature::Extension(Extension::EXTExtendedDynamicState3),
+                    Feature::Extension(Extension::EXTShaderObject)
+                ],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::CmdSetDepthClipNegativeOneToOneExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_depth_clip_negative_one_to_one_ext
+                            as vk::PFN_vkCmdSetDepthClipNegativeOneToOneEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetDepthCompareOp",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetDepthCompareOp),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_depth_compare_op as vk::PFN_vkCmdSetDepthCompareOp,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetDepthCompareOpEXT",
+                features: smallvec![
+                    Feature::Extension(Extension::EXTExtendedDynamicState),
+                    Feature::Extension(Extension::EXTShaderObject)
+                ],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetDepthCompareOp),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_depth_compare_op as vk::PFN_vkCmdSetDepthCompareOp,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetDepthTestEnable",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetDepthTestEnable),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_depth_test_enable as vk::PFN_vkCmdSetDepthTestEnable,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetDepthTestEnableEXT",
+                features: smallvec![
+                    Feature::Extension(Extension::EXTExtendedDynamicState),
+                    Feature::Extension(Extension::EXTShaderObject)
+                ],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetDepthTestEnable),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_depth_test_enable as vk::PFN_vkCmdSetDepthTestEnable,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetDepthWriteEnable",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetDepthWriteEnable),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_depth_write_enable as vk::PFN_vkCmdSetDepthWriteEnable,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetDepthWriteEnableEXT",
+                features: smallvec![
+                    Feature::Extension(Extension::EXTExtendedDynamicState),
+                    Feature::Extension(Extension::EXTShaderObject)
+                ],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetDepthWriteEnable),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_depth_write_enable as vk::PFN_vkCmdSetDepthWriteEnable,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetDescriptorBufferOffsetsEXT",
+                features: smallvec![Feature::Extension(Extension::EXTDescriptorBuffer)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::CmdSetDescriptorBufferOffsetsExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_descriptor_buffer_offsets_ext
+                            as vk::PFN_vkCmdSetDescriptorBufferOffsetsEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetDeviceMask",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetDeviceMask),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_set_device_mask as vk::PFN_vkCmdSetDeviceMask)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetDeviceMaskKHR",
+                features: smallvec![Feature::Extension(Extension::KHRDeviceGroup)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetDeviceMask),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_set_device_mask as vk::PFN_vkCmdSetDeviceMask)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetDiscardRectangleEXT",
+                features: smallvec![Feature::Extension(Extension::EXTDiscardRectangles)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetDiscardRectangleExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_discard_rectangle_ext as vk::PFN_vkCmdSetDiscardRectangleEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetEvent",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetEvent),
+                proc: unsafe { std::mem::transmute(Self::cmd_set_event as vk::PFN_vkCmdSetEvent) },
+            },
+            VulkanCommand {
+                name: "vkCmdSetEvent2",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetEvent2),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_set_event2 as vk::PFN_vkCmdSetEvent2)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetEvent2KHR",
+                features: smallvec![Feature::Extension(Extension::KHRSynchronization2)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetEvent2),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_set_event2 as vk::PFN_vkCmdSetEvent2)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetExclusiveScissorNV",
+                features: smallvec![Feature::Extension(Extension::NVScissorExclusive)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetExclusiveScissorNv),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_exclusive_scissor_nv as vk::PFN_vkCmdSetExclusiveScissorNV,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetExtraPrimitiveOverestimationSizeEXT",
+                features: smallvec![
+                    Feature::Extension(Extension::EXTExtendedDynamicState3),
+                    Feature::Extension(Extension::EXTShaderObject)
+                ],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::CmdSetExtraPrimitiveOverestimationSizeExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_extra_primitive_overestimation_size_ext
+                            as vk::PFN_vkCmdSetExtraPrimitiveOverestimationSizeEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetFragmentShadingRateEnumNV",
+                features: smallvec![Feature::Extension(Extension::NVFragmentShadingRateEnums)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::CmdSetFragmentShadingRateEnumNv),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_fragment_shading_rate_enum_nv
+                            as vk::PFN_vkCmdSetFragmentShadingRateEnumNV,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetFragmentShadingRateKHR",
+                features: smallvec![Feature::Extension(Extension::KHRFragmentShadingRate)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetFragmentShadingRateKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_fragment_shading_rate_khr
+                            as vk::PFN_vkCmdSetFragmentShadingRateKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetFrontFace",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetFrontFace),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_set_front_face as vk::PFN_vkCmdSetFrontFace)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetFrontFaceEXT",
+                features: smallvec![
+                    Feature::Extension(Extension::EXTExtendedDynamicState),
+                    Feature::Extension(Extension::EXTShaderObject)
+                ],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetFrontFace),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_set_front_face as vk::PFN_vkCmdSetFrontFace)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetLineRasterizationModeEXT",
+                features: smallvec![
+                    Feature::Extension(Extension::EXTExtendedDynamicState3),
+                    Feature::Extension(Extension::EXTShaderObject)
+                ],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::CmdSetLineRasterizationModeExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_line_rasterization_mode_ext
+                            as vk::PFN_vkCmdSetLineRasterizationModeEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetLineStippleEXT",
+                features: smallvec![Feature::Extension(Extension::EXTLineRasterization)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetLineStippleExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_line_stipple_ext as vk::PFN_vkCmdSetLineStippleEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetLineStippleEnableEXT",
+                features: smallvec![
+                    Feature::Extension(Extension::EXTExtendedDynamicState3),
+                    Feature::Extension(Extension::EXTShaderObject)
+                ],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetLineStippleEnableExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_line_stipple_enable_ext
+                            as vk::PFN_vkCmdSetLineStippleEnableEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetLineWidth",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetLineWidth),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_set_line_width as vk::PFN_vkCmdSetLineWidth)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetLogicOpEXT",
+                features: smallvec![
+                    Feature::Extension(Extension::EXTExtendedDynamicState2),
+                    Feature::Extension(Extension::EXTShaderObject)
+                ],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetLogicOpExt),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_set_logic_op_ext as vk::PFN_vkCmdSetLogicOpEXT)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetLogicOpEnableEXT",
+                features: smallvec![
+                    Feature::Extension(Extension::EXTExtendedDynamicState3),
+                    Feature::Extension(Extension::EXTShaderObject)
+                ],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetLogicOpEnableExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_logic_op_enable_ext as vk::PFN_vkCmdSetLogicOpEnableEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetPatchControlPointsEXT",
+                features: smallvec![
+                    Feature::Extension(Extension::EXTExtendedDynamicState2),
+                    Feature::Extension(Extension::EXTShaderObject)
+                ],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetPatchControlPointsExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_patch_control_points_ext
+                            as vk::PFN_vkCmdSetPatchControlPointsEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetPerformanceMarkerINTEL",
+                features: smallvec![Feature::Extension(Extension::INTELPerformanceQuery)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetPerformanceMarkerIntel),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_performance_marker_intel
+                            as vk::PFN_vkCmdSetPerformanceMarkerINTEL,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetPerformanceOverrideINTEL",
+                features: smallvec![Feature::Extension(Extension::INTELPerformanceQuery)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::CmdSetPerformanceOverrideIntel),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_performance_override_intel
+                            as vk::PFN_vkCmdSetPerformanceOverrideINTEL,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetPerformanceStreamMarkerINTEL",
+                features: smallvec![Feature::Extension(Extension::INTELPerformanceQuery)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::CmdSetPerformanceStreamMarkerIntel),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_performance_stream_marker_intel
+                            as vk::PFN_vkCmdSetPerformanceStreamMarkerINTEL,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetPolygonModeEXT",
+                features: smallvec![
+                    Feature::Extension(Extension::EXTExtendedDynamicState3),
+                    Feature::Extension(Extension::EXTShaderObject)
+                ],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetPolygonModeExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_polygon_mode_ext as vk::PFN_vkCmdSetPolygonModeEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetPrimitiveRestartEnable",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetPrimitiveRestartEnable),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_primitive_restart_enable
+                            as vk::PFN_vkCmdSetPrimitiveRestartEnable,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetPrimitiveRestartEnableEXT",
+                features: smallvec![
+                    Feature::Extension(Extension::EXTExtendedDynamicState2),
+                    Feature::Extension(Extension::EXTShaderObject)
+                ],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetPrimitiveRestartEnable),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_primitive_restart_enable
+                            as vk::PFN_vkCmdSetPrimitiveRestartEnable,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetPrimitiveTopology",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetPrimitiveTopology),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_primitive_topology as vk::PFN_vkCmdSetPrimitiveTopology,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetPrimitiveTopologyEXT",
+                features: smallvec![
+                    Feature::Extension(Extension::EXTExtendedDynamicState),
+                    Feature::Extension(Extension::EXTShaderObject)
+                ],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetPrimitiveTopology),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_primitive_topology as vk::PFN_vkCmdSetPrimitiveTopology,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetProvokingVertexModeEXT",
+                features: smallvec![
+                    Feature::Extension(Extension::EXTExtendedDynamicState3),
+                    Feature::Extension(Extension::EXTShaderObject)
+                ],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetProvokingVertexModeExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_provoking_vertex_mode_ext
+                            as vk::PFN_vkCmdSetProvokingVertexModeEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetRasterizationSamplesEXT",
+                features: smallvec![
+                    Feature::Extension(Extension::EXTExtendedDynamicState3),
+                    Feature::Extension(Extension::EXTShaderObject)
+                ],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::CmdSetRasterizationSamplesExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_rasterization_samples_ext
+                            as vk::PFN_vkCmdSetRasterizationSamplesEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetRasterizationStreamEXT",
+                features: smallvec![
+                    Feature::Extension(Extension::EXTExtendedDynamicState3),
+                    Feature::Extension(Extension::EXTShaderObject)
+                ],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetRasterizationStreamExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_rasterization_stream_ext
+                            as vk::PFN_vkCmdSetRasterizationStreamEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetRasterizerDiscardEnable",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::CmdSetRasterizerDiscardEnable),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_rasterizer_discard_enable
+                            as vk::PFN_vkCmdSetRasterizerDiscardEnable,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetRasterizerDiscardEnableEXT",
+                features: smallvec![
+                    Feature::Extension(Extension::EXTExtendedDynamicState2),
+                    Feature::Extension(Extension::EXTShaderObject)
+                ],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::CmdSetRasterizerDiscardEnable),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_rasterizer_discard_enable
+                            as vk::PFN_vkCmdSetRasterizerDiscardEnable,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetRayTracingPipelineStackSizeKHR",
+                features: smallvec![Feature::Extension(Extension::KHRRayTracingPipeline)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::CmdSetRayTracingPipelineStackSizeKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_ray_tracing_pipeline_stack_size_khr
+                            as vk::PFN_vkCmdSetRayTracingPipelineStackSizeKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetRepresentativeFragmentTestEnableNV",
+                features: smallvec![
+                    Feature::Extension(Extension::EXTExtendedDynamicState3),
+                    Feature::Extension(Extension::EXTShaderObject)
+                ],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::CmdSetRepresentativeFragmentTestEnableNv),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_representative_fragment_test_enable_nv
+                            as vk::PFN_vkCmdSetRepresentativeFragmentTestEnableNV,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetSampleLocationsEXT",
+                features: smallvec![Feature::Extension(Extension::EXTSampleLocations)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetSampleLocationsExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_sample_locations_ext as vk::PFN_vkCmdSetSampleLocationsEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetSampleLocationsEnableEXT",
+                features: smallvec![
+                    Feature::Extension(Extension::EXTExtendedDynamicState3),
+                    Feature::Extension(Extension::EXTShaderObject)
+                ],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::CmdSetSampleLocationsEnableExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_sample_locations_enable_ext
+                            as vk::PFN_vkCmdSetSampleLocationsEnableEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetSampleMaskEXT",
+                features: smallvec![
+                    Feature::Extension(Extension::EXTExtendedDynamicState3),
+                    Feature::Extension(Extension::EXTShaderObject)
+                ],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetSampleMaskExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_sample_mask_ext as vk::PFN_vkCmdSetSampleMaskEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetScissor",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetScissor),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_set_scissor as vk::PFN_vkCmdSetScissor)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetScissorWithCount",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetScissorWithCount),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_scissor_with_count as vk::PFN_vkCmdSetScissorWithCount,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetScissorWithCountEXT",
+                features: smallvec![
+                    Feature::Extension(Extension::EXTExtendedDynamicState),
+                    Feature::Extension(Extension::EXTShaderObject)
+                ],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetScissorWithCount),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_scissor_with_count as vk::PFN_vkCmdSetScissorWithCount,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetShadingRateImageEnableNV",
+                features: smallvec![
+                    Feature::Extension(Extension::EXTExtendedDynamicState3),
+                    Feature::Extension(Extension::EXTShaderObject)
+                ],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::CmdSetShadingRateImageEnableNv),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_shading_rate_image_enable_nv
+                            as vk::PFN_vkCmdSetShadingRateImageEnableNV,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetStencilCompareMask",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetStencilCompareMask),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_stencil_compare_mask as vk::PFN_vkCmdSetStencilCompareMask,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetStencilOp",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetStencilOp),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_set_stencil_op as vk::PFN_vkCmdSetStencilOp)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetStencilOpEXT",
+                features: smallvec![
+                    Feature::Extension(Extension::EXTExtendedDynamicState),
+                    Feature::Extension(Extension::EXTShaderObject)
+                ],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetStencilOp),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_set_stencil_op as vk::PFN_vkCmdSetStencilOp)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetStencilReference",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetStencilReference),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_stencil_reference as vk::PFN_vkCmdSetStencilReference,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetStencilTestEnable",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetStencilTestEnable),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_stencil_test_enable as vk::PFN_vkCmdSetStencilTestEnable,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetStencilTestEnableEXT",
+                features: smallvec![
+                    Feature::Extension(Extension::EXTExtendedDynamicState),
+                    Feature::Extension(Extension::EXTShaderObject)
+                ],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetStencilTestEnable),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_stencil_test_enable as vk::PFN_vkCmdSetStencilTestEnable,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetStencilWriteMask",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetStencilWriteMask),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_stencil_write_mask as vk::PFN_vkCmdSetStencilWriteMask,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetTessellationDomainOriginEXT",
+                features: smallvec![
+                    Feature::Extension(Extension::EXTExtendedDynamicState3),
+                    Feature::Extension(Extension::EXTShaderObject)
+                ],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::CmdSetTessellationDomainOriginExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_tessellation_domain_origin_ext
+                            as vk::PFN_vkCmdSetTessellationDomainOriginEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetVertexInputEXT",
+                features: smallvec![
+                    Feature::Extension(Extension::EXTVertexInputDynamicState),
+                    Feature::Extension(Extension::EXTShaderObject)
+                ],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetVertexInputExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_vertex_input_ext as vk::PFN_vkCmdSetVertexInputEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetViewport",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetViewport),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_set_viewport as vk::PFN_vkCmdSetViewport)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetViewportShadingRatePaletteNV",
+                features: smallvec![Feature::Extension(Extension::NVShadingRateImage)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::CmdSetViewportShadingRatePaletteNv),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_viewport_shading_rate_palette_nv
+                            as vk::PFN_vkCmdSetViewportShadingRatePaletteNV,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetViewportSwizzleNV",
+                features: smallvec![
+                    Feature::Extension(Extension::EXTExtendedDynamicState3),
+                    Feature::Extension(Extension::EXTShaderObject)
+                ],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetViewportSwizzleNv),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_viewport_swizzle_nv as vk::PFN_vkCmdSetViewportSwizzleNV,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetViewportWScalingEnableNV",
+                features: smallvec![
+                    Feature::Extension(Extension::EXTExtendedDynamicState3),
+                    Feature::Extension(Extension::EXTShaderObject)
+                ],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::CmdSetViewportWScalingEnableNv),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_viewport_w_scaling_enable_nv
+                            as vk::PFN_vkCmdSetViewportWScalingEnableNV,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetViewportWScalingNV",
+                features: smallvec![Feature::Extension(Extension::NVClipSpaceWScaling)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetViewportWScalingNv),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_viewport_w_scaling_nv as vk::PFN_vkCmdSetViewportWScalingNV,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetViewportWithCount",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetViewportWithCount),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_viewport_with_count as vk::PFN_vkCmdSetViewportWithCount,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSetViewportWithCountEXT",
+                features: smallvec![
+                    Feature::Extension(Extension::EXTExtendedDynamicState),
+                    Feature::Extension(Extension::EXTShaderObject)
+                ],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetViewportWithCount),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_set_viewport_with_count as vk::PFN_vkCmdSetViewportWithCount,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdSubpassShadingHUAWEI",
+                features: smallvec![Feature::Extension(Extension::HUAWEISubpassShading)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSubpassShadingHuawei),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_subpass_shading_huawei as vk::PFN_vkCmdSubpassShadingHUAWEI,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdTraceRaysIndirect2KHR",
+                features: smallvec![Feature::Extension(Extension::KHRRayTracingMaintenance1)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdTraceRaysIndirect2Khr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_trace_rays_indirect2_khr as vk::PFN_vkCmdTraceRaysIndirect2KHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdTraceRaysIndirectKHR",
+                features: smallvec![Feature::Extension(Extension::KHRRayTracingPipeline)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdTraceRaysIndirectKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_trace_rays_indirect_khr as vk::PFN_vkCmdTraceRaysIndirectKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdTraceRaysKHR",
+                features: smallvec![Feature::Extension(Extension::KHRRayTracingPipeline)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdTraceRaysKhr),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_trace_rays_khr as vk::PFN_vkCmdTraceRaysKHR)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdTraceRaysNV",
+                features: smallvec![Feature::Extension(Extension::NVRayTracing)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdTraceRaysNv),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_trace_rays_nv as vk::PFN_vkCmdTraceRaysNV)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdUpdateBuffer",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdUpdateBuffer),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_update_buffer as vk::PFN_vkCmdUpdateBuffer)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdWaitEvents",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdWaitEvents),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_wait_events as vk::PFN_vkCmdWaitEvents)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdWaitEvents2",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdWaitEvents2),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_wait_events2 as vk::PFN_vkCmdWaitEvents2)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdWaitEvents2KHR",
+                features: smallvec![Feature::Extension(Extension::KHRSynchronization2)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdWaitEvents2),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_wait_events2 as vk::PFN_vkCmdWaitEvents2)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdWriteAccelerationStructuresPropertiesKHR",
+                features: smallvec![Feature::Extension(Extension::KHRAccelerationStructure)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::CmdWriteAccelerationStructuresPropertiesKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_write_acceleration_structures_properties_khr
+                            as vk::PFN_vkCmdWriteAccelerationStructuresPropertiesKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdWriteAccelerationStructuresPropertiesNV",
+                features: smallvec![Feature::Extension(Extension::NVRayTracing)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::CmdWriteAccelerationStructuresPropertiesNv),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_write_acceleration_structures_properties_nv
+                            as vk::PFN_vkCmdWriteAccelerationStructuresPropertiesNV,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdWriteBufferMarker2AMD",
+                features: smallvec![Feature::Extension(Extension::KHRSynchronization2)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdWriteBufferMarker2Amd),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_write_buffer_marker2_amd as vk::PFN_vkCmdWriteBufferMarker2AMD,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdWriteBufferMarkerAMD",
+                features: smallvec![Feature::Extension(Extension::AMDBufferMarker)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdWriteBufferMarkerAmd),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_write_buffer_marker_amd as vk::PFN_vkCmdWriteBufferMarkerAMD,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdWriteMicromapsPropertiesEXT",
+                features: smallvec![Feature::Extension(Extension::EXTOpacityMicromap)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::CmdWriteMicromapsPropertiesExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::cmd_write_micromaps_properties_ext
+                            as vk::PFN_vkCmdWriteMicromapsPropertiesEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdWriteTimestamp",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdWriteTimestamp),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_write_timestamp as vk::PFN_vkCmdWriteTimestamp)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdWriteTimestamp2",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdWriteTimestamp2),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_write_timestamp2 as vk::PFN_vkCmdWriteTimestamp2)
+                },
+            },
+            VulkanCommand {
+                name: "vkCmdWriteTimestamp2KHR",
+                features: smallvec![Feature::Extension(Extension::KHRSynchronization2)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CmdWriteTimestamp2),
+                proc: unsafe {
+                    std::mem::transmute(Self::cmd_write_timestamp2 as vk::PFN_vkCmdWriteTimestamp2)
+                },
+            },
+            VulkanCommand {
+                name: "vkCompileDeferredNV",
+                features: smallvec![Feature::Extension(Extension::NVRayTracing)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CompileDeferredNv),
+                proc: unsafe {
+                    std::mem::transmute(Self::compile_deferred_nv as vk::PFN_vkCompileDeferredNV)
+                },
+            },
+            VulkanCommand {
+                name: "vkCopyAccelerationStructureKHR",
+                features: smallvec![Feature::Extension(Extension::KHRAccelerationStructure)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CopyAccelerationStructureKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::copy_acceleration_structure_khr
+                            as vk::PFN_vkCopyAccelerationStructureKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCopyAccelerationStructureToMemoryKHR",
+                features: smallvec![Feature::Extension(Extension::KHRAccelerationStructure)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::CopyAccelerationStructureToMemoryKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::copy_acceleration_structure_to_memory_khr
+                            as vk::PFN_vkCopyAccelerationStructureToMemoryKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCopyMemoryToAccelerationStructureKHR",
+                features: smallvec![Feature::Extension(Extension::KHRAccelerationStructure)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::CopyMemoryToAccelerationStructureKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::copy_memory_to_acceleration_structure_khr
+                            as vk::PFN_vkCopyMemoryToAccelerationStructureKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCopyMemoryToMicromapEXT",
+                features: smallvec![Feature::Extension(Extension::EXTOpacityMicromap)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CopyMemoryToMicromapExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::copy_memory_to_micromap_ext as vk::PFN_vkCopyMemoryToMicromapEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCopyMicromapEXT",
+                features: smallvec![Feature::Extension(Extension::EXTOpacityMicromap)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CopyMicromapExt),
+                proc: unsafe {
+                    std::mem::transmute(Self::copy_micromap_ext as vk::PFN_vkCopyMicromapEXT)
+                },
+            },
+            VulkanCommand {
+                name: "vkCopyMicromapToMemoryEXT",
+                features: smallvec![Feature::Extension(Extension::EXTOpacityMicromap)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CopyMicromapToMemoryExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::copy_micromap_to_memory_ext as vk::PFN_vkCopyMicromapToMemoryEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCreateAccelerationStructureKHR",
+                features: smallvec![Feature::Extension(Extension::KHRAccelerationStructure)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::CreateAccelerationStructureKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::create_acceleration_structure_khr
+                            as vk::PFN_vkCreateAccelerationStructureKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCreateAccelerationStructureNV",
+                features: smallvec![Feature::Extension(Extension::NVRayTracing)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::CreateAccelerationStructureNv),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::create_acceleration_structure_nv
+                            as vk::PFN_vkCreateAccelerationStructureNV,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCreateBuffer",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CreateBuffer),
+                proc: unsafe { std::mem::transmute(Self::create_buffer as vk::PFN_vkCreateBuffer) },
+            },
+            VulkanCommand {
+                name: "vkCreateBufferCollectionFUCHSIA",
+                features: smallvec![Feature::Extension(Extension::FUCHSIABufferCollection)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::CreateBufferCollectionFuchsia),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::create_buffer_collection_fuchsia
+                            as vk::PFN_vkCreateBufferCollectionFUCHSIA,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCreateBufferView",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CreateBufferView),
+                proc: unsafe {
+                    std::mem::transmute(Self::create_buffer_view as vk::PFN_vkCreateBufferView)
+                },
+            },
+            VulkanCommand {
+                name: "vkCreateCommandPool",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CreateCommandPool),
+                proc: unsafe {
+                    std::mem::transmute(Self::create_command_pool as vk::PFN_vkCreateCommandPool)
+                },
+            },
+            VulkanCommand {
+                name: "vkCreateComputePipelines",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CreateComputePipelines),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::create_compute_pipelines as vk::PFN_vkCreateComputePipelines,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCreateCuFunctionNVX",
+                features: smallvec![Feature::Extension(Extension::NVXBinaryImport)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CreateCuFunctionNvx),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::create_cu_function_nvx as vk::PFN_vkCreateCuFunctionNVX,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCreateCuModuleNVX",
+                features: smallvec![Feature::Extension(Extension::NVXBinaryImport)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CreateCuModuleNvx),
+                proc: unsafe {
+                    std::mem::transmute(Self::create_cu_module_nvx as vk::PFN_vkCreateCuModuleNVX)
+                },
+            },
+            VulkanCommand {
+                name: "vkCreateDeferredOperationKHR",
+                features: smallvec![Feature::Extension(Extension::KHRDeferredHostOperations)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CreateDeferredOperationKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::create_deferred_operation_khr as vk::PFN_vkCreateDeferredOperationKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCreateDescriptorPool",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CreateDescriptorPool),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::create_descriptor_pool as vk::PFN_vkCreateDescriptorPool,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCreateDescriptorSetLayout",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CreateDescriptorSetLayout),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::create_descriptor_set_layout as vk::PFN_vkCreateDescriptorSetLayout,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCreateDescriptorUpdateTemplate",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1 })],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::CreateDescriptorUpdateTemplate),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::create_descriptor_update_template
+                            as vk::PFN_vkCreateDescriptorUpdateTemplate,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCreateDescriptorUpdateTemplateKHR",
+                features: smallvec![Feature::Extension(Extension::KHRDescriptorUpdateTemplate)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::CreateDescriptorUpdateTemplate),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::create_descriptor_update_template
+                            as vk::PFN_vkCreateDescriptorUpdateTemplate,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCreateEvent",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CreateEvent),
+                proc: unsafe { std::mem::transmute(Self::create_event as vk::PFN_vkCreateEvent) },
+            },
+            VulkanCommand {
+                name: "vkCreateFence",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CreateFence),
+                proc: unsafe { std::mem::transmute(Self::create_fence as vk::PFN_vkCreateFence) },
+            },
+            VulkanCommand {
+                name: "vkCreateFramebuffer",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CreateFramebuffer),
+                proc: unsafe {
+                    std::mem::transmute(Self::create_framebuffer as vk::PFN_vkCreateFramebuffer)
+                },
+            },
+            VulkanCommand {
+                name: "vkCreateGraphicsPipelines",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CreateGraphicsPipelines),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::create_graphics_pipelines as vk::PFN_vkCreateGraphicsPipelines,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCreateImage",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CreateImage),
+                proc: unsafe { std::mem::transmute(Self::create_image as vk::PFN_vkCreateImage) },
+            },
+            VulkanCommand {
+                name: "vkCreateImageView",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CreateImageView),
+                proc: unsafe {
+                    std::mem::transmute(Self::create_image_view as vk::PFN_vkCreateImageView)
+                },
+            },
+            VulkanCommand {
+                name: "vkCreateIndirectCommandsLayoutNV",
+                features: smallvec![Feature::Extension(Extension::NVDeviceGeneratedCommands)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::CreateIndirectCommandsLayoutNv),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::create_indirect_commands_layout_nv
+                            as vk::PFN_vkCreateIndirectCommandsLayoutNV,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCreateMicromapEXT",
+                features: smallvec![Feature::Extension(Extension::EXTOpacityMicromap)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CreateMicromapExt),
+                proc: unsafe {
+                    std::mem::transmute(Self::create_micromap_ext as vk::PFN_vkCreateMicromapEXT)
+                },
+            },
+            VulkanCommand {
+                name: "vkCreateOpticalFlowSessionNV",
+                features: smallvec![Feature::Extension(Extension::NVOpticalFlow)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CreateOpticalFlowSessionNv),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::create_optical_flow_session_nv
+                            as vk::PFN_vkCreateOpticalFlowSessionNV,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCreatePipelineCache",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CreatePipelineCache),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::create_pipeline_cache as vk::PFN_vkCreatePipelineCache,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCreatePipelineLayout",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CreatePipelineLayout),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::create_pipeline_layout as vk::PFN_vkCreatePipelineLayout,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCreatePrivateDataSlot",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CreatePrivateDataSlot),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::create_private_data_slot as vk::PFN_vkCreatePrivateDataSlot,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCreatePrivateDataSlotEXT",
+                features: smallvec![Feature::Extension(Extension::EXTPrivateData)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CreatePrivateDataSlot),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::create_private_data_slot as vk::PFN_vkCreatePrivateDataSlot,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCreateQueryPool",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CreateQueryPool),
+                proc: unsafe {
+                    std::mem::transmute(Self::create_query_pool as vk::PFN_vkCreateQueryPool)
+                },
+            },
+            VulkanCommand {
+                name: "vkCreateRayTracingPipelinesKHR",
+                features: smallvec![Feature::Extension(Extension::KHRRayTracingPipeline)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CreateRayTracingPipelinesKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::create_ray_tracing_pipelines_khr
+                            as vk::PFN_vkCreateRayTracingPipelinesKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCreateRayTracingPipelinesNV",
+                features: smallvec![Feature::Extension(Extension::NVRayTracing)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CreateRayTracingPipelinesNv),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::create_ray_tracing_pipelines_nv
+                            as vk::PFN_vkCreateRayTracingPipelinesNV,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCreateRenderPass",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CreateRenderPass),
+                proc: unsafe {
+                    std::mem::transmute(Self::create_render_pass as vk::PFN_vkCreateRenderPass)
+                },
+            },
+            VulkanCommand {
+                name: "vkCreateRenderPass2",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 2 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CreateRenderPass2),
+                proc: unsafe {
+                    std::mem::transmute(Self::create_render_pass2 as vk::PFN_vkCreateRenderPass2)
+                },
+            },
+            VulkanCommand {
+                name: "vkCreateRenderPass2KHR",
+                features: smallvec![Feature::Extension(Extension::KHRCreateRenderpass2)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CreateRenderPass2),
+                proc: unsafe {
+                    std::mem::transmute(Self::create_render_pass2 as vk::PFN_vkCreateRenderPass2)
+                },
+            },
+            VulkanCommand {
+                name: "vkCreateSampler",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CreateSampler),
+                proc: unsafe {
+                    std::mem::transmute(Self::create_sampler as vk::PFN_vkCreateSampler)
+                },
+            },
+            VulkanCommand {
+                name: "vkCreateSamplerYcbcrConversion",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CreateSamplerYcbcrConversion),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::create_sampler_ycbcr_conversion
+                            as vk::PFN_vkCreateSamplerYcbcrConversion,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCreateSamplerYcbcrConversionKHR",
+                features: smallvec![Feature::Extension(Extension::KHRSamplerYcbcrConversion)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CreateSamplerYcbcrConversion),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::create_sampler_ycbcr_conversion
+                            as vk::PFN_vkCreateSamplerYcbcrConversion,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCreateSemaphore",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CreateSemaphore),
+                proc: unsafe {
+                    std::mem::transmute(Self::create_semaphore as vk::PFN_vkCreateSemaphore)
+                },
+            },
+            VulkanCommand {
+                name: "vkCreateShaderModule",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CreateShaderModule),
+                proc: unsafe {
+                    std::mem::transmute(Self::create_shader_module as vk::PFN_vkCreateShaderModule)
+                },
+            },
+            VulkanCommand {
+                name: "vkCreateSharedSwapchainsKHR",
+                features: smallvec![Feature::Extension(Extension::KHRDisplaySwapchain)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CreateSharedSwapchainsKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::create_shared_swapchains_khr as vk::PFN_vkCreateSharedSwapchainsKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCreateSwapchainKHR",
+                features: smallvec![Feature::Extension(Extension::KHRSwapchain)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CreateSwapchainKhr),
+                proc: unsafe {
+                    std::mem::transmute(Self::create_swapchain_khr as vk::PFN_vkCreateSwapchainKHR)
+                },
+            },
+            VulkanCommand {
+                name: "vkCreateValidationCacheEXT",
+                features: smallvec![Feature::Extension(Extension::EXTValidationCache)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CreateValidationCacheExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::create_validation_cache_ext as vk::PFN_vkCreateValidationCacheEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCreateVideoSessionKHR",
+                features: smallvec![Feature::Extension(Extension::KHRVideoQueue)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CreateVideoSessionKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::create_video_session_khr as vk::PFN_vkCreateVideoSessionKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkCreateVideoSessionParametersKHR",
+                features: smallvec![Feature::Extension(Extension::KHRVideoQueue)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::CreateVideoSessionParametersKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::create_video_session_parameters_khr
+                            as vk::PFN_vkCreateVideoSessionParametersKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkDebugMarkerSetObjectNameEXT",
+                features: smallvec![Feature::Extension(Extension::EXTDebugMarker)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::DebugMarkerSetObjectNameExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::debug_marker_set_object_name_ext
+                            as vk::PFN_vkDebugMarkerSetObjectNameEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkDebugMarkerSetObjectTagEXT",
+                features: smallvec![Feature::Extension(Extension::EXTDebugMarker)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::DebugMarkerSetObjectTagExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::debug_marker_set_object_tag_ext
+                            as vk::PFN_vkDebugMarkerSetObjectTagEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkDeferredOperationJoinKHR",
+                features: smallvec![Feature::Extension(Extension::KHRDeferredHostOperations)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::DeferredOperationJoinKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::deferred_operation_join_khr as vk::PFN_vkDeferredOperationJoinKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkDestroyAccelerationStructureKHR",
+                features: smallvec![Feature::Extension(Extension::KHRAccelerationStructure)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::DestroyAccelerationStructureKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::destroy_acceleration_structure_khr
+                            as vk::PFN_vkDestroyAccelerationStructureKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkDestroyAccelerationStructureNV",
+                features: smallvec![Feature::Extension(Extension::NVRayTracing)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::DestroyAccelerationStructureNv),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::destroy_acceleration_structure_nv
+                            as vk::PFN_vkDestroyAccelerationStructureNV,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkDestroyBuffer",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyBuffer),
+                proc: unsafe {
+                    std::mem::transmute(Self::destroy_buffer as vk::PFN_vkDestroyBuffer)
+                },
+            },
+            VulkanCommand {
+                name: "vkDestroyBufferCollectionFUCHSIA",
+                features: smallvec![Feature::Extension(Extension::FUCHSIABufferCollection)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::DestroyBufferCollectionFuchsia),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::destroy_buffer_collection_fuchsia
+                            as vk::PFN_vkDestroyBufferCollectionFUCHSIA,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkDestroyBufferView",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyBufferView),
+                proc: unsafe {
+                    std::mem::transmute(Self::destroy_buffer_view as vk::PFN_vkDestroyBufferView)
+                },
+            },
+            VulkanCommand {
+                name: "vkDestroyCommandPool",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyCommandPool),
+                proc: unsafe {
+                    std::mem::transmute(Self::destroy_command_pool as vk::PFN_vkDestroyCommandPool)
+                },
+            },
+            VulkanCommand {
+                name: "vkDestroyCuFunctionNVX",
+                features: smallvec![Feature::Extension(Extension::NVXBinaryImport)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyCuFunctionNvx),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::destroy_cu_function_nvx as vk::PFN_vkDestroyCuFunctionNVX,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkDestroyCuModuleNVX",
+                features: smallvec![Feature::Extension(Extension::NVXBinaryImport)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyCuModuleNvx),
+                proc: unsafe {
+                    std::mem::transmute(Self::destroy_cu_module_nvx as vk::PFN_vkDestroyCuModuleNVX)
+                },
+            },
+            VulkanCommand {
+                name: "vkDestroyDeferredOperationKHR",
+                features: smallvec![Feature::Extension(Extension::KHRDeferredHostOperations)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyDeferredOperationKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::destroy_deferred_operation_khr
+                            as vk::PFN_vkDestroyDeferredOperationKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkDestroyDescriptorPool",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyDescriptorPool),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::destroy_descriptor_pool as vk::PFN_vkDestroyDescriptorPool,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkDestroyDescriptorSetLayout",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyDescriptorSetLayout),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::destroy_descriptor_set_layout as vk::PFN_vkDestroyDescriptorSetLayout,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkDestroyDescriptorUpdateTemplate",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1 })],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::DestroyDescriptorUpdateTemplate),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::destroy_descriptor_update_template
+                            as vk::PFN_vkDestroyDescriptorUpdateTemplate,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkDestroyDescriptorUpdateTemplateKHR",
+                features: smallvec![Feature::Extension(Extension::KHRDescriptorUpdateTemplate)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::DestroyDescriptorUpdateTemplate),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::destroy_descriptor_update_template
+                            as vk::PFN_vkDestroyDescriptorUpdateTemplate,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkDestroyDevice",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: true,
+                proc: unsafe {
+                    std::mem::transmute(Self::destroy_device as vk::PFN_vkDestroyDevice)
+                },
+            },
+            VulkanCommand {
+                name: "vkDestroyEvent",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyEvent),
+                proc: unsafe { std::mem::transmute(Self::destroy_event as vk::PFN_vkDestroyEvent) },
+            },
+            VulkanCommand {
+                name: "vkDestroyFence",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyFence),
+                proc: unsafe { std::mem::transmute(Self::destroy_fence as vk::PFN_vkDestroyFence) },
+            },
+            VulkanCommand {
+                name: "vkDestroyFramebuffer",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyFramebuffer),
+                proc: unsafe {
+                    std::mem::transmute(Self::destroy_framebuffer as vk::PFN_vkDestroyFramebuffer)
+                },
+            },
+            VulkanCommand {
+                name: "vkDestroyImage",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyImage),
+                proc: unsafe { std::mem::transmute(Self::destroy_image as vk::PFN_vkDestroyImage) },
+            },
+            VulkanCommand {
+                name: "vkDestroyImageView",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyImageView),
+                proc: unsafe {
+                    std::mem::transmute(Self::destroy_image_view as vk::PFN_vkDestroyImageView)
+                },
+            },
+            VulkanCommand {
+                name: "vkDestroyIndirectCommandsLayoutNV",
+                features: smallvec![Feature::Extension(Extension::NVDeviceGeneratedCommands)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::DestroyIndirectCommandsLayoutNv),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::destroy_indirect_commands_layout_nv
+                            as vk::PFN_vkDestroyIndirectCommandsLayoutNV,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkDestroyMicromapEXT",
+                features: smallvec![Feature::Extension(Extension::EXTOpacityMicromap)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyMicromapExt),
+                proc: unsafe {
+                    std::mem::transmute(Self::destroy_micromap_ext as vk::PFN_vkDestroyMicromapEXT)
+                },
+            },
+            VulkanCommand {
+                name: "vkDestroyOpticalFlowSessionNV",
+                features: smallvec![Feature::Extension(Extension::NVOpticalFlow)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyOpticalFlowSessionNv),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::destroy_optical_flow_session_nv
+                            as vk::PFN_vkDestroyOpticalFlowSessionNV,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkDestroyPipeline",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyPipeline),
+                proc: unsafe {
+                    std::mem::transmute(Self::destroy_pipeline as vk::PFN_vkDestroyPipeline)
+                },
+            },
+            VulkanCommand {
+                name: "vkDestroyPipelineCache",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyPipelineCache),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::destroy_pipeline_cache as vk::PFN_vkDestroyPipelineCache,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkDestroyPipelineLayout",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyPipelineLayout),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::destroy_pipeline_layout as vk::PFN_vkDestroyPipelineLayout,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkDestroyPrivateDataSlot",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyPrivateDataSlot),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::destroy_private_data_slot as vk::PFN_vkDestroyPrivateDataSlot,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkDestroyPrivateDataSlotEXT",
+                features: smallvec![Feature::Extension(Extension::EXTPrivateData)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyPrivateDataSlot),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::destroy_private_data_slot as vk::PFN_vkDestroyPrivateDataSlot,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkDestroyQueryPool",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyQueryPool),
+                proc: unsafe {
+                    std::mem::transmute(Self::destroy_query_pool as vk::PFN_vkDestroyQueryPool)
+                },
+            },
+            VulkanCommand {
+                name: "vkDestroyRenderPass",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyRenderPass),
+                proc: unsafe {
+                    std::mem::transmute(Self::destroy_render_pass as vk::PFN_vkDestroyRenderPass)
+                },
+            },
+            VulkanCommand {
+                name: "vkDestroySampler",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::DestroySampler),
+                proc: unsafe {
+                    std::mem::transmute(Self::destroy_sampler as vk::PFN_vkDestroySampler)
+                },
+            },
+            VulkanCommand {
+                name: "vkDestroySamplerYcbcrConversion",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1 })],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::DestroySamplerYcbcrConversion),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::destroy_sampler_ycbcr_conversion
+                            as vk::PFN_vkDestroySamplerYcbcrConversion,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkDestroySamplerYcbcrConversionKHR",
+                features: smallvec![Feature::Extension(Extension::KHRSamplerYcbcrConversion)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::DestroySamplerYcbcrConversion),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::destroy_sampler_ycbcr_conversion
+                            as vk::PFN_vkDestroySamplerYcbcrConversion,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkDestroySemaphore",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::DestroySemaphore),
+                proc: unsafe {
+                    std::mem::transmute(Self::destroy_semaphore as vk::PFN_vkDestroySemaphore)
+                },
+            },
+            VulkanCommand {
+                name: "vkDestroyShaderModule",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyShaderModule),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::destroy_shader_module as vk::PFN_vkDestroyShaderModule,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkDestroySwapchainKHR",
+                features: smallvec![Feature::Extension(Extension::KHRSwapchain)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::DestroySwapchainKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::destroy_swapchain_khr as vk::PFN_vkDestroySwapchainKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkDestroyValidationCacheEXT",
+                features: smallvec![Feature::Extension(Extension::EXTValidationCache)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyValidationCacheExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::destroy_validation_cache_ext as vk::PFN_vkDestroyValidationCacheEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkDestroyVideoSessionKHR",
+                features: smallvec![Feature::Extension(Extension::KHRVideoQueue)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyVideoSessionKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::destroy_video_session_khr as vk::PFN_vkDestroyVideoSessionKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkDestroyVideoSessionParametersKHR",
+                features: smallvec![Feature::Extension(Extension::KHRVideoQueue)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::DestroyVideoSessionParametersKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::destroy_video_session_parameters_khr
+                            as vk::PFN_vkDestroyVideoSessionParametersKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkDeviceWaitIdle",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::DeviceWaitIdle),
+                proc: unsafe {
+                    std::mem::transmute(Self::device_wait_idle as vk::PFN_vkDeviceWaitIdle)
+                },
+            },
+            VulkanCommand {
+                name: "vkDisplayPowerControlEXT",
+                features: smallvec![Feature::Extension(Extension::EXTDisplayControl)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::DisplayPowerControlExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::display_power_control_ext as vk::PFN_vkDisplayPowerControlEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkEndCommandBuffer",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::EndCommandBuffer),
+                proc: unsafe {
+                    std::mem::transmute(Self::end_command_buffer as vk::PFN_vkEndCommandBuffer)
+                },
+            },
+            VulkanCommand {
+                name: "vkExportMetalObjectsEXT",
+                features: smallvec![Feature::Extension(Extension::EXTMetalObjects)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::ExportMetalObjectsExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::export_metal_objects_ext as vk::PFN_vkExportMetalObjectsEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkFlushMappedMemoryRanges",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::FlushMappedMemoryRanges),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::flush_mapped_memory_ranges as vk::PFN_vkFlushMappedMemoryRanges,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkFreeCommandBuffers",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::FreeCommandBuffers),
+                proc: unsafe {
+                    std::mem::transmute(Self::free_command_buffers as vk::PFN_vkFreeCommandBuffers)
+                },
+            },
+            VulkanCommand {
+                name: "vkFreeDescriptorSets",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::FreeDescriptorSets),
+                proc: unsafe {
+                    std::mem::transmute(Self::free_descriptor_sets as vk::PFN_vkFreeDescriptorSets)
+                },
+            },
+            VulkanCommand {
+                name: "vkFreeMemory",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::FreeMemory),
+                proc: unsafe { std::mem::transmute(Self::free_memory as vk::PFN_vkFreeMemory) },
+            },
+            VulkanCommand {
+                name: "vkGetAccelerationStructureBuildSizesKHR",
+                features: smallvec![Feature::Extension(Extension::KHRAccelerationStructure)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetAccelerationStructureBuildSizesKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_acceleration_structure_build_sizes_khr
+                            as vk::PFN_vkGetAccelerationStructureBuildSizesKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetAccelerationStructureDeviceAddressKHR",
+                features: smallvec![Feature::Extension(Extension::KHRAccelerationStructure)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetAccelerationStructureDeviceAddressKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_acceleration_structure_device_address_khr
+                            as vk::PFN_vkGetAccelerationStructureDeviceAddressKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetAccelerationStructureHandleNV",
+                features: smallvec![Feature::Extension(Extension::NVRayTracing)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetAccelerationStructureHandleNv),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_acceleration_structure_handle_nv
+                            as vk::PFN_vkGetAccelerationStructureHandleNV,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetAccelerationStructureMemoryRequirementsNV",
+                features: smallvec![Feature::Extension(Extension::NVRayTracing)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetAccelerationStructureMemoryRequirementsNv),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_acceleration_structure_memory_requirements_nv
+                            as vk::PFN_vkGetAccelerationStructureMemoryRequirementsNV,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetAccelerationStructureOpaqueCaptureDescriptorDataEXT",
+                features: smallvec![Feature::Extension(Extension::EXTDescriptorBuffer)],
+                hooked: hooked_commands.contains(
+                    &LayerVulkanCommand::GetAccelerationStructureOpaqueCaptureDescriptorDataExt,
+                ),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_acceleration_structure_opaque_capture_descriptor_data_ext
+                            as vk::PFN_vkGetAccelerationStructureOpaqueCaptureDescriptorDataEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetAndroidHardwareBufferPropertiesANDROID",
+                features: smallvec![Feature::Extension(
+                    Extension::ANDROIDExternalMemoryAndroidHardwareBuffer
+                )],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetAndroidHardwareBufferPropertiesAndroid),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_android_hardware_buffer_properties_android
+                            as vk::PFN_vkGetAndroidHardwareBufferPropertiesANDROID,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetBufferCollectionPropertiesFUCHSIA",
+                features: smallvec![Feature::Extension(Extension::FUCHSIABufferCollection)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetBufferCollectionPropertiesFuchsia),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_buffer_collection_properties_fuchsia
+                            as vk::PFN_vkGetBufferCollectionPropertiesFUCHSIA,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetBufferDeviceAddress",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 2 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetBufferDeviceAddress),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_buffer_device_address as vk::PFN_vkGetBufferDeviceAddress,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetBufferDeviceAddressEXT",
+                features: smallvec![Feature::Extension(Extension::EXTBufferDeviceAddress)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetBufferDeviceAddress),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_buffer_device_address as vk::PFN_vkGetBufferDeviceAddress,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetBufferDeviceAddressKHR",
+                features: smallvec![Feature::Extension(Extension::KHRBufferDeviceAddress)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetBufferDeviceAddress),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_buffer_device_address as vk::PFN_vkGetBufferDeviceAddress,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetBufferMemoryRequirements",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetBufferMemoryRequirements),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_buffer_memory_requirements
+                            as vk::PFN_vkGetBufferMemoryRequirements,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetBufferMemoryRequirements2",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetBufferMemoryRequirements2),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_buffer_memory_requirements2
+                            as vk::PFN_vkGetBufferMemoryRequirements2,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetBufferMemoryRequirements2KHR",
+                features: smallvec![Feature::Extension(Extension::KHRGetMemoryRequirements2)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetBufferMemoryRequirements2),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_buffer_memory_requirements2
+                            as vk::PFN_vkGetBufferMemoryRequirements2,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetBufferOpaqueCaptureAddress",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 2 })],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetBufferOpaqueCaptureAddress),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_buffer_opaque_capture_address
+                            as vk::PFN_vkGetBufferOpaqueCaptureAddress,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetBufferOpaqueCaptureAddressKHR",
+                features: smallvec![Feature::Extension(Extension::KHRBufferDeviceAddress)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetBufferOpaqueCaptureAddress),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_buffer_opaque_capture_address
+                            as vk::PFN_vkGetBufferOpaqueCaptureAddress,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetBufferOpaqueCaptureDescriptorDataEXT",
+                features: smallvec![Feature::Extension(Extension::EXTDescriptorBuffer)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetBufferOpaqueCaptureDescriptorDataExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_buffer_opaque_capture_descriptor_data_ext
+                            as vk::PFN_vkGetBufferOpaqueCaptureDescriptorDataEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetCalibratedTimestampsEXT",
+                features: smallvec![Feature::Extension(Extension::EXTCalibratedTimestamps)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetCalibratedTimestampsExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_calibrated_timestamps_ext as vk::PFN_vkGetCalibratedTimestampsEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetDeferredOperationMaxConcurrencyKHR",
+                features: smallvec![Feature::Extension(Extension::KHRDeferredHostOperations)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetDeferredOperationMaxConcurrencyKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_deferred_operation_max_concurrency_khr
+                            as vk::PFN_vkGetDeferredOperationMaxConcurrencyKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetDeferredOperationResultKHR",
+                features: smallvec![Feature::Extension(Extension::KHRDeferredHostOperations)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetDeferredOperationResultKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_deferred_operation_result_khr
+                            as vk::PFN_vkGetDeferredOperationResultKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetDescriptorEXT",
+                features: smallvec![Feature::Extension(Extension::EXTDescriptorBuffer)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetDescriptorExt),
+                proc: unsafe {
+                    std::mem::transmute(Self::get_descriptor_ext as vk::PFN_vkGetDescriptorEXT)
+                },
+            },
+            VulkanCommand {
+                name: "vkGetDescriptorSetHostMappingVALVE",
+                features: smallvec![Feature::Extension(Extension::VALVEDescriptorSetHostMapping)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetDescriptorSetHostMappingValve),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_descriptor_set_host_mapping_valve
+                            as vk::PFN_vkGetDescriptorSetHostMappingVALVE,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetDescriptorSetLayoutBindingOffsetEXT",
+                features: smallvec![Feature::Extension(Extension::EXTDescriptorBuffer)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetDescriptorSetLayoutBindingOffsetExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_descriptor_set_layout_binding_offset_ext
+                            as vk::PFN_vkGetDescriptorSetLayoutBindingOffsetEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetDescriptorSetLayoutHostMappingInfoVALVE",
+                features: smallvec![Feature::Extension(Extension::VALVEDescriptorSetHostMapping)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetDescriptorSetLayoutHostMappingInfoValve),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_descriptor_set_layout_host_mapping_info_valve
+                            as vk::PFN_vkGetDescriptorSetLayoutHostMappingInfoVALVE,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetDescriptorSetLayoutSizeEXT",
+                features: smallvec![Feature::Extension(Extension::EXTDescriptorBuffer)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetDescriptorSetLayoutSizeExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_descriptor_set_layout_size_ext
+                            as vk::PFN_vkGetDescriptorSetLayoutSizeEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetDescriptorSetLayoutSupport",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1 })],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetDescriptorSetLayoutSupport),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_descriptor_set_layout_support
+                            as vk::PFN_vkGetDescriptorSetLayoutSupport,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetDescriptorSetLayoutSupportKHR",
+                features: smallvec![Feature::Extension(Extension::KHRMaintenance3)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetDescriptorSetLayoutSupport),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_descriptor_set_layout_support
+                            as vk::PFN_vkGetDescriptorSetLayoutSupport,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetDeviceAccelerationStructureCompatibilityKHR",
+                features: smallvec![Feature::Extension(Extension::KHRAccelerationStructure)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetDeviceAccelerationStructureCompatibilityKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_device_acceleration_structure_compatibility_khr
+                            as vk::PFN_vkGetDeviceAccelerationStructureCompatibilityKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetDeviceBufferMemoryRequirements",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetDeviceBufferMemoryRequirements),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_device_buffer_memory_requirements
+                            as vk::PFN_vkGetDeviceBufferMemoryRequirements,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetDeviceBufferMemoryRequirementsKHR",
+                features: smallvec![Feature::Extension(Extension::KHRMaintenance4)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetDeviceBufferMemoryRequirements),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_device_buffer_memory_requirements
+                            as vk::PFN_vkGetDeviceBufferMemoryRequirements,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetDeviceGroupPeerMemoryFeatures",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1 })],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetDeviceGroupPeerMemoryFeatures),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_device_group_peer_memory_features
+                            as vk::PFN_vkGetDeviceGroupPeerMemoryFeatures,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetDeviceGroupPeerMemoryFeaturesKHR",
+                features: smallvec![Feature::Extension(Extension::KHRDeviceGroup)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetDeviceGroupPeerMemoryFeatures),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_device_group_peer_memory_features
+                            as vk::PFN_vkGetDeviceGroupPeerMemoryFeatures,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetDeviceGroupPresentCapabilitiesKHR",
+                features: smallvec![
+                    Feature::Extension(Extension::KHRSwapchain),
+                    Feature::Extension(Extension::KHRDeviceGroup)
+                ],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetDeviceGroupPresentCapabilitiesKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_device_group_present_capabilities_khr
+                            as vk::PFN_vkGetDeviceGroupPresentCapabilitiesKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetDeviceGroupSurfacePresentModes2EXT",
+                features: smallvec![Feature::Extension(Extension::EXTFullScreenExclusive)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetDeviceGroupSurfacePresentModes2Ext),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_device_group_surface_present_modes2_ext
+                            as vk::PFN_vkGetDeviceGroupSurfacePresentModes2EXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetDeviceGroupSurfacePresentModesKHR",
+                features: smallvec![
+                    Feature::Extension(Extension::KHRSwapchain),
+                    Feature::Extension(Extension::KHRDeviceGroup)
+                ],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetDeviceGroupSurfacePresentModesKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_device_group_surface_present_modes_khr
+                            as vk::PFN_vkGetDeviceGroupSurfacePresentModesKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetDeviceImageMemoryRequirements",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetDeviceImageMemoryRequirements),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_device_image_memory_requirements
+                            as vk::PFN_vkGetDeviceImageMemoryRequirements,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetDeviceImageMemoryRequirementsKHR",
+                features: smallvec![Feature::Extension(Extension::KHRMaintenance4)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetDeviceImageMemoryRequirements),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_device_image_memory_requirements
+                            as vk::PFN_vkGetDeviceImageMemoryRequirements,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetDeviceImageSparseMemoryRequirements",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetDeviceImageSparseMemoryRequirements),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_device_image_sparse_memory_requirements
+                            as vk::PFN_vkGetDeviceImageSparseMemoryRequirements,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetDeviceImageSparseMemoryRequirementsKHR",
+                features: smallvec![Feature::Extension(Extension::KHRMaintenance4)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetDeviceImageSparseMemoryRequirements),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_device_image_sparse_memory_requirements
+                            as vk::PFN_vkGetDeviceImageSparseMemoryRequirements,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetDeviceMemoryCommitment",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetDeviceMemoryCommitment),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_device_memory_commitment as vk::PFN_vkGetDeviceMemoryCommitment,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetDeviceMemoryOpaqueCaptureAddress",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 2 })],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetDeviceMemoryOpaqueCaptureAddress),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_device_memory_opaque_capture_address
+                            as vk::PFN_vkGetDeviceMemoryOpaqueCaptureAddress,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetDeviceMemoryOpaqueCaptureAddressKHR",
+                features: smallvec![Feature::Extension(Extension::KHRBufferDeviceAddress)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetDeviceMemoryOpaqueCaptureAddress),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_device_memory_opaque_capture_address
+                            as vk::PFN_vkGetDeviceMemoryOpaqueCaptureAddress,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetDeviceMicromapCompatibilityEXT",
+                features: smallvec![Feature::Extension(Extension::EXTOpacityMicromap)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetDeviceMicromapCompatibilityExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_device_micromap_compatibility_ext
+                            as vk::PFN_vkGetDeviceMicromapCompatibilityEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetDeviceProcAddr",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: true,
+                proc: unsafe {
+                    std::mem::transmute(Self::get_device_proc_addr as vk::PFN_vkGetDeviceProcAddr)
+                },
+            },
+            VulkanCommand {
+                name: "vkGetDeviceQueue",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetDeviceQueue),
+                proc: unsafe {
+                    std::mem::transmute(Self::get_device_queue as vk::PFN_vkGetDeviceQueue)
+                },
+            },
+            VulkanCommand {
+                name: "vkGetDeviceQueue2",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetDeviceQueue2),
+                proc: unsafe {
+                    std::mem::transmute(Self::get_device_queue2 as vk::PFN_vkGetDeviceQueue2)
+                },
+            },
+            VulkanCommand {
+                name: "vkGetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI",
+                features: smallvec![Feature::Extension(Extension::HUAWEISubpassShading)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetDeviceSubpassShadingMaxWorkgroupSizeHuawei),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_device_subpass_shading_max_workgroup_size_huawei
+                            as vk::PFN_vkGetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetDynamicRenderingTilePropertiesQCOM",
+                features: smallvec![Feature::Extension(Extension::QCOMTileProperties)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetDynamicRenderingTilePropertiesQcom),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_dynamic_rendering_tile_properties_qcom
+                            as vk::PFN_vkGetDynamicRenderingTilePropertiesQCOM,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetEventStatus",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetEventStatus),
+                proc: unsafe {
+                    std::mem::transmute(Self::get_event_status as vk::PFN_vkGetEventStatus)
+                },
+            },
+            VulkanCommand {
+                name: "vkGetFenceFdKHR",
+                features: smallvec![Feature::Extension(Extension::KHRExternalFenceFd)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetFenceFdKhr),
+                proc: unsafe {
+                    std::mem::transmute(Self::get_fence_fd_khr as vk::PFN_vkGetFenceFdKHR)
+                },
+            },
+            VulkanCommand {
+                name: "vkGetFenceStatus",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetFenceStatus),
+                proc: unsafe {
+                    std::mem::transmute(Self::get_fence_status as vk::PFN_vkGetFenceStatus)
+                },
+            },
+            VulkanCommand {
+                name: "vkGetFenceWin32HandleKHR",
+                features: smallvec![Feature::Extension(Extension::KHRExternalFenceWin32)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetFenceWin32HandleKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_fence_win32_handle_khr as vk::PFN_vkGetFenceWin32HandleKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetFramebufferTilePropertiesQCOM",
+                features: smallvec![Feature::Extension(Extension::QCOMTileProperties)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetFramebufferTilePropertiesQcom),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_framebuffer_tile_properties_qcom
+                            as vk::PFN_vkGetFramebufferTilePropertiesQCOM,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetGeneratedCommandsMemoryRequirementsNV",
+                features: smallvec![Feature::Extension(Extension::NVDeviceGeneratedCommands)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetGeneratedCommandsMemoryRequirementsNv),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_generated_commands_memory_requirements_nv
+                            as vk::PFN_vkGetGeneratedCommandsMemoryRequirementsNV,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetImageDrmFormatModifierPropertiesEXT",
+                features: smallvec![Feature::Extension(Extension::EXTImageDrmFormatModifier)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetImageDrmFormatModifierPropertiesExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_image_drm_format_modifier_properties_ext
+                            as vk::PFN_vkGetImageDrmFormatModifierPropertiesEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetImageMemoryRequirements",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetImageMemoryRequirements),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_image_memory_requirements as vk::PFN_vkGetImageMemoryRequirements,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetImageMemoryRequirements2",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetImageMemoryRequirements2),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_image_memory_requirements2
+                            as vk::PFN_vkGetImageMemoryRequirements2,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetImageMemoryRequirements2KHR",
+                features: smallvec![Feature::Extension(Extension::KHRGetMemoryRequirements2)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetImageMemoryRequirements2),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_image_memory_requirements2
+                            as vk::PFN_vkGetImageMemoryRequirements2,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetImageOpaqueCaptureDescriptorDataEXT",
+                features: smallvec![Feature::Extension(Extension::EXTDescriptorBuffer)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetImageOpaqueCaptureDescriptorDataExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_image_opaque_capture_descriptor_data_ext
+                            as vk::PFN_vkGetImageOpaqueCaptureDescriptorDataEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetImageSparseMemoryRequirements",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetImageSparseMemoryRequirements),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_image_sparse_memory_requirements
+                            as vk::PFN_vkGetImageSparseMemoryRequirements,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetImageSparseMemoryRequirements2",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1 })],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetImageSparseMemoryRequirements2),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_image_sparse_memory_requirements2
+                            as vk::PFN_vkGetImageSparseMemoryRequirements2,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetImageSparseMemoryRequirements2KHR",
+                features: smallvec![Feature::Extension(Extension::KHRGetMemoryRequirements2)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetImageSparseMemoryRequirements2),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_image_sparse_memory_requirements2
+                            as vk::PFN_vkGetImageSparseMemoryRequirements2,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetImageSubresourceLayout",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetImageSubresourceLayout),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_image_subresource_layout as vk::PFN_vkGetImageSubresourceLayout,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetImageSubresourceLayout2EXT",
+                features: smallvec![Feature::Extension(Extension::EXTImageCompressionControl)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetImageSubresourceLayout2Ext),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_image_subresource_layout2_ext
+                            as vk::PFN_vkGetImageSubresourceLayout2EXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetImageViewAddressNVX",
+                features: smallvec![Feature::Extension(Extension::NVXImageViewHandle)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetImageViewAddressNvx),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_image_view_address_nvx as vk::PFN_vkGetImageViewAddressNVX,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetImageViewHandleNVX",
+                features: smallvec![Feature::Extension(Extension::NVXImageViewHandle)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetImageViewHandleNvx),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_image_view_handle_nvx as vk::PFN_vkGetImageViewHandleNVX,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetImageViewOpaqueCaptureDescriptorDataEXT",
+                features: smallvec![Feature::Extension(Extension::EXTDescriptorBuffer)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetImageViewOpaqueCaptureDescriptorDataExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_image_view_opaque_capture_descriptor_data_ext
+                            as vk::PFN_vkGetImageViewOpaqueCaptureDescriptorDataEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetMemoryAndroidHardwareBufferANDROID",
+                features: smallvec![Feature::Extension(
+                    Extension::ANDROIDExternalMemoryAndroidHardwareBuffer
+                )],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetMemoryAndroidHardwareBufferAndroid),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_memory_android_hardware_buffer_android
+                            as vk::PFN_vkGetMemoryAndroidHardwareBufferANDROID,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetMemoryFdKHR",
+                features: smallvec![Feature::Extension(Extension::KHRExternalMemoryFd)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetMemoryFdKhr),
+                proc: unsafe {
+                    std::mem::transmute(Self::get_memory_fd_khr as vk::PFN_vkGetMemoryFdKHR)
+                },
+            },
+            VulkanCommand {
+                name: "vkGetMemoryFdPropertiesKHR",
+                features: smallvec![Feature::Extension(Extension::KHRExternalMemoryFd)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetMemoryFdPropertiesKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_memory_fd_properties_khr as vk::PFN_vkGetMemoryFdPropertiesKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetMemoryHostPointerPropertiesEXT",
+                features: smallvec![Feature::Extension(Extension::EXTExternalMemoryHost)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetMemoryHostPointerPropertiesExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_memory_host_pointer_properties_ext
+                            as vk::PFN_vkGetMemoryHostPointerPropertiesEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetMemoryRemoteAddressNV",
+                features: smallvec![Feature::Extension(Extension::NVExternalMemoryRdma)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetMemoryRemoteAddressNv),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_memory_remote_address_nv as vk::PFN_vkGetMemoryRemoteAddressNV,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetMemoryWin32HandleKHR",
+                features: smallvec![Feature::Extension(Extension::KHRExternalMemoryWin32)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetMemoryWin32HandleKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_memory_win32_handle_khr as vk::PFN_vkGetMemoryWin32HandleKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetMemoryWin32HandleNV",
+                features: smallvec![Feature::Extension(Extension::NVExternalMemoryWin32)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetMemoryWin32HandleNv),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_memory_win32_handle_nv as vk::PFN_vkGetMemoryWin32HandleNV,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetMemoryWin32HandlePropertiesKHR",
+                features: smallvec![Feature::Extension(Extension::KHRExternalMemoryWin32)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetMemoryWin32HandlePropertiesKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_memory_win32_handle_properties_khr
+                            as vk::PFN_vkGetMemoryWin32HandlePropertiesKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetMemoryZirconHandleFUCHSIA",
+                features: smallvec![Feature::Extension(Extension::FUCHSIAExternalMemory)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetMemoryZirconHandleFuchsia),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_memory_zircon_handle_fuchsia
+                            as vk::PFN_vkGetMemoryZirconHandleFUCHSIA,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetMemoryZirconHandlePropertiesFUCHSIA",
+                features: smallvec![Feature::Extension(Extension::FUCHSIAExternalMemory)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetMemoryZirconHandlePropertiesFuchsia),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_memory_zircon_handle_properties_fuchsia
+                            as vk::PFN_vkGetMemoryZirconHandlePropertiesFUCHSIA,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetMicromapBuildSizesEXT",
+                features: smallvec![Feature::Extension(Extension::EXTOpacityMicromap)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetMicromapBuildSizesExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_micromap_build_sizes_ext as vk::PFN_vkGetMicromapBuildSizesEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetPastPresentationTimingGOOGLE",
+                features: smallvec![Feature::Extension(Extension::GOOGLEDisplayTiming)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetPastPresentationTimingGoogle),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_past_presentation_timing_google
+                            as vk::PFN_vkGetPastPresentationTimingGOOGLE,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetPerformanceParameterINTEL",
+                features: smallvec![Feature::Extension(Extension::INTELPerformanceQuery)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPerformanceParameterIntel),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_performance_parameter_intel
+                            as vk::PFN_vkGetPerformanceParameterINTEL,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetPipelineCacheData",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPipelineCacheData),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_pipeline_cache_data as vk::PFN_vkGetPipelineCacheData,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetPipelineExecutableInternalRepresentationsKHR",
+                features: smallvec![Feature::Extension(
+                    Extension::KHRPipelineExecutableProperties
+                )],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetPipelineExecutableInternalRepresentationsKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_pipeline_executable_internal_representations_khr
+                            as vk::PFN_vkGetPipelineExecutableInternalRepresentationsKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetPipelineExecutablePropertiesKHR",
+                features: smallvec![Feature::Extension(
+                    Extension::KHRPipelineExecutableProperties
+                )],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetPipelineExecutablePropertiesKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_pipeline_executable_properties_khr
+                            as vk::PFN_vkGetPipelineExecutablePropertiesKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetPipelineExecutableStatisticsKHR",
+                features: smallvec![Feature::Extension(
+                    Extension::KHRPipelineExecutableProperties
+                )],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetPipelineExecutableStatisticsKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_pipeline_executable_statistics_khr
+                            as vk::PFN_vkGetPipelineExecutableStatisticsKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetPipelinePropertiesEXT",
+                features: smallvec![Feature::Extension(Extension::EXTPipelineProperties)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPipelinePropertiesExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_pipeline_properties_ext as vk::PFN_vkGetPipelinePropertiesEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetPrivateData",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPrivateData),
+                proc: unsafe {
+                    std::mem::transmute(Self::get_private_data as vk::PFN_vkGetPrivateData)
+                },
+            },
+            VulkanCommand {
+                name: "vkGetPrivateDataEXT",
+                features: smallvec![Feature::Extension(Extension::EXTPrivateData)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPrivateData),
+                proc: unsafe {
+                    std::mem::transmute(Self::get_private_data as vk::PFN_vkGetPrivateData)
+                },
+            },
+            VulkanCommand {
+                name: "vkGetQueryPoolResults",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetQueryPoolResults),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_query_pool_results as vk::PFN_vkGetQueryPoolResults,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetQueueCheckpointData2NV",
+                features: smallvec![Feature::Extension(Extension::KHRSynchronization2)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetQueueCheckpointData2Nv),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_queue_checkpoint_data2_nv as vk::PFN_vkGetQueueCheckpointData2NV,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetQueueCheckpointDataNV",
+                features: smallvec![Feature::Extension(Extension::NVDeviceDiagnosticCheckpoints)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetQueueCheckpointDataNv),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_queue_checkpoint_data_nv as vk::PFN_vkGetQueueCheckpointDataNV,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetRayTracingCaptureReplayShaderGroupHandlesKHR",
+                features: smallvec![Feature::Extension(Extension::KHRRayTracingPipeline)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetRayTracingCaptureReplayShaderGroupHandlesKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_ray_tracing_capture_replay_shader_group_handles_khr
+                            as vk::PFN_vkGetRayTracingCaptureReplayShaderGroupHandlesKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetRayTracingShaderGroupHandlesKHR",
+                features: smallvec![Feature::Extension(Extension::KHRRayTracingPipeline)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetRayTracingShaderGroupHandlesKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_ray_tracing_shader_group_handles_khr
+                            as vk::PFN_vkGetRayTracingShaderGroupHandlesKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetRayTracingShaderGroupHandlesNV",
+                features: smallvec![Feature::Extension(Extension::NVRayTracing)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetRayTracingShaderGroupHandlesKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_ray_tracing_shader_group_handles_khr
+                            as vk::PFN_vkGetRayTracingShaderGroupHandlesKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetRayTracingShaderGroupStackSizeKHR",
+                features: smallvec![Feature::Extension(Extension::KHRRayTracingPipeline)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetRayTracingShaderGroupStackSizeKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_ray_tracing_shader_group_stack_size_khr
+                            as vk::PFN_vkGetRayTracingShaderGroupStackSizeKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetRefreshCycleDurationGOOGLE",
+                features: smallvec![Feature::Extension(Extension::GOOGLEDisplayTiming)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetRefreshCycleDurationGoogle),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_refresh_cycle_duration_google
+                            as vk::PFN_vkGetRefreshCycleDurationGOOGLE,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetRenderAreaGranularity",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetRenderAreaGranularity),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_render_area_granularity as vk::PFN_vkGetRenderAreaGranularity,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetSamplerOpaqueCaptureDescriptorDataEXT",
+                features: smallvec![Feature::Extension(Extension::EXTDescriptorBuffer)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetSamplerOpaqueCaptureDescriptorDataExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_sampler_opaque_capture_descriptor_data_ext
+                            as vk::PFN_vkGetSamplerOpaqueCaptureDescriptorDataEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetSemaphoreCounterValue",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 2 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetSemaphoreCounterValue),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_semaphore_counter_value as vk::PFN_vkGetSemaphoreCounterValue,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetSemaphoreCounterValueKHR",
+                features: smallvec![Feature::Extension(Extension::KHRTimelineSemaphore)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetSemaphoreCounterValue),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_semaphore_counter_value as vk::PFN_vkGetSemaphoreCounterValue,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetSemaphoreFdKHR",
+                features: smallvec![Feature::Extension(Extension::KHRExternalSemaphoreFd)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetSemaphoreFdKhr),
+                proc: unsafe {
+                    std::mem::transmute(Self::get_semaphore_fd_khr as vk::PFN_vkGetSemaphoreFdKHR)
+                },
+            },
+            VulkanCommand {
+                name: "vkGetSemaphoreWin32HandleKHR",
+                features: smallvec![Feature::Extension(Extension::KHRExternalSemaphoreWin32)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetSemaphoreWin32HandleKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_semaphore_win32_handle_khr
+                            as vk::PFN_vkGetSemaphoreWin32HandleKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetSemaphoreZirconHandleFUCHSIA",
+                features: smallvec![Feature::Extension(Extension::FUCHSIAExternalSemaphore)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetSemaphoreZirconHandleFuchsia),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_semaphore_zircon_handle_fuchsia
+                            as vk::PFN_vkGetSemaphoreZirconHandleFUCHSIA,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetShaderInfoAMD",
+                features: smallvec![Feature::Extension(Extension::AMDShaderInfo)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetShaderInfoAmd),
+                proc: unsafe {
+                    std::mem::transmute(Self::get_shader_info_amd as vk::PFN_vkGetShaderInfoAMD)
+                },
+            },
+            VulkanCommand {
+                name: "vkGetShaderModuleCreateInfoIdentifierEXT",
+                features: smallvec![Feature::Extension(Extension::EXTShaderModuleIdentifier)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetShaderModuleCreateInfoIdentifierExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_shader_module_create_info_identifier_ext
+                            as vk::PFN_vkGetShaderModuleCreateInfoIdentifierEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetShaderModuleIdentifierEXT",
+                features: smallvec![Feature::Extension(Extension::EXTShaderModuleIdentifier)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetShaderModuleIdentifierExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_shader_module_identifier_ext
+                            as vk::PFN_vkGetShaderModuleIdentifierEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetSwapchainCounterEXT",
+                features: smallvec![Feature::Extension(Extension::EXTDisplayControl)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetSwapchainCounterExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_swapchain_counter_ext as vk::PFN_vkGetSwapchainCounterEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetSwapchainGrallocUsage2ANDROID",
+                features: smallvec![Feature::Extension(Extension::ANDROIDNativeBuffer)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetSwapchainGrallocUsage2Android),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_swapchain_gralloc_usage2_android
+                            as vk::PFN_vkGetSwapchainGrallocUsage2ANDROID,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetSwapchainGrallocUsageANDROID",
+                features: smallvec![Feature::Extension(Extension::ANDROIDNativeBuffer)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetSwapchainGrallocUsageAndroid),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_swapchain_gralloc_usage_android
+                            as vk::PFN_vkGetSwapchainGrallocUsageANDROID,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetSwapchainImagesKHR",
+                features: smallvec![Feature::Extension(Extension::KHRSwapchain)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetSwapchainImagesKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_swapchain_images_khr as vk::PFN_vkGetSwapchainImagesKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetSwapchainStatusKHR",
+                features: smallvec![Feature::Extension(Extension::KHRSharedPresentableImage)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetSwapchainStatusKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_swapchain_status_khr as vk::PFN_vkGetSwapchainStatusKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetValidationCacheDataEXT",
+                features: smallvec![Feature::Extension(Extension::EXTValidationCache)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetValidationCacheDataExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_validation_cache_data_ext as vk::PFN_vkGetValidationCacheDataEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkGetVideoSessionMemoryRequirementsKHR",
+                features: smallvec![Feature::Extension(Extension::KHRVideoQueue)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::GetVideoSessionMemoryRequirementsKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::get_video_session_memory_requirements_khr
+                            as vk::PFN_vkGetVideoSessionMemoryRequirementsKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkImportFenceFdKHR",
+                features: smallvec![Feature::Extension(Extension::KHRExternalFenceFd)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::ImportFenceFdKhr),
+                proc: unsafe {
+                    std::mem::transmute(Self::import_fence_fd_khr as vk::PFN_vkImportFenceFdKHR)
+                },
+            },
+            VulkanCommand {
+                name: "vkImportFenceWin32HandleKHR",
+                features: smallvec![Feature::Extension(Extension::KHRExternalFenceWin32)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::ImportFenceWin32HandleKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::import_fence_win32_handle_khr as vk::PFN_vkImportFenceWin32HandleKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkImportSemaphoreFdKHR",
+                features: smallvec![Feature::Extension(Extension::KHRExternalSemaphoreFd)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::ImportSemaphoreFdKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::import_semaphore_fd_khr as vk::PFN_vkImportSemaphoreFdKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkImportSemaphoreWin32HandleKHR",
+                features: smallvec![Feature::Extension(Extension::KHRExternalSemaphoreWin32)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::ImportSemaphoreWin32HandleKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::import_semaphore_win32_handle_khr
+                            as vk::PFN_vkImportSemaphoreWin32HandleKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkImportSemaphoreZirconHandleFUCHSIA",
+                features: smallvec![Feature::Extension(Extension::FUCHSIAExternalSemaphore)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::ImportSemaphoreZirconHandleFuchsia),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::import_semaphore_zircon_handle_fuchsia
+                            as vk::PFN_vkImportSemaphoreZirconHandleFUCHSIA,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkInitializePerformanceApiINTEL",
+                features: smallvec![Feature::Extension(Extension::INTELPerformanceQuery)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::InitializePerformanceApiIntel),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::initialize_performance_api_intel
+                            as vk::PFN_vkInitializePerformanceApiINTEL,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkInvalidateMappedMemoryRanges",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::InvalidateMappedMemoryRanges),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::invalidate_mapped_memory_ranges
+                            as vk::PFN_vkInvalidateMappedMemoryRanges,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkMapMemory",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::MapMemory),
+                proc: unsafe { std::mem::transmute(Self::map_memory as vk::PFN_vkMapMemory) },
+            },
+            VulkanCommand {
+                name: "vkMergePipelineCaches",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::MergePipelineCaches),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::merge_pipeline_caches as vk::PFN_vkMergePipelineCaches,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkMergeValidationCachesEXT",
+                features: smallvec![Feature::Extension(Extension::EXTValidationCache)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::MergeValidationCachesExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::merge_validation_caches_ext as vk::PFN_vkMergeValidationCachesEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkQueueBeginDebugUtilsLabelEXT",
+                features: smallvec![Feature::Extension(Extension::EXTDebugUtils)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::QueueBeginDebugUtilsLabelExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::queue_begin_debug_utils_label_ext
+                            as vk::PFN_vkQueueBeginDebugUtilsLabelEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkQueueBindSparse",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::QueueBindSparse),
+                proc: unsafe {
+                    std::mem::transmute(Self::queue_bind_sparse as vk::PFN_vkQueueBindSparse)
+                },
+            },
+            VulkanCommand {
+                name: "vkQueueEndDebugUtilsLabelEXT",
+                features: smallvec![Feature::Extension(Extension::EXTDebugUtils)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::QueueEndDebugUtilsLabelExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::queue_end_debug_utils_label_ext
+                            as vk::PFN_vkQueueEndDebugUtilsLabelEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkQueueInsertDebugUtilsLabelEXT",
+                features: smallvec![Feature::Extension(Extension::EXTDebugUtils)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::QueueInsertDebugUtilsLabelExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::queue_insert_debug_utils_label_ext
+                            as vk::PFN_vkQueueInsertDebugUtilsLabelEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkQueuePresentKHR",
+                features: smallvec![Feature::Extension(Extension::KHRSwapchain)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::QueuePresentKhr),
+                proc: unsafe {
+                    std::mem::transmute(Self::queue_present_khr as vk::PFN_vkQueuePresentKHR)
+                },
+            },
+            VulkanCommand {
+                name: "vkQueueSetPerformanceConfigurationINTEL",
+                features: smallvec![Feature::Extension(Extension::INTELPerformanceQuery)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::QueueSetPerformanceConfigurationIntel),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::queue_set_performance_configuration_intel
+                            as vk::PFN_vkQueueSetPerformanceConfigurationINTEL,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkQueueSignalReleaseImageANDROID",
+                features: smallvec![Feature::Extension(Extension::ANDROIDNativeBuffer)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::QueueSignalReleaseImageAndroid),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::queue_signal_release_image_android
+                            as vk::PFN_vkQueueSignalReleaseImageANDROID,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkQueueSubmit",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::QueueSubmit),
+                proc: unsafe { std::mem::transmute(Self::queue_submit as vk::PFN_vkQueueSubmit) },
+            },
+            VulkanCommand {
+                name: "vkQueueSubmit2",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::QueueSubmit2),
+                proc: unsafe { std::mem::transmute(Self::queue_submit2 as vk::PFN_vkQueueSubmit2) },
+            },
+            VulkanCommand {
+                name: "vkQueueSubmit2KHR",
+                features: smallvec![Feature::Extension(Extension::KHRSynchronization2)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::QueueSubmit2),
+                proc: unsafe { std::mem::transmute(Self::queue_submit2 as vk::PFN_vkQueueSubmit2) },
+            },
+            VulkanCommand {
+                name: "vkQueueWaitIdle",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::QueueWaitIdle),
+                proc: unsafe {
+                    std::mem::transmute(Self::queue_wait_idle as vk::PFN_vkQueueWaitIdle)
+                },
+            },
+            VulkanCommand {
+                name: "vkRegisterDeviceEventEXT",
+                features: smallvec![Feature::Extension(Extension::EXTDisplayControl)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::RegisterDeviceEventExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::register_device_event_ext as vk::PFN_vkRegisterDeviceEventEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkRegisterDisplayEventEXT",
+                features: smallvec![Feature::Extension(Extension::EXTDisplayControl)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::RegisterDisplayEventExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::register_display_event_ext as vk::PFN_vkRegisterDisplayEventEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkReleaseFullScreenExclusiveModeEXT",
+                features: smallvec![Feature::Extension(Extension::EXTFullScreenExclusive)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::ReleaseFullScreenExclusiveModeExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::release_full_screen_exclusive_mode_ext
+                            as vk::PFN_vkReleaseFullScreenExclusiveModeEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkReleasePerformanceConfigurationINTEL",
+                features: smallvec![Feature::Extension(Extension::INTELPerformanceQuery)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::ReleasePerformanceConfigurationIntel),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::release_performance_configuration_intel
+                            as vk::PFN_vkReleasePerformanceConfigurationINTEL,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkReleaseProfilingLockKHR",
+                features: smallvec![Feature::Extension(Extension::KHRPerformanceQuery)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::ReleaseProfilingLockKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::release_profiling_lock_khr as vk::PFN_vkReleaseProfilingLockKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkReleaseSwapchainImagesEXT",
+                features: smallvec![Feature::Extension(Extension::EXTSwapchainMaintenance1)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::ReleaseSwapchainImagesExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::release_swapchain_images_ext as vk::PFN_vkReleaseSwapchainImagesEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkResetCommandBuffer",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::ResetCommandBuffer),
+                proc: unsafe {
+                    std::mem::transmute(Self::reset_command_buffer as vk::PFN_vkResetCommandBuffer)
+                },
+            },
+            VulkanCommand {
+                name: "vkResetCommandPool",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::ResetCommandPool),
+                proc: unsafe {
+                    std::mem::transmute(Self::reset_command_pool as vk::PFN_vkResetCommandPool)
+                },
+            },
+            VulkanCommand {
+                name: "vkResetDescriptorPool",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::ResetDescriptorPool),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::reset_descriptor_pool as vk::PFN_vkResetDescriptorPool,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkResetEvent",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::ResetEvent),
+                proc: unsafe { std::mem::transmute(Self::reset_event as vk::PFN_vkResetEvent) },
+            },
+            VulkanCommand {
+                name: "vkResetFences",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::ResetFences),
+                proc: unsafe { std::mem::transmute(Self::reset_fences as vk::PFN_vkResetFences) },
+            },
+            VulkanCommand {
+                name: "vkResetQueryPool",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 2 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::ResetQueryPool),
+                proc: unsafe {
+                    std::mem::transmute(Self::reset_query_pool as vk::PFN_vkResetQueryPool)
+                },
+            },
+            VulkanCommand {
+                name: "vkResetQueryPoolEXT",
+                features: smallvec![Feature::Extension(Extension::EXTHostQueryReset)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::ResetQueryPool),
+                proc: unsafe {
+                    std::mem::transmute(Self::reset_query_pool as vk::PFN_vkResetQueryPool)
+                },
+            },
+            VulkanCommand {
+                name: "vkSetBufferCollectionBufferConstraintsFUCHSIA",
+                features: smallvec![Feature::Extension(Extension::FUCHSIABufferCollection)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::SetBufferCollectionBufferConstraintsFuchsia),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::set_buffer_collection_buffer_constraints_fuchsia
+                            as vk::PFN_vkSetBufferCollectionBufferConstraintsFUCHSIA,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkSetBufferCollectionImageConstraintsFUCHSIA",
+                features: smallvec![Feature::Extension(Extension::FUCHSIABufferCollection)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::SetBufferCollectionImageConstraintsFuchsia),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::set_buffer_collection_image_constraints_fuchsia
+                            as vk::PFN_vkSetBufferCollectionImageConstraintsFUCHSIA,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkSetDebugUtilsObjectNameEXT",
+                features: smallvec![Feature::Extension(Extension::EXTDebugUtils)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::SetDebugUtilsObjectNameExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::set_debug_utils_object_name_ext
+                            as vk::PFN_vkSetDebugUtilsObjectNameEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkSetDebugUtilsObjectTagEXT",
+                features: smallvec![Feature::Extension(Extension::EXTDebugUtils)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::SetDebugUtilsObjectTagExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::set_debug_utils_object_tag_ext as vk::PFN_vkSetDebugUtilsObjectTagEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkSetDeviceMemoryPriorityEXT",
+                features: smallvec![Feature::Extension(Extension::EXTPageableDeviceLocalMemory)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::SetDeviceMemoryPriorityExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::set_device_memory_priority_ext
+                            as vk::PFN_vkSetDeviceMemoryPriorityEXT,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkSetEvent",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::SetEvent),
+                proc: unsafe { std::mem::transmute(Self::set_event as vk::PFN_vkSetEvent) },
+            },
+            VulkanCommand {
+                name: "vkSetHdrMetadataEXT",
+                features: smallvec![Feature::Extension(Extension::EXTHdrMetadata)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::SetHdrMetadataExt),
+                proc: unsafe {
+                    std::mem::transmute(Self::set_hdr_metadata_ext as vk::PFN_vkSetHdrMetadataEXT)
+                },
+            },
+            VulkanCommand {
+                name: "vkSetLocalDimmingAMD",
+                features: smallvec![Feature::Extension(Extension::AMDDisplayNativeHdr)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::SetLocalDimmingAmd),
+                proc: unsafe {
+                    std::mem::transmute(Self::set_local_dimming_amd as vk::PFN_vkSetLocalDimmingAMD)
+                },
+            },
+            VulkanCommand {
+                name: "vkSetPrivateData",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::SetPrivateData),
+                proc: unsafe {
+                    std::mem::transmute(Self::set_private_data as vk::PFN_vkSetPrivateData)
+                },
+            },
+            VulkanCommand {
+                name: "vkSetPrivateDataEXT",
+                features: smallvec![Feature::Extension(Extension::EXTPrivateData)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::SetPrivateData),
+                proc: unsafe {
+                    std::mem::transmute(Self::set_private_data as vk::PFN_vkSetPrivateData)
+                },
+            },
+            VulkanCommand {
+                name: "vkSignalSemaphore",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 2 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::SignalSemaphore),
+                proc: unsafe {
+                    std::mem::transmute(Self::signal_semaphore as vk::PFN_vkSignalSemaphore)
+                },
+            },
+            VulkanCommand {
+                name: "vkSignalSemaphoreKHR",
+                features: smallvec![Feature::Extension(Extension::KHRTimelineSemaphore)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::SignalSemaphore),
+                proc: unsafe {
+                    std::mem::transmute(Self::signal_semaphore as vk::PFN_vkSignalSemaphore)
+                },
+            },
+            VulkanCommand {
+                name: "vkTrimCommandPool",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::TrimCommandPool),
+                proc: unsafe {
+                    std::mem::transmute(Self::trim_command_pool as vk::PFN_vkTrimCommandPool)
+                },
+            },
+            VulkanCommand {
+                name: "vkTrimCommandPoolKHR",
+                features: smallvec![Feature::Extension(Extension::KHRMaintenance1)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::TrimCommandPool),
+                proc: unsafe {
+                    std::mem::transmute(Self::trim_command_pool as vk::PFN_vkTrimCommandPool)
+                },
+            },
+            VulkanCommand {
+                name: "vkUninitializePerformanceApiINTEL",
+                features: smallvec![Feature::Extension(Extension::INTELPerformanceQuery)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::UninitializePerformanceApiIntel),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::uninitialize_performance_api_intel
+                            as vk::PFN_vkUninitializePerformanceApiINTEL,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkUnmapMemory",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::UnmapMemory),
+                proc: unsafe { std::mem::transmute(Self::unmap_memory as vk::PFN_vkUnmapMemory) },
+            },
+            VulkanCommand {
+                name: "vkUpdateDescriptorSetWithTemplate",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1 })],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::UpdateDescriptorSetWithTemplate),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::update_descriptor_set_with_template
+                            as vk::PFN_vkUpdateDescriptorSetWithTemplate,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkUpdateDescriptorSetWithTemplateKHR",
+                features: smallvec![Feature::Extension(Extension::KHRDescriptorUpdateTemplate)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::UpdateDescriptorSetWithTemplate),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::update_descriptor_set_with_template
+                            as vk::PFN_vkUpdateDescriptorSetWithTemplate,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkUpdateDescriptorSets",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::UpdateDescriptorSets),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::update_descriptor_sets as vk::PFN_vkUpdateDescriptorSets,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkUpdateVideoSessionParametersKHR",
+                features: smallvec![Feature::Extension(Extension::KHRVideoQueue)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::UpdateVideoSessionParametersKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::update_video_session_parameters_khr
+                            as vk::PFN_vkUpdateVideoSessionParametersKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkWaitForFences",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::WaitForFences),
+                proc: unsafe {
+                    std::mem::transmute(Self::wait_for_fences as vk::PFN_vkWaitForFences)
+                },
+            },
+            VulkanCommand {
+                name: "vkWaitForPresentKHR",
+                features: smallvec![Feature::Extension(Extension::KHRPresentWait)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::WaitForPresentKhr),
+                proc: unsafe {
+                    std::mem::transmute(Self::wait_for_present_khr as vk::PFN_vkWaitForPresentKHR)
+                },
+            },
+            VulkanCommand {
+                name: "vkWaitSemaphores",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 2 })],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::WaitSemaphores),
+                proc: unsafe {
+                    std::mem::transmute(Self::wait_semaphores as vk::PFN_vkWaitSemaphores)
+                },
+            },
+            VulkanCommand {
+                name: "vkWaitSemaphoresKHR",
+                features: smallvec![Feature::Extension(Extension::KHRTimelineSemaphore)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::WaitSemaphores),
+                proc: unsafe {
+                    std::mem::transmute(Self::wait_semaphores as vk::PFN_vkWaitSemaphores)
+                },
+            },
+            VulkanCommand {
+                name: "vkWriteAccelerationStructuresPropertiesKHR",
+                features: smallvec![Feature::Extension(Extension::KHRAccelerationStructure)],
+                hooked: hooked_commands
+                    .contains(&LayerVulkanCommand::WriteAccelerationStructuresPropertiesKhr),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::write_acceleration_structures_properties_khr
+                            as vk::PFN_vkWriteAccelerationStructuresPropertiesKHR,
+                    )
+                },
+            },
+            VulkanCommand {
+                name: "vkWriteMicromapsPropertiesEXT",
+                features: smallvec![Feature::Extension(Extension::EXTOpacityMicromap)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::WriteMicromapsPropertiesExt),
+                proc: unsafe {
+                    std::mem::transmute(
+                        Self::write_micromaps_properties_ext
+                            as vk::PFN_vkWriteMicromapsPropertiesEXT,
+                    )
+                },
+            },
+        ])
     }
-    pub(crate) fn get_instance_commands(&self) -> &[VulkanCommand] {
-        self.instance_commands.get_or_init(|| {
-            let hooked_commands = self.layer_info.hooked_commands().collect::<HashSet<_>>();
-            vec![
-                VulkanCommand {
-                    name: "vkAcquireDrmDisplayEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTAcquireDrmDisplay)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::AcquireDrmDisplayExt),
-                    proc: unsafe { std::mem::transmute(Self::acquire_drm_display_ext as vk::PFN_vkAcquireDrmDisplayEXT)},
-                },
-                VulkanCommand {
-                    name: "vkAcquireWinrtDisplayNV",
-                    features: smallvec![Feature::Extension(Extension::NVAcquireWinrtDisplay)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::AcquireWinrtDisplayNv),
-                    proc: unsafe { std::mem::transmute(Self::acquire_winrt_display_nv as vk::PFN_vkAcquireWinrtDisplayNV)},
-                },
-                VulkanCommand {
-                    name: "vkAcquireXlibDisplayEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTAcquireXlibDisplay)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::AcquireXlibDisplayExt),
-                    proc: unsafe { std::mem::transmute(Self::acquire_xlib_display_ext as vk::PFN_vkAcquireXlibDisplayEXT)},
-                },
-                VulkanCommand {
-                    name: "vkCreateAndroidSurfaceKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRAndroidSurface)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CreateAndroidSurfaceKhr),
-                    proc: unsafe { std::mem::transmute(Self::create_android_surface_khr as vk::PFN_vkCreateAndroidSurfaceKHR)},
-                },
-                VulkanCommand {
-                    name: "vkCreateDebugReportCallbackEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTDebugReport)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CreateDebugReportCallbackExt),
-                    proc: unsafe { std::mem::transmute(Self::create_debug_report_callback_ext as vk::PFN_vkCreateDebugReportCallbackEXT)},
-                },
-                VulkanCommand {
-                    name: "vkCreateDebugUtilsMessengerEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTDebugUtils)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CreateDebugUtilsMessengerExt),
-                    proc: unsafe { std::mem::transmute(Self::create_debug_utils_messenger_ext as vk::PFN_vkCreateDebugUtilsMessengerEXT)},
-                },
-                VulkanCommand {
-                    name: "vkCreateDevice",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0})],
-                    hooked: true,
-                    proc: unsafe { std::mem::transmute(Self::create_device as vk::PFN_vkCreateDevice)},
-                },
-                VulkanCommand {
-                    name: "vkCreateDirectFBSurfaceEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTDirectfbSurface)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CreateDirectFbSurfaceExt),
-                    proc: unsafe { std::mem::transmute(Self::create_direct_fb_surface_ext as vk::PFN_vkCreateDirectFBSurfaceEXT)},
-                },
-                VulkanCommand {
-                    name: "vkCreateDisplayModeKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRDisplay)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CreateDisplayModeKhr),
-                    proc: unsafe { std::mem::transmute(Self::create_display_mode_khr as vk::PFN_vkCreateDisplayModeKHR)},
-                },
-                VulkanCommand {
-                    name: "vkCreateDisplayPlaneSurfaceKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRDisplay)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CreateDisplayPlaneSurfaceKhr),
-                    proc: unsafe { std::mem::transmute(Self::create_display_plane_surface_khr as vk::PFN_vkCreateDisplayPlaneSurfaceKHR)},
-                },
-                VulkanCommand {
-                    name: "vkCreateHeadlessSurfaceEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTHeadlessSurface)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CreateHeadlessSurfaceExt),
-                    proc: unsafe { std::mem::transmute(Self::create_headless_surface_ext as vk::PFN_vkCreateHeadlessSurfaceEXT)},
-                },
-                VulkanCommand {
-                    name: "vkCreateIOSSurfaceMVK",
-                    features: smallvec![Feature::Extension(Extension::MVKIosSurface)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CreateIosSurfaceMvk),
-                    proc: unsafe { std::mem::transmute(Self::create_ios_surface_mvk as vk::PFN_vkCreateIOSSurfaceMVK)},
-                },
-                VulkanCommand {
-                    name: "vkCreateImagePipeSurfaceFUCHSIA",
-                    features: smallvec![Feature::Extension(Extension::FUCHSIAImagepipeSurface)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CreateImagePipeSurfaceFuchsia),
-                    proc: unsafe { std::mem::transmute(Self::create_image_pipe_surface_fuchsia as vk::PFN_vkCreateImagePipeSurfaceFUCHSIA)},
-                },
-                VulkanCommand {
-                    name: "vkCreateMacOSSurfaceMVK",
-                    features: smallvec![Feature::Extension(Extension::MVKMacosSurface)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CreateMacOsSurfaceMvk),
-                    proc: unsafe { std::mem::transmute(Self::create_mac_os_surface_mvk as vk::PFN_vkCreateMacOSSurfaceMVK)},
-                },
-                VulkanCommand {
-                    name: "vkCreateMetalSurfaceEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTMetalSurface)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CreateMetalSurfaceExt),
-                    proc: unsafe { std::mem::transmute(Self::create_metal_surface_ext as vk::PFN_vkCreateMetalSurfaceEXT)},
-                },
-                VulkanCommand {
-                    name: "vkCreateScreenSurfaceQNX",
-                    features: smallvec![Feature::Extension(Extension::QNXScreenSurface)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CreateScreenSurfaceQnx),
-                    proc: unsafe { std::mem::transmute(Self::create_screen_surface_qnx as vk::PFN_vkCreateScreenSurfaceQNX)},
-                },
-                VulkanCommand {
-                    name: "vkCreateStreamDescriptorSurfaceGGP",
-                    features: smallvec![Feature::Extension(Extension::GGPStreamDescriptorSurface)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CreateStreamDescriptorSurfaceGgp),
-                    proc: unsafe { std::mem::transmute(Self::create_stream_descriptor_surface_ggp as vk::PFN_vkCreateStreamDescriptorSurfaceGGP)},
-                },
-                VulkanCommand {
-                    name: "vkCreateViSurfaceNN",
-                    features: smallvec![Feature::Extension(Extension::NNViSurface)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CreateViSurfaceNn),
-                    proc: unsafe { std::mem::transmute(Self::create_vi_surface_nn as vk::PFN_vkCreateViSurfaceNN)},
-                },
-                VulkanCommand {
-                    name: "vkCreateWaylandSurfaceKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRWaylandSurface)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CreateWaylandSurfaceKhr),
-                    proc: unsafe { std::mem::transmute(Self::create_wayland_surface_khr as vk::PFN_vkCreateWaylandSurfaceKHR)},
-                },
-                VulkanCommand {
-                    name: "vkCreateWin32SurfaceKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRWin32Surface)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CreateWin32SurfaceKhr),
-                    proc: unsafe { std::mem::transmute(Self::create_win32_surface_khr as vk::PFN_vkCreateWin32SurfaceKHR)},
-                },
-                VulkanCommand {
-                    name: "vkCreateXcbSurfaceKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRXcbSurface)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CreateXcbSurfaceKhr),
-                    proc: unsafe { std::mem::transmute(Self::create_xcb_surface_khr as vk::PFN_vkCreateXcbSurfaceKHR)},
-                },
-                VulkanCommand {
-                    name: "vkCreateXlibSurfaceKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRXlibSurface)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::CreateXlibSurfaceKhr),
-                    proc: unsafe { std::mem::transmute(Self::create_xlib_surface_khr as vk::PFN_vkCreateXlibSurfaceKHR)},
-                },
-                VulkanCommand {
-                    name: "vkDebugReportMessageEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTDebugReport)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::DebugReportMessageExt),
-                    proc: unsafe { std::mem::transmute(Self::debug_report_message_ext as vk::PFN_vkDebugReportMessageEXT)},
-                },
-                VulkanCommand {
-                    name: "vkDestroyDebugReportCallbackEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTDebugReport)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyDebugReportCallbackExt),
-                    proc: unsafe { std::mem::transmute(Self::destroy_debug_report_callback_ext as vk::PFN_vkDestroyDebugReportCallbackEXT)},
-                },
-                VulkanCommand {
-                    name: "vkDestroyDebugUtilsMessengerEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTDebugUtils)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyDebugUtilsMessengerExt),
-                    proc: unsafe { std::mem::transmute(Self::destroy_debug_utils_messenger_ext as vk::PFN_vkDestroyDebugUtilsMessengerEXT)},
-                },
-                VulkanCommand {
-                    name: "vkDestroyInstance",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0})],
-                    hooked: true,
-                    proc: unsafe { std::mem::transmute(Self::destroy_instance as vk::PFN_vkDestroyInstance)},
-                },
-                VulkanCommand {
-                    name: "vkDestroySurfaceKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRSurface)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::DestroySurfaceKhr),
-                    proc: unsafe { std::mem::transmute(Self::destroy_surface_khr as vk::PFN_vkDestroySurfaceKHR)},
-                },
-                VulkanCommand {
-                    name: "vkEnumerateDeviceExtensionProperties",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0})],
-                    hooked: true,
-                    proc: unsafe { std::mem::transmute(Self::enumerate_device_extension_properties as vk::PFN_vkEnumerateDeviceExtensionProperties)},
-                },
-                VulkanCommand {
-                    name: "vkEnumerateDeviceLayerProperties",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0})],
-                    hooked: true,
-                    proc: unsafe { std::mem::transmute(Self::enumerate_device_layer_properties as vk::PFN_vkEnumerateDeviceLayerProperties)},
-                },
-                VulkanCommand {
-                    name: "vkEnumeratePhysicalDeviceGroups",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1})],
-                    hooked: true,
-                    proc: unsafe { std::mem::transmute(Self::enumerate_physical_device_groups as vk::PFN_vkEnumeratePhysicalDeviceGroups)},
-                },
-                VulkanCommand {
-                    name: "vkEnumeratePhysicalDeviceGroupsKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRDeviceGroupCreation)],
-                    hooked: true,
-                    proc: unsafe { std::mem::transmute(Self::enumerate_physical_device_groups as vk::PFN_vkEnumeratePhysicalDeviceGroups)},
-                },
-                VulkanCommand {
-                    name: "vkEnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRPerformanceQuery)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::EnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKhr),
-                    proc: unsafe { std::mem::transmute(Self::enumerate_physical_device_queue_family_performance_query_counters_khr as vk::PFN_vkEnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHR)},
-                },
-                VulkanCommand {
-                    name: "vkEnumeratePhysicalDevices",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0})],
-                    hooked: true,
-                    proc: unsafe { std::mem::transmute(Self::enumerate_physical_devices as vk::PFN_vkEnumeratePhysicalDevices)},
-                },
-                VulkanCommand {
-                    name: "vkGetDisplayModeProperties2KHR",
-                    features: smallvec![Feature::Extension(Extension::KHRGetDisplayProperties2)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetDisplayModeProperties2Khr),
-                    proc: unsafe { std::mem::transmute(Self::get_display_mode_properties2_khr as vk::PFN_vkGetDisplayModeProperties2KHR)},
-                },
-                VulkanCommand {
-                    name: "vkGetDisplayModePropertiesKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRDisplay)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetDisplayModePropertiesKhr),
-                    proc: unsafe { std::mem::transmute(Self::get_display_mode_properties_khr as vk::PFN_vkGetDisplayModePropertiesKHR)},
-                },
-                VulkanCommand {
-                    name: "vkGetDisplayPlaneCapabilities2KHR",
-                    features: smallvec![Feature::Extension(Extension::KHRGetDisplayProperties2)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetDisplayPlaneCapabilities2Khr),
-                    proc: unsafe { std::mem::transmute(Self::get_display_plane_capabilities2_khr as vk::PFN_vkGetDisplayPlaneCapabilities2KHR)},
-                },
-                VulkanCommand {
-                    name: "vkGetDisplayPlaneCapabilitiesKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRDisplay)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetDisplayPlaneCapabilitiesKhr),
-                    proc: unsafe { std::mem::transmute(Self::get_display_plane_capabilities_khr as vk::PFN_vkGetDisplayPlaneCapabilitiesKHR)},
-                },
-                VulkanCommand {
-                    name: "vkGetDisplayPlaneSupportedDisplaysKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRDisplay)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetDisplayPlaneSupportedDisplaysKhr),
-                    proc: unsafe { std::mem::transmute(Self::get_display_plane_supported_displays_khr as vk::PFN_vkGetDisplayPlaneSupportedDisplaysKHR)},
-                },
-                VulkanCommand {
-                    name: "vkGetDrmDisplayEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTAcquireDrmDisplay)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetDrmDisplayExt),
-                    proc: unsafe { std::mem::transmute(Self::get_drm_display_ext as vk::PFN_vkGetDrmDisplayEXT)},
-                },
-                VulkanCommand {
-                    name: "vkGetInstanceProcAddr",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0})],
-                    hooked: true,
-                    proc: unsafe { std::mem::transmute(Self::get_instance_proc_addr as vk::PFN_vkGetInstanceProcAddr)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDeviceCalibrateableTimeDomainsEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTCalibratedTimestamps)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceCalibrateableTimeDomainsExt),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_calibrateable_time_domains_ext as vk::PFN_vkGetPhysicalDeviceCalibrateableTimeDomainsEXT)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDeviceCooperativeMatrixPropertiesNV",
-                    features: smallvec![Feature::Extension(Extension::NVCooperativeMatrix)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceCooperativeMatrixPropertiesNv),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_cooperative_matrix_properties_nv as vk::PFN_vkGetPhysicalDeviceCooperativeMatrixPropertiesNV)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDeviceDirectFBPresentationSupportEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTDirectfbSurface)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceDirectFbPresentationSupportExt),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_direct_fb_presentation_support_ext as vk::PFN_vkGetPhysicalDeviceDirectFBPresentationSupportEXT)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDeviceDisplayPlaneProperties2KHR",
-                    features: smallvec![Feature::Extension(Extension::KHRGetDisplayProperties2)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceDisplayPlaneProperties2Khr),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_display_plane_properties2_khr as vk::PFN_vkGetPhysicalDeviceDisplayPlaneProperties2KHR)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDeviceDisplayPlanePropertiesKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRDisplay)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceDisplayPlanePropertiesKhr),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_display_plane_properties_khr as vk::PFN_vkGetPhysicalDeviceDisplayPlanePropertiesKHR)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDeviceDisplayProperties2KHR",
-                    features: smallvec![Feature::Extension(Extension::KHRGetDisplayProperties2)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceDisplayProperties2Khr),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_display_properties2_khr as vk::PFN_vkGetPhysicalDeviceDisplayProperties2KHR)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDeviceDisplayPropertiesKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRDisplay)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceDisplayPropertiesKhr),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_display_properties_khr as vk::PFN_vkGetPhysicalDeviceDisplayPropertiesKHR)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDeviceExternalBufferProperties",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1})],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceExternalBufferProperties),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_external_buffer_properties as vk::PFN_vkGetPhysicalDeviceExternalBufferProperties)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDeviceExternalBufferPropertiesKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRExternalMemoryCapabilities)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceExternalBufferProperties),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_external_buffer_properties as vk::PFN_vkGetPhysicalDeviceExternalBufferProperties)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDeviceExternalFenceProperties",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1})],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceExternalFenceProperties),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_external_fence_properties as vk::PFN_vkGetPhysicalDeviceExternalFenceProperties)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDeviceExternalFencePropertiesKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRExternalFenceCapabilities)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceExternalFenceProperties),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_external_fence_properties as vk::PFN_vkGetPhysicalDeviceExternalFenceProperties)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDeviceExternalImageFormatPropertiesNV",
-                    features: smallvec![Feature::Extension(Extension::NVExternalMemoryCapabilities)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceExternalImageFormatPropertiesNv),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_external_image_format_properties_nv as vk::PFN_vkGetPhysicalDeviceExternalImageFormatPropertiesNV)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDeviceExternalSemaphoreProperties",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1})],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceExternalSemaphoreProperties),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_external_semaphore_properties as vk::PFN_vkGetPhysicalDeviceExternalSemaphoreProperties)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDeviceExternalSemaphorePropertiesKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRExternalSemaphoreCapabilities)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceExternalSemaphoreProperties),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_external_semaphore_properties as vk::PFN_vkGetPhysicalDeviceExternalSemaphoreProperties)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDeviceFeatures",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0})],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceFeatures),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_features as vk::PFN_vkGetPhysicalDeviceFeatures)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDeviceFeatures2",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1})],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceFeatures2),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_features2 as vk::PFN_vkGetPhysicalDeviceFeatures2)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDeviceFeatures2KHR",
-                    features: smallvec![Feature::Extension(Extension::KHRGetPhysicalDeviceProperties2)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceFeatures2),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_features2 as vk::PFN_vkGetPhysicalDeviceFeatures2)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDeviceFormatProperties",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0})],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceFormatProperties),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_format_properties as vk::PFN_vkGetPhysicalDeviceFormatProperties)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDeviceFormatProperties2",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1})],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceFormatProperties2),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_format_properties2 as vk::PFN_vkGetPhysicalDeviceFormatProperties2)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDeviceFormatProperties2KHR",
-                    features: smallvec![Feature::Extension(Extension::KHRGetPhysicalDeviceProperties2)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceFormatProperties2),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_format_properties2 as vk::PFN_vkGetPhysicalDeviceFormatProperties2)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDeviceFragmentShadingRatesKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRFragmentShadingRate)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceFragmentShadingRatesKhr),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_fragment_shading_rates_khr as vk::PFN_vkGetPhysicalDeviceFragmentShadingRatesKHR)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDeviceImageFormatProperties",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0})],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceImageFormatProperties),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_image_format_properties as vk::PFN_vkGetPhysicalDeviceImageFormatProperties)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDeviceImageFormatProperties2",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1})],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceImageFormatProperties2),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_image_format_properties2 as vk::PFN_vkGetPhysicalDeviceImageFormatProperties2)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDeviceImageFormatProperties2KHR",
-                    features: smallvec![Feature::Extension(Extension::KHRGetPhysicalDeviceProperties2)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceImageFormatProperties2),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_image_format_properties2 as vk::PFN_vkGetPhysicalDeviceImageFormatProperties2)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDeviceMemoryProperties",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0})],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceMemoryProperties),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_memory_properties as vk::PFN_vkGetPhysicalDeviceMemoryProperties)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDeviceMemoryProperties2",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1})],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceMemoryProperties2),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_memory_properties2 as vk::PFN_vkGetPhysicalDeviceMemoryProperties2)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDeviceMemoryProperties2KHR",
-                    features: smallvec![Feature::Extension(Extension::KHRGetPhysicalDeviceProperties2)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceMemoryProperties2),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_memory_properties2 as vk::PFN_vkGetPhysicalDeviceMemoryProperties2)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDeviceMultisamplePropertiesEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTSampleLocations)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceMultisamplePropertiesExt),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_multisample_properties_ext as vk::PFN_vkGetPhysicalDeviceMultisamplePropertiesEXT)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDeviceOpticalFlowImageFormatsNV",
-                    features: smallvec![Feature::Extension(Extension::NVOpticalFlow)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceOpticalFlowImageFormatsNv),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_optical_flow_image_formats_nv as vk::PFN_vkGetPhysicalDeviceOpticalFlowImageFormatsNV)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDevicePresentRectanglesKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRSwapchain), Feature::Extension(Extension::KHRDeviceGroup)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDevicePresentRectanglesKhr),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_present_rectangles_khr as vk::PFN_vkGetPhysicalDevicePresentRectanglesKHR)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDeviceProperties",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0})],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceProperties),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_properties as vk::PFN_vkGetPhysicalDeviceProperties)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDeviceProperties2",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1})],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceProperties2),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_properties2 as vk::PFN_vkGetPhysicalDeviceProperties2)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDeviceProperties2KHR",
-                    features: smallvec![Feature::Extension(Extension::KHRGetPhysicalDeviceProperties2)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceProperties2),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_properties2 as vk::PFN_vkGetPhysicalDeviceProperties2)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDeviceQueueFamilyPerformanceQueryPassesKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRPerformanceQuery)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceQueueFamilyPerformanceQueryPassesKhr),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_queue_family_performance_query_passes_khr as vk::PFN_vkGetPhysicalDeviceQueueFamilyPerformanceQueryPassesKHR)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDeviceQueueFamilyProperties",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0})],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceQueueFamilyProperties),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_queue_family_properties as vk::PFN_vkGetPhysicalDeviceQueueFamilyProperties)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDeviceQueueFamilyProperties2",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1})],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceQueueFamilyProperties2),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_queue_family_properties2 as vk::PFN_vkGetPhysicalDeviceQueueFamilyProperties2)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDeviceQueueFamilyProperties2KHR",
-                    features: smallvec![Feature::Extension(Extension::KHRGetPhysicalDeviceProperties2)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceQueueFamilyProperties2),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_queue_family_properties2 as vk::PFN_vkGetPhysicalDeviceQueueFamilyProperties2)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDeviceScreenPresentationSupportQNX",
-                    features: smallvec![Feature::Extension(Extension::QNXScreenSurface)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceScreenPresentationSupportQnx),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_screen_presentation_support_qnx as vk::PFN_vkGetPhysicalDeviceScreenPresentationSupportQNX)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDeviceSparseImageFormatProperties",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0})],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceSparseImageFormatProperties),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_sparse_image_format_properties as vk::PFN_vkGetPhysicalDeviceSparseImageFormatProperties)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDeviceSparseImageFormatProperties2",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1})],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceSparseImageFormatProperties2),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_sparse_image_format_properties2 as vk::PFN_vkGetPhysicalDeviceSparseImageFormatProperties2)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDeviceSparseImageFormatProperties2KHR",
-                    features: smallvec![Feature::Extension(Extension::KHRGetPhysicalDeviceProperties2)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceSparseImageFormatProperties2),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_sparse_image_format_properties2 as vk::PFN_vkGetPhysicalDeviceSparseImageFormatProperties2)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDeviceSupportedFramebufferMixedSamplesCombinationsNV",
-                    features: smallvec![Feature::Extension(Extension::NVCoverageReductionMode)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceSupportedFramebufferMixedSamplesCombinationsNv),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_supported_framebuffer_mixed_samples_combinations_nv as vk::PFN_vkGetPhysicalDeviceSupportedFramebufferMixedSamplesCombinationsNV)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDeviceSurfaceCapabilities2EXT",
-                    features: smallvec![Feature::Extension(Extension::EXTDisplaySurfaceCounter)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceSurfaceCapabilities2Ext),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_surface_capabilities2_ext as vk::PFN_vkGetPhysicalDeviceSurfaceCapabilities2EXT)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDeviceSurfaceCapabilities2KHR",
-                    features: smallvec![Feature::Extension(Extension::KHRGetSurfaceCapabilities2)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceSurfaceCapabilities2Khr),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_surface_capabilities2_khr as vk::PFN_vkGetPhysicalDeviceSurfaceCapabilities2KHR)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDeviceSurfaceCapabilitiesKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRSurface)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceSurfaceCapabilitiesKhr),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_surface_capabilities_khr as vk::PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDeviceSurfaceFormats2KHR",
-                    features: smallvec![Feature::Extension(Extension::KHRGetSurfaceCapabilities2)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceSurfaceFormats2Khr),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_surface_formats2_khr as vk::PFN_vkGetPhysicalDeviceSurfaceFormats2KHR)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDeviceSurfaceFormatsKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRSurface)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceSurfaceFormatsKhr),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_surface_formats_khr as vk::PFN_vkGetPhysicalDeviceSurfaceFormatsKHR)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDeviceSurfacePresentModes2EXT",
-                    features: smallvec![Feature::Extension(Extension::EXTFullScreenExclusive)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceSurfacePresentModes2Ext),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_surface_present_modes2_ext as vk::PFN_vkGetPhysicalDeviceSurfacePresentModes2EXT)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDeviceSurfacePresentModesKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRSurface)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceSurfacePresentModesKhr),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_surface_present_modes_khr as vk::PFN_vkGetPhysicalDeviceSurfacePresentModesKHR)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDeviceSurfaceSupportKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRSurface)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceSurfaceSupportKhr),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_surface_support_khr as vk::PFN_vkGetPhysicalDeviceSurfaceSupportKHR)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDeviceToolProperties",
-                    features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3})],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceToolProperties),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_tool_properties as vk::PFN_vkGetPhysicalDeviceToolProperties)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDeviceToolPropertiesEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTToolingInfo)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceToolProperties),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_tool_properties as vk::PFN_vkGetPhysicalDeviceToolProperties)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDeviceVideoCapabilitiesKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRVideoQueue)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceVideoCapabilitiesKhr),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_video_capabilities_khr as vk::PFN_vkGetPhysicalDeviceVideoCapabilitiesKHR)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDeviceVideoFormatPropertiesKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRVideoQueue)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceVideoFormatPropertiesKhr),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_video_format_properties_khr as vk::PFN_vkGetPhysicalDeviceVideoFormatPropertiesKHR)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDeviceWaylandPresentationSupportKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRWaylandSurface)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceWaylandPresentationSupportKhr),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_wayland_presentation_support_khr as vk::PFN_vkGetPhysicalDeviceWaylandPresentationSupportKHR)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDeviceWin32PresentationSupportKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRWin32Surface)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceWin32PresentationSupportKhr),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_win32_presentation_support_khr as vk::PFN_vkGetPhysicalDeviceWin32PresentationSupportKHR)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDeviceXcbPresentationSupportKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRXcbSurface)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceXcbPresentationSupportKhr),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_xcb_presentation_support_khr as vk::PFN_vkGetPhysicalDeviceXcbPresentationSupportKHR)},
-                },
-                VulkanCommand {
-                    name: "vkGetPhysicalDeviceXlibPresentationSupportKHR",
-                    features: smallvec![Feature::Extension(Extension::KHRXlibSurface)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceXlibPresentationSupportKhr),
-                    proc: unsafe { std::mem::transmute(Self::get_physical_device_xlib_presentation_support_khr as vk::PFN_vkGetPhysicalDeviceXlibPresentationSupportKHR)},
-                },
-                VulkanCommand {
-                    name: "vkGetRandROutputDisplayEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTAcquireXlibDisplay)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetRandROutputDisplayExt),
-                    proc: unsafe { std::mem::transmute(Self::get_rand_r_output_display_ext as vk::PFN_vkGetRandROutputDisplayEXT)},
-                },
-                VulkanCommand {
-                    name: "vkGetWinrtDisplayNV",
-                    features: smallvec![Feature::Extension(Extension::NVAcquireWinrtDisplay)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::GetWinrtDisplayNv),
-                    proc: unsafe { std::mem::transmute(Self::get_winrt_display_nv as vk::PFN_vkGetWinrtDisplayNV)},
-                },
-                VulkanCommand {
-                    name: "vkReleaseDisplayEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTDirectModeDisplay)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::ReleaseDisplayExt),
-                    proc: unsafe { std::mem::transmute(Self::release_display_ext as vk::PFN_vkReleaseDisplayEXT)},
-                },
-                VulkanCommand {
-                    name: "vkSubmitDebugUtilsMessageEXT",
-                    features: smallvec![Feature::Extension(Extension::EXTDebugUtils)],
-                    hooked: hooked_commands.contains(&LayerVulkanCommand::SubmitDebugUtilsMessageExt),
-                    proc: unsafe { std::mem::transmute(Self::submit_debug_utils_message_ext as vk::PFN_vkSubmitDebugUtilsMessageEXT)},
-                },
-            ]        })
+    pub(crate) fn create_instance_commands(layer_info: &T) -> Box<[VulkanCommand]> {
+        let hooked_commands = layer_info.hooked_commands().collect::<HashSet<_>>();
+        Box::new([
+            VulkanCommand {
+                name: "vkAcquireDrmDisplayEXT",
+                features: smallvec![Feature::Extension(Extension::EXTAcquireDrmDisplay)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::AcquireDrmDisplayExt),
+                proc: unsafe { std::mem::transmute(Self::acquire_drm_display_ext as vk::PFN_vkAcquireDrmDisplayEXT)},
+            },
+            VulkanCommand {
+                name: "vkAcquireWinrtDisplayNV",
+                features: smallvec![Feature::Extension(Extension::NVAcquireWinrtDisplay)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::AcquireWinrtDisplayNv),
+                proc: unsafe { std::mem::transmute(Self::acquire_winrt_display_nv as vk::PFN_vkAcquireWinrtDisplayNV)},
+            },
+            VulkanCommand {
+                name: "vkAcquireXlibDisplayEXT",
+                features: smallvec![Feature::Extension(Extension::EXTAcquireXlibDisplay)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::AcquireXlibDisplayExt),
+                proc: unsafe { std::mem::transmute(Self::acquire_xlib_display_ext as vk::PFN_vkAcquireXlibDisplayEXT)},
+            },
+            VulkanCommand {
+                name: "vkCreateAndroidSurfaceKHR",
+                features: smallvec![Feature::Extension(Extension::KHRAndroidSurface)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CreateAndroidSurfaceKhr),
+                proc: unsafe { std::mem::transmute(Self::create_android_surface_khr as vk::PFN_vkCreateAndroidSurfaceKHR)},
+            },
+            VulkanCommand {
+                name: "vkCreateDebugReportCallbackEXT",
+                features: smallvec![Feature::Extension(Extension::EXTDebugReport)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CreateDebugReportCallbackExt),
+                proc: unsafe { std::mem::transmute(Self::create_debug_report_callback_ext as vk::PFN_vkCreateDebugReportCallbackEXT)},
+            },
+            VulkanCommand {
+                name: "vkCreateDebugUtilsMessengerEXT",
+                features: smallvec![Feature::Extension(Extension::EXTDebugUtils)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CreateDebugUtilsMessengerExt),
+                proc: unsafe { std::mem::transmute(Self::create_debug_utils_messenger_ext as vk::PFN_vkCreateDebugUtilsMessengerEXT)},
+            },
+            VulkanCommand {
+                name: "vkCreateDevice",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0})],
+                hooked: true,
+                proc: unsafe { std::mem::transmute(Self::create_device as vk::PFN_vkCreateDevice)},
+            },
+            VulkanCommand {
+                name: "vkCreateDirectFBSurfaceEXT",
+                features: smallvec![Feature::Extension(Extension::EXTDirectfbSurface)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CreateDirectFbSurfaceExt),
+                proc: unsafe { std::mem::transmute(Self::create_direct_fb_surface_ext as vk::PFN_vkCreateDirectFBSurfaceEXT)},
+            },
+            VulkanCommand {
+                name: "vkCreateDisplayModeKHR",
+                features: smallvec![Feature::Extension(Extension::KHRDisplay)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CreateDisplayModeKhr),
+                proc: unsafe { std::mem::transmute(Self::create_display_mode_khr as vk::PFN_vkCreateDisplayModeKHR)},
+            },
+            VulkanCommand {
+                name: "vkCreateDisplayPlaneSurfaceKHR",
+                features: smallvec![Feature::Extension(Extension::KHRDisplay)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CreateDisplayPlaneSurfaceKhr),
+                proc: unsafe { std::mem::transmute(Self::create_display_plane_surface_khr as vk::PFN_vkCreateDisplayPlaneSurfaceKHR)},
+            },
+            VulkanCommand {
+                name: "vkCreateHeadlessSurfaceEXT",
+                features: smallvec![Feature::Extension(Extension::EXTHeadlessSurface)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CreateHeadlessSurfaceExt),
+                proc: unsafe { std::mem::transmute(Self::create_headless_surface_ext as vk::PFN_vkCreateHeadlessSurfaceEXT)},
+            },
+            VulkanCommand {
+                name: "vkCreateIOSSurfaceMVK",
+                features: smallvec![Feature::Extension(Extension::MVKIosSurface)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CreateIosSurfaceMvk),
+                proc: unsafe { std::mem::transmute(Self::create_ios_surface_mvk as vk::PFN_vkCreateIOSSurfaceMVK)},
+            },
+            VulkanCommand {
+                name: "vkCreateImagePipeSurfaceFUCHSIA",
+                features: smallvec![Feature::Extension(Extension::FUCHSIAImagepipeSurface)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CreateImagePipeSurfaceFuchsia),
+                proc: unsafe { std::mem::transmute(Self::create_image_pipe_surface_fuchsia as vk::PFN_vkCreateImagePipeSurfaceFUCHSIA)},
+            },
+            VulkanCommand {
+                name: "vkCreateMacOSSurfaceMVK",
+                features: smallvec![Feature::Extension(Extension::MVKMacosSurface)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CreateMacOsSurfaceMvk),
+                proc: unsafe { std::mem::transmute(Self::create_mac_os_surface_mvk as vk::PFN_vkCreateMacOSSurfaceMVK)},
+            },
+            VulkanCommand {
+                name: "vkCreateMetalSurfaceEXT",
+                features: smallvec![Feature::Extension(Extension::EXTMetalSurface)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CreateMetalSurfaceExt),
+                proc: unsafe { std::mem::transmute(Self::create_metal_surface_ext as vk::PFN_vkCreateMetalSurfaceEXT)},
+            },
+            VulkanCommand {
+                name: "vkCreateScreenSurfaceQNX",
+                features: smallvec![Feature::Extension(Extension::QNXScreenSurface)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CreateScreenSurfaceQnx),
+                proc: unsafe { std::mem::transmute(Self::create_screen_surface_qnx as vk::PFN_vkCreateScreenSurfaceQNX)},
+            },
+            VulkanCommand {
+                name: "vkCreateStreamDescriptorSurfaceGGP",
+                features: smallvec![Feature::Extension(Extension::GGPStreamDescriptorSurface)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CreateStreamDescriptorSurfaceGgp),
+                proc: unsafe { std::mem::transmute(Self::create_stream_descriptor_surface_ggp as vk::PFN_vkCreateStreamDescriptorSurfaceGGP)},
+            },
+            VulkanCommand {
+                name: "vkCreateViSurfaceNN",
+                features: smallvec![Feature::Extension(Extension::NNViSurface)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CreateViSurfaceNn),
+                proc: unsafe { std::mem::transmute(Self::create_vi_surface_nn as vk::PFN_vkCreateViSurfaceNN)},
+            },
+            VulkanCommand {
+                name: "vkCreateWaylandSurfaceKHR",
+                features: smallvec![Feature::Extension(Extension::KHRWaylandSurface)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CreateWaylandSurfaceKhr),
+                proc: unsafe { std::mem::transmute(Self::create_wayland_surface_khr as vk::PFN_vkCreateWaylandSurfaceKHR)},
+            },
+            VulkanCommand {
+                name: "vkCreateWin32SurfaceKHR",
+                features: smallvec![Feature::Extension(Extension::KHRWin32Surface)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CreateWin32SurfaceKhr),
+                proc: unsafe { std::mem::transmute(Self::create_win32_surface_khr as vk::PFN_vkCreateWin32SurfaceKHR)},
+            },
+            VulkanCommand {
+                name: "vkCreateXcbSurfaceKHR",
+                features: smallvec![Feature::Extension(Extension::KHRXcbSurface)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CreateXcbSurfaceKhr),
+                proc: unsafe { std::mem::transmute(Self::create_xcb_surface_khr as vk::PFN_vkCreateXcbSurfaceKHR)},
+            },
+            VulkanCommand {
+                name: "vkCreateXlibSurfaceKHR",
+                features: smallvec![Feature::Extension(Extension::KHRXlibSurface)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::CreateXlibSurfaceKhr),
+                proc: unsafe { std::mem::transmute(Self::create_xlib_surface_khr as vk::PFN_vkCreateXlibSurfaceKHR)},
+            },
+            VulkanCommand {
+                name: "vkDebugReportMessageEXT",
+                features: smallvec![Feature::Extension(Extension::EXTDebugReport)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::DebugReportMessageExt),
+                proc: unsafe { std::mem::transmute(Self::debug_report_message_ext as vk::PFN_vkDebugReportMessageEXT)},
+            },
+            VulkanCommand {
+                name: "vkDestroyDebugReportCallbackEXT",
+                features: smallvec![Feature::Extension(Extension::EXTDebugReport)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyDebugReportCallbackExt),
+                proc: unsafe { std::mem::transmute(Self::destroy_debug_report_callback_ext as vk::PFN_vkDestroyDebugReportCallbackEXT)},
+            },
+            VulkanCommand {
+                name: "vkDestroyDebugUtilsMessengerEXT",
+                features: smallvec![Feature::Extension(Extension::EXTDebugUtils)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyDebugUtilsMessengerExt),
+                proc: unsafe { std::mem::transmute(Self::destroy_debug_utils_messenger_ext as vk::PFN_vkDestroyDebugUtilsMessengerEXT)},
+            },
+            VulkanCommand {
+                name: "vkDestroyInstance",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0})],
+                hooked: true,
+                proc: unsafe { std::mem::transmute(Self::destroy_instance as vk::PFN_vkDestroyInstance)},
+            },
+            VulkanCommand {
+                name: "vkDestroySurfaceKHR",
+                features: smallvec![Feature::Extension(Extension::KHRSurface)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::DestroySurfaceKhr),
+                proc: unsafe { std::mem::transmute(Self::destroy_surface_khr as vk::PFN_vkDestroySurfaceKHR)},
+            },
+            VulkanCommand {
+                name: "vkEnumerateDeviceExtensionProperties",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0})],
+                hooked: true,
+                proc: unsafe { std::mem::transmute(Self::enumerate_device_extension_properties as vk::PFN_vkEnumerateDeviceExtensionProperties)},
+            },
+            VulkanCommand {
+                name: "vkEnumerateDeviceLayerProperties",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0})],
+                hooked: true,
+                proc: unsafe { std::mem::transmute(Self::enumerate_device_layer_properties as vk::PFN_vkEnumerateDeviceLayerProperties)},
+            },
+            VulkanCommand {
+                name: "vkEnumeratePhysicalDeviceGroups",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1})],
+                hooked: true,
+                proc: unsafe { std::mem::transmute(Self::enumerate_physical_device_groups as vk::PFN_vkEnumeratePhysicalDeviceGroups)},
+            },
+            VulkanCommand {
+                name: "vkEnumeratePhysicalDeviceGroupsKHR",
+                features: smallvec![Feature::Extension(Extension::KHRDeviceGroupCreation)],
+                hooked: true,
+                proc: unsafe { std::mem::transmute(Self::enumerate_physical_device_groups as vk::PFN_vkEnumeratePhysicalDeviceGroups)},
+            },
+            VulkanCommand {
+                name: "vkEnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHR",
+                features: smallvec![Feature::Extension(Extension::KHRPerformanceQuery)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::EnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKhr),
+                proc: unsafe { std::mem::transmute(Self::enumerate_physical_device_queue_family_performance_query_counters_khr as vk::PFN_vkEnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHR)},
+            },
+            VulkanCommand {
+                name: "vkEnumeratePhysicalDevices",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0})],
+                hooked: true,
+                proc: unsafe { std::mem::transmute(Self::enumerate_physical_devices as vk::PFN_vkEnumeratePhysicalDevices)},
+            },
+            VulkanCommand {
+                name: "vkGetDisplayModeProperties2KHR",
+                features: smallvec![Feature::Extension(Extension::KHRGetDisplayProperties2)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetDisplayModeProperties2Khr),
+                proc: unsafe { std::mem::transmute(Self::get_display_mode_properties2_khr as vk::PFN_vkGetDisplayModeProperties2KHR)},
+            },
+            VulkanCommand {
+                name: "vkGetDisplayModePropertiesKHR",
+                features: smallvec![Feature::Extension(Extension::KHRDisplay)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetDisplayModePropertiesKhr),
+                proc: unsafe { std::mem::transmute(Self::get_display_mode_properties_khr as vk::PFN_vkGetDisplayModePropertiesKHR)},
+            },
+            VulkanCommand {
+                name: "vkGetDisplayPlaneCapabilities2KHR",
+                features: smallvec![Feature::Extension(Extension::KHRGetDisplayProperties2)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetDisplayPlaneCapabilities2Khr),
+                proc: unsafe { std::mem::transmute(Self::get_display_plane_capabilities2_khr as vk::PFN_vkGetDisplayPlaneCapabilities2KHR)},
+            },
+            VulkanCommand {
+                name: "vkGetDisplayPlaneCapabilitiesKHR",
+                features: smallvec![Feature::Extension(Extension::KHRDisplay)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetDisplayPlaneCapabilitiesKhr),
+                proc: unsafe { std::mem::transmute(Self::get_display_plane_capabilities_khr as vk::PFN_vkGetDisplayPlaneCapabilitiesKHR)},
+            },
+            VulkanCommand {
+                name: "vkGetDisplayPlaneSupportedDisplaysKHR",
+                features: smallvec![Feature::Extension(Extension::KHRDisplay)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetDisplayPlaneSupportedDisplaysKhr),
+                proc: unsafe { std::mem::transmute(Self::get_display_plane_supported_displays_khr as vk::PFN_vkGetDisplayPlaneSupportedDisplaysKHR)},
+            },
+            VulkanCommand {
+                name: "vkGetDrmDisplayEXT",
+                features: smallvec![Feature::Extension(Extension::EXTAcquireDrmDisplay)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetDrmDisplayExt),
+                proc: unsafe { std::mem::transmute(Self::get_drm_display_ext as vk::PFN_vkGetDrmDisplayEXT)},
+            },
+            VulkanCommand {
+                name: "vkGetInstanceProcAddr",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0})],
+                hooked: true,
+                proc: unsafe { std::mem::transmute(Self::get_instance_proc_addr as vk::PFN_vkGetInstanceProcAddr)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDeviceCalibrateableTimeDomainsEXT",
+                features: smallvec![Feature::Extension(Extension::EXTCalibratedTimestamps)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceCalibrateableTimeDomainsExt),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_calibrateable_time_domains_ext as vk::PFN_vkGetPhysicalDeviceCalibrateableTimeDomainsEXT)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDeviceCooperativeMatrixPropertiesNV",
+                features: smallvec![Feature::Extension(Extension::NVCooperativeMatrix)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceCooperativeMatrixPropertiesNv),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_cooperative_matrix_properties_nv as vk::PFN_vkGetPhysicalDeviceCooperativeMatrixPropertiesNV)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDeviceDirectFBPresentationSupportEXT",
+                features: smallvec![Feature::Extension(Extension::EXTDirectfbSurface)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceDirectFbPresentationSupportExt),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_direct_fb_presentation_support_ext as vk::PFN_vkGetPhysicalDeviceDirectFBPresentationSupportEXT)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDeviceDisplayPlaneProperties2KHR",
+                features: smallvec![Feature::Extension(Extension::KHRGetDisplayProperties2)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceDisplayPlaneProperties2Khr),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_display_plane_properties2_khr as vk::PFN_vkGetPhysicalDeviceDisplayPlaneProperties2KHR)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDeviceDisplayPlanePropertiesKHR",
+                features: smallvec![Feature::Extension(Extension::KHRDisplay)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceDisplayPlanePropertiesKhr),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_display_plane_properties_khr as vk::PFN_vkGetPhysicalDeviceDisplayPlanePropertiesKHR)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDeviceDisplayProperties2KHR",
+                features: smallvec![Feature::Extension(Extension::KHRGetDisplayProperties2)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceDisplayProperties2Khr),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_display_properties2_khr as vk::PFN_vkGetPhysicalDeviceDisplayProperties2KHR)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDeviceDisplayPropertiesKHR",
+                features: smallvec![Feature::Extension(Extension::KHRDisplay)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceDisplayPropertiesKhr),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_display_properties_khr as vk::PFN_vkGetPhysicalDeviceDisplayPropertiesKHR)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDeviceExternalBufferProperties",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1})],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceExternalBufferProperties),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_external_buffer_properties as vk::PFN_vkGetPhysicalDeviceExternalBufferProperties)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDeviceExternalBufferPropertiesKHR",
+                features: smallvec![Feature::Extension(Extension::KHRExternalMemoryCapabilities)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceExternalBufferProperties),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_external_buffer_properties as vk::PFN_vkGetPhysicalDeviceExternalBufferProperties)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDeviceExternalFenceProperties",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1})],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceExternalFenceProperties),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_external_fence_properties as vk::PFN_vkGetPhysicalDeviceExternalFenceProperties)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDeviceExternalFencePropertiesKHR",
+                features: smallvec![Feature::Extension(Extension::KHRExternalFenceCapabilities)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceExternalFenceProperties),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_external_fence_properties as vk::PFN_vkGetPhysicalDeviceExternalFenceProperties)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDeviceExternalImageFormatPropertiesNV",
+                features: smallvec![Feature::Extension(Extension::NVExternalMemoryCapabilities)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceExternalImageFormatPropertiesNv),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_external_image_format_properties_nv as vk::PFN_vkGetPhysicalDeviceExternalImageFormatPropertiesNV)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDeviceExternalSemaphoreProperties",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1})],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceExternalSemaphoreProperties),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_external_semaphore_properties as vk::PFN_vkGetPhysicalDeviceExternalSemaphoreProperties)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDeviceExternalSemaphorePropertiesKHR",
+                features: smallvec![Feature::Extension(Extension::KHRExternalSemaphoreCapabilities)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceExternalSemaphoreProperties),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_external_semaphore_properties as vk::PFN_vkGetPhysicalDeviceExternalSemaphoreProperties)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDeviceFeatures",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0})],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceFeatures),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_features as vk::PFN_vkGetPhysicalDeviceFeatures)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDeviceFeatures2",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1})],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceFeatures2),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_features2 as vk::PFN_vkGetPhysicalDeviceFeatures2)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDeviceFeatures2KHR",
+                features: smallvec![Feature::Extension(Extension::KHRGetPhysicalDeviceProperties2)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceFeatures2),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_features2 as vk::PFN_vkGetPhysicalDeviceFeatures2)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDeviceFormatProperties",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0})],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceFormatProperties),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_format_properties as vk::PFN_vkGetPhysicalDeviceFormatProperties)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDeviceFormatProperties2",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1})],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceFormatProperties2),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_format_properties2 as vk::PFN_vkGetPhysicalDeviceFormatProperties2)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDeviceFormatProperties2KHR",
+                features: smallvec![Feature::Extension(Extension::KHRGetPhysicalDeviceProperties2)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceFormatProperties2),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_format_properties2 as vk::PFN_vkGetPhysicalDeviceFormatProperties2)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDeviceFragmentShadingRatesKHR",
+                features: smallvec![Feature::Extension(Extension::KHRFragmentShadingRate)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceFragmentShadingRatesKhr),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_fragment_shading_rates_khr as vk::PFN_vkGetPhysicalDeviceFragmentShadingRatesKHR)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDeviceImageFormatProperties",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0})],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceImageFormatProperties),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_image_format_properties as vk::PFN_vkGetPhysicalDeviceImageFormatProperties)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDeviceImageFormatProperties2",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1})],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceImageFormatProperties2),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_image_format_properties2 as vk::PFN_vkGetPhysicalDeviceImageFormatProperties2)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDeviceImageFormatProperties2KHR",
+                features: smallvec![Feature::Extension(Extension::KHRGetPhysicalDeviceProperties2)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceImageFormatProperties2),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_image_format_properties2 as vk::PFN_vkGetPhysicalDeviceImageFormatProperties2)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDeviceMemoryProperties",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0})],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceMemoryProperties),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_memory_properties as vk::PFN_vkGetPhysicalDeviceMemoryProperties)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDeviceMemoryProperties2",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1})],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceMemoryProperties2),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_memory_properties2 as vk::PFN_vkGetPhysicalDeviceMemoryProperties2)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDeviceMemoryProperties2KHR",
+                features: smallvec![Feature::Extension(Extension::KHRGetPhysicalDeviceProperties2)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceMemoryProperties2),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_memory_properties2 as vk::PFN_vkGetPhysicalDeviceMemoryProperties2)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDeviceMultisamplePropertiesEXT",
+                features: smallvec![Feature::Extension(Extension::EXTSampleLocations)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceMultisamplePropertiesExt),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_multisample_properties_ext as vk::PFN_vkGetPhysicalDeviceMultisamplePropertiesEXT)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDeviceOpticalFlowImageFormatsNV",
+                features: smallvec![Feature::Extension(Extension::NVOpticalFlow)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceOpticalFlowImageFormatsNv),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_optical_flow_image_formats_nv as vk::PFN_vkGetPhysicalDeviceOpticalFlowImageFormatsNV)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDevicePresentRectanglesKHR",
+                features: smallvec![Feature::Extension(Extension::KHRSwapchain), Feature::Extension(Extension::KHRDeviceGroup)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDevicePresentRectanglesKhr),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_present_rectangles_khr as vk::PFN_vkGetPhysicalDevicePresentRectanglesKHR)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDeviceProperties",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0})],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceProperties),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_properties as vk::PFN_vkGetPhysicalDeviceProperties)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDeviceProperties2",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1})],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceProperties2),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_properties2 as vk::PFN_vkGetPhysicalDeviceProperties2)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDeviceProperties2KHR",
+                features: smallvec![Feature::Extension(Extension::KHRGetPhysicalDeviceProperties2)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceProperties2),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_properties2 as vk::PFN_vkGetPhysicalDeviceProperties2)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDeviceQueueFamilyPerformanceQueryPassesKHR",
+                features: smallvec![Feature::Extension(Extension::KHRPerformanceQuery)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceQueueFamilyPerformanceQueryPassesKhr),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_queue_family_performance_query_passes_khr as vk::PFN_vkGetPhysicalDeviceQueueFamilyPerformanceQueryPassesKHR)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDeviceQueueFamilyProperties",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0})],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceQueueFamilyProperties),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_queue_family_properties as vk::PFN_vkGetPhysicalDeviceQueueFamilyProperties)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDeviceQueueFamilyProperties2",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1})],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceQueueFamilyProperties2),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_queue_family_properties2 as vk::PFN_vkGetPhysicalDeviceQueueFamilyProperties2)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDeviceQueueFamilyProperties2KHR",
+                features: smallvec![Feature::Extension(Extension::KHRGetPhysicalDeviceProperties2)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceQueueFamilyProperties2),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_queue_family_properties2 as vk::PFN_vkGetPhysicalDeviceQueueFamilyProperties2)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDeviceScreenPresentationSupportQNX",
+                features: smallvec![Feature::Extension(Extension::QNXScreenSurface)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceScreenPresentationSupportQnx),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_screen_presentation_support_qnx as vk::PFN_vkGetPhysicalDeviceScreenPresentationSupportQNX)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDeviceSparseImageFormatProperties",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0})],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceSparseImageFormatProperties),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_sparse_image_format_properties as vk::PFN_vkGetPhysicalDeviceSparseImageFormatProperties)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDeviceSparseImageFormatProperties2",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1})],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceSparseImageFormatProperties2),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_sparse_image_format_properties2 as vk::PFN_vkGetPhysicalDeviceSparseImageFormatProperties2)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDeviceSparseImageFormatProperties2KHR",
+                features: smallvec![Feature::Extension(Extension::KHRGetPhysicalDeviceProperties2)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceSparseImageFormatProperties2),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_sparse_image_format_properties2 as vk::PFN_vkGetPhysicalDeviceSparseImageFormatProperties2)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDeviceSupportedFramebufferMixedSamplesCombinationsNV",
+                features: smallvec![Feature::Extension(Extension::NVCoverageReductionMode)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceSupportedFramebufferMixedSamplesCombinationsNv),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_supported_framebuffer_mixed_samples_combinations_nv as vk::PFN_vkGetPhysicalDeviceSupportedFramebufferMixedSamplesCombinationsNV)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDeviceSurfaceCapabilities2EXT",
+                features: smallvec![Feature::Extension(Extension::EXTDisplaySurfaceCounter)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceSurfaceCapabilities2Ext),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_surface_capabilities2_ext as vk::PFN_vkGetPhysicalDeviceSurfaceCapabilities2EXT)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDeviceSurfaceCapabilities2KHR",
+                features: smallvec![Feature::Extension(Extension::KHRGetSurfaceCapabilities2)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceSurfaceCapabilities2Khr),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_surface_capabilities2_khr as vk::PFN_vkGetPhysicalDeviceSurfaceCapabilities2KHR)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDeviceSurfaceCapabilitiesKHR",
+                features: smallvec![Feature::Extension(Extension::KHRSurface)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceSurfaceCapabilitiesKhr),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_surface_capabilities_khr as vk::PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDeviceSurfaceFormats2KHR",
+                features: smallvec![Feature::Extension(Extension::KHRGetSurfaceCapabilities2)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceSurfaceFormats2Khr),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_surface_formats2_khr as vk::PFN_vkGetPhysicalDeviceSurfaceFormats2KHR)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDeviceSurfaceFormatsKHR",
+                features: smallvec![Feature::Extension(Extension::KHRSurface)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceSurfaceFormatsKhr),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_surface_formats_khr as vk::PFN_vkGetPhysicalDeviceSurfaceFormatsKHR)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDeviceSurfacePresentModes2EXT",
+                features: smallvec![Feature::Extension(Extension::EXTFullScreenExclusive)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceSurfacePresentModes2Ext),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_surface_present_modes2_ext as vk::PFN_vkGetPhysicalDeviceSurfacePresentModes2EXT)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDeviceSurfacePresentModesKHR",
+                features: smallvec![Feature::Extension(Extension::KHRSurface)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceSurfacePresentModesKhr),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_surface_present_modes_khr as vk::PFN_vkGetPhysicalDeviceSurfacePresentModesKHR)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDeviceSurfaceSupportKHR",
+                features: smallvec![Feature::Extension(Extension::KHRSurface)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceSurfaceSupportKhr),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_surface_support_khr as vk::PFN_vkGetPhysicalDeviceSurfaceSupportKHR)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDeviceToolProperties",
+                features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3})],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceToolProperties),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_tool_properties as vk::PFN_vkGetPhysicalDeviceToolProperties)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDeviceToolPropertiesEXT",
+                features: smallvec![Feature::Extension(Extension::EXTToolingInfo)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceToolProperties),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_tool_properties as vk::PFN_vkGetPhysicalDeviceToolProperties)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDeviceVideoCapabilitiesKHR",
+                features: smallvec![Feature::Extension(Extension::KHRVideoQueue)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceVideoCapabilitiesKhr),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_video_capabilities_khr as vk::PFN_vkGetPhysicalDeviceVideoCapabilitiesKHR)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDeviceVideoFormatPropertiesKHR",
+                features: smallvec![Feature::Extension(Extension::KHRVideoQueue)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceVideoFormatPropertiesKhr),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_video_format_properties_khr as vk::PFN_vkGetPhysicalDeviceVideoFormatPropertiesKHR)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDeviceWaylandPresentationSupportKHR",
+                features: smallvec![Feature::Extension(Extension::KHRWaylandSurface)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceWaylandPresentationSupportKhr),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_wayland_presentation_support_khr as vk::PFN_vkGetPhysicalDeviceWaylandPresentationSupportKHR)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDeviceWin32PresentationSupportKHR",
+                features: smallvec![Feature::Extension(Extension::KHRWin32Surface)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceWin32PresentationSupportKhr),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_win32_presentation_support_khr as vk::PFN_vkGetPhysicalDeviceWin32PresentationSupportKHR)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDeviceXcbPresentationSupportKHR",
+                features: smallvec![Feature::Extension(Extension::KHRXcbSurface)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceXcbPresentationSupportKhr),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_xcb_presentation_support_khr as vk::PFN_vkGetPhysicalDeviceXcbPresentationSupportKHR)},
+            },
+            VulkanCommand {
+                name: "vkGetPhysicalDeviceXlibPresentationSupportKHR",
+                features: smallvec![Feature::Extension(Extension::KHRXlibSurface)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceXlibPresentationSupportKhr),
+                proc: unsafe { std::mem::transmute(Self::get_physical_device_xlib_presentation_support_khr as vk::PFN_vkGetPhysicalDeviceXlibPresentationSupportKHR)},
+            },
+            VulkanCommand {
+                name: "vkGetRandROutputDisplayEXT",
+                features: smallvec![Feature::Extension(Extension::EXTAcquireXlibDisplay)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetRandROutputDisplayExt),
+                proc: unsafe { std::mem::transmute(Self::get_rand_r_output_display_ext as vk::PFN_vkGetRandROutputDisplayEXT)},
+            },
+            VulkanCommand {
+                name: "vkGetWinrtDisplayNV",
+                features: smallvec![Feature::Extension(Extension::NVAcquireWinrtDisplay)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::GetWinrtDisplayNv),
+                proc: unsafe { std::mem::transmute(Self::get_winrt_display_nv as vk::PFN_vkGetWinrtDisplayNV)},
+            },
+            VulkanCommand {
+                name: "vkReleaseDisplayEXT",
+                features: smallvec![Feature::Extension(Extension::EXTDirectModeDisplay)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::ReleaseDisplayExt),
+                proc: unsafe { std::mem::transmute(Self::release_display_ext as vk::PFN_vkReleaseDisplayEXT)},
+            },
+            VulkanCommand {
+                name: "vkSubmitDebugUtilsMessageEXT",
+                features: smallvec![Feature::Extension(Extension::EXTDebugUtils)],
+                hooked: hooked_commands.contains(&LayerVulkanCommand::SubmitDebugUtilsMessageExt),
+                proc: unsafe { std::mem::transmute(Self::submit_debug_utils_message_ext as vk::PFN_vkSubmitDebugUtilsMessageEXT)},
+            },
+        ])
     }
     extern "system" fn get_physical_device_features(
         physical_device: vk::PhysicalDevice,

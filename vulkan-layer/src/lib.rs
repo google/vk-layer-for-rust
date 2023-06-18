@@ -196,9 +196,8 @@ pub struct Global<T: Layer> {
     physical_device_map: Mutex<BTreeMap<vk::PhysicalDevice, Arc<PhysicalDeviceInfoWrapper>>>,
     device_map: Mutex<BTreeMap<DeviceDispatchKey, Arc<DeviceInfoWrapper<T>>>>,
     pub layer_info: T,
-    // TODO: use Box<[VulkanCommand]> instead, so that we know when the initialization happens.
-    instance_commands: OnceCell<Vec<VulkanCommand>>,
-    device_commands: OnceCell<Vec<VulkanCommand>>,
+    instance_commands: Box<[VulkanCommand]>,
+    device_commands: Box<[VulkanCommand]>,
     get_instance_addr_proc_hooked: bool,
 }
 
@@ -883,7 +882,7 @@ impl<T: Layer> Global<T> {
         }
         let get_next_proc_addr =
             || unsafe { (instance_info.get_instance_proc_addr)(instance, p_name) };
-        let instance_commands = global.get_instance_commands();
+        let instance_commands = &global.instance_commands;
         let instance_command = match instance_commands
             .binary_search_by_key(&name, |VulkanCommand { name, .. }| name)
         {
@@ -903,7 +902,7 @@ impl<T: Layer> Global<T> {
             }
             return instance_command.proc;
         }
-        let device_commands = global.get_device_commands();
+        let device_commands = &global.device_commands;
         let device_command =
             match device_commands.binary_search_by_key(&name, |VulkanCommand { name, .. }| name) {
                 Ok(index) => Some(&device_commands[index]),
@@ -944,10 +943,10 @@ impl<T: Layer> Global<T> {
         let get_next_device_proc_addr =
             || unsafe { (device_info.get_device_proc_addr)(device, p_name) };
         let command = if let Ok(index) = global
-            .get_device_commands()
+            .device_commands
             .binary_search_by_key(&name, |VulkanCommand { name, .. }| name)
         {
-            &global.get_device_commands()[index]
+            &global.device_commands[index]
         } else {
             return get_next_device_proc_addr();
         };
@@ -964,13 +963,15 @@ impl<T: Layer> Default for Global<T> {
         let get_instance_addr_proc_hooked = layer_info
             .hooked_commands()
             .any(|command| command == LayerVulkanCommand::GetInstanceProcAddr);
+        let instance_commands = Self::create_instance_commands(&layer_info);
+        let device_commands = Self::create_device_commands(&layer_info);
         Self {
             instance_map: Default::default(),
             physical_device_map: Default::default(),
             device_map: Default::default(),
             layer_info,
-            instance_commands: Default::default(),
-            device_commands: Default::default(),
+            instance_commands,
+            device_commands,
             get_instance_addr_proc_hooked,
         }
     }
@@ -1005,7 +1006,7 @@ mod test {
         let global = Global::<StubLayer>::instance();
 
         let mut name_iter = global
-            .get_device_commands()
+            .device_commands
             .iter()
             .map(|VulkanCommand { name, .. }| *name);
         let mut last = name_iter.next().unwrap();
@@ -1013,7 +1014,7 @@ mod test {
         assert!(name_iter.all(check(&mut last)));
 
         let mut name_iter = global
-            .get_instance_commands()
+            .instance_commands
             .iter()
             .map(|VulkanCommand { name, .. }| *name);
         let mut last = name_iter.next().unwrap();

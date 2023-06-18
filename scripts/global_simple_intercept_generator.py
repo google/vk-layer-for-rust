@@ -825,47 +825,49 @@ class GlobalSimpleInterceptGenerator(OutputGenerator):
             "\n".join(
                 [
                     "impl<T: Layer> Global<T> {",
-                    "    pub(crate) fn get_device_commands(&self) -> &[VulkanCommand] {",
-                    "        self.device_commands.get_or_init(|| {",
                     (
-                        "            let hooked_commands = self.layer_info.hooked_commands()"
-                        ".collect::<HashSet<_>>();"
+                        "    pub(crate) fn create_device_commands(layer_info: &T) ->"
+                        " Box<[VulkanCommand]> {"
                     ),
-                    "            vec![",
+                    (
+                        "        let hooked_commands ="
+                        " layer_info.hooked_commands().collect::<HashSet<_>>();"
+                    ),
+                    "        Box::new([",
                 ]
                 + [""]
             )
         )
         self.outFile.write(
             generate_vulkan_command_entries(
-                16, self.device_commands, self.dispatch_infos, "hooked_commands"
+                12, self.device_commands, self.dispatch_infos, "hooked_commands"
             )
         )
-        self.outFile.write("            ]")
-        self.outFile.write("        })\n")
+        self.outFile.write("        ])\n")
         self.outFile.write("    }\n")
 
         self.outFile.write(
             "\n".join(
                 [
-                    "    pub(crate) fn get_instance_commands(&self) -> &[VulkanCommand] {",
-                    "        self.instance_commands.get_or_init(|| {",
                     (
-                        "            let hooked_commands = self.layer_info.hooked_commands()"
-                        ".collect::<HashSet<_>>();"
+                        "    pub(crate) fn create_instance_commands(layer_info: &T) ->"
+                        " Box<[VulkanCommand]> {"
                     ),
-                    "            vec![",
+                    (
+                        "        let hooked_commands ="
+                        " layer_info.hooked_commands().collect::<HashSet<_>>();"
+                    ),
+                    "        Box::new([",
                 ]
                 + [""]
             )
         )
         self.outFile.write(
             generate_vulkan_command_entries(
-                16, self.instance_commands, self.dispatch_infos, "hooked_commands"
+                12, self.instance_commands, self.dispatch_infos, "hooked_commands"
             )
         )
-        self.outFile.write("            ]")
-        self.outFile.write("        })\n")
+        self.outFile.write("        ])\n")
         self.outFile.write("    }\n")
 
         for vulkan_command in not_aliased_commands:
