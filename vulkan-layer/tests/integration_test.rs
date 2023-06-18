@@ -94,8 +94,21 @@ mod get_instance_proc_addr {
             }
             .is_none());
 
-            // TODO: when we allow to intercept vkDestroyInstance also add a layer that intercepts
-            // vkDestroyInstance in this test
+            #[derive(Default)]
+            struct Tag2;
+            impl TestLayer for Tag2 {
+                fn hooked_instance_commands() -> &'static [LayerVulkanCommand] {
+                    &[LayerVulkanCommand::GetPhysicalDeviceSparseImageFormatProperties2]
+                }
+            }
+            let entry = create_entry::<MockLayer<Tag>>();
+            assert!(unsafe {
+                entry.get_instance_proc_addr(
+                    vk::Instance::null(),
+                    b"vkGetPhysicalDeviceSparseImageFormatProperties2\0".as_ptr() as *const i8,
+                )
+            }
+            .is_none());
         }
 
         #[test]
@@ -150,8 +163,22 @@ mod get_instance_proc_addr {
                     global_command.to_string_lossy()
                 );
             }
-            // TODO: when we allow to intercept the global commands also add a layer that intercepts
-            // the global commands and test.
+
+            #[derive(Default)]
+            struct Tag2;
+            impl TestLayer for Tag2 {
+                fn hooked_global_commands() -> &'static [LayerVulkanCommand] {
+                    &[LayerVulkanCommand::CreateInstance]
+                }
+            }
+            let ctx = vk::InstanceCreateInfo::builder().default_instance::<MockLayer<Tag>>();
+            let create_instance = unsafe {
+                ctx.entry.get_instance_proc_addr(
+                    instance.handle(),
+                    b"vkCreateInstance\0".as_ptr() as *const i8,
+                )
+            };
+            assert!(create_instance.is_none());
         }
 
         #[test]

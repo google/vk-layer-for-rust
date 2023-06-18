@@ -193,7 +193,7 @@ pub struct Global<T: Layer> {
     physical_device_map: Mutex<BTreeMap<vk::PhysicalDevice, Arc<PhysicalDeviceInfoWrapper>>>,
     device_map: Mutex<BTreeMap<DeviceDispatchKey, Arc<DeviceInfoWrapper<T>>>>,
     pub layer_info: T,
-    // TODO: use normal Vec instead, so that we know when the initialization happens.
+    // TODO: use Box<[VulkanCommand]> instead, so that we know when the initialization happens.
     instance_commands: OnceCell<Vec<VulkanCommand>>,
     device_commands: OnceCell<Vec<VulkanCommand>>,
     get_instance_addr_proc_hooked: bool,
@@ -344,7 +344,6 @@ impl<T: Layer> Global<T> {
                 let entry = vk::EntryFnV1_0::load(get_proc_addr);
 
                 let mut instance = MaybeUninit::<vk::Instance>::uninit();
-                // TODO: allow the layer trait to intercept the creation
                 let ret: vk::Result = unsafe {
                     (entry.create_instance)(create_info, allocator, instance.as_mut_ptr())
                 };
