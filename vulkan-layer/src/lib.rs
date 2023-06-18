@@ -430,6 +430,9 @@ impl<T: Layer> Global<T> {
         instance: vk::Instance,
         allocator: *const vk::AllocationCallbacks,
     ) {
+        if instance == vk::Instance::null() {
+            return;
+        }
         let dispatch_key = instance.get_dispatch_key();
         let global = Self::instance();
         let instance_info = global.instance_map.lock().unwrap().remove(&dispatch_key);

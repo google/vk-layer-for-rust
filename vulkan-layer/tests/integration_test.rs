@@ -690,9 +690,18 @@ mod create_destroy_instance {
     }
 
     #[test]
-    #[ignore]
     fn test_destroy_instance_with_null_handle() {
-        todo!()
+        #[derive(Default)]
+        struct Tag;
+        impl TestLayer for Tag {}
+
+        let app_info = vk::ApplicationInfo::builder().api_version(0);
+        let ctx = vk::InstanceCreateInfo::builder()
+            .application_info(&app_info)
+            .default_instance::<MockLayer<Tag>>();
+        let InstanceContext { instance, .. } = ctx.as_ref();
+        let destroy_instance = instance.fp_v1_0().destroy_instance;
+        unsafe { destroy_instance(vk::Instance::null(), null()) };
     }
 
     #[test]
