@@ -39,13 +39,16 @@ use bindings::{VkLayerDeviceCreateInfo, VkLayerFunction, VkLayerInstanceCreateIn
 pub use generated::{
     global_simple_intercept::Extension,
     layer_trait::{DeviceHooks, InstanceHooks, VulkanCommand as LayerVulkanCommand},
-    ApiVersion, DeviceInfo, Feature, GlobalHooks, InstanceInfo, Layer, LayerResult,
+    ApiVersion, DeviceInfo, Feature, GlobalHooks, GlobalHooksInfo, InstanceInfo, Layer,
+    LayerResult,
 };
 use generated::{
     global_simple_intercept::{DeviceDispatchTable, InstanceDispatchTable},
     VulkanCommand,
 };
-pub use vulkan_layer_macros::{auto_deviceinfo_impl, auto_instanceinfo_impl};
+pub use vulkan_layer_macros::{
+    auto_deviceinfo_impl, auto_globalhooksinfo_impl, auto_instanceinfo_impl,
+};
 
 fn as_i8_slice(input: &CString) -> &[i8] {
     let bytes = input.as_bytes();

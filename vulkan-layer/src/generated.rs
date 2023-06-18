@@ -156,8 +156,8 @@ pub trait GlobalHooks: Send + Sync {
 }
 
 pub trait GlobalHooksInfo: Send + Sync {
-    type HookType: GlobalHooks;
-    type HooksRefType<'a>: Deref<Target = Self::HookType> + 'a
+    type HooksType: GlobalHooks;
+    type HooksRefType<'a>: Deref<Target = Self::HooksType> + 'a
     where
         Self: 'a;
     fn hooked_commands() -> &'static [LayerVulkanCommand];

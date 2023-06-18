@@ -148,7 +148,7 @@ pub struct MockGlobalHooksInfo<T: TestLayer> {
 }
 
 impl<T: TestLayer> GlobalHooksInfo for MockGlobalHooksInfo<T> {
-    type HookType = MockGlobalHooks;
+    type HooksType = MockGlobalHooks;
     type HooksRefType<'a> = MutexGuard<'a, MockGlobalHooks>;
     fn hooked_commands() -> &'static [LayerVulkanCommand] {
         T::hooked_global_commands()

@@ -15,10 +15,37 @@
 use ash::vk;
 use std::sync::Arc;
 use vulkan_layer::{
-    auto_deviceinfo_impl, auto_instanceinfo_impl,
+    auto_deviceinfo_impl, auto_globalhooksinfo_impl, auto_instanceinfo_impl,
     test_utils::{MockGlobalHooksInfo, MockInstanceInfo, TestLayer, TestLayerWrapper},
-    DeviceHooks, Global, InstanceHooks, Layer, LayerResult, LayerVulkanCommand,
+    DeviceHooks, Global, GlobalHooks, InstanceHooks, Layer, LayerResult, LayerVulkanCommand,
 };
+
+#[test]
+fn test_auto_globalhooksinfo_should_intercept_hooked_proc() {
+    #[derive(Default)]
+    struct Tag;
+    impl TestLayer for Tag {}
+
+    type MockLayer = Arc<TestLayerWrapper<Tag, TestGlobalHooks>>;
+    #[derive(Default)]
+    struct TestGlobalHooks;
+    #[auto_globalhooksinfo_impl]
+    impl GlobalHooks for TestGlobalHooks {
+        fn create_instance(
+            &self,
+            _p_create_info: &'static vk::InstanceCreateInfo,
+            _layer_instance_link: &vulkan_layer::VkLayerInstanceLink,
+            _p_allocator: Option<&'static vk::AllocationCallbacks>,
+        ) -> LayerResult<ash::prelude::VkResult<vk::Instance>> {
+            unimplemented!()
+        }
+    }
+    let hooked_commands = &Global::<MockLayer>::instance()
+        .layer_info
+        .hooked_commands()
+        .collect::<Vec<_>>();
+    assert_eq!(hooked_commands, &[LayerVulkanCommand::CreateInstance]);
+}
 
 #[test]
 fn test_auto_instanceinfo_should_intercept_hooked_proc() {
