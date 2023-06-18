@@ -668,7 +668,6 @@ mod create_destroy_instance {
     }
 
     #[test]
-    #[ignore]
     fn test_create_instance_with_0_api_version() {
         #[derive(Default)]
         struct Tag;

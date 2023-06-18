@@ -197,7 +197,11 @@ static VULKAN_COMMANDS: Lazy<BTreeMap<VulkanCommandName, VulkanCommand>> = Lazy:
                             dispatch_table,
                             version: application_info
                                 .map(|application_info| {
-                                    application_info.api_version.try_into().unwrap()
+                                    let mut api_version = application_info.api_version;
+                                    if api_version == 0 {
+                                        api_version = vk::API_VERSION_1_0;
+                                    }
+                                    api_version.try_into().unwrap()
                                 })
                                 .unwrap_or(ApiVersion::V1_0),
                             enabled_extensions,
