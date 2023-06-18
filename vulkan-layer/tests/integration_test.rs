@@ -13,18 +13,16 @@
 // limitations under the License.
 
 use ash::vk;
-use mockall::{
-    predicate::{always, eq, function},
-    Predicate,
-};
+use mockall::predicate::{eq, function};
 use std::{
     ffi::{CStr, CString},
     ptr::{null, null_mut},
     sync::Arc,
 };
 use vulkan_layer::{
-    test_utils::{TestLayer, VkLayerFunction, VkLayerInstanceCreateInfo, VkLayerInstanceLink},
-    Extension, Global, Layer, LayerResult, LayerVulkanCommand, VulkanBaseInStructChain,
+    test_utils::{TestLayer, VkLayerFunction, VkLayerInstanceCreateInfo},
+    Extension, Global, Layer, LayerResult, LayerVulkanCommand, VkLayerInstanceLink,
+    VulkanBaseInStructChain,
 };
 
 pub mod utils;
@@ -596,11 +594,18 @@ mod create_destroy_instance {
         let create_instance_info =
             vk::InstanceCreateInfo::builder().push_next(&mut layer_create_info);
 
-        fn match_layer_link_head(
-            layer_link: Option<&VkLayerInstanceLink>,
-        ) -> impl Predicate<vk::InstanceCreateInfo> {
-            let layer_link_ptr = layer_link.map_or(0, |layer_link| layer_link as *const _ as u64);
-            function(move |create_info: &vk::InstanceCreateInfo| {
+        fn match_create_instance(
+            next_layer_link: Option<&VkLayerInstanceLink>,
+            current_layer_link: &VkLayerInstanceLink,
+        ) -> impl Fn(
+            &vk::InstanceCreateInfo,
+            &VkLayerInstanceLink,
+            &Option<&vk::AllocationCallbacks>,
+        ) -> bool {
+            let next_layer_link_ptr =
+                next_layer_link.map_or(0, |layer_link| layer_link as *const _ as u64);
+            let current_layer_link_ptr = current_layer_link as *const _ as u64;
+            move |create_info, layer_instance_link, _| {
                 let mut p_next_chain: VulkanBaseInStructChain =
                     unsafe { (create_info.p_next as *const vk::BaseInStructure).as_ref() }.into();
                 let layer_link_head = p_next_chain.find_map(|in_struct| {
@@ -624,8 +629,9 @@ mod create_destroy_instance {
                     Some(head) => head,
                     None => return false,
                 };
-                layer_link_head as u64 == layer_link_ptr
-            })
+                layer_link_head as u64 == next_layer_link_ptr
+                    && layer_instance_link as *const _ as u64 == current_layer_link_ptr
+            }
         }
 
         {
@@ -635,7 +641,10 @@ mod create_destroy_instance {
                 let mut layer1_global_hooks = layer1_info.global_hooks.lock().unwrap();
                 layer1_global_hooks
                     .expect_create_instance()
-                    .with(match_layer_link_head(Some(&second_layer_link)), always())
+                    .withf_st(match_create_instance(
+                        Some(&second_layer_link),
+                        &first_layer_link,
+                    ))
                     .once()
                     .return_const(LayerResult::Unhandled);
             }
@@ -643,7 +652,7 @@ mod create_destroy_instance {
                 let mut layer2_global_hooks = layer2_info.global_hooks.lock().unwrap();
                 layer2_global_hooks
                     .expect_create_instance()
-                    .with(match_layer_link_head(None), always())
+                    .withf_st(match_create_instance(None, &second_layer_link))
                     .once()
                     .return_const(LayerResult::Unhandled);
             }
@@ -661,7 +670,24 @@ mod create_destroy_instance {
     #[test]
     #[ignore]
     fn test_create_instance_with_0_api_version() {
-        todo!()
+        #[derive(Default)]
+        struct Tag;
+        impl TestLayer for Tag {}
+
+        let app_info = vk::ApplicationInfo::builder().api_version(0);
+        let ctx = vk::InstanceCreateInfo::builder()
+            .application_info(&app_info)
+            .default_instance::<MockLayer<Tag>>();
+        let InstanceContext {
+            entry, instance, ..
+        } = ctx.as_ref();
+        let destroy_instance = unsafe {
+            entry.get_instance_proc_addr(
+                instance.handle(),
+                b"vkDestroyInstance\0".as_ptr() as *const i8,
+            )
+        };
+        assert!(destroy_instance.is_some());
     }
 
     #[test]

@@ -24,8 +24,9 @@ use ash::vk;
 pub mod global_simple_intercept;
 pub mod layer_trait;
 
+use crate::VkLayerInstanceLink;
 use global_simple_intercept::Extension;
-use layer_trait::{DeviceHooks, GlobalHooks, InstanceHooks, VulkanCommand as LayerVulkanCommand};
+use layer_trait::{DeviceHooks, InstanceHooks, VulkanCommand as LayerVulkanCommand};
 use smallvec::SmallVec;
 use thiserror::Error;
 
@@ -143,9 +144,17 @@ pub trait InstanceInfo: Send + Sync {
     fn hooks(&self) -> Self::HooksRefType<'_>;
 }
 
-// TODO: move GlobalHooks to this file, because how we should inject into the GlobalHooks can be
-// very different from the original API. We need to pass the next vkGetInstanceProcAddr to
-// the create_instance hook.
+pub trait GlobalHooks: Sync {
+    fn create_instance(
+        &self,
+        _p_create_info: &'static vk::InstanceCreateInfo,
+        _layer_instance_link: &VkLayerInstanceLink,
+        _p_allocator: Option<&'static vk::AllocationCallbacks>,
+    ) -> LayerResult<ash::prelude::VkResult<vk::Instance>> {
+        LayerResult::Unhandled
+    }
+}
+
 pub trait Layer: Default + GlobalHooks + 'static {
     const LAYER_NAME: &'static str;
     const SPEC_VERSION: u32;

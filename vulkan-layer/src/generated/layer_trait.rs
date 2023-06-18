@@ -5369,13 +5369,3 @@ pub trait InstanceHooks: Send + Sync {
         LayerResult::Unhandled
     }
 }
-
-pub trait GlobalHooks: Sync {
-    fn create_instance(
-        &self,
-        _p_create_info: &'static vk::InstanceCreateInfo,
-        _p_allocator: Option<&'static vk::AllocationCallbacks>,
-    ) -> LayerResult<VkResult<vk::Instance>> {
-        LayerResult::Unhandled
-    }
-}

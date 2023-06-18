@@ -34,11 +34,12 @@ mod generated;
 pub mod test_utils;
 mod vk_utils;
 
+pub use bindings::VkLayerInstanceLink;
 use bindings::{VkLayerDeviceCreateInfo, VkLayerFunction, VkLayerInstanceCreateInfo};
 pub use generated::{
     global_simple_intercept::Extension,
-    layer_trait::{DeviceHooks, GlobalHooks, InstanceHooks, VulkanCommand as LayerVulkanCommand},
-    ApiVersion, DeviceInfo, Feature, InstanceInfo, Layer, LayerResult,
+    layer_trait::{DeviceHooks, InstanceHooks, VulkanCommand as LayerVulkanCommand},
+    ApiVersion, DeviceInfo, Feature, GlobalHooks, InstanceInfo, Layer, LayerResult,
 };
 use generated::{
     global_simple_intercept::{DeviceDispatchTable, InstanceDispatchTable},
@@ -317,14 +318,13 @@ impl<T: Layer> Global<T> {
         let hooked = global
             .layer_info
             .hooked_commands()
-            .find(|command| command == &LayerVulkanCommand::CreateInstance)
-            .is_some();
+            .any(|command| command == LayerVulkanCommand::CreateInstance);
         let layer_result = if hooked {
-            global
-                .layer_info
-                .create_instance(unsafe { create_info.as_ref() }.unwrap(), unsafe {
-                    allocator.as_ref()
-                })
+            global.layer_info.create_instance(
+                unsafe { create_info.as_ref() }.unwrap(),
+                layer_info,
+                unsafe { allocator.as_ref() },
+            )
         } else {
             LayerResult::Unhandled
         };

@@ -70,7 +70,6 @@ class LayerTraitGenerator(OutputGenerator):
         self.outFile.write(generate_unhandled_command_comments(self.unhandled_commands.values()))
 
         dispatch_chain_type_to_lines: dict[DispatchChainType, list[str]] = {
-            DispatchChainType.GLOBAL: ["pub trait GlobalHooks: Sync {"],
             DispatchChainType.INSTANCE: ["pub trait InstanceHooks: Send + Sync {"],
             DispatchChainType.DEVICE: ["pub trait DeviceHooks: Send + Sync {"],
         }
@@ -90,11 +89,13 @@ class LayerTraitGenerator(OutputGenerator):
             for name, command in commands.items():
                 if name not in not_aliased_commands:
                     continue
-                dispatch_chain_type_to_lines[dispatch_type] += [
-                    f"    {command.to_string()} {{",
-                    f"        LayerResult::Unhandled",
-                    f"    }}",
-                ]
+                hooks_trait_lines = dispatch_chain_type_to_lines.get(dispatch_type, None)
+                if hooks_trait_lines is not None:
+                    hooks_trait_lines += [
+                        f"    {command.to_string()} {{",
+                        f"        LayerResult::Unhandled",
+                        f"    }}",
+                    ]
                 original_name = command.vk_xml_cmd.name
                 enum_variant_name = snake_case_to_upper_camel_case(command.name)
                 command_enum.append(f"    {enum_variant_name},")

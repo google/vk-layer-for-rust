@@ -1,9 +1,22 @@
+// Copyright 2023 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 use crate::{
-    DeviceHooks, DeviceInfo, GlobalHooks, InstanceHooks, InstanceInfo, Layer, LayerResult,
-    LayerVulkanCommand,
+    DeviceInfo, GlobalHooks, InstanceInfo, Layer, LayerResult, LayerVulkanCommand,
+    VkLayerInstanceLink,
 };
 use ash::{prelude::VkResult, vk};
-use mockall::mock;
 use std::{
     borrow::Borrow,
     collections::HashMap,
@@ -14,8 +27,15 @@ use std::{
 
 pub use crate::bindings::{
     VkLayerDeviceCreateInfo, VkLayerDeviceLink, VkLayerFunction, VkLayerInstanceCreateInfo,
-    VkLayerInstanceLink,
 };
+
+mod device_hooks_mock;
+mod global_hooks_mock;
+mod instance_hooks_mock;
+
+use device_hooks_mock::MockDeviceHooks;
+use global_hooks_mock::MockGlobalHooks;
+use instance_hooks_mock::MockInstanceHooks;
 
 pub struct Del<T> {
     data: T,
@@ -68,40 +88,6 @@ impl<T> Borrow<T> for ArcDel<T> {
 impl<T: Default> Default for ArcDel<T> {
     fn default() -> Self {
         Self(Arc::new(Del::new(Default::default(), |_| {})))
-    }
-}
-
-mock! {
-    pub GlobalHooks {}
-    impl GlobalHooks for GlobalHooks {
-        fn create_instance(
-            &self,
-            _p_create_info: &'static vk::InstanceCreateInfo,
-            _p_allocator: Option<&'static vk::AllocationCallbacks>,
-        ) -> LayerResult<VkResult<vk::Instance>>;
-    }
-}
-
-// We don't automock the original trait, because that hurts compilation speed significantly.
-mock! {
-    pub InstanceHooks {}
-    impl InstanceHooks for InstanceHooks {
-        fn destroy_surface_khr(
-            &self,
-            surface: vk::SurfaceKHR,
-            p_allocator: Option<&'static vk::AllocationCallbacks>,
-        ) -> LayerResult<()>;
-    }
-}
-
-mock! {
-    pub DeviceHooks {}
-    impl DeviceHooks for DeviceHooks {
-        fn destroy_image(
-            &self,
-            _image: vk::Image,
-            _p_allocator: Option<&'static vk::AllocationCallbacks>,
-        ) -> LayerResult<()>;
     }
 }
 
@@ -226,12 +212,14 @@ where
     fn create_instance(
         &self,
         p_create_info: &'static vk::InstanceCreateInfo,
+        layer_instance_link: &VkLayerInstanceLink,
         p_allocator: Option<&'static vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::Instance>> {
-        self.global_hooks
-            .lock()
-            .unwrap()
-            .create_instance(p_create_info, p_allocator)
+        self.global_hooks.lock().unwrap().create_instance(
+            p_create_info,
+            layer_instance_link,
+            p_allocator,
+        )
     }
 }
 

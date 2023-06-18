@@ -26,9 +26,10 @@ use vulkan_layer::{
     fill_vk_out_array,
     test_utils::{
         Del, TestLayerWrapper, VkLayerDeviceCreateInfo, VkLayerDeviceLink, VkLayerFunction,
-        VkLayerInstanceCreateInfo, VkLayerInstanceLink,
+        VkLayerInstanceCreateInfo,
     },
     ApiVersion, Extension, Feature, Global, IsCommandEnabled, Layer, LayerVulkanCommand,
+    VkLayerInstanceLink,
 };
 
 #[derive(Clone)]
