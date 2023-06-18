@@ -644,6 +644,9 @@ impl<T: Layer> Global<T> {
         device: vk::Device,
         p_allocator: *const vk::AllocationCallbacks,
     ) {
+        if device == vk::Device::null() {
+            return;
+        }
         let global = Self::instance();
         let device_info = match Arc::try_unwrap(
             global

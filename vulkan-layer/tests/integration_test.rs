@@ -726,9 +726,14 @@ mod create_destroy_instance {
 }
 
 #[test]
-#[ignore]
 fn test_destroy_device_with_null_handle() {
-    todo!()
+    #[derive(Default)]
+    struct Tag;
+    impl TestLayer for Tag {}
+    let ctx = vk::InstanceCreateInfo::builder()
+        .default_instance::<MockLayer<Tag>>()
+        .default_device::<MockLayer<Tag>>();
+    unsafe { (ctx.device.fp_v1_0().destroy_device)(vk::Device::null(), null()) };
 }
 
 mod device_commands {

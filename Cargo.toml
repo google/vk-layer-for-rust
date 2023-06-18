@@ -5,6 +5,12 @@ members = [
     "vulkan-layer-macros",
     "xtask",
 ]
+# Do not operate on vulkan-layer-macros by default, because it doesn't work well with panic=abort
+# for testing.
+default-members = [
+    "vulkan-layer",
+    "xtask",
+]
 
 [profile.dev]
 panic = "abort"
