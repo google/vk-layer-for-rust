@@ -16,13 +16,15 @@ use ash::vk;
 use mockall::predicate::{eq, function};
 use std::{
     ffi::{CStr, CString},
+    iter::zip,
+    mem::MaybeUninit,
     ptr::{null, null_mut},
     sync::Arc,
 };
 use vulkan_layer::{
     test_utils::{TestLayer, VkLayerFunction, VkLayerInstanceCreateInfo},
-    Extension, Global, Layer, LayerResult, LayerVulkanCommand, VkLayerInstanceLink,
-    VulkanBaseInStructChain,
+    Extension, ExtensionProperties, Global, Layer, LayerResult, LayerVulkanCommand,
+    VkLayerInstanceLink, VulkanBaseInStructChain,
 };
 
 pub mod utils;
@@ -763,6 +765,81 @@ fn test_destroy_device_with_null_handle() {
     unsafe { (ctx.device.fp_v1_0().destroy_device)(vk::Device::null(), null()) };
 }
 
+mod get_device_proc_addr {
+    use super::*;
+    #[test]
+    fn test_should_return_null_for_global_commands() {
+        #[derive(Default)]
+        struct Tag;
+        impl TestLayer for Tag {}
+        let ctx = vk::InstanceCreateInfo::builder()
+            .default_instance::<MockLayer<Tag>>()
+            .default_device::<MockLayer<Tag>>();
+
+        let global_commands = [
+            "vkEnumerateInstanceVersion",
+            "vkEnumerateInstanceExtensionProperties",
+            "vkEnumerateInstanceLayerProperties",
+            "vkCreateInstance",
+        ];
+        let DeviceContext {
+            device,
+            instance_context,
+            ..
+        } = ctx.as_ref();
+        for global_command in &global_commands {
+            let global_command = CString::new(*global_command).unwrap();
+            let proc_addr = unsafe {
+                (instance_context.instance.fp_v1_0().get_device_proc_addr)(
+                    device.handle(),
+                    global_command.as_ptr(),
+                )
+            };
+            assert!(
+                proc_addr.is_none(),
+                "{} should be null",
+                global_command.to_string_lossy()
+            );
+        }
+    }
+
+    #[test]
+    #[ignore]
+    fn test_should_return_null_for_instance_commands() {
+        todo!()
+    }
+
+    #[test]
+    #[ignore]
+    fn test_should_return_null_for_available_but_not_enabled_commands() {
+        todo!()
+    }
+
+    #[test]
+    #[ignore]
+    fn test_should_return_fp_for_requested_core_version_device_commands() {
+        todo!()
+    }
+
+    #[test]
+    #[ignore]
+    fn test_should_return_null_for_unrequested_core_version_device_commands() {
+        todo!()
+    }
+
+    #[test]
+    #[ignore]
+    fn test_should_return_fp_for_enabled_extension_device_commands() {
+        todo!()
+    }
+
+    #[test]
+    #[ignore]
+    fn test_should_return_fp_for_enabled_layer_extension_device_commands() {
+        todo!()
+    }
+}
+
 mod device_commands {
     use super::*;
     #[test]
@@ -820,5 +897,201 @@ mod device_commands {
             .expect_destroy_image()
             .never();
         unsafe { device.destroy_image(vk::Image::null(), None) };
+    }
+}
+
+mod enumerate_device_extensions {
+    use super::*;
+    #[test]
+    fn test_should_return_defined_extensions() {
+        #[derive(Default)]
+        struct Tag;
+        impl TestLayer for Tag {
+            const DEVICE_EXTENSIONS: &'static [ExtensionProperties] = &[ExtensionProperties {
+                name: Extension::KHRExternalMemory,
+                spec_version: 1,
+            }];
+        }
+        let ctx = vk::InstanceCreateInfo::builder().default_instance::<MockLayer<Tag>>();
+        let InstanceContext { instance, .. } = ctx.as_ref();
+        unsafe { InstanceData::from_handle(instance.handle()) }
+            .set_available_device_extensions(&[]);
+        let physical_device = *unsafe { instance.enumerate_physical_devices() }
+            .unwrap()
+            .first()
+            .unwrap();
+        let layer_name = CString::new(MockLayer::<Tag>::LAYER_NAME).unwrap();
+        let properties = {
+            let mut property_count = MaybeUninit::uninit();
+            let res = unsafe {
+                (instance.fp_v1_0().enumerate_device_extension_properties)(
+                    physical_device,
+                    layer_name.as_ptr(),
+                    property_count.as_mut_ptr(),
+                    null_mut(),
+                )
+            };
+            assert_eq!(res, vk::Result::SUCCESS);
+            let mut property_count = unsafe { property_count.assume_init() };
+            let mut properties = Vec::<vk::ExtensionProperties>::new();
+            properties.resize_with(property_count.try_into().unwrap(), Default::default);
+            let res = unsafe {
+                (instance.fp_v1_0().enumerate_device_extension_properties)(
+                    physical_device,
+                    layer_name.as_ptr(),
+                    &mut property_count,
+                    properties.as_mut_ptr(),
+                )
+            };
+            assert_eq!(res, vk::Result::SUCCESS);
+            properties.into_boxed_slice()
+        };
+        let expected_properties = Tag::DEVICE_EXTENSIONS
+            .iter()
+            .cloned()
+            .map(Into::<vk::ExtensionProperties>::into)
+            .collect::<Vec<_>>();
+        assert_eq!(expected_properties.len(), properties.len());
+        for (expected_property, property) in zip(expected_properties.iter(), properties.iter()) {
+            assert_eq!(expected_property.spec_version, property.spec_version);
+            let expected_name_bytes = expected_property
+                .extension_name
+                .iter()
+                .take_while(|byte| **byte != b'\0'.try_into().unwrap())
+                .collect::<Vec<_>>();
+            let name_bytes = property
+                .extension_name
+                .iter()
+                .take_while(|byte| **byte != b'\0'.try_into().unwrap())
+                .collect::<Vec<_>>();
+            assert_eq!(expected_name_bytes, name_bytes);
+        }
+    }
+
+    // TODO: test if the loader will add the implicit layer extension in e2e test.
+
+    #[test]
+    fn test_should_call_into_the_next_chain_if_layer_name_doesnt_match() {
+        #[derive(Default)]
+        struct Tag;
+        impl TestLayer for Tag {
+            const DEVICE_EXTENSIONS: &'static [ExtensionProperties] = &[ExtensionProperties {
+                name: Extension::KHRExternalMemory,
+                spec_version: 1,
+            }];
+        }
+        let ctx = vk::InstanceCreateInfo::builder().default_instance::<MockLayer<Tag>>();
+        let InstanceContext { instance, .. } = ctx.as_ref();
+        let available_device_extensions = &[Extension::KHRSwapchain];
+        unsafe { InstanceData::from_handle(instance.handle()) }
+            .set_available_device_extensions(available_device_extensions);
+        let physical_device = *unsafe { instance.enumerate_physical_devices() }
+            .unwrap()
+            .first()
+            .unwrap();
+        let properties = {
+            let mut property_count = MaybeUninit::uninit();
+            let res = unsafe {
+                (instance.fp_v1_0().enumerate_device_extension_properties)(
+                    physical_device,
+                    null(),
+                    property_count.as_mut_ptr(),
+                    null_mut(),
+                )
+            };
+            assert_eq!(res, vk::Result::SUCCESS);
+            let mut property_count = unsafe { property_count.assume_init() };
+            let mut properties = Vec::<vk::ExtensionProperties>::new();
+            properties.resize_with(property_count.try_into().unwrap(), Default::default);
+            let res = unsafe {
+                (instance.fp_v1_0().enumerate_device_extension_properties)(
+                    physical_device,
+                    null(),
+                    &mut property_count,
+                    properties.as_mut_ptr(),
+                )
+            };
+            assert_eq!(res, vk::Result::SUCCESS);
+            properties.into_boxed_slice()
+        };
+        assert_eq!(available_device_extensions.len(), properties.len());
+        for (expected_extension_name, property) in
+            zip(available_device_extensions.iter(), properties.iter())
+        {
+            let expected_name: &str = expected_extension_name.clone().into();
+            let actual_name = unsafe {
+                std::slice::from_raw_parts(
+                    property.extension_name.as_ptr() as *const u8,
+                    property.extension_name.len(),
+                )
+            };
+            let actual_name = CStr::from_bytes_until_nul(actual_name)
+                .unwrap()
+                .to_str()
+                .unwrap();
+            assert_eq!(expected_name, actual_name);
+        }
+    }
+
+    #[test]
+    fn test_should_return_defined_extensions_with_null_physical_device() {
+        #[derive(Default)]
+        struct Tag;
+        impl TestLayer for Tag {
+            const DEVICE_EXTENSIONS: &'static [ExtensionProperties] = &[ExtensionProperties {
+                name: Extension::KHRExternalMemory,
+                spec_version: 1,
+            }];
+        }
+        let ctx = vk::InstanceCreateInfo::builder().default_instance::<MockLayer<Tag>>();
+        let InstanceContext { instance, .. } = ctx.as_ref();
+        unsafe { InstanceData::from_handle(instance.handle()) }
+            .set_available_device_extensions(&[]);
+        let layer_name = CString::new(MockLayer::<Tag>::LAYER_NAME).unwrap();
+        let properties = {
+            let mut property_count = MaybeUninit::uninit();
+            let res = unsafe {
+                (instance.fp_v1_0().enumerate_device_extension_properties)(
+                    vk::PhysicalDevice::null(),
+                    layer_name.as_ptr(),
+                    property_count.as_mut_ptr(),
+                    null_mut(),
+                )
+            };
+            assert_eq!(res, vk::Result::SUCCESS);
+            let mut property_count = unsafe { property_count.assume_init() };
+            let mut properties = Vec::<vk::ExtensionProperties>::new();
+            properties.resize_with(property_count.try_into().unwrap(), Default::default);
+            let res = unsafe {
+                (instance.fp_v1_0().enumerate_device_extension_properties)(
+                    vk::PhysicalDevice::null(),
+                    layer_name.as_ptr(),
+                    &mut property_count,
+                    properties.as_mut_ptr(),
+                )
+            };
+            assert_eq!(res, vk::Result::SUCCESS);
+            properties.into_boxed_slice()
+        };
+        let expected_properties = Tag::DEVICE_EXTENSIONS
+            .iter()
+            .cloned()
+            .map(Into::<vk::ExtensionProperties>::into)
+            .collect::<Vec<_>>();
+        assert_eq!(expected_properties.len(), properties.len());
+        for (expected_property, property) in zip(expected_properties.iter(), properties.iter()) {
+            assert_eq!(expected_property.spec_version, property.spec_version);
+            let expected_name_bytes = expected_property
+                .extension_name
+                .iter()
+                .take_while(|byte| **byte != b'\0'.try_into().unwrap())
+                .collect::<Vec<_>>();
+            let name_bytes = property
+                .extension_name
+                .iter()
+                .take_while(|byte| **byte != b'\0'.try_into().unwrap())
+                .collect::<Vec<_>>();
+            assert_eq!(expected_name_bytes, name_bytes);
+        }
     }
 }

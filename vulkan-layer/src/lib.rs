@@ -39,8 +39,8 @@ use bindings::{VkLayerDeviceCreateInfo, VkLayerFunction, VkLayerInstanceCreateIn
 pub use generated::{
     global_simple_intercept::Extension,
     layer_trait::{DeviceHooks, InstanceHooks, VulkanCommand as LayerVulkanCommand},
-    ApiVersion, DeviceInfo, Feature, GlobalHooks, GlobalHooksInfo, InstanceInfo, Layer,
-    LayerResult,
+    ApiVersion, DeviceInfo, ExtensionProperties, Feature, GlobalHooks, GlobalHooksInfo,
+    InstanceInfo, Layer, LayerResult,
 };
 use generated::{
     global_simple_intercept::{DeviceDispatchTable, InstanceDispatchTable},
@@ -803,14 +803,21 @@ impl<T: Layer> Global<T> {
                 )
             };
         }
-        // Safe because the caller guarantees `p_property_count` is a valid pointer to u32 according
-        // to VUID-vkEnumerateDeviceExtensionProperties-pPropertyCount-parameter.
-        let property_count = unsafe { p_property_count.as_mut() }.expect(concat!(
+        let property_count = NonNull::new(p_property_count).expect(concat!(
             "`p_property_count` must be a valid pointer to u32 according to ",
             "VUID-vkEnumerateDeviceExtensionProperties-pPropertyCount-parameter."
         ));
-        *property_count = 0;
-        vk::Result::SUCCESS
+        // Safe because the caller guarantees `p_property_count` is a valid pointer to u32 according
+        // to VUID-vkEnumerateDeviceExtensionProperties-pPropertyCount-parameter, and if
+        // `p_property_count` doesn't point to 0, p_properties is either NULL or a valid pointer to
+        // an array of `p_property_count` `vk::ExtensionProperties` structures according to
+        // VUID-vkEnumerateDeviceExtensionProperties-pProperties-parameter.
+        let device_extensions = T::DEVICE_EXTENSIONS
+            .iter()
+            .cloned()
+            .map(Into::<vk::ExtensionProperties>::into)
+            .collect::<Vec<_>>();
+        unsafe { fill_vk_out_array(&device_extensions, property_count, p_properties) }
     }
 
     /// # Safety

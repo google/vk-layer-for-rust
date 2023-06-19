@@ -104,7 +104,7 @@ class LayerTraitGenerator(OutputGenerator):
                 )
         command_enum += ["}"]
         try_from_command_impl += [
-            "            _ => Err(TryFromVulkanCommandError::UnknownExtension(value.to_owned())),",
+            "            _ => Err(TryFromVulkanCommandError::UnknownCommand(value.to_owned())),",
             "        }",
             "    }",
             "}",

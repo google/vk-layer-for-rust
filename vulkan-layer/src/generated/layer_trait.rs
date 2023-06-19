@@ -1401,9 +1401,7 @@ impl TryFrom<&str> for VulkanCommand {
             "vkCmdDrawMeshTasksIndirectCountEXT" => {
                 Ok(VulkanCommand::CmdDrawMeshTasksIndirectCountExt)
             }
-            _ => Err(TryFromVulkanCommandError::UnknownExtension(
-                value.to_owned(),
-            )),
+            _ => Err(TryFromVulkanCommandError::UnknownCommand(value.to_owned())),
         }
     }
 }

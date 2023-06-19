@@ -14,7 +14,7 @@
 
 use std::{
     borrow::Borrow,
-    ffi::{c_void, CStr},
+    ffi::{c_void, CStr, CString},
     ops::Deref,
     sync::Arc,
 };
@@ -39,7 +39,7 @@ pub enum TryFromExtensionError {
 #[derive(Error, Debug)]
 pub enum TryFromVulkanCommandError {
     #[error("unknown command `{0}`")]
-    UnknownExtension(String),
+    UnknownCommand(String),
 }
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone)]
@@ -164,11 +164,33 @@ pub trait GlobalHooksInfo: Send + Sync {
     fn hooks(&self) -> Self::HooksRefType<'_>;
 }
 
+#[derive(Clone)]
+pub struct ExtensionProperties {
+    pub name: Extension,
+    pub spec_version: u32,
+}
+
+impl From<ExtensionProperties> for vk::ExtensionProperties {
+    fn from(ExtensionProperties { name, spec_version }: ExtensionProperties) -> Self {
+        let name: &str = name.into();
+        let name = CString::new(name).unwrap();
+        let byte_len = name.as_bytes().len();
+        let name = unsafe { std::slice::from_raw_parts(name.as_ptr(), byte_len) };
+        let mut res = Self::builder()
+            .extension_name([0; vk::MAX_EXTENSION_NAME_SIZE])
+            .spec_version(spec_version)
+            .build();
+        res.extension_name[0..byte_len].copy_from_slice(name);
+        res
+    }
+}
+
 pub trait Layer: Sync + Default + 'static {
     const LAYER_NAME: &'static str;
     const SPEC_VERSION: u32;
     const IMPLEMENTATION_VERSION: u32;
     const LAYER_DESCRIPTION: &'static str;
+    const DEVICE_EXTENSIONS: &'static [ExtensionProperties] = &[];
 
     type GlobalHooksInfo: GlobalHooksInfo;
     type InstanceInfo: InstanceInfo;

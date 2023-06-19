@@ -12,7 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::{generated::GlobalHooksInfo, DeviceInfo, InstanceInfo, Layer, LayerVulkanCommand};
+use crate::{
+    generated::GlobalHooksInfo, DeviceInfo, ExtensionProperties, InstanceInfo, Layer,
+    LayerVulkanCommand,
+};
 use ash::vk;
 use mockall::mock;
 use std::{
@@ -164,6 +167,7 @@ pub trait TestLayer: Send + Sync + Default + 'static {
     const LAYER_DESCRIPTION: &'static str = "";
     const IMPLEMENTATION_VERSION: u32 = 1;
     const SPEC_VERSION: u32 = vk::API_VERSION_1_1;
+    const DEVICE_EXTENSIONS: &'static [ExtensionProperties] = &[];
 
     fn hooked_global_commands() -> &'static [LayerVulkanCommand] {
         &[]
@@ -258,7 +262,8 @@ where
     const LAYER_NAME: &'static str = <T as TestLayer>::LAYER_NAME;
     const LAYER_DESCRIPTION: &'static str = <T as TestLayer>::LAYER_DESCRIPTION;
     const IMPLEMENTATION_VERSION: u32 = <T as TestLayer>::IMPLEMENTATION_VERSION;
-    const SPEC_VERSION: u32 = <T as TestLayer>::SPEC_VERSION;
+    const SPEC_VERSION: u32 = T::SPEC_VERSION;
+    const DEVICE_EXTENSIONS: &'static [ExtensionProperties] = T::DEVICE_EXTENSIONS;
 
     fn get_global_hooks_info(&self) -> &Self::GlobalHooksInfo {
         &self.global_hooks_info

@@ -116,7 +116,7 @@ class CommandDispatchInfo:
     @staticmethod
     def get_feature_enum_lines(dispatch_infos: list[CommandDispatchInfo]) -> list[str]:
         extension_enum_lines = [
-            "#[derive(PartialEq, Eq, PartialOrd, Ord, Clone)]",
+            "#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Debug)]",
             "pub enum Extension {",
         ]
         extension_enum_try_from_lines = [
@@ -125,6 +125,11 @@ class CommandDispatchInfo:
             "",
             "    fn try_from(value: &str) -> Result<Self, Self::Error> {",
             "        match value {",
+        ]
+        str_from_extension_enum_lines = [
+            "impl From<Extension> for &'static str {",
+            "    fn from(value: Extension) -> &'static str {",
+            "         match value {",
         ]
         for dispatch_info in dispatch_infos:
             if dispatch_info.core_info is not None:
@@ -136,6 +141,9 @@ class CommandDispatchInfo:
                 extension_enum_try_from_lines.append(
                     f'            "{extension_info.name}" => Ok(Extension::{variant_name}),'
                 )
+                str_from_extension_enum_lines.append(
+                    f'            Extension::{variant_name} => "{extension_info.name}",'
+                )
             else:
                 assert False, "A dispatch info should be either from an extension or from the core"
 
@@ -146,7 +154,19 @@ class CommandDispatchInfo:
             "    }",
             "}",
         ]
-        return extension_enum_lines + ["\n"] + extension_enum_try_from_lines + ["\n"]
+        str_from_extension_enum_lines += [
+            "        }",
+            "    }",
+            "}",
+        ]
+        return (
+            extension_enum_lines
+            + ["\n"]
+            + extension_enum_try_from_lines
+            + ["\n"]
+            + str_from_extension_enum_lines
+            + ["\n"]
+        )
 
     @staticmethod
     def get_disapatch_tables_impl_lines(

@@ -29,8 +29,8 @@ use vulkan_layer::{
         Del, TestLayerWrapper, VkLayerDeviceCreateInfo, VkLayerDeviceLink, VkLayerFunction,
         VkLayerInstanceCreateInfo,
     },
-    ApiVersion, Extension, Feature, Global, IsCommandEnabled, Layer, LayerVulkanCommand,
-    VkLayerInstanceLink,
+    ApiVersion, Extension, ExtensionProperties, Feature, Global, IsCommandEnabled, Layer,
+    LayerVulkanCommand, VkLayerInstanceLink,
 };
 
 #[derive(Clone)]
@@ -443,12 +443,36 @@ static VULKAN_COMMANDS: Lazy<BTreeMap<VulkanCommandName, VulkanCommand>> = Lazy:
             VulkanCommand {
                 proc: {
                     extern "system" fn enumerate_device_extension_properties(
-                        _: vk::PhysicalDevice,
-                        _layer_name: *const c_char,
-                        _property_count: *mut u32,
-                        _properties: *mut vk::ExtensionProperties,
+                        physical_device: vk::PhysicalDevice,
+                        layer_name: *const c_char,
+                        property_count: *mut u32,
+                        properties: *mut vk::ExtensionProperties,
                     ) -> vk::Result {
-                        unimplemented!()
+                        assert_ne!(physical_device, vk::PhysicalDevice::null());
+                        assert_eq!(layer_name, null());
+                        let physical_device_data =
+                            unsafe { PhysicalDeviceData::from_handle(physical_device) };
+                        let instance_data = unsafe {
+                            InstanceData::from_handle(physical_device_data.owner_instance)
+                        };
+                        let available_extensions =
+                            instance_data.available_device_extensions.lock().unwrap();
+                        let available_extensions = available_extensions.as_ref().expect(concat!(
+                            "The caller must set available extensions before querying the ",
+                            "available extensions."
+                        ));
+                        let out_properties = available_extensions
+                            .iter()
+                            .map(|name| -> vk::ExtensionProperties {
+                                ExtensionProperties {
+                                    name: name.clone(),
+                                    spec_version: 1,
+                                }
+                                .into()
+                            })
+                            .collect::<Vec<_>>();
+                        let property_count = NonNull::new(property_count).unwrap();
+                        unsafe { fill_vk_out_array(&out_properties, property_count, properties) }
                     }
                     unsafe {
                         std::mem::transmute(
