@@ -18,6 +18,7 @@ use std::{
     borrow::Borrow,
     collections::{BTreeMap, BTreeSet},
     ffi::{c_char, c_void, CStr},
+    marker::PhantomData,
     pin::Pin,
     ptr::{null, null_mut, NonNull},
     sync::{Arc, Mutex},
@@ -675,18 +676,19 @@ pub fn create_entry<T: Layer>() -> ash::Entry {
     }
 }
 
-pub struct InstanceContext {
+pub struct InstanceContext<T: Layer> {
     pub entry: ash::Entry,
     pub instance: ash::Instance,
     pub next_entry: ash::Entry,
+    _marker: PhantomData<T>,
 }
 
-pub trait DelInstanceContextExt {
-    fn default_device<U: Layer>(self) -> Del<DeviceContext>;
+pub trait DelInstanceContextExt<T: Layer> {
+    fn default_device(self) -> Del<DeviceContext<T>>;
 }
 
-impl DelInstanceContextExt for Del<InstanceContext> {
-    fn default_device<U: Layer>(self) -> Del<DeviceContext> {
+impl<T: Layer> DelInstanceContextExt<T> for Del<InstanceContext<T>> {
+    fn default_device(self) -> Del<DeviceContext<T>> {
         let physical_device = unsafe {
             self.instance
                 .enumerate_physical_devices()
@@ -747,17 +749,17 @@ impl DelInstanceContextExt for Del<InstanceContext> {
     }
 }
 
-pub struct DeviceContext {
+pub struct DeviceContext<T: Layer> {
     pub device: ash::Device,
-    pub instance_context: Del<InstanceContext>,
+    pub instance_context: Del<InstanceContext<T>>,
 }
 
 pub trait InstanceCreateInfoExt {
-    fn default_instance<T: Layer>(self) -> Del<InstanceContext>;
+    fn default_instance<T: Layer>(self) -> Del<InstanceContext<T>>;
 }
 
 impl InstanceCreateInfoExt for vk::InstanceCreateInfoBuilder<'_> {
-    fn default_instance<T: Layer>(self) -> Del<InstanceContext> {
+    fn default_instance<T: Layer>(self) -> Del<InstanceContext<T>> {
         let entry = create_entry::<T>();
         let mut layer_link = VkLayerInstanceLink {
             pNext: null_mut(),
@@ -783,6 +785,7 @@ impl InstanceCreateInfoExt for vk::InstanceCreateInfoBuilder<'_> {
                     get_instance_proc_addr,
                 })
             },
+            _marker: Default::default(),
         };
         Del::new(context, move |context| {
             unsafe { context.instance.destroy_instance(None) };

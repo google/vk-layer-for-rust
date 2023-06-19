@@ -759,7 +759,7 @@ fn test_destroy_device_with_null_handle() {
     impl TestLayer for Tag {}
     let ctx = vk::InstanceCreateInfo::builder()
         .default_instance::<MockLayer<Tag>>()
-        .default_device::<MockLayer<Tag>>();
+        .default_device();
     unsafe { (ctx.device.fp_v1_0().destroy_device)(vk::Device::null(), null()) };
 }
 
@@ -776,7 +776,7 @@ mod device_commands {
         }
         let ctx = vk::InstanceCreateInfo::builder()
             .default_instance::<MockLayer<Tag>>()
-            .default_device::<MockLayer<Tag>>();
+            .default_device();
         let DeviceContext { device, .. } = ctx.as_ref();
         let device_info = Global::<MockLayer<Tag>>::instance()
             .layer_info
@@ -807,7 +807,7 @@ mod device_commands {
         }
         let ctx = vk::InstanceCreateInfo::builder()
             .default_instance::<MockLayer<Tag>>()
-            .default_device::<MockLayer<Tag>>();
+            .default_device();
         let DeviceContext { device, .. } = ctx.as_ref();
         let device_info = Global::<MockLayer<Tag>>::instance()
             .layer_info
