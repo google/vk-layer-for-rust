@@ -86,6 +86,12 @@ impl From<u32> for ApiVersion {
     }
 }
 
+impl From<ApiVersion> for u32 {
+    fn from(value: ApiVersion) -> Self {
+        vk::make_api_version(0, value.major.into(), value.minor.into(), 0)
+    }
+}
+
 #[must_use]
 #[derive(Clone)]
 pub enum LayerResult<T> {

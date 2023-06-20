@@ -25,5 +25,11 @@ mock! {
             _image: vk::Image,
             _p_allocator: Option<&'static vk::AllocationCallbacks>,
         ) -> LayerResult<()>;
+
+        fn destroy_sampler_ycbcr_conversion(
+            &self,
+            _ycbcr_conversion: vk::SamplerYcbcrConversion,
+            _p_allocator: Option<&'static vk::AllocationCallbacks>,
+        ) -> LayerResult<()>;
     }
 }

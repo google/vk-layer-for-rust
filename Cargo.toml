@@ -15,5 +15,8 @@ default-members = [
 [profile.dev]
 panic = "abort"
 
+[profile.dev.build-override]
+opt-level = 3
+
 [profile.release]
 panic = "abort"

@@ -12,7 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use ash::vk::{self, Handle};
+use ash::{
+    prelude::VkResult,
+    vk::{self, Handle},
+};
 use once_cell::sync::Lazy;
 use std::{
     borrow::Borrow,
@@ -21,12 +24,12 @@ use std::{
     marker::PhantomData,
     pin::Pin,
     ptr::{null, null_mut, NonNull},
-    sync::{Arc, Mutex},
+    sync::{Arc, Mutex, Weak},
 };
 use vulkan_layer::{
     fill_vk_out_array,
     test_utils::{
-        Del, TestLayerWrapper, VkLayerDeviceCreateInfo, VkLayerDeviceLink, VkLayerFunction,
+        ArcDel, Del, TestLayerWrapper, VkLayerDeviceCreateInfo, VkLayerDeviceLink, VkLayerFunction,
         VkLayerInstanceCreateInfo,
     },
     ApiVersion, Extension, ExtensionProperties, Feature, Global, IsCommandEnabled, Layer,
@@ -66,6 +69,38 @@ impl From<LayerVulkanCommand> for VulkanCommandName {
     }
 }
 
+trait ToVulkanHandle: Sized {
+    type Handle: vk::Handle;
+    fn into_vulkan_handle(self: Arc<Self>) -> Self::Handle {
+        Self::Handle::from_raw((Arc::into_raw(self) as usize).try_into().unwrap())
+    }
+
+    #[deny(unsafe_op_in_unsafe_fn)]
+    unsafe fn destroy(handle: Self::Handle) {
+        let raw_handle: usize = handle.as_raw().try_into().unwrap();
+        let ptr = raw_handle as *const Self;
+        let last_object = unsafe { Arc::from_raw(ptr) };
+        let last_object = Arc::into_inner(last_object).unwrap_or_else(|| {
+            panic!("Object {:?} {:#20x} leaks.", Self::Handle::TYPE, raw_handle)
+        });
+        drop(last_object)
+    }
+}
+
+pub trait FromVulkanHandle<T: vk::Handle>: Sized {
+    #[deny(unsafe_op_in_unsafe_fn)]
+    unsafe fn from_handle(handle: T) -> Arc<Self> {
+        let raw_handle: usize = handle.as_raw().try_into().unwrap();
+        let ptr = raw_handle as *const Self;
+        unsafe {
+            Arc::increment_strong_count(ptr);
+            Arc::from_raw(ptr)
+        }
+    }
+}
+
+impl<T: vk::Handle, U: ToVulkanHandle<Handle = T>> FromVulkanHandle<T> for U {}
+
 #[repr(C)]
 struct InstanceDispatchTable {
     _magic_number: u32,
@@ -88,16 +123,12 @@ pub struct InstanceData {
     _dispatch_table: *const c_void,
     dispatch_table: Pin<Box<InstanceDispatchTable>>,
     version: ApiVersion,
+    supported_device_version: Mutex<ApiVersion>,
     enabled_extensions: BTreeSet<Extension>,
-    physical_devices: Box<[Pin<Box<PhysicalDeviceData>>]>,
+    physical_devices: Box<[Del<vk::PhysicalDevice>]>,
     available_device_extensions: Mutex<Option<BTreeSet<Extension>>>,
 }
 impl InstanceData {
-    #[deny(unsafe_op_in_unsafe_fn)]
-    pub unsafe fn from_handle<'a>(handle: vk::Instance) -> &'a Self {
-        unsafe { (handle.as_raw() as *const InstanceData).as_ref() }.unwrap()
-    }
-
     pub fn set_available_device_extensions(&self, available_device_extensions: &[Extension]) {
         let mut self_available_device_extensions = self.available_device_extensions.lock().unwrap();
         *self_available_device_extensions =
@@ -121,20 +152,24 @@ impl InstanceData {
             )
             .is_none())
     }
+
+    pub fn set_supported_device_version(&self, api_version: &ApiVersion) {
+        *self.supported_device_version.lock().unwrap() = *api_version;
+    }
+}
+impl ToVulkanHandle for InstanceData {
+    type Handle = vk::Instance;
 }
 
 #[repr(C)]
 struct PhysicalDeviceData {
     // Should be the same as the owner VkInstance.
     _dispatch_table: *const c_void,
-    owner_instance: vk::Instance,
+    owner_instance: Weak<InstanceData>,
     queue_family_properties: Vec<vk::QueueFamilyProperties>,
 }
-impl PhysicalDeviceData {
-    #[deny(unsafe_op_in_unsafe_fn)]
-    unsafe fn from_handle<'a>(handle: vk::PhysicalDevice) -> &'a Self {
-        unsafe { (handle.as_raw() as *const PhysicalDeviceData).as_ref() }.unwrap()
-    }
+impl ToVulkanHandle for PhysicalDeviceData {
+    type Handle = vk::PhysicalDevice;
 }
 
 #[repr(C)]
@@ -146,19 +181,17 @@ impl Default for DeviceDispatchTable {
 }
 
 #[repr(C)]
-struct DeviceData {
+pub struct DeviceData {
     // A pointer to dispatch_table.
     _dispatch_table: *const c_void,
     dispatch_table: Pin<Box<DeviceDispatchTable>>,
-    owner_physical_device: vk::PhysicalDevice,
-    api_veersion: ApiVersion,
-    enabled_extensions: BTreeSet<Extension>,
+    owner_physical_device: Weak<PhysicalDeviceData>,
+    api_version: ApiVersion,
+    pub enabled_extensions: BTreeSet<Extension>,
 }
-impl DeviceData {
-    #[deny(unsafe_op_in_unsafe_fn)]
-    unsafe fn from_handle<'a>(handle: vk::Device) -> &'a Self {
-        unsafe { (handle.as_raw() as *const DeviceData).as_ref() }.unwrap()
-    }
+
+impl ToVulkanHandle for DeviceData {
+    type Handle = vk::Device;
 }
 
 static VULKAN_COMMANDS: Lazy<BTreeMap<VulkanCommandName, VulkanCommand>> = Lazy::new(|| {
@@ -192,42 +225,47 @@ static VULKAN_COMMANDS: Lazy<BTreeMap<VulkanCommandName, VulkanCommand>> = Lazy:
                         .collect::<_>();
                         let dispatch_table =
                             Box::into_pin(Box::<InstanceDispatchTable>::new(Default::default()));
-                        let instance_data: Box<InstanceData> = Box::new(InstanceData {
-                            _dispatch_table: dispatch_table.as_ref().get_ref() as *const _
-                                as *const c_void,
-                            dispatch_table,
-                            version: application_info
-                                .map(|application_info| {
-                                    let mut api_version = application_info.api_version;
-                                    if api_version == 0 {
-                                        api_version = vk::API_VERSION_1_0;
-                                    }
-                                    api_version.try_into().unwrap()
-                                })
-                                .unwrap_or(ApiVersion::V1_0),
-                            enabled_extensions,
-                            physical_devices: Default::default(),
-                            available_device_extensions: Default::default(),
+                        let version = application_info
+                            .map(|application_info| {
+                                let mut api_version = application_info.api_version;
+                                if api_version == 0 {
+                                    api_version = vk::API_VERSION_1_0;
+                                }
+                                api_version.try_into().unwrap()
+                            })
+                            .unwrap_or(ApiVersion::V1_0);
+                        let instance_data: Arc<InstanceData> = Arc::new_cyclic(|instance_data| {
+                            let _dispatch_table =
+                                dispatch_table.as_ref().get_ref() as *const _ as *const c_void;
+                            InstanceData {
+                                _dispatch_table,
+                                dispatch_table,
+                                version,
+                                supported_device_version: Mutex::new(version),
+                                enabled_extensions,
+                                physical_devices: Box::new([Del::new(
+                                    Arc::new(PhysicalDeviceData {
+                                        _dispatch_table,
+                                        owner_instance: instance_data.clone(),
+                                        queue_family_properties: vec![vk::QueueFamilyProperties {
+                                            queue_flags: vk::QueueFlags::GRAPHICS
+                                                | vk::QueueFlags::TRANSFER,
+                                            queue_count: 1,
+                                            timestamp_valid_bits: 0,
+                                            min_image_transfer_granularity: vk::Extent3D::builder()
+                                                .width(0)
+                                                .height(0)
+                                                .depth(0)
+                                                .build(),
+                                        }],
+                                    })
+                                    .into_vulkan_handle(),
+                                    |handle| unsafe { PhysicalDeviceData::destroy(*handle) },
+                                )]),
+                                available_device_extensions: Default::default(),
+                            }
                         });
-                        let instance_raw_handle = Box::into_raw(instance_data);
-                        let instance_handle = vk::Instance::from_raw(instance_raw_handle as _);
-                        let instance_data = unsafe { instance_raw_handle.as_mut() }.unwrap();
-                        instance_data.physical_devices = Box::new([Box::new(PhysicalDeviceData {
-                            _dispatch_table: instance_data._dispatch_table,
-                            owner_instance: instance_handle,
-                            queue_family_properties: vec![vk::QueueFamilyProperties {
-                                queue_flags: vk::QueueFlags::GRAPHICS | vk::QueueFlags::TRANSFER,
-                                queue_count: 1,
-                                timestamp_valid_bits: 0,
-                                min_image_transfer_granularity: vk::Extent3D::builder()
-                                    .width(0)
-                                    .height(0)
-                                    .depth(0)
-                                    .build(),
-                            }],
-                        })
-                        .into()]);
-                        *unsafe { instance.as_mut() }.unwrap() = instance_handle;
+                        *unsafe { instance.as_mut() }.unwrap() = instance_data.into_vulkan_handle();
                         vk::Result::SUCCESS
                     }
                     unsafe { std::mem::transmute(create_instance as vk::PFN_vkCreateInstance) }
@@ -244,8 +282,10 @@ static VULKAN_COMMANDS: Lazy<BTreeMap<VulkanCommandName, VulkanCommand>> = Lazy:
                         device: vk::Device,
                         _: *const vk::AllocationCallbacks,
                     ) {
-                        let inner = unsafe { Box::from_raw(device.as_raw() as *mut DeviceData) };
-                        drop(inner);
+                        if device == vk::Device::null() {
+                            return;
+                        }
+                        unsafe { DeviceData::destroy(device) };
                     }
                     unsafe { std::mem::transmute(destroy_device as vk::PFN_vkDestroyDevice) }
                 },
@@ -265,11 +305,9 @@ static VULKAN_COMMANDS: Lazy<BTreeMap<VulkanCommandName, VulkanCommand>> = Lazy:
                     ) -> vk::Result {
                         let dispatch_table =
                             Box::into_pin(Box::<DeviceDispatchTable>::new(Default::default()));
-                        let physical_device_data =
+                        let physical_device =
                             unsafe { PhysicalDeviceData::from_handle(physical_device) };
-                        let instance_data = unsafe {
-                            InstanceData::from_handle(physical_device_data.owner_instance)
-                        };
+                        let instance_data = physical_device.owner_instance.upgrade().unwrap();
                         let device_create_info = unsafe { device_create_info.as_ref() }.unwrap();
                         let enabled_extensions = unsafe {
                             std::slice::from_raw_parts(
@@ -294,18 +332,31 @@ static VULKAN_COMMANDS: Lazy<BTreeMap<VulkanCommandName, VulkanCommand>> = Lazy:
                         let enabled_extensions = enabled_extensions
                             .into_iter()
                             .filter_map(Result::ok)
-                            .collect();
-                        let device_info = DeviceData {
+                            .collect::<BTreeSet<_>>();
+                        if let Some(available_device_extensions) = instance_data
+                            .available_device_extensions
+                            .lock()
+                            .unwrap()
+                            .as_ref()
+                        {
+                            if enabled_extensions
+                                .iter()
+                                .any(|extension| !available_device_extensions.contains(extension))
+                            {
+                                return vk::Result::ERROR_EXTENSION_NOT_PRESENT;
+                            }
+                        }
+                        let device_data = Arc::new(DeviceData {
                             _dispatch_table: dispatch_table.as_ref().get_ref() as *const _
                                 as *const c_void,
                             dispatch_table,
-                            owner_physical_device: physical_device,
-                            api_veersion: instance_data.version,
+                            owner_physical_device: Arc::downgrade(&physical_device),
+                            api_version: instance_data
+                                .version
+                                .min(*instance_data.supported_device_version.lock().unwrap()),
                             enabled_extensions,
-                        };
-                        let device_info = Box::new(device_info);
-                        *unsafe { device.as_mut() }.unwrap() =
-                            vk::Device::from_raw(Box::into_raw(device_info) as _);
+                        });
+                        *unsafe { device.as_mut() }.unwrap() = device_data.into_vulkan_handle();
                         vk::Result::SUCCESS
                     }
                     unsafe { std::mem::transmute(create_device as vk::PFN_vkCreateDevice) }
@@ -352,12 +403,7 @@ static VULKAN_COMMANDS: Lazy<BTreeMap<VulkanCommandName, VulkanCommand>> = Lazy:
                         let all_physical_devices = unsafe { InstanceData::from_handle(instance) }
                             .physical_devices
                             .iter()
-                            .map(|physical_device_data| {
-                                let physical_device_data_ptr =
-                                    physical_device_data.as_ref().get_ref()
-                                        as *const PhysicalDeviceData;
-                                vk::PhysicalDevice::from_raw(physical_device_data_ptr as _)
-                            })
+                            .map(|physical_device_data| **physical_device_data)
                             .collect::<Vec<_>>();
                         let physical_device_count = NonNull::new(physical_device_count).unwrap();
                         unsafe {
@@ -390,8 +436,12 @@ static VULKAN_COMMANDS: Lazy<BTreeMap<VulkanCommandName, VulkanCommand>> = Lazy:
                         let device_data = unsafe { DeviceData::from_handle(device) };
                         let name = unsafe { CStr::from_ptr(p_name) }.to_str().unwrap();
                         let command = VULKAN_COMMANDS.get(&name.into())?;
+                        if let DispatchKind::Global | DispatchKind::Instance = command.dispatch_kind
+                        {
+                            return None;
+                        }
                         if !command.features.is_command_enabled(
-                            &device_data.api_veersion,
+                            &device_data.api_version,
                             &device_data.enabled_extensions,
                         ) {
                             return None;
@@ -452,9 +502,7 @@ static VULKAN_COMMANDS: Lazy<BTreeMap<VulkanCommandName, VulkanCommand>> = Lazy:
                         assert_eq!(layer_name, null());
                         let physical_device_data =
                             unsafe { PhysicalDeviceData::from_handle(physical_device) };
-                        let instance_data = unsafe {
-                            InstanceData::from_handle(physical_device_data.owner_instance)
-                        };
+                        let instance_data = physical_device_data.owner_instance.upgrade().unwrap();
                         let available_extensions =
                             instance_data.available_device_extensions.lock().unwrap();
                         let available_extensions = available_extensions.as_ref().expect(concat!(
@@ -496,9 +544,7 @@ static VULKAN_COMMANDS: Lazy<BTreeMap<VulkanCommandName, VulkanCommand>> = Lazy:
                         if instance == vk::Instance::null() {
                             return;
                         }
-                        let inner =
-                            unsafe { Box::from_raw(instance.as_raw() as *mut InstanceData) };
-                        drop(inner);
+                        unsafe { InstanceData::destroy(instance) }
                     }
                     unsafe { std::mem::transmute(destroy_instance as vk::PFN_vkDestroyInstance) }
                 },
@@ -630,6 +676,69 @@ static VULKAN_COMMANDS: Lazy<BTreeMap<VulkanCommandName, VulkanCommand>> = Lazy:
                 features: [Extension::KHRSwapchain.into()].into(),
             },
         ),
+        (
+            DestroySamplerYcbcrConversion.into(),
+            VulkanCommand {
+                proc: {
+                    extern "system" fn destroy_sampler_ycbcr_conversion(
+                        _: vk::Device,
+                        sampler_ycbcr_conversion: vk::SamplerYcbcrConversion,
+                        _: *const vk::AllocationCallbacks,
+                    ) {
+                        if sampler_ycbcr_conversion == vk::SamplerYcbcrConversion::null() {
+                            return;
+                        }
+                        unimplemented!()
+                    }
+                    unsafe {
+                        std::mem::transmute(
+                            destroy_sampler_ycbcr_conversion
+                                as vk::PFN_vkDestroySamplerYcbcrConversion,
+                        )
+                    }
+                },
+                dispatch_kind: DispatchKind::Device,
+                features: [ApiVersion::V1_1.into()].into(),
+            },
+        ),
+        (
+            GetPhysicalDeviceProperties.into(),
+            VulkanCommand {
+                proc: {
+                    extern "system" fn get_physical_device_properties(
+                        physical_device: vk::PhysicalDevice,
+                        properties: *mut vk::PhysicalDeviceProperties,
+                    ) {
+                        let physical_device_data =
+                            unsafe { PhysicalDeviceData::from_handle(physical_device) };
+                        let instance_data = physical_device_data.owner_instance.upgrade().unwrap();
+                        *unsafe { properties.as_mut() }.unwrap() = vk::PhysicalDeviceProperties {
+                            api_version: instance_data
+                                .supported_device_version
+                                .lock()
+                                .unwrap()
+                                .clone()
+                                .into(),
+                            driver_version: 0,
+                            vendor_id: 0x1AE0,
+                            device_id: physical_device_data.as_ref() as *const _ as usize as u32,
+                            device_type: vk::PhysicalDeviceType::OTHER,
+                            device_name: [0; vk::MAX_PHYSICAL_DEVICE_NAME_SIZE],
+                            pipeline_cache_uuid: [0; vk::UUID_SIZE],
+                            limits: Default::default(),
+                            sparse_properties: Default::default(),
+                        };
+                    }
+                    unsafe {
+                        std::mem::transmute(
+                            get_physical_device_properties as vk::PFN_vkGetPhysicalDeviceProperties,
+                        )
+                    }
+                },
+                dispatch_kind: DispatchKind::Instance,
+                features: [ApiVersion::V1_0.into()].into(),
+            },
+        ),
     ];
     commands.into_iter().collect()
 });
@@ -667,15 +776,16 @@ pub extern "system" fn get_instance_proc_addr(
         DispatchKind::Device => {
             let available_extensions = instance_data.available_device_extensions.lock().unwrap();
             let enabled = if let Some(available_extensions) = available_extensions.as_ref() {
-                command
-                    .features
-                    .is_command_enabled(&instance_data.version, available_extensions)
+                command.features.is_command_enabled(
+                    &instance_data.supported_device_version.lock().unwrap(),
+                    available_extensions,
+                )
             } else {
                 // available_device_extensions is not set. Assume all extensions to be
                 // enabled.
                 command.features.iter().any(|feature| {
                     if let Feature::Core(api_version) = feature {
-                        if api_version > &instance_data.version {
+                        if api_version > &instance_data.supported_device_version.lock().unwrap() {
                             return false;
                         }
                     }
@@ -704,15 +814,32 @@ pub struct InstanceContext<T: Layer> {
     pub entry: ash::Entry,
     pub instance: ash::Instance,
     pub next_entry: ash::Entry,
+    pub next_instance_dispatch: ash::Instance,
     _marker: PhantomData<T>,
 }
 
-pub trait DelInstanceContextExt<T: Layer> {
-    fn default_device(self) -> Del<DeviceContext<T>>;
+pub trait ArcDelInstanceContextExt<T: Layer>: Sized {
+    fn create_device(
+        self,
+        create_info_builder: impl FnOnce(
+            vk::DeviceCreateInfoBuilder,
+            &mut dyn for<'a> FnMut(vk::DeviceCreateInfoBuilder<'a>),
+        ),
+    ) -> VkResult<Del<DeviceContext<T>>>;
+
+    fn default_device(self) -> VkResult<Del<DeviceContext<T>>> {
+        self.create_device(|create_info, create_device| create_device(create_info))
+    }
 }
 
-impl<T: Layer> DelInstanceContextExt<T> for Del<InstanceContext<T>> {
-    fn default_device(self) -> Del<DeviceContext<T>> {
+impl<T: Layer> ArcDelInstanceContextExt<T> for ArcDel<InstanceContext<T>> {
+    fn create_device(
+        self,
+        create_info_builder: impl FnOnce(
+            vk::DeviceCreateInfoBuilder,
+            &mut dyn for<'a> FnMut(vk::DeviceCreateInfoBuilder<'a>),
+        ),
+    ) -> VkResult<Del<DeviceContext<T>>> {
         let physical_device = unsafe {
             self.instance
                 .enumerate_physical_devices()
@@ -734,15 +861,7 @@ impl<T: Layer> DelInstanceContextExt<T> for Del<InstanceContext<T>> {
             .queue_family_index(0)
             .queue_priorities(&queue_priorities)
             .build()];
-        let get_device_proc_addr = unsafe {
-            self.next_entry.get_instance_proc_addr(
-                self.instance.handle(),
-                std::mem::transmute(b"vkGetDeviceProcAddr\0".as_ptr()),
-            )
-        }
-        .unwrap();
-        let get_device_proc_addr: vk::PFN_vkGetDeviceProcAddr =
-            unsafe { std::mem::transmute(get_device_proc_addr) };
+        let get_device_proc_addr = self.next_instance_dispatch.fp_v1_0().get_device_proc_addr;
         let mut layer_link = VkLayerDeviceLink {
             pNext: null_mut(),
             pfnNextGetInstanceProcAddr: self.next_entry.static_fn().get_instance_proc_addr,
@@ -758,32 +877,40 @@ impl<T: Layer> DelInstanceContextExt<T> for Del<InstanceContext<T>> {
         let device_create_info = vk::DeviceCreateInfo::builder()
             .queue_create_infos(&queue_create_infos)
             .push_next(&mut layer_create_info);
-        let device = unsafe {
-            self.instance
-                .create_device(physical_device, &device_create_info, None)
-        }
-        .unwrap();
+        let mut device: Option<VkResult<ash::Device>> = None;
+        create_info_builder(device_create_info, &mut |create_info| {
+            assert!(device.is_none());
+            device.replace(unsafe {
+                self.instance
+                    .create_device(physical_device, &create_info, None)
+            });
+        });
+        let device = device.unwrap()?;
+        let next_device_dispatch =
+            unsafe { ash::Device::load(self.next_instance_dispatch.fp_v1_0(), device.handle()) };
         let device_context = DeviceContext {
             device,
-            instance_context: self,
+            next_device_dispatch,
+            instance_context: self.into(),
         };
-        Del::new(device_context, move |device_context| unsafe {
+        Ok(Del::new(device_context, move |device_context| unsafe {
             device_context.device.destroy_device(None)
-        })
+        }))
     }
 }
 
 pub struct DeviceContext<T: Layer> {
     pub device: ash::Device,
-    pub instance_context: Del<InstanceContext<T>>,
+    pub next_device_dispatch: ash::Device,
+    pub instance_context: ArcDel<InstanceContext<T>>,
 }
 
 pub trait InstanceCreateInfoExt {
-    fn default_instance<T: Layer>(self) -> Del<InstanceContext<T>>;
+    fn default_instance<T: Layer>(self) -> ArcDel<InstanceContext<T>>;
 }
 
 impl InstanceCreateInfoExt for vk::InstanceCreateInfoBuilder<'_> {
-    fn default_instance<T: Layer>(self) -> Del<InstanceContext<T>> {
+    fn default_instance<T: Layer>(self) -> ArcDel<InstanceContext<T>> {
         let entry = create_entry::<T>();
         let mut layer_link = VkLayerInstanceLink {
             pNext: null_mut(),
@@ -801,18 +928,79 @@ impl InstanceCreateInfoExt for vk::InstanceCreateInfoBuilder<'_> {
         let create_instance_info = self.push_next(&mut layer_create_info);
         let instance = unsafe { entry.create_instance(&create_instance_info, None) }.unwrap();
         assert_ne!(instance.handle(), vk::Instance::null());
+        let next_entry = unsafe {
+            ash::Entry::from_static_fn(vk::StaticFn {
+                get_instance_proc_addr,
+            })
+        };
+        let next_instance_dispatch =
+            unsafe { ash::Instance::load(next_entry.static_fn(), instance.handle()) };
         let context = InstanceContext {
             entry,
             instance,
-            next_entry: unsafe {
-                ash::Entry::from_static_fn(vk::StaticFn {
-                    get_instance_proc_addr,
-                })
-            },
+            next_entry,
+            next_instance_dispatch,
             _marker: Default::default(),
         };
-        Del::new(context, move |context| {
+        ArcDel::new(context, move |context| {
             unsafe { context.instance.destroy_instance(None) };
         })
+    }
+}
+
+mod tests {
+    use std::mem::MaybeUninit;
+
+    use super::*;
+
+    #[test]
+    fn test_device_data_layout() {
+        let ptr = MaybeUninit::<DeviceData>::uninit();
+        let ptr = ptr.as_ptr();
+        assert_eq!(
+            unsafe { std::ptr::addr_of!((*ptr)._dispatch_table) } as usize - ptr as usize,
+            0
+        );
+    }
+
+    #[test]
+    fn test_physical_device_data_layout() {
+        let ptr = MaybeUninit::<PhysicalDeviceData>::uninit();
+        let ptr = ptr.as_ptr();
+        assert_eq!(
+            unsafe { std::ptr::addr_of!((*ptr)._dispatch_table) } as usize - ptr as usize,
+            0
+        );
+    }
+
+    #[test]
+    fn test_instance_data_layout() {
+        let ptr = MaybeUninit::<InstanceData>::uninit();
+        let ptr = ptr.as_ptr();
+        assert_eq!(
+            unsafe { std::ptr::addr_of!((*ptr)._dispatch_table) } as usize - ptr as usize,
+            0
+        );
+    }
+
+    #[test]
+    fn test_vulkan_handle_layout() {
+        #[derive(Default)]
+        struct TestDispatchableObject {
+            _dispatch_table: usize,
+        }
+
+        impl ToVulkanHandle for TestDispatchableObject {
+            type Handle = vk::Instance;
+        }
+
+        let test_dispatchable_object: Arc<TestDispatchableObject> = Arc::default();
+        let test_dispatchable_handle = test_dispatchable_object.clone().into_vulkan_handle();
+        assert_eq!(
+            test_dispatchable_object.as_ref() as *const _ as usize,
+            test_dispatchable_handle.as_raw() as usize
+        );
+        drop(test_dispatchable_object);
+        unsafe { TestDispatchableObject::destroy(test_dispatchable_handle) };
     }
 }

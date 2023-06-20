@@ -75,7 +75,7 @@ impl<T> AsRef<T> for Del<T> {
 pub struct ArcDel<T>(pub Arc<Del<T>>);
 
 impl<T> ArcDel<T> {
-    fn new(data: T, deleter: impl FnOnce(&mut T) + Send + Sync + 'static) -> Self {
+    pub fn new(data: T, deleter: impl FnOnce(&mut T) + Send + Sync + 'static) -> Self {
         ArcDel(Arc::new(Del::new(data, deleter)))
     }
 }
@@ -89,6 +89,31 @@ impl<T> Borrow<T> for ArcDel<T> {
 impl<T: Default> Default for ArcDel<T> {
     fn default() -> Self {
         Self(Arc::new(Del::new(Default::default(), |_| {})))
+    }
+}
+
+impl<T> From<Del<T>> for ArcDel<T> {
+    fn from(value: Del<T>) -> Self {
+        Self(Arc::new(value))
+    }
+}
+
+impl<T> Deref for ArcDel<T> {
+    type Target = T;
+    fn deref(&self) -> &Self::Target {
+        self.0.as_ref()
+    }
+}
+
+impl<T> AsRef<T> for ArcDel<T> {
+    fn as_ref(&self) -> &T {
+        self.0.as_ref()
+    }
+}
+
+impl<T> Clone for ArcDel<T> {
+    fn clone(&self) -> Self {
+        Self(self.0.clone())
     }
 }
 

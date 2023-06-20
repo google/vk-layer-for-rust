@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use ash::vk;
+use ash::vk::{self, Handle};
 use log::error;
 use num_traits::Zero;
 use once_cell::sync::OnceCell;
@@ -23,7 +23,7 @@ use std::{
     ffi::{c_char, c_void, CStr, CString},
     fmt::Debug,
     mem::MaybeUninit,
-    ptr::{null_mut, NonNull},
+    ptr::{null, null_mut, NonNull},
     sync::{Arc, Mutex},
 };
 pub use vk_utils::{VulkanBaseInStructChain, VulkanBaseOutStructChain};
@@ -52,7 +52,7 @@ pub use vulkan_layer_macros::{
 
 fn as_i8_slice(input: &CString) -> &[i8] {
     let bytes = input.as_bytes();
-    unsafe { std::slice::from_raw_parts(bytes.as_ptr() as *const i8, bytes.len()) }
+    unsafe { std::slice::from_raw_parts(input.as_ptr() as *const i8, bytes.len()) }
 }
 
 pub trait IsCommandEnabled {
@@ -183,11 +183,14 @@ struct InstanceInfoWrapper<T: Layer> {
 
 struct PhysicalDeviceInfoWrapper {
     owner_instance: vk::Instance,
+    properties: vk::PhysicalDeviceProperties,
 }
 
 struct DeviceInfoWrapper<T: Layer> {
     dispatch_table: DeviceDispatchTable,
     get_device_proc_addr: vk::PFN_vkGetDeviceProcAddr,
+    api_version: ApiVersion,
+    enabled_extensions: BTreeSet<Extension>,
     customized_info: T::DeviceInfoContainer,
 }
 
@@ -238,19 +241,26 @@ impl<T: Layer> Global<T> {
     ) {
         for physical_device in physical_devices {
             let mut physical_device_map = self.physical_device_map.lock().unwrap();
-            match physical_device_map.get(physical_device.borrow()) {
-                Some(physical_device_info) => {
-                    assert_eq!(physical_device_info.owner_instance, instance)
-                }
-                None => {
-                    physical_device_map.insert(
-                        *physical_device.borrow(),
-                        Arc::new(PhysicalDeviceInfoWrapper {
-                            owner_instance: instance,
-                        }),
-                    );
-                }
+            if let Some(physical_device_info) = physical_device_map.get(physical_device.borrow()) {
+                assert_eq!(physical_device_info.owner_instance, instance);
+                continue;
             }
+            let instance_info = self.get_instance_info(instance).unwrap_or_else(|| {
+                panic!("Unknown VkInstance handle: {:#018x}", instance.as_raw())
+            });
+            let properties = unsafe {
+                instance_info
+                    .dispatch_table
+                    .core
+                    .get_physical_device_properties(*physical_device.borrow())
+            };
+            physical_device_map.insert(
+                *physical_device.borrow(),
+                Arc::new(PhysicalDeviceInfoWrapper {
+                    owner_instance: instance,
+                    properties,
+                }),
+            );
         }
     }
 
@@ -533,14 +543,13 @@ impl<T: Layer> Global<T> {
 
     extern "system" fn create_device(
         physical_device: vk::PhysicalDevice,
-        p_create_info: *const vk::DeviceCreateInfo,
+        create_info: *const vk::DeviceCreateInfo,
         p_allocator: *const vk::AllocationCallbacks,
         p_device: *mut vk::Device,
     ) -> vk::Result {
-        let p_next_chain = unsafe { p_create_info.as_ref() }
-            .map(|create_info| create_info.p_next as *mut vk::BaseOutStructure)
-            .unwrap_or(null_mut());
-        let mut p_next_chain: VulkanBaseOutStructChain = unsafe { p_next_chain.as_mut() }.into();
+        let create_info = unsafe { create_info.as_ref() }.unwrap();
+        let mut p_next_chain: VulkanBaseOutStructChain =
+            unsafe { (create_info.p_next as *mut vk::BaseOutStructure).as_mut() }.into();
         let layer_create_info = p_next_chain.find_map(|out_struct| {
             let out_struct = out_struct as *mut vk::BaseOutStructure;
             let layer_create_info = unsafe {
@@ -581,17 +590,71 @@ impl<T: Layer> Global<T> {
             .get_instance_info(physical_device_info.owner_instance)
             .expect("The owner instance of this physical device must be registered.");
 
+        let create_device_name = CString::new("vkCreateDevice").unwrap();
         let next_create_device = unsafe {
             get_instance_proc_addr(
                 instance_info.dispatch_table.core.handle(),
-                as_i8_slice(&CString::new("vkCreateDevice").unwrap()).as_ptr(),
+                create_device_name.as_ptr(),
             )
         };
         let next_create_device: vk::PFN_vkCreateDevice =
             unsafe { std::mem::transmute(next_create_device) };
+        let mut create_info = create_info.clone();
+        let requested_extensions = unsafe {
+            std::slice::from_raw_parts(
+                create_info.pp_enabled_extension_names,
+                create_info.enabled_extension_count.try_into().unwrap(),
+            )
+        }
+        .iter()
+        .map(|extension_name| {
+            let extension_name = unsafe { CStr::from_ptr(*extension_name) };
+            extension_name
+                .to_str()
+                .unwrap_or_else(|e| {
+                    panic!(
+                        "Failed to decode the extension name {}: {}",
+                        extension_name.to_string_lossy(),
+                        e
+                    )
+                })
+                .to_owned()
+        })
+        .collect::<Vec<_>>();
+        let enabled_extensions = requested_extensions
+            .iter()
+            .filter_map(|extension_name| {
+                let extension_name_cstring =
+                    CString::new(extension_name.clone()).unwrap_or_else(|e| {
+                        panic!("Failed to create CString from {}: {}", extension_name, e)
+                    });
+                let extension: Extension = match extension_name.as_str().try_into() {
+                    Ok(extension) => extension,
+                    Err(_) => return Some(extension_name_cstring),
+                };
+                if T::DEVICE_EXTENSIONS
+                    .iter()
+                    .any(|layer_extension| layer_extension.name == extension)
+                {
+                    None
+                } else {
+                    Some(extension_name_cstring)
+                }
+            })
+            .collect::<Vec<_>>();
+        let enabled_extensions = enabled_extensions
+            .iter()
+            .map(|extension_name| extension_name.as_ptr())
+            .collect::<Vec<_>>();
+        create_info.enabled_extension_count = enabled_extensions.len().try_into().unwrap();
+        create_info.pp_enabled_extension_names = if enabled_extensions.is_empty() {
+            null()
+        } else {
+            enabled_extensions.as_ptr()
+        };
         // TODO: allow the layer trait to intercept this function
         let res =
-            unsafe { next_create_device(physical_device, p_create_info, p_allocator, p_device) };
+            unsafe { next_create_device(physical_device, &create_info, p_allocator, p_device) };
         if res != vk::Result::SUCCESS {
             return res;
         }
@@ -613,6 +676,16 @@ impl<T: Layer> Global<T> {
             )
         };
         let ash_device = Arc::new(ash_device);
+        let enabled_extensions = requested_extensions
+            .iter()
+            .filter_map(|name| {
+                let extension_name: Option<Extension> = name.as_str().try_into().ok();
+                extension_name
+            })
+            .collect::<BTreeSet<_>>();
+        let api_version = instance_info
+            .api_version
+            .min(physical_device_info.properties.api_version.into());
         {
             let mut device_map = global.device_map.lock().unwrap();
             assert!(
@@ -628,9 +701,11 @@ impl<T: Layer> Global<T> {
                         Arc::clone(&ash_device),
                     ),
                     get_device_proc_addr,
+                    api_version,
+                    enabled_extensions,
                     customized_info: global.layer_info.create_device_info(
                         physical_device,
-                        unsafe { p_create_info.as_ref() }.unwrap(),
+                        &create_info,
                         unsafe { p_allocator.as_ref() },
                         ash_device,
                         get_device_proc_addr,
@@ -957,6 +1032,12 @@ impl<T: Layer> Global<T> {
         } else {
             return get_next_device_proc_addr();
         };
+        if !command
+            .features
+            .is_command_enabled(&device_info.api_version, &device_info.enabled_extensions)
+        {
+            return get_next_device_proc_addr();
+        }
         if !command.hooked {
             return get_next_device_proc_addr();
         }

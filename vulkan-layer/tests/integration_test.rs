@@ -13,7 +13,7 @@
 // limitations under the License.
 
 use ash::vk;
-use mockall::predicate::{eq, function};
+use mockall::predicate::{always, eq, function};
 use std::{
     ffi::{CStr, CString},
     iter::zip,
@@ -23,18 +23,18 @@ use std::{
 };
 use vulkan_layer::{
     test_utils::{TestLayer, VkLayerFunction, VkLayerInstanceCreateInfo},
-    Extension, ExtensionProperties, Global, Layer, LayerResult, LayerVulkanCommand,
+    ApiVersion, Extension, ExtensionProperties, Global, Layer, LayerResult, LayerVulkanCommand,
     VkLayerInstanceLink, VulkanBaseInStructChain,
 };
 
 pub mod utils;
 
 use utils::{
-    create_entry, get_instance_proc_addr, DeviceContext, InstanceContext, InstanceCreateInfoExt,
-    InstanceData, MockLayer,
+    create_entry, get_instance_proc_addr, DeviceContext, FromVulkanHandle, InstanceContext,
+    InstanceCreateInfoExt, InstanceData, MockLayer,
 };
 
-use crate::utils::DelInstanceContextExt;
+use crate::utils::ArcDelInstanceContextExt;
 
 mod get_instance_proc_addr {
     use super::*;
@@ -752,17 +752,18 @@ mod create_destroy_instance {
             // Calling vkDestroyInstance through RAII.
         }
     }
-}
 
-#[test]
-fn test_destroy_device_with_null_handle() {
-    #[derive(Default)]
-    struct Tag;
-    impl TestLayer for Tag {}
-    let ctx = vk::InstanceCreateInfo::builder()
-        .default_instance::<MockLayer<Tag>>()
-        .default_device();
-    unsafe { (ctx.device.fp_v1_0().destroy_device)(vk::Device::null(), null()) };
+    #[test]
+    fn test_destroy_device_with_null_handle() {
+        #[derive(Default)]
+        struct Tag;
+        impl TestLayer for Tag {}
+        let ctx = vk::InstanceCreateInfo::builder()
+            .default_instance::<MockLayer<Tag>>()
+            .default_device()
+            .unwrap();
+        unsafe { (ctx.device.fp_v1_0().destroy_device)(vk::Device::null(), null()) };
+    }
 }
 
 mod get_device_proc_addr {
@@ -774,7 +775,8 @@ mod get_device_proc_addr {
         impl TestLayer for Tag {}
         let ctx = vk::InstanceCreateInfo::builder()
             .default_instance::<MockLayer<Tag>>()
-            .default_device::<MockLayer<Tag>>();
+            .default_device()
+            .unwrap();
 
         let global_commands = [
             "vkEnumerateInstanceVersion",
@@ -804,39 +806,335 @@ mod get_device_proc_addr {
     }
 
     #[test]
-    #[ignore]
     fn test_should_return_null_for_instance_commands() {
-        todo!()
+        #[derive(Default)]
+        struct Tag;
+        impl TestLayer for Tag {
+            fn hooked_instance_commands() -> &'static [LayerVulkanCommand] {
+                &[LayerVulkanCommand::GetPhysicalDeviceSparseImageFormatProperties2]
+            }
+        }
+        let app_info = vk::ApplicationInfo::builder().api_version(vk::API_VERSION_1_2);
+        let ctx = vk::InstanceCreateInfo::builder()
+            .application_info(&app_info)
+            .default_instance::<MockLayer<Tag>>()
+            .default_device()
+            .unwrap();
+
+        let DeviceContext {
+            device,
+            instance_context,
+            ..
+        } = ctx.as_ref();
+        let get_physical_device_sparse_image_format_properties2 = unsafe {
+            (instance_context.instance.fp_v1_0().get_device_proc_addr)(
+                device.handle(),
+                b"vkGetPhysicalDeviceSparseImageFormatProperties2\0".as_ptr() as *const i8,
+            )
+        };
+        assert!(get_physical_device_sparse_image_format_properties2.is_none());
     }
 
     #[test]
-    #[ignore]
     fn test_should_return_null_for_available_but_not_enabled_commands() {
-        todo!()
+        #[derive(Default)]
+        struct Tag;
+        impl TestLayer for Tag {
+            fn hooked_device_commands() -> &'static [LayerVulkanCommand] {
+                &[LayerVulkanCommand::DestroySwapchainKhr]
+            }
+        }
+        let ctx = vk::InstanceCreateInfo::builder().default_instance::<MockLayer<Tag>>();
+        let InstanceContext {
+            instance, entry, ..
+        } = ctx.as_ref();
+        unsafe { InstanceData::from_handle(instance.handle()) }
+            .set_available_device_extensions(&[Extension::KHRSwapchain]);
+
+        let destroy_swapchain_name = CString::new("vkDestroySwapchainKHR").unwrap();
+
+        // vkGetInstanceAddr should return fp for available extensions.
+        let destroy_swapchain = unsafe {
+            entry.get_instance_proc_addr(instance.handle(), destroy_swapchain_name.as_ptr())
+        };
+        assert!(destroy_swapchain.is_some());
+
+        let ctx = ctx.default_device().unwrap();
+        let DeviceContext {
+            device,
+            instance_context,
+            ..
+        } = ctx.as_ref();
+        let destroy_swapchain = unsafe {
+            (instance_context
+                .next_instance_dispatch
+                .fp_v1_0()
+                .get_device_proc_addr)(device.handle(), destroy_swapchain_name.as_ptr())
+        };
+        assert!(
+            destroy_swapchain.is_none(),
+            "The mock ICD should return NULL for vkDestroySwapchainKHR."
+        );
+        let destroy_swapchain = unsafe {
+            (instance_context.instance.fp_v1_0().get_device_proc_addr)(
+                device.handle(),
+                destroy_swapchain_name.as_ptr(),
+            )
+        };
+        assert!(destroy_swapchain.is_none());
     }
 
     #[test]
-    #[ignore]
     fn test_should_return_fp_for_requested_core_version_device_commands() {
-        todo!()
+        #[derive(Default)]
+        struct Tag;
+        impl TestLayer for Tag {
+            fn hooked_device_commands() -> &'static [LayerVulkanCommand] {
+                &[LayerVulkanCommand::DestroySamplerYcbcrConversion]
+            }
+        }
+        let app_info = vk::ApplicationInfo::builder().api_version(vk::API_VERSION_1_1);
+        let ctx = vk::InstanceCreateInfo::builder()
+            .application_info(&app_info)
+            .default_instance::<MockLayer<Tag>>()
+            .default_device()
+            .unwrap();
+        let DeviceContext {
+            device,
+            instance_context,
+            ..
+        } = ctx.as_ref();
+        let destroy_sampler_ycbcr_conversion = unsafe {
+            (instance_context.instance.fp_v1_0().get_device_proc_addr)(
+                device.handle(),
+                b"vkDestroySamplerYcbcrConversion\0".as_ptr() as *const i8,
+            )
+        };
+        let destroy_sampler_ycbcr_conversion: vk::PFN_vkDestroySamplerYcbcrConversion =
+            unsafe { std::mem::transmute(destroy_sampler_ycbcr_conversion.unwrap()) };
+        let layer_device_info = Global::<MockLayer<Tag>>::instance()
+            .layer_info
+            .get_device_info(device.handle())
+            .unwrap();
+        layer_device_info
+            .mock_hooks
+            .lock()
+            .unwrap()
+            .expect_destroy_sampler_ycbcr_conversion()
+            .with(eq(vk::SamplerYcbcrConversion::null()), always())
+            .once()
+            .return_const(LayerResult::Unhandled);
+        unsafe {
+            destroy_sampler_ycbcr_conversion(
+                device.handle(),
+                vk::SamplerYcbcrConversion::null(),
+                null(),
+            )
+        };
+        layer_device_info.mock_hooks.lock().unwrap().checkpoint();
     }
 
     #[test]
-    #[ignore]
     fn test_should_return_null_for_unrequested_core_version_device_commands() {
-        todo!()
+        // For this test case, the specified `VkApplicationInfo::apiVersion` is low.
+        #[derive(Default)]
+        struct Tag;
+        impl TestLayer for Tag {
+            fn hooked_device_commands() -> &'static [LayerVulkanCommand] {
+                &[LayerVulkanCommand::DestroySamplerYcbcrConversion]
+            }
+        }
+        let app_info = vk::ApplicationInfo::builder().api_version(vk::API_VERSION_1_0);
+        let ctx = vk::InstanceCreateInfo::builder()
+            .application_info(&app_info)
+            .default_instance::<MockLayer<Tag>>()
+            .default_device()
+            .unwrap();
+        let DeviceContext {
+            device,
+            instance_context,
+            ..
+        } = ctx.as_ref();
+        let destroy_sampler_ycbcr_conversion = unsafe {
+            (instance_context.instance.fp_v1_0().get_device_proc_addr)(
+                device.handle(),
+                b"vkDestroySamplerYcbcrConversion\0".as_ptr() as *const i8,
+            )
+        };
+        assert!(destroy_sampler_ycbcr_conversion.is_none());
     }
 
     #[test]
-    #[ignore]
+    fn test_should_return_null_for_unsupported_core_version_device_commands() {
+        // For this test case, the specified `VkApplicationInfo::apiVersion` is high enough, but the
+        // `VkPhysicalDeviceProperties::apiVersion` is low.
+        // For this test case, the specified `VkApplicationInfo::apiVersion` is low.
+        #[derive(Default)]
+        struct Tag;
+        impl TestLayer for Tag {
+            fn hooked_device_commands() -> &'static [LayerVulkanCommand] {
+                &[LayerVulkanCommand::DestroySamplerYcbcrConversion]
+            }
+        }
+        let app_info = vk::ApplicationInfo::builder().api_version(vk::API_VERSION_1_1);
+        let ctx = vk::InstanceCreateInfo::builder()
+            .application_info(&app_info)
+            .default_instance::<MockLayer<Tag>>();
+        unsafe { InstanceData::from_handle(ctx.instance.handle()) }
+            .set_supported_device_version(&ApiVersion::V1_0);
+
+        let ctx = ctx.default_device().unwrap();
+        let DeviceContext {
+            device,
+            instance_context,
+            ..
+        } = ctx.as_ref();
+        let InstanceContext {
+            instance,
+            next_entry,
+            next_instance_dispatch,
+            ..
+        } = instance_context.as_ref();
+
+        let destroy_sampler_ycbcr_conversion_name =
+            CString::new("vkDestroySamplerYcbcrConversion").unwrap();
+
+        // Make sure that the mock ICD will return null for unsupported device command in
+        // vkGetInstanceProcAddr.
+        let destroy_sampler_ycbcr_conversion = unsafe {
+            next_entry.get_instance_proc_addr(
+                instance.handle(),
+                destroy_sampler_ycbcr_conversion_name.as_ptr(),
+            )
+        };
+        assert!(destroy_sampler_ycbcr_conversion.is_none());
+
+        // Make sure that the mock ICD will return null for unsupported device command in
+        // vkGetDeviceProcAddr.
+        let destroy_sampler_ycbcr_conversion = unsafe {
+            next_instance_dispatch.get_device_proc_addr(
+                device.handle(),
+                destroy_sampler_ycbcr_conversion_name.as_ptr(),
+            )
+        };
+        assert!(destroy_sampler_ycbcr_conversion.is_none());
+
+        let destroy_sampler_ycbcr_conversion = unsafe {
+            instance.get_device_proc_addr(
+                device.handle(),
+                destroy_sampler_ycbcr_conversion_name.as_ptr(),
+            )
+        };
+        assert!(destroy_sampler_ycbcr_conversion.is_none());
+    }
+
+    #[test]
     fn test_should_return_fp_for_enabled_extension_device_commands() {
-        todo!()
+        let instance_extensions = [vk::KhrSurfaceFn::name().as_ptr()];
+        let device_extensions = [vk::KhrSwapchainFn::name().as_ptr()];
+        let destroy_swapchain_name = CString::new("vkDestroySwapchainKHR").unwrap();
+        #[derive(Default)]
+        struct Tag;
+        impl TestLayer for Tag {}
+        let ctx = vk::InstanceCreateInfo::builder()
+            .enabled_extension_names(&instance_extensions)
+            .default_instance::<MockLayer<Tag>>()
+            .create_device(|create_info_builder, create_device| {
+                let create_info_builder =
+                    create_info_builder.enabled_extension_names(&device_extensions);
+                create_device(create_info_builder)
+            })
+            .unwrap();
+        let DeviceContext {
+            device,
+            instance_context,
+            ..
+        } = ctx.as_ref();
+        let destroy_swapchain = unsafe {
+            instance_context
+                .instance
+                .get_device_proc_addr(device.handle(), destroy_swapchain_name.as_ptr())
+        };
+        assert!(destroy_swapchain.is_some());
+
+        #[derive(Default)]
+        struct Tag2;
+        impl TestLayer for Tag2 {
+            fn hooked_device_commands() -> &'static [LayerVulkanCommand] {
+                &[LayerVulkanCommand::DestroySwapchainKhr]
+            }
+        }
+        let ctx = vk::InstanceCreateInfo::builder()
+            .enabled_extension_names(&instance_extensions)
+            .default_instance::<MockLayer<Tag2>>()
+            .create_device(|create_info_builder, create_device| {
+                let create_info_builder =
+                    create_info_builder.enabled_extension_names(&device_extensions);
+                create_device(create_info_builder)
+            })
+            .unwrap();
+        let DeviceContext {
+            device,
+            instance_context,
+            ..
+        } = ctx.as_ref();
+        let destroy_swapchain = unsafe {
+            instance_context
+                .instance
+                .get_device_proc_addr(device.handle(), destroy_swapchain_name.as_ptr())
+        };
+        assert!(destroy_swapchain.is_some());
     }
 
     #[test]
-    #[ignore]
     fn test_should_return_fp_for_enabled_layer_extension_device_commands() {
-        todo!()
+        #[derive(Default)]
+        struct Tag;
+        impl TestLayer for Tag {
+            const DEVICE_EXTENSIONS: &'static [ExtensionProperties] = &[ExtensionProperties {
+                name: Extension::KHRSwapchain,
+                spec_version: 1,
+            }];
+            fn hooked_device_commands() -> &'static [LayerVulkanCommand] {
+                &[LayerVulkanCommand::DestroySwapchainKhr]
+            }
+        }
+        let instance_extensions = [vk::KhrSurfaceFn::name().as_ptr()];
+        let device_extensions = [vk::KhrSwapchainFn::name().as_ptr()];
+        let ctx = vk::InstanceCreateInfo::builder()
+            .enabled_extension_names(&instance_extensions)
+            .default_instance::<MockLayer<Tag>>();
+        unsafe { InstanceData::from_handle(ctx.instance.handle()) }
+            .set_available_device_extensions(&[]);
+
+        let ctx = ctx
+            .create_device(|create_info_builder, create_device| {
+                let create_info_builder =
+                    create_info_builder.enabled_extension_names(&device_extensions);
+                create_device(create_info_builder)
+            })
+            .unwrap();
+        let DeviceContext {
+            device,
+            instance_context,
+            ..
+        } = ctx.as_ref();
+        let InstanceContext {
+            instance,
+            next_instance_dispatch,
+            ..
+        } = instance_context.as_ref();
+        let destroy_swapchain_name = CString::new("vkDestroySwapchainKHR").unwrap();
+        // The mock ICD should return null for this command.
+        let destroy_swapchain = unsafe {
+            next_instance_dispatch
+                .get_device_proc_addr(device.handle(), destroy_swapchain_name.as_ptr())
+        };
+        assert!(destroy_swapchain.is_none());
+        let destroy_swapchain = unsafe {
+            instance.get_device_proc_addr(device.handle(), destroy_swapchain_name.as_ptr())
+        };
+        assert!(destroy_swapchain.is_some());
     }
 }
 
@@ -853,7 +1151,8 @@ mod device_commands {
         }
         let ctx = vk::InstanceCreateInfo::builder()
             .default_instance::<MockLayer<Tag>>()
-            .default_device();
+            .default_device()
+            .unwrap();
         let DeviceContext { device, .. } = ctx.as_ref();
         let device_info = Global::<MockLayer<Tag>>::instance()
             .layer_info
@@ -884,7 +1183,8 @@ mod device_commands {
         }
         let ctx = vk::InstanceCreateInfo::builder()
             .default_instance::<MockLayer<Tag>>()
-            .default_device();
+            .default_device()
+            .unwrap();
         let DeviceContext { device, .. } = ctx.as_ref();
         let device_info = Global::<MockLayer<Tag>>::instance()
             .layer_info
@@ -1093,5 +1393,131 @@ mod enumerate_device_extensions {
                 .collect::<Vec<_>>();
             assert_eq!(expected_name_bytes, name_bytes);
         }
+    }
+}
+
+mod create_destroy_device {
+    use crate::utils::DeviceData;
+
+    use super::*;
+    #[test]
+    fn test_should_always_pass_through_non_layer_extensions() {
+        #[derive(Default)]
+        struct Tag;
+        impl TestLayer for Tag {
+            const DEVICE_EXTENSIONS: &'static [ExtensionProperties] = &[ExtensionProperties {
+                name: Extension::KHRGetPhysicalDeviceProperties2,
+                spec_version: 1,
+            }];
+        }
+
+        let instance_extensions = [vk::KhrSurfaceFn::name().as_ptr()];
+        let instance_ctx = vk::InstanceCreateInfo::builder()
+            .enabled_extension_names(&instance_extensions)
+            .default_instance::<MockLayer<Tag>>();
+        unsafe { InstanceData::from_handle(instance_ctx.instance.handle()) }
+            .set_available_device_extensions(&[Extension::KHRSwapchain]);
+        let enabled_device_extensions = [
+            // Available extension.
+            vk::KhrSwapchainFn::name().as_ptr(),
+            vk::KhrGetPhysicalDeviceProperties2Fn::name().as_ptr(),
+        ];
+        let device_ctx = instance_ctx
+            .clone()
+            .create_device(|create_info, create_device| {
+                create_device(create_info.enabled_extension_names(&enabled_device_extensions))
+            })
+            .unwrap();
+        let enabled_icd_device_extensions =
+            unsafe { DeviceData::from_handle(device_ctx.device.handle()) }
+                .enabled_extensions
+                .iter()
+                .cloned()
+                .collect::<Vec<_>>();
+        assert_eq!(enabled_icd_device_extensions, vec![Extension::KHRSwapchain]);
+
+        let enabled_device_extensions = [
+            // Unavailable extension.
+            vk::KhrExternalMemoryCapabilitiesFn::name().as_ptr(),
+            vk::KhrGetPhysicalDeviceProperties2Fn::name().as_ptr(),
+        ];
+        let device_create_res = instance_ctx
+            .create_device(|create_info, create_device| {
+                create_device(create_info.enabled_extension_names(&enabled_device_extensions))
+            })
+            .map(drop);
+        assert_eq!(
+            device_create_res.unwrap_err(),
+            vk::Result::ERROR_EXTENSION_NOT_PRESENT
+        );
+    }
+
+    #[test]
+    fn test_should_always_filter_out_layer_extensions() {
+        #[derive(Default)]
+        struct Tag;
+        impl TestLayer for Tag {
+            const DEVICE_EXTENSIONS: &'static [ExtensionProperties] = &[ExtensionProperties {
+                name: Extension::KHRGetPhysicalDeviceProperties2,
+                spec_version: 1,
+            }];
+        }
+
+        let instance_ctx = vk::InstanceCreateInfo::builder().default_instance::<MockLayer<Tag>>();
+        let enabled_device_extensions = [vk::KhrGetPhysicalDeviceProperties2Fn::name().as_ptr()];
+
+        unsafe { InstanceData::from_handle(instance_ctx.instance.handle()) }
+            .set_available_device_extensions(&[Extension::KHRGetPhysicalDeviceProperties2]);
+        let device_ctx = instance_ctx
+            .clone()
+            .create_device(|create_info, create_device| {
+                create_device(create_info.enabled_extension_names(&enabled_device_extensions))
+            })
+            .unwrap();
+        let icd_enabled_extensions = unsafe { DeviceData::from_handle(device_ctx.device.handle()) }
+            .enabled_extensions
+            .iter()
+            .cloned()
+            .collect::<Vec<_>>();
+        assert_eq!(icd_enabled_extensions, vec![]);
+
+        unsafe { InstanceData::from_handle(instance_ctx.instance.handle()) }
+            .set_available_device_extensions(&[]);
+        let device_ctx = instance_ctx
+            .create_device(|create_info, create_device| {
+                create_device(create_info.enabled_extension_names(&enabled_device_extensions))
+            })
+            .unwrap();
+        let icd_enabled_extensions = unsafe { DeviceData::from_handle(device_ctx.device.handle()) }
+            .enabled_extensions
+            .iter()
+            .cloned()
+            .collect::<Vec<_>>();
+        assert_eq!(icd_enabled_extensions, vec![]);
+    }
+
+    #[test]
+    fn test_should_always_pass_through_unknown_extensions() {
+        #[derive(Default)]
+        struct Tag;
+        impl TestLayer for Tag {
+            const DEVICE_EXTENSIONS: &'static [ExtensionProperties] = &[ExtensionProperties {
+                name: Extension::KHRGetPhysicalDeviceProperties2,
+                spec_version: 1,
+            }];
+        }
+
+        let device_extensions = [CString::new("VK_UNKNOWN_unknown_extension").unwrap()];
+        let device_extensions = device_extensions.map(|extension| extension.as_ptr());
+        let device_create_res = vk::InstanceCreateInfo::builder()
+            .default_instance::<MockLayer<Tag>>()
+            .create_device(|create_info, create_device| {
+                create_device(create_info.enabled_extension_names(&device_extensions))
+            })
+            .map(drop);
+        assert_eq!(
+            device_create_res.unwrap_err(),
+            vk::Result::ERROR_EXTENSION_NOT_PRESENT
+        );
     }
 }
