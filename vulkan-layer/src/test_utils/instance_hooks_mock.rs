@@ -14,17 +14,25 @@
 
 use mockall::mock;
 
-use crate::{InstanceHooks, LayerResult};
-use ash::vk;
+use crate::{InstanceHooks, LayerResult, VkLayerDeviceLink};
+use ash::{prelude::VkResult, vk};
 
 // We don't automock the original trait, because that hurts compilation speed significantly.
 mock! {
     pub InstanceHooks {}
     impl InstanceHooks for InstanceHooks {
-        fn destroy_surface_khr(
+        fn destroy_surface_khr<'a>(
             &self,
             surface: vk::SurfaceKHR,
-            p_allocator: Option<&'static vk::AllocationCallbacks>,
+            p_allocator: Option<&'a vk::AllocationCallbacks>,
         ) -> LayerResult<()>;
+
+        fn create_device<'a>(
+            &self,
+            _physical_device: vk::PhysicalDevice,
+            _p_create_info: &vk::DeviceCreateInfo,
+            _layer_device_link: &VkLayerDeviceLink,
+            _p_allocator: Option<&'a vk::AllocationCallbacks>,
+        ) -> LayerResult<VkResult<vk::Device>>;
     }
 }

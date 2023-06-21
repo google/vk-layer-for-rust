@@ -621,10 +621,10 @@ class RustType(NamedTuple):
             return wrap_option(add_pointer(self.points_to.to_string()))
         elif self.slice_of is not None:
             mut_mod = "" if self.slice_of.is_const else "mut "
-            return wrap_option(f"&'static {mut_mod}[{self.slice_of.to_string()}]")
+            return wrap_option(f"&{mut_mod}[{self.slice_of.to_string()}]")
         elif self.refers_to is not None:
             mut_mod = "" if self.refers_to.is_const else "mut "
-            return wrap_option(f"&'static {mut_mod}{self.refers_to.to_string()}")
+            return wrap_option(f"&{mut_mod}{self.refers_to.to_string()}")
         elif self.array_info is not None:
             array_info = self.array_info
             return wrap_option(f"[{array_info.element_type.to_string()}; {array_info.length}]")
@@ -669,6 +669,15 @@ class RustMethod(NamedTuple):
         rust_params: list[RustParam] = [
             RustParam.from_vk_xml_param(vk_xml_param) for vk_xml_param in not_len_xml_params
         ]
+        if vk_xml_cmd.name == "vkCreateDevice":
+            # Also pass the current VkLayerDeviceLink to the layer.
+            rust_params.insert(
+                2,
+                RustParam(
+                    name="_layer_device_link",
+                    type=RustType(refers_to=RustType(name="VkLayerDeviceLink", is_root=False)),
+                ),
+            )
         assert len(rust_params) > 0, "Unexpected command with 0 parameters."
 
         # Remove the leading vk::Instance or vk::Device parameter, since it should be included in

@@ -20,11 +20,11 @@ use ash::{prelude::VkResult, vk};
 mock! {
     pub GlobalHooks {}
     impl GlobalHooks for GlobalHooks {
-        fn create_instance(
+        fn create_instance<'a>(
             &self,
-            _p_create_info: &'static vk::InstanceCreateInfo,
+            _p_create_info: &vk::InstanceCreateInfo,
             _layer_instance_link: &VkLayerInstanceLink,
-            _p_allocator: Option<&'static vk::AllocationCallbacks>,
+            _p_allocator: Option<&'a vk::AllocationCallbacks>,
         ) -> LayerResult<VkResult<vk::Instance>>;
     }
 }

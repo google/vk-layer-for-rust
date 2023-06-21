@@ -33,9 +33,9 @@ fn test_auto_globalhooksinfo_should_intercept_hooked_proc() {
     impl GlobalHooks for TestGlobalHooks {
         fn create_instance(
             &self,
-            _p_create_info: &'static vk::InstanceCreateInfo,
+            _p_create_info: &vk::InstanceCreateInfo,
             _layer_instance_link: &vulkan_layer::VkLayerInstanceLink,
-            _p_allocator: Option<&'static vk::AllocationCallbacks>,
+            _p_allocator: Option<&vk::AllocationCallbacks>,
         ) -> LayerResult<ash::prelude::VkResult<vk::Instance>> {
             unimplemented!()
         }
@@ -61,7 +61,7 @@ fn test_auto_instanceinfo_should_intercept_hooked_proc() {
         fn destroy_surface_khr(
             &self,
             _: vk::SurfaceKHR,
-            _: Option<&'static vk::AllocationCallbacks>,
+            _: Option<&vk::AllocationCallbacks>,
         ) -> LayerResult<()> {
             unimplemented!()
         }
@@ -88,7 +88,7 @@ fn test_auto_deviceinfo_should_intercept_hooked_proc() {
         fn destroy_image(
             &self,
             _image: vk::Image,
-            _p_allocator: Option<&'static vk::AllocationCallbacks>,
+            _p_allocator: Option<&vk::AllocationCallbacks>,
         ) -> LayerResult<()> {
             unimplemented!()
         }

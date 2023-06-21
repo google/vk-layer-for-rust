@@ -49,6 +49,7 @@ class LayerTraitGenerator(OutputGenerator):
                     "",
                     "use ash::{vk, prelude::VkResult};",
                     "",
+                    "use crate::VkLayerDeviceLink;",
                     "use super::{LayerResult, TryFromVulkanCommandError};",
                 ]
             )

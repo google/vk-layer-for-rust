@@ -20,7 +20,7 @@ use once_cell::sync::Lazy;
 use std::{
     borrow::Borrow,
     collections::{BTreeMap, BTreeSet},
-    ffi::{c_char, c_void, CStr},
+    ffi::{c_char, c_void, CStr, CString},
     marker::PhantomData,
     pin::Pin,
     ptr::{null, null_mut, NonNull},
@@ -206,6 +206,8 @@ static VULKAN_COMMANDS: Lazy<BTreeMap<VulkanCommandName, VulkanCommand>> = Lazy:
                         _: *const vk::AllocationCallbacks,
                         instance: *mut vk::Instance,
                     ) -> vk::Result {
+                        // TODO: assert that the ICD shouldn't receive a non-zero-length
+                        // VkLayerInstanceLink
                         let create_info = unsafe { create_info.as_ref() }.unwrap();
                         let application_info = unsafe { create_info.p_application_info.as_ref() };
                         let enabled_extensions = unsafe {
@@ -303,6 +305,8 @@ static VULKAN_COMMANDS: Lazy<BTreeMap<VulkanCommandName, VulkanCommand>> = Lazy:
                         _: *const vk::AllocationCallbacks,
                         device: *mut vk::Device,
                     ) -> vk::Result {
+                        // TODO: assert that the ICD shouldn't receive a non-zero-length
+                        // VkLayerDeviceLink
                         let dispatch_table =
                             Box::into_pin(Box::<DeviceDispatchTable>::new(Default::default()));
                         let physical_device =
@@ -810,15 +814,15 @@ pub fn create_entry<T: Layer>() -> ash::Entry {
     }
 }
 
-pub struct InstanceContext<T: Layer> {
+pub struct InstanceContext<T: Layers> {
     pub entry: ash::Entry,
     pub instance: ash::Instance,
-    pub next_entry: ash::Entry,
+    pub icd_entry: ash::Entry,
     pub next_instance_dispatch: ash::Instance,
     _marker: PhantomData<T>,
 }
 
-pub trait ArcDelInstanceContextExt<T: Layer>: Sized {
+pub trait ArcDelInstanceContextExt<T: Layers>: Sized {
     fn create_device(
         self,
         create_info_builder: impl FnOnce(
@@ -832,7 +836,7 @@ pub trait ArcDelInstanceContextExt<T: Layer>: Sized {
     }
 }
 
-impl<T: Layer> ArcDelInstanceContextExt<T> for ArcDel<InstanceContext<T>> {
+impl<T: Layers> ArcDelInstanceContextExt<T> for ArcDel<InstanceContext<T>> {
     fn create_device(
         self,
         create_info_builder: impl FnOnce(
@@ -861,19 +865,14 @@ impl<T: Layer> ArcDelInstanceContextExt<T> for ArcDel<InstanceContext<T>> {
             .queue_family_index(0)
             .queue_priorities(&queue_priorities)
             .build()];
-        let get_device_proc_addr = self.next_instance_dispatch.fp_v1_0().get_device_proc_addr;
-        let mut layer_link = VkLayerDeviceLink {
-            pNext: null_mut(),
-            pfnNextGetInstanceProcAddr: self.next_entry.static_fn().get_instance_proc_addr,
-            pfnNextGetDeviceProcAddr: get_device_proc_addr,
-        };
+        let mut layer_links = T::RestLayers::device_links(self.instance.handle());
         let mut layer_create_info = VkLayerDeviceCreateInfo {
             sType: vk::StructureType::LOADER_DEVICE_CREATE_INFO,
             pNext: null(),
             function: VkLayerFunction::VK_LAYER_LINK_INFO,
             u: Default::default(),
         };
-        layer_create_info.u.pLayerInfo = &mut layer_link as *mut _;
+        layer_create_info.u.pLayerInfo = layer_links[0].as_mut();
         let device_create_info = vk::DeviceCreateInfo::builder()
             .queue_create_infos(&queue_create_infos)
             .push_next(&mut layer_create_info);
@@ -899,46 +898,129 @@ impl<T: Layer> ArcDelInstanceContextExt<T> for ArcDel<InstanceContext<T>> {
     }
 }
 
-pub struct DeviceContext<T: Layer> {
+pub struct DeviceContext<T: Layers> {
     pub device: ash::Device,
     pub next_device_dispatch: ash::Device,
     pub instance_context: ArcDel<InstanceContext<T>>,
 }
 
-pub trait InstanceCreateInfoExt {
-    fn default_instance<T: Layer>(self) -> ArcDel<InstanceContext<T>>;
+pub trait Layers {
+    type RestLayers: Layers;
+    fn create_entry() -> ash::Entry;
+    fn head_instance_link() -> VkLayerInstanceLink;
+    fn instance_links() -> Vec<Box<VkLayerInstanceLink>> {
+        let mut head = vec![Box::new(Self::head_instance_link())];
+        let mut rest = Self::RestLayers::instance_links();
+        head.append(&mut rest);
+        if head.len() > 1 {
+            head[0].pNext = head[1].as_mut();
+        }
+        head
+    }
+    fn head_device_link(instance: vk::Instance) -> VkLayerDeviceLink {
+        let instance_link = Self::head_instance_link();
+        let get_instance_proc_addr = instance_link.pfnNextGetInstanceProcAddr;
+        let get_device_proc_addr_name = CString::new("vkGetDeviceProcAddr").unwrap();
+        let get_device_proc_addr =
+            unsafe { get_instance_proc_addr(instance, get_device_proc_addr_name.as_ptr()) }
+                .unwrap();
+        let get_device_proc_addr: vk::PFN_vkGetDeviceProcAddr =
+            unsafe { std::mem::transmute(get_device_proc_addr) };
+        VkLayerDeviceLink {
+            pNext: null_mut(),
+            pfnNextGetInstanceProcAddr: get_instance_proc_addr,
+            pfnNextGetDeviceProcAddr: get_device_proc_addr,
+        }
+    }
+    fn device_links(instance: vk::Instance) -> Vec<Box<VkLayerDeviceLink>> {
+        let mut head = vec![Box::new(Self::head_device_link(instance))];
+        let mut rest = Self::RestLayers::device_links(instance);
+        head.append(&mut rest);
+        if head.len() > 1 {
+            head[0].pNext = head[1].as_mut();
+        }
+        head
+    }
 }
 
-impl InstanceCreateInfoExt for vk::InstanceCreateInfoBuilder<'_> {
-    fn default_instance<T: Layer>(self) -> ArcDel<InstanceContext<T>> {
-        let entry = create_entry::<T>();
-        let mut layer_link = VkLayerInstanceLink {
+impl Layers for () {
+    type RestLayers = ();
+    fn create_entry() -> ash::Entry {
+        unimplemented!()
+    }
+    fn head_instance_link() -> VkLayerInstanceLink {
+        VkLayerInstanceLink {
             pNext: null_mut(),
             pfnNextGetInstanceProcAddr: get_instance_proc_addr,
             pfnNextGetPhysicalDeviceProcAddr: None,
-        };
+        }
+    }
+    fn instance_links() -> Vec<Box<VkLayerInstanceLink>> {
+        vec![Box::new(Self::head_instance_link())]
+    }
+    fn device_links(instance: vk::Instance) -> Vec<Box<VkLayerDeviceLink>> {
+        vec![Box::new(Self::head_device_link(instance))]
+    }
+}
+
+impl<T: Layer> Layers for (T,) {
+    type RestLayers = ();
+    fn create_entry() -> ash::Entry {
+        create_entry::<T>()
+    }
+    fn head_instance_link() -> VkLayerInstanceLink {
+        VkLayerInstanceLink {
+            pNext: null_mut(),
+            pfnNextGetInstanceProcAddr: Global::<T>::get_instance_proc_addr,
+            pfnNextGetPhysicalDeviceProcAddr: None,
+        }
+    }
+}
+
+impl<T: Layer, U: Layer> Layers for (T, U) {
+    type RestLayers = (U,);
+    fn create_entry() -> ash::Entry {
+        <(T,)>::create_entry()
+    }
+    fn head_instance_link() -> VkLayerInstanceLink {
+        <(T,)>::head_instance_link()
+    }
+}
+
+pub trait InstanceCreateInfoExt {
+    fn default_instance<T: Layers>(self) -> ArcDel<InstanceContext<T>>;
+}
+
+impl InstanceCreateInfoExt for vk::InstanceCreateInfoBuilder<'_> {
+    fn default_instance<T: Layers>(self) -> ArcDel<InstanceContext<T>> {
+        let entry = T::create_entry();
+        let mut layer_links = T::RestLayers::instance_links();
         let mut layer_create_info = VkLayerInstanceCreateInfo {
             sType: vk::StructureType::LOADER_INSTANCE_CREATE_INFO,
             pNext: null(),
             function: VkLayerFunction::VK_LAYER_LINK_INFO,
             u: Default::default(),
         };
-        *unsafe { layer_create_info.u.pLayerInfo.as_mut() } = &mut layer_link;
+        *unsafe { layer_create_info.u.pLayerInfo.as_mut() } = if layer_links.is_empty() {
+            null_mut()
+        } else {
+            layer_links[0].as_mut()
+        };
 
         let create_instance_info = self.push_next(&mut layer_create_info);
         let instance = unsafe { entry.create_instance(&create_instance_info, None) }.unwrap();
         assert_ne!(instance.handle(), vk::Instance::null());
-        let next_entry = unsafe {
+        let icd_entry = unsafe {
             ash::Entry::from_static_fn(vk::StaticFn {
                 get_instance_proc_addr,
             })
         };
         let next_instance_dispatch =
-            unsafe { ash::Instance::load(next_entry.static_fn(), instance.handle()) };
+            unsafe { ash::Instance::load(icd_entry.static_fn(), instance.handle()) };
         let context = InstanceContext {
             entry,
             instance,
-            next_entry,
+            icd_entry,
             next_instance_dispatch,
             _marker: Default::default(),
         };

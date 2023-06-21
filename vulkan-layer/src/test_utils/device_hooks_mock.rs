@@ -20,16 +20,16 @@ use ash::vk;
 mock! {
     pub DeviceHooks {}
     impl DeviceHooks for DeviceHooks {
-        fn destroy_image(
+        fn destroy_image<'a>(
             &self,
             _image: vk::Image,
-            _p_allocator: Option<&'static vk::AllocationCallbacks>,
+            _p_allocator: Option<&'a vk::AllocationCallbacks>,
         ) -> LayerResult<()>;
 
-        fn destroy_sampler_ycbcr_conversion(
+        fn destroy_sampler_ycbcr_conversion<'a>(
             &self,
             _ycbcr_conversion: vk::SamplerYcbcrConversion,
-            _p_allocator: Option<&'static vk::AllocationCallbacks>,
+            _p_allocator: Option<&'a vk::AllocationCallbacks>,
         ) -> LayerResult<()>;
     }
 }

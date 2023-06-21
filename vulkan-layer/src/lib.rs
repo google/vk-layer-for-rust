@@ -34,8 +34,8 @@ mod generated;
 pub mod test_utils;
 mod vk_utils;
 
-pub use bindings::VkLayerInstanceLink;
 use bindings::{VkLayerDeviceCreateInfo, VkLayerFunction, VkLayerInstanceCreateInfo};
+pub use bindings::{VkLayerDeviceLink, VkLayerInstanceLink};
 pub use generated::{
     global_simple_intercept::Extension,
     layer_trait::{DeviceHooks, InstanceHooks, VulkanCommand as LayerVulkanCommand},
@@ -575,12 +575,12 @@ impl<T: Layer> Global<T> {
                 return vk::Result::ERROR_INITIALIZATION_FAILED;
             }
         };
-        let layer_info = unsafe { layer_create_info.u.pLayerInfo.as_ref() }.unwrap();
-        layer_create_info.u.pLayerInfo = layer_info.pNext;
+        let layer_link = unsafe { layer_create_info.u.pLayerInfo.as_ref() }.unwrap();
+        layer_create_info.u.pLayerInfo = layer_link.pNext;
 
         let get_instance_proc_addr: vk::PFN_vkGetInstanceProcAddr =
-            layer_info.pfnNextGetInstanceProcAddr;
-        let get_device_proc_addr: vk::PFN_vkGetDeviceProcAddr = layer_info.pfnNextGetDeviceProcAddr;
+            layer_link.pfnNextGetInstanceProcAddr;
+        let get_device_proc_addr: vk::PFN_vkGetDeviceProcAddr = layer_link.pfnNextGetDeviceProcAddr;
 
         let global = Self::instance();
         let physical_device_info = global
@@ -599,7 +599,7 @@ impl<T: Layer> Global<T> {
         };
         let next_create_device: vk::PFN_vkCreateDevice =
             unsafe { std::mem::transmute(next_create_device) };
-        let mut create_info = create_info.clone();
+        let mut create_info = *create_info;
         let requested_extensions = unsafe {
             std::slice::from_raw_parts(
                 create_info.pp_enabled_extension_names,
@@ -621,45 +621,75 @@ impl<T: Layer> Global<T> {
                 .to_owned()
         })
         .collect::<Vec<_>>();
-        let enabled_extensions = requested_extensions
-            .iter()
-            .filter_map(|extension_name| {
-                let extension_name_cstring =
-                    CString::new(extension_name.clone()).unwrap_or_else(|e| {
-                        panic!("Failed to create CString from {}: {}", extension_name, e)
-                    });
-                let extension: Extension = match extension_name.as_str().try_into() {
-                    Ok(extension) => extension,
-                    Err(_) => return Some(extension_name_cstring),
-                };
-                if T::DEVICE_EXTENSIONS
-                    .iter()
-                    .any(|layer_extension| layer_extension.name == extension)
-                {
-                    None
-                } else {
-                    Some(extension_name_cstring)
-                }
-            })
-            .collect::<Vec<_>>();
-        let enabled_extensions = enabled_extensions
-            .iter()
-            .map(|extension_name| extension_name.as_ptr())
-            .collect::<Vec<_>>();
-        create_info.enabled_extension_count = enabled_extensions.len().try_into().unwrap();
-        create_info.pp_enabled_extension_names = if enabled_extensions.is_empty() {
-            null()
+        let create_device_res = if global
+            .layer_info
+            .hooked_commands()
+            .any(|command| command == LayerVulkanCommand::CreateDevice)
+        {
+            instance_info
+                .customized_info
+                .borrow()
+                .hooks()
+                .create_device(physical_device, &create_info, layer_link, unsafe {
+                    p_allocator.as_ref()
+                })
         } else {
-            enabled_extensions.as_ptr()
+            LayerResult::Unhandled
         };
-        // TODO: allow the layer trait to intercept this function
-        let res =
-            unsafe { next_create_device(physical_device, &create_info, p_allocator, p_device) };
-        if res != vk::Result::SUCCESS {
-            return res;
-        }
+        let device = match create_device_res {
+            LayerResult::Handled(Ok(device)) => device,
+            LayerResult::Handled(Err(e)) => return e,
+            LayerResult::Unhandled => {
+                let enabled_extensions = requested_extensions
+                    .iter()
+                    .filter_map(|extension_name| {
+                        let extension_name_cstring = CString::new(extension_name.clone())
+                            .unwrap_or_else(|e| {
+                                panic!("Failed to create CString from {}: {}", extension_name, e)
+                            });
+                        let extension: Extension = match extension_name.as_str().try_into() {
+                            Ok(extension) => extension,
+                            Err(_) => return Some(extension_name_cstring),
+                        };
+                        if T::DEVICE_EXTENSIONS
+                            .iter()
+                            .any(|layer_extension| layer_extension.name == extension)
+                        {
+                            None
+                        } else {
+                            Some(extension_name_cstring)
+                        }
+                    })
+                    .collect::<Vec<_>>();
+                let enabled_extensions = enabled_extensions
+                    .iter()
+                    .map(|extension_name| extension_name.as_ptr())
+                    .collect::<Vec<_>>();
+                create_info.enabled_extension_count = enabled_extensions.len().try_into().unwrap();
+                create_info.pp_enabled_extension_names = if enabled_extensions.is_empty() {
+                    null()
+                } else {
+                    enabled_extensions.as_ptr()
+                };
+                let mut device = MaybeUninit::<vk::Device>::uninit();
+                let res = unsafe {
+                    next_create_device(
+                        physical_device,
+                        &create_info,
+                        p_allocator,
+                        device.as_mut_ptr(),
+                    )
+                };
+                if res != vk::Result::SUCCESS {
+                    return res;
+                }
+                // Safe because vkCreateDevice returns VK_SUCCESS, so VkDevice is correctly
+                // initialized.
+                unsafe { device.assume_init() }
+            }
+        };
 
-        let device = unsafe { p_device.as_ref() }.unwrap();
+        *unsafe { p_device.as_mut() }.unwrap() = device;
         let ash_instance = Arc::clone(&instance_info.dispatch_table.core);
         let ash_device = unsafe {
             // ash will also try to load instance-level dispatchable commands with
@@ -672,7 +702,7 @@ impl<T: Layer> Global<T> {
                     get_device_proc_addr,
                     ..ash_instance.fp_v1_0().clone()
                 },
-                *device,
+                device,
             )
         };
         let ash_device = Arc::new(ash_device);
@@ -691,7 +721,7 @@ impl<T: Layer> Global<T> {
             assert!(
                 !device_map.contains_key(&device.get_dispatch_key()),
                 "duplicate VkDevice: {:?}",
-                *device
+                device
             );
             device_map.insert(
                 device.get_dispatch_key(),
