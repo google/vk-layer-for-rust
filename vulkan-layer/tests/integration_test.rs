@@ -1622,7 +1622,6 @@ mod create_destroy_device {
     }
 
     #[test]
-    #[ignore]
     fn test_should_receive_the_original_extension_list() {
         let instance_extensions = [vk::KhrSurfaceFn::name().as_ptr()];
         let expected_device_extensions: Vec<&'static CStr> = vec![vk::KhrSwapchainFn::name()];
@@ -1691,8 +1690,25 @@ mod create_destroy_device {
     }
 
     #[test]
-    #[ignore]
     fn test_destroy_device_will_actually_destroy_underlying_device_info() {
-        todo!()
+        #[derive(Default)]
+        struct Tag;
+        impl TestLayer for Tag {}
+
+        {
+            let ctx = vk::InstanceCreateInfo::builder()
+                .default_instance::<(MockLayer<Tag>,)>()
+                .default_device()
+                .unwrap();
+            let DeviceContext { device, .. } = ctx.as_ref();
+            let device_data = Global::<MockLayer<Tag>>::instance()
+                .layer_info
+                .get_device_info(device.handle())
+                .unwrap();
+            device_data.with_mock_drop(|mock_drop| {
+                mock_drop.expect_drop().once().return_const(());
+            });
+            // Calling vkDestroyDevice through RAII.
+        }
     }
 }
