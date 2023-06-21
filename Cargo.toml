@@ -3,6 +3,7 @@ resolver = "2"
 members = [
     "vulkan-layer",
     "vulkan-layer-macros",
+    "nexus-vulkan-layer",
     "xtask",
 ]
 # Do not operate on vulkan-layer-macros by default, because it doesn't work well with panic=abort

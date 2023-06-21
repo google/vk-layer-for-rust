@@ -17,7 +17,7 @@ use std::{ffi::CString, sync::Arc};
 use ash::{prelude::VkResult, vk};
 
 use log::{error, info};
-use vulkan_layer::{DeviceInfo, InstanceInfo, Layer, LayerResult};
+use vulkan_layer::{Layer, LayerResult, auto_deviceinfo_impl, auto_globalhooksinfo_impl, auto_instanceinfo_impl, InstanceHooks, DeviceHooks, GlobalHooks};
 
 // TODO: find a way to share these functions with vulkan-layer.
 struct VulkanBaseInStructChain<'a> {
@@ -80,7 +80,8 @@ pub(crate) struct NexusLayer;
 
 pub(crate) struct NexusInstanceInfo;
 
-impl InstanceInfo for NexusInstanceInfo {
+#[auto_instanceinfo_impl]
+impl InstanceHooks for NexusInstanceInfo {
     fn get_physical_device_image_format_properties2(
         &self,
         _physical_device: vk::PhysicalDevice,
@@ -115,7 +116,8 @@ pub(crate) struct NexusDeviceInfo {
     get_swapchain_gralloc_usage2_android: Option<vk::PFN_vkGetSwapchainGrallocUsage2ANDROID>,
 }
 
-impl DeviceInfo for NexusDeviceInfo {
+#[auto_deviceinfo_impl]
+impl DeviceHooks for NexusDeviceInfo {
     fn get_device_proc_addr(&self, name: &str) -> LayerResult<vk::PFN_vkVoidFunction> {
         if name == VK_GET_SWAPCHAIN_GRALLOC_USAGE2_ANDROID_NAME
             && self.get_swapchain_gralloc_usage2_android.is_none()
@@ -286,6 +288,9 @@ impl DeviceInfo for NexusDeviceInfo {
     }
 }
 
+#[auto_globalhooksinfo_impl]
+impl GlobalHooks for NexusLayer {}
+
 impl Layer for NexusLayer {
     const LAYER_NAME: &'static str = "VK_LAYER_GOOGLE_nexus";
     const LAYER_DESCRIPTION: &'static str =
@@ -293,8 +298,15 @@ impl Layer for NexusLayer {
     const IMPLEMENTATION_VERSION: u32 = 1;
     const SPEC_VERSION: u32 = vk::API_VERSION_1_1;
 
+    type GlobalHooksInfo = Self;
     type InstanceInfo = NexusInstanceInfo;
     type DeviceInfo = NexusDeviceInfo;
+    type InstanceInfoContainer = NexusInstanceInfo;
+    type DeviceInfoContainer = NexusDeviceInfo;
+
+    fn get_global_hooks_info(&self) -> &Self::GlobalHooksInfo {
+        self
+    }
 
     fn create_instance_info(
         &self,
