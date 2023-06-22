@@ -17,6 +17,8 @@ use std::ffi::c_char;
 use ash::vk;
 
 mod layer_impl;
+mod bindings;
+mod cros_gralloc_helpers;
 
 type Global = vulkan_layer::Global<layer_impl::NexusLayer>;
 
