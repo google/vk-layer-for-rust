@@ -1,2 +1,5 @@
 [alias]
 xtask = "run --package xtask --bin xtask --"
+
+[build]
+target = "x86_64-linux-android"

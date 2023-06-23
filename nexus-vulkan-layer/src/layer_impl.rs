@@ -12,10 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::{
-    ffi::{c_void, CString},
-    sync::Arc,
-};
+use std::{ffi::CString, ptr::{null, null_mut}, sync::Arc};
 
 use ash::{prelude::VkResult, vk};
 use bumpalo::Bump;
@@ -83,6 +80,31 @@ fn find_out_struct<T: vk::TaggedStructure>(
             None
         }
     })
+}
+
+// Add wrapper to some Vulkan structs with #[repr(transparent)] so that we can add trait to those
+// structs, but can still use them as the wrapped struct.
+
+#[repr(transparent)]
+struct NativeBufferANDROIDWrapper(vk::NativeBufferANDROID);
+
+unsafe impl vk::ExtendsImageCreateInfo for NativeBufferANDROIDWrapper {}
+
+impl From<vk::NativeBufferANDROID> for NativeBufferANDROIDWrapper {
+    fn from(value: vk::NativeBufferANDROID) -> Self {
+        Self(value)
+    }
+}
+
+#[repr(transparent)]
+struct SwapchainImageCreateInfoANDROIDWrapper(vk::SwapchainImageCreateInfoANDROID);
+
+unsafe impl vk::ExtendsImageCreateInfo for SwapchainImageCreateInfoANDROIDWrapper {}
+
+impl From<vk::SwapchainImageCreateInfoANDROID> for SwapchainImageCreateInfoANDROIDWrapper {
+    fn from(value: vk::SwapchainImageCreateInfoANDROID) -> Self {
+        Self(value)
+    }
 }
 
 pub(crate) struct NexusLayer;
@@ -179,69 +201,102 @@ impl DeviceHooks for NexusDeviceInfo {
                         assert_ne!(local_create_info.format, vk::Format::UNDEFINED);
                     }
                     p_next @ vk::BufferCollectionImageCreateInfoFUCHSIA => {
-                        local_create_info = local_create_info.push_next(bump.alloc(p_next.clone()));
+                        let p_next = bump.alloc(*p_next);
+                        p_next.p_next = null();
+                        local_create_info = local_create_info.push_next(p_next);
                     }
                     p_next @ vk::DedicatedAllocationImageCreateInfoNV => {
-                        local_create_info = local_create_info.push_next(bump.alloc(p_next.clone()));
+                        let p_next = bump.alloc(*p_next);
+                        p_next.p_next = null();
+                        local_create_info = local_create_info.push_next(p_next);
                     }
                     p_next @ vk::ExportMetalObjectCreateInfoEXT => {
-                        local_create_info = local_create_info.push_next(bump.alloc(p_next.clone()));
+                        let p_next = bump.alloc(*p_next);
+                        p_next.p_next = null();
+                        local_create_info = local_create_info.push_next(p_next);
                     }
                     p_next @ vk::ExternalFormatANDROID => {
-                        local_create_info = local_create_info.push_next(bump.alloc(p_next.clone()));
+                        let p_next = bump.alloc(*p_next);
+                        p_next.p_next = null_mut();
+                        local_create_info = local_create_info.push_next(p_next);
                     }
                     p_next @ vk::ExternalMemoryImageCreateInfo => {
-                        local_create_info = local_create_info.push_next(bump.alloc(p_next.clone()));
+                        let p_next = bump.alloc(*p_next);
+                        p_next.p_next = null();
+                        local_create_info = local_create_info.push_next(p_next);
                     }
                     p_next @ vk::ExternalMemoryImageCreateInfoNV => {
-                        local_create_info = local_create_info.push_next(bump.alloc(p_next.clone()));
+                        let p_next = bump.alloc(*p_next);
+                        p_next.p_next = null();
+                        local_create_info = local_create_info.push_next(p_next);
                     }
                     p_next @ vk::ImageCompressionControlEXT => {
-                        local_create_info = local_create_info.push_next(bump.alloc(p_next.clone()));
+                        let p_next = bump.alloc(*p_next);
+                        p_next.p_next = null();
+                        local_create_info = local_create_info.push_next(p_next);
                     }
                     p_next @ vk::ImageDrmFormatModifierExplicitCreateInfoEXT => {
-                        local_create_info = local_create_info.push_next(bump.alloc(p_next.clone()));
+                        let p_next = bump.alloc(*p_next);
+                        p_next.p_next = null();
+                        local_create_info = local_create_info.push_next(p_next);
                     }
                     p_next @ vk::ImageDrmFormatModifierListCreateInfoEXT => {
-                        local_create_info = local_create_info.push_next(bump.alloc(p_next.clone()));
+                        let p_next = bump.alloc(*p_next);
+                        p_next.p_next = null();
+                        local_create_info = local_create_info.push_next(p_next);
                     }
                     p_next @ vk::ImageFormatListCreateInfo => {
-                        local_create_info = local_create_info.push_next(bump.alloc(p_next.clone()));
+                        let p_next = bump.alloc(*p_next);
+                        p_next.p_next = null();
+                        local_create_info = local_create_info.push_next(p_next);
                     }
                     p_next @ vk::ImageStencilUsageCreateInfo => {
-                        local_create_info = local_create_info.push_next(bump.alloc(p_next.clone()));
+                        let p_next = bump.alloc(*p_next);
+                        p_next.p_next = null();
+                        local_create_info = local_create_info.push_next(p_next);
                     }
                     p_next @ vk::ImageSwapchainCreateInfoKHR => {
-                        local_create_info = local_create_info.push_next(bump.alloc(p_next.clone()));
+                        let p_next = bump.alloc(*p_next);
+                        p_next.p_next = null();
+                        local_create_info = local_create_info.push_next(p_next);
                     }
                     p_next @ vk::ImportMetalIOSurfaceInfoEXT => {
-                        local_create_info = local_create_info.push_next(bump.alloc(p_next.clone()));
+                        let p_next = bump.alloc(*p_next);
+                        p_next.p_next = null();
+                        local_create_info = local_create_info.push_next(p_next);
                     }
                     p_next @ vk::ImportMetalTextureInfoEXT => {
-                        local_create_info = local_create_info.push_next(bump.alloc(p_next.clone()));
+                        let p_next = bump.alloc(*p_next);
+                        p_next.p_next = null();
+                        local_create_info = local_create_info.push_next(p_next);
                     }
                     p_next @ vk::OpaqueCaptureDescriptorDataCreateInfoEXT => {
-                        local_create_info = local_create_info.push_next(bump.alloc(p_next.clone()));
+                        let p_next = bump.alloc(*p_next);
+                        p_next.p_next = null();
+                        local_create_info = local_create_info.push_next(p_next);
                     }
                     p_next @ vk::OpticalFlowImageFormatInfoNV => {
-                        local_create_info = local_create_info.push_next(bump.alloc(p_next.clone()));
+                        let p_next = bump.alloc(*p_next);
+                        p_next.p_next = null();
+                        local_create_info = local_create_info.push_next(p_next);
                     }
                     p_next @ vk::VideoProfileListInfoKHR => {
-                        local_create_info = local_create_info.push_next(bump.alloc(p_next.clone()));
+                        let p_next = bump.alloc(*p_next);
+                        p_next.p_next = null();
+                        local_create_info = local_create_info.push_next(p_next);
                     }
                     p_next @ vk::NativeBufferANDROID => {
-                        let p_next = bump.alloc(p_next.clone());
-                        assert!(p_next.p_next.is_null());
-                        p_next.p_next = local_create_info.p_next;
-                        local_create_info.p_next = p_next as *const _ as *const c_void;
+                        let p_next: &mut NativeBufferANDROIDWrapper = bump.alloc((*p_next).into());
+                        p_next.0.p_next = null();
+                        local_create_info = local_create_info.push_next(p_next);
                         // TODO(nexus): required for VK_ANDROID_native_buffer
                         error!("vk::NativeBufferANDROID in create_image unimplemented");
                     }
                     p_next @ vk::SwapchainImageCreateInfoANDROID => {
-                        let p_next = bump.alloc(p_next.clone());
-                        assert!(p_next.p_next.is_null());
-                        p_next.p_next = local_create_info.p_next;
-                        local_create_info.p_next = p_next as *const _ as *const c_void;
+                        let p_next: &mut SwapchainImageCreateInfoANDROIDWrapper =
+                            bump.alloc((*p_next).into());
+                        p_next.0.p_next = null();
+                        local_create_info = local_create_info.push_next(p_next);
                         // TODO(nexus): required for VK_ANDROID_native_buffer
                         error!("vk::SwapchainImageCreateInfoANDROID in create_image unimplemented");
                     }
@@ -372,7 +427,7 @@ impl DeviceHooks for NexusDeviceInfo {
                     format_properties2 @ vk::AndroidHardwareBufferFormatProperties2ANDROID => {
                         let p_next = format_properties2.p_next;
                         *format_properties2 =
-                            vk::AndroidHardwareBufferFormatProperties2ANDROID::builder()
+                            *vk::AndroidHardwareBufferFormatProperties2ANDROID::builder()
                                 .format(get_vk_format(cros_gralloc_handle))
                                 .external_format(0)
                                 .format_features(get_vk_format_features2(cros_gralloc_handle))
@@ -387,14 +442,13 @@ impl DeviceHooks for NexusDeviceInfo {
                                 )
                                 .suggested_ycbcr_range(vk::SamplerYcbcrRange::ITU_FULL)
                                 .suggested_x_chroma_offset(vk::ChromaLocation::COSITED_EVEN)
-                                .suggested_y_chroma_offset(vk::ChromaLocation::COSITED_EVEN)
-                                .clone();
+                                .suggested_y_chroma_offset(vk::ChromaLocation::COSITED_EVEN);
                         format_properties2.p_next = p_next;
                     }
                     format_properties @ vk::AndroidHardwareBufferFormatPropertiesANDROID => {
                         let p_next = format_properties.p_next;
                         *format_properties =
-                            vk::AndroidHardwareBufferFormatPropertiesANDROID::builder()
+                            *vk::AndroidHardwareBufferFormatPropertiesANDROID::builder()
                                 .format(get_vk_format(cros_gralloc_handle))
                                 .external_format(0)
                                 .format_features(get_vk_format_features(cros_gralloc_handle))
@@ -409,8 +463,7 @@ impl DeviceHooks for NexusDeviceInfo {
                                 )
                                 .suggested_ycbcr_range(vk::SamplerYcbcrRange::ITU_FULL)
                                 .suggested_x_chroma_offset(vk::ChromaLocation::COSITED_EVEN)
-                                .suggested_y_chroma_offset(vk::ChromaLocation::COSITED_EVEN)
-                                .clone();
+                                .suggested_y_chroma_offset(vk::ChromaLocation::COSITED_EVEN);
                         format_properties.p_next = p_next;
                     }
                     _ => {
@@ -446,78 +499,97 @@ impl DeviceHooks for NexusDeviceInfo {
         let p_next_chain: VulkanBaseInStructChain =
             unsafe { (allocate_info.p_next as *const vk::BaseInStructure).as_ref() }.into();
         let bump = Bump::new();
-        let mut local_allocate_info = vk::MemoryAllocateInfo::builder();
+        let mut local_allocate_info = vk::MemoryAllocateInfo::builder()
+            .allocation_size(allocate_info.allocation_size)
+            .memory_type_index(allocate_info.memory_type_index);
         for p_next in p_next_chain {
             let p_next_ptr = p_next as *const vk::BaseInStructure;
             unsafe {
                 ash::match_in_struct!(match p_next_ptr {
                     p_next @ vk::DedicatedAllocationMemoryAllocateInfoNV => {
-                        local_allocate_info =
-                            local_allocate_info.push_next(bump.alloc(p_next.clone()));
+                        let p_next = bump.alloc(*p_next);
+                        p_next.p_next = null();
+                        local_allocate_info = local_allocate_info.push_next(p_next);
                     }
                     p_next @ vk::ExportMemoryAllocateInfo => {
-                        local_allocate_info =
-                            local_allocate_info.push_next(bump.alloc(p_next.clone()));
+                        let p_next = bump.alloc(*p_next);
+                        p_next.p_next = null();
+                        local_allocate_info = local_allocate_info.push_next(p_next);
                     }
                     p_next @ vk::ExportMemoryAllocateInfoNV => {
-                        local_allocate_info =
-                            local_allocate_info.push_next(bump.alloc(p_next.clone()));
+                        let p_next = bump.alloc(*p_next);
+                        p_next.p_next = null();
+                        local_allocate_info = local_allocate_info.push_next(p_next);
                     }
                     p_next @ vk::ExportMemoryWin32HandleInfoKHR => {
-                        local_allocate_info =
-                            local_allocate_info.push_next(bump.alloc(p_next.clone()));
+                        let p_next = bump.alloc(*p_next);
+                        p_next.p_next = null();
+                        local_allocate_info = local_allocate_info.push_next(p_next);
                     }
                     p_next @ vk::ExportMemoryWin32HandleInfoNV => {
-                        local_allocate_info =
-                            local_allocate_info.push_next(bump.alloc(p_next.clone()));
+                        let p_next = bump.alloc(*p_next);
+                        p_next.p_next = null();
+                        local_allocate_info = local_allocate_info.push_next(p_next);
                     }
                     p_next @ vk::ExportMetalObjectCreateInfoEXT => {
-                        local_allocate_info =
-                            local_allocate_info.push_next(bump.alloc(p_next.clone()));
+                        let p_next = bump.alloc(*p_next);
+                        p_next.p_next = null();
+                        local_allocate_info = local_allocate_info.push_next(p_next);
                     }
                     p_next @ vk::ImportMemoryBufferCollectionFUCHSIA => {
-                        local_allocate_info =
-                            local_allocate_info.push_next(bump.alloc(p_next.clone()));
+                        let p_next = bump.alloc(*p_next);
+                        p_next.p_next = null();
+                        local_allocate_info = local_allocate_info.push_next(p_next);
                     }
                     p_next @ vk::ImportMemoryFdInfoKHR => {
-                        local_allocate_info =
-                            local_allocate_info.push_next(bump.alloc(p_next.clone()));
+                        let p_next = bump.alloc(*p_next);
+                        p_next.p_next = null();
+                        local_allocate_info = local_allocate_info.push_next(p_next);
                     }
                     p_next @ vk::ImportMemoryHostPointerInfoEXT => {
-                        local_allocate_info =
-                            local_allocate_info.push_next(bump.alloc(p_next.clone()));
+                        let p_next = bump.alloc(*p_next);
+                        p_next.p_next = null();
+                        local_allocate_info = local_allocate_info.push_next(p_next);
                     }
                     p_next @ vk::ImportMemoryWin32HandleInfoKHR => {
-                        local_allocate_info =
-                            local_allocate_info.push_next(bump.alloc(p_next.clone()));
+                        let p_next = bump.alloc(*p_next);
+                        p_next.p_next = null();
+                        local_allocate_info = local_allocate_info.push_next(p_next);
                     }
                     p_next @ vk::ImportMemoryWin32HandleInfoNV => {
-                        local_allocate_info =
-                            local_allocate_info.push_next(bump.alloc(p_next.clone()));
+                        let p_next = bump.alloc(*p_next);
+                        p_next.p_next = null();
+                        local_allocate_info = local_allocate_info.push_next(p_next);
                     }
                     p_next @ vk::ImportMemoryZirconHandleInfoFUCHSIA => {
-                        local_allocate_info =
-                            local_allocate_info.push_next(bump.alloc(p_next.clone()));
+                        let p_next = bump.alloc(*p_next);
+                        p_next.p_next = null();
+                        local_allocate_info = local_allocate_info.push_next(p_next);
                     }
                     p_next @ vk::ImportMetalBufferInfoEXT => {
-                        local_allocate_info =
-                            local_allocate_info.push_next(bump.alloc(p_next.clone()));
+                        let p_next = bump.alloc(*p_next);
+                        p_next.p_next = null();
+                        local_allocate_info = local_allocate_info.push_next(p_next);
                     }
                     p_next @ vk::MemoryAllocateFlagsInfo => {
-                        local_allocate_info =
-                            local_allocate_info.push_next(bump.alloc(p_next.clone()));
+                        let p_next = bump.alloc(*p_next);
+                        p_next.p_next = null();
+                        local_allocate_info = local_allocate_info.push_next(p_next);
                     }
                     p_next @ vk::MemoryDedicatedAllocateInfo => {
-                        local_allocate_info =
-                            local_allocate_info.push_next(bump.alloc(p_next.clone()));
+                        let p_next = bump.alloc(*p_next);
+                        p_next.p_next = null();
+                        local_allocate_info = local_allocate_info.push_next(p_next);
                     }
                     p_next @ vk::MemoryOpaqueCaptureAddressAllocateInfo => {
-                        local_allocate_info =
-                            local_allocate_info.push_next(bump.alloc(p_next.clone()));
+                        let p_next = bump.alloc(*p_next);
+                        p_next.p_next = null();
+                        local_allocate_info = local_allocate_info.push_next(p_next);
                     }
                     p_next @ vk::MemoryPriorityAllocateInfoEXT => {
-                        local_allocate_info =
-                            local_allocate_info.push_next(bump.alloc(p_next.clone()));
+                        let p_next = bump.alloc(*p_next);
+                        p_next.p_next = null();
+                        local_allocate_info = local_allocate_info.push_next(p_next);
                     }
                     p_next @ vk::ImportAndroidHardwareBufferInfoANDROID => {
                         fn get_opaque_fd_from_ahb(ahb: *const AHardwareBuffer) -> VkResult<i32> {
