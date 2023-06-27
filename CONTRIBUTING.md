@@ -33,7 +33,19 @@ for this purpose.
 
 ### Format the code
 
+#### Rust
+
 Nightly features in `rustfmt` is used, so run `cargo +nightly fmt` to format the entire project.
+
+#### Python
+
+Python scripts are used to generate some Rust source files. Use [black](https://black.readthedocs.io/en/stable) to format python code:
+
+```bash
+$ python -m black .
+All done! ✨ 🍰 ✨
+4 files left unchanged.
+```
 
 ### Regenerate code
 
@@ -60,3 +72,7 @@ Files are generated in different mechanism:
 * `vulkan-layer/src/generated/{layer_trait,global_simple_intercept}.rs`
 
   These 2 files are generated through the `scritps/vulkan_layer_genvk.py`. This script utilizes the `OutputGenerator` class defined in the `generator.py` from the Vulkan registry repo.
+
+### Test
+
+Just run `cargo test`. However, `cargo +nightly test -Z panic-abort-tests` is nicer because the library is supposed to be built with `panic="abort"`.

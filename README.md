@@ -58,8 +58,7 @@ TODO
 - [x] Auto-generate the `global_simple_intercept.rs` from `vk.xml`.
 - [x] Auto-generate the `layer_trait.rs` file from `vk.xml`.
 - [x] Use a attribute macro to track which function is implemented in the `LayerTrait`, and don't inject all other functions for performance.
-- [ ] Do not auto generate global commands: the interfaces are always different.
-- [ ] Release global resources when the dynamic library is unloaded. Use platform specific way. This is a more serious issue for Android, because Vulkan is a SP-HAL that can be loaded into and unloaded from the process multiple times. We can use `Mutex<Option<Box<T>>>` for that.
+- [ ] Make global instance trivially destructible after all instances are destroyed. We can't rely on the destructor of DLL to perform clean up. We need to require the user to declare the global static, and declare one for each layer. User's `Layer` global instance will also be created before the first `vkCreateInstance` is returned and will be destroyed after the last `vkDestroyInstance` is called.
 - [ ] Use procedure macro to generate the export functions in `lib.rs` file for the layer user.
 - [ ] Use the xtask workflow to generate the layer json file.
 - [ ] Support the latest layer interface version. Currently 2 is the latest version. e.g. correctly handle the `vk_layerGetPhysicalDeviceProcAddr` case.
@@ -70,3 +69,4 @@ TODO
   - [x] `vulkan-layer` level integration test
 - [ ] Investigate slow compile speed for integration test
 - [ ] Handle different enum underlying representation: generate `VkLayerFunction` in platform specific files, and also stop using `include!` which could confuse the `rust-analyzer`.
+- [ ] catch unwind at the FFI boundary to allow the library to be compiled with `panic="unwind"`.
