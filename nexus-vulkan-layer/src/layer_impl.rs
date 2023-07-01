@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::{ffi::CString, ptr::{null, null_mut}, sync::Arc};
+use std::{ffi::{CString, CStr}, ptr::{null, null_mut}, sync::Arc};
 
-use ash::{prelude::VkResult, vk};
+use ash::{prelude::VkResult, vk::{self, Handle}};
 use bumpalo::Bump;
 
 use crate::{
@@ -24,7 +24,7 @@ use crate::{
     },
     cros_gralloc_helpers::cros_gralloc_convert_handle,
 };
-use log::{error, info};
+use log::{error, info, warn};
 use vulkan_layer::{
     auto_deviceinfo_impl, auto_globalhooksinfo_impl, auto_instanceinfo_impl, DeviceHooks,
     Extension, ExtensionProperties, GlobalHooks, InstanceHooks, Layer, LayerResult,
@@ -696,6 +696,17 @@ impl DeviceHooks for NexusDeviceInfo {
                 unimplemented!("vk::NativeBufferANDROID in bind_image_memory2 unimplemented");
             }
         }
+        LayerResult::Unhandled
+    }
+
+    fn create_shader_module(
+        &self,
+        create_info: &vk::ShaderModuleCreateInfo,
+        _p_allocator: Option<&vk::AllocationCallbacks>,
+    ) -> LayerResult<VkResult<vk::ShaderModule>> {
+        let code = unsafe { std::slice::from_raw_parts(create_info.p_code, create_info.code_size / 4) };
+        info!("create_shader_module:");
+        info!("{:#?}", code);
         LayerResult::Unhandled
     }
 }
