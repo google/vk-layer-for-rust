@@ -1497,7 +1497,7 @@ mod create_destroy_device {
         }
 
         let device_extensions = [CString::new("VK_UNKNOWN_unknown_extension").unwrap()];
-        let device_extensions = device_extensions.map(|extension| extension.as_ptr());
+        let device_extensions = device_extensions.iter().map(|extension| extension.as_ptr()).collect::<Vec<_>>();
         let device_create_res = vk::InstanceCreateInfo::builder()
             .default_instance::<(MockLayer<Tag>,)>()
             .create_device(|create_info, create_device| {

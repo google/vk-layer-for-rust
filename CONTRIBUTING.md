@@ -75,4 +75,8 @@ Files are generated in different mechanism:
 
 ### Test
 
-Just run `cargo test`. However, `cargo +nightly test -Z panic-abort-tests` is nicer because the library is supposed to be built with `panic="abort"`.
+`cargo-nextest` is the recommended way to run the test.  Run `cargo nextest run` to run all tests. This is how CI runs the tests.
+
+`cargo test` is also supported. However, `cargo +nightly test -Z panic-abort-tests` is nicer because the library is supposed to be built with `panic="abort"`.
+
+[`cargo-llvm-cov`](https://github.com/taiki-e/cargo-llvm-cov) [with `cargo-nextest`](https://nexte.st/book/test-coverage.html#llvm-cov) is used to generate the code coverage info. To generate the `lcov` coverage file locally under `target/lcov.info`, run `cargo llvm-cov nextest --lcov --output-path target/lcov.info`.
