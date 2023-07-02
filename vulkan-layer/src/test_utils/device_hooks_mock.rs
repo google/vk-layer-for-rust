@@ -31,5 +31,11 @@ mock! {
             _ycbcr_conversion: vk::SamplerYcbcrConversion,
             _p_allocator: Option<&'a vk::AllocationCallbacks>,
         ) -> LayerResult<()>;
+
+        fn destroy_swapchain_khr<'a>(
+            &self,
+            _swapchain: vk::SwapchainKHR,
+            _p_allocator: Option<&'a vk::AllocationCallbacks>,
+        ) -> LayerResult<()>;
     }
 }

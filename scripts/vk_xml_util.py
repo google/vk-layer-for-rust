@@ -481,7 +481,7 @@ class RustType(NamedTuple):
         assert len(vk_xml_type.dimensions) > 0, "vk_xml_type must be an array type"
         dimensions = vk_xml_type.dimensions.copy()
         array_length = dimensions.pop()
-        assert vk_xml_type.is_optional == False, f"Optional array is not supported yet"
+        assert vk_xml_type.is_optional is False, "Optional array is not supported yet"
         element_vk_xml_type = dataclasses.replace(vk_xml_type, dimensions=dimensions)
         element_type = None
         if len(dimensions) == 0:
@@ -525,7 +525,7 @@ class RustType(NamedTuple):
             assert (
                 vk_xml_type.points_to is not None
                 and vk_xml_type.points_to.name == "char"
-                and vk_xml_type.points_to.is_const == True
+                and vk_xml_type.points_to.is_const is True
             ), "null-terminated only supports const char* type."
             return RustType(
                 is_optional=vk_xml_type.is_optional, refers_to=RustType(name="str", is_root=False)

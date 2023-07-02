@@ -24,12 +24,12 @@ sys.path.insert(
     0, str(Path(__file__).absolute().parents[1] / "third_party" / "Vulkan-Headers" / "registry")
 )  # noqa: E402
 
-from generator import OutputGenerator, GeneratorOptions
-from layer_trait_generator import LayerTraitGenerator
-from global_simple_intercept_generator import GlobalSimpleInterceptGenerator
-from reg import Registry
-from vkconventions import VulkanConventions
-from spec_tools.conventions import ConventionsBase
+from generator import OutputGenerator, GeneratorOptions  # noqa: E402
+from layer_trait_generator import LayerTraitGenerator  # noqa: E402
+from global_simple_intercept_generator import GlobalSimpleInterceptGenerator  # noqa: E402
+from reg import Registry  # noqa: E402
+from vkconventions import VulkanConventions  # noqa: E402
+from spec_tools.conventions import ConventionsBase  # noqa: E402
 
 
 def make_re_string(strings, default=None, strings_are_regex=False):
@@ -48,13 +48,13 @@ def make_gen_opts(
     add_extension_pat: str,
     remove_extension_pat: str,
     emit_extension_pat: str,
-) -> dict[str, tuple[OutputGenerator, GeneratorOptions]]:
+) -> dict[Path, tuple[OutputGenerator, GeneratorOptions]]:
     return {
-        "layer_trait.rs": (
+        Path("layer_trait/generated.rs"): (
             LayerTraitGenerator,
             GeneratorOptions(
                 conventions=conventions,
-                filename="layer_trait.rs",
+                filename="layer_trait/generated.rs",
                 directory=directory,
                 genpath=None,
                 apiname="vulkan",
@@ -67,11 +67,11 @@ def make_gen_opts(
                 emitExtensions=emit_extension_pat,
             ),
         ),
-        "global_simple_intercept.rs": (
+        Path("global_simple_intercept/generated.rs"): (
             GlobalSimpleInterceptGenerator,
             GeneratorOptions(
                 conventions=conventions,
-                filename="global_simple_intercept.rs",
+                filename="global_simple_intercept/generated.rs",
                 directory=directory,
                 genpath=None,
                 apiname="vulkan",
@@ -158,7 +158,7 @@ def main():
         remove_extension_pat=make_re_string(args.remove_extensions, None),
         emit_extension_pat=make_re_string(args.emit_extensions, all_extensions),
     )
-    gen_opt = gen_opts.get(args.target)
+    gen_opt = gen_opts.get(Path(args.target))
 
     if gen_opt is None:
         logging.fatal("target %s not found", args.target)

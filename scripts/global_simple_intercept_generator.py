@@ -33,7 +33,6 @@ from vk_xml_util import (
     write_license,
 )
 from dataclasses import dataclass, field
-import logging
 
 
 @dataclass
@@ -592,14 +591,16 @@ class VulkanCommand(NamedTuple):
                 leading_lines, arg_exp = self.__generate_ptr_param_expr(i)
                 lines += leading_lines
             else:
-                assert False, f"Should have exausted all parameter types."
+                assert False, "Should have exausted all parameter types."
             intercept_params.append(arg_exp)
 
-        generate_ret_expr: Callable[[str], list[str]] = lambda ret_var: [ret_var]
+        def generate_ret_expr(ret_var: str) -> list[str]:
+            return [ret_var]
+
         if self.vk_xml_command.return_type == "VkResult":
             if ret_param is not None:
 
-                def generate_ret_expr(ret_var):
+                def generate_ret_expr(ret_var):  # noqa: F811
                     assign_to_ret_param_lines = self.__generate_assign_to_ret_param_lines(
                         "res", ret_param[0], last_expr_type="vk::Result"
                     )
@@ -646,7 +647,7 @@ class VulkanCommand(NamedTuple):
                     f"{', '.join(intercept_params)});"
                 ),
                 "match layer_result {",
-                f"    LayerResult::Handled(res) => {{",
+                "    LayerResult::Handled(res) => {",
             ]
             + [8 * " " + line for line in generate_ret_expr("res")]
             + [
@@ -830,12 +831,12 @@ class GlobalSimpleInterceptGenerator(OutputGenerator):
                         f"&LayerVulkanCommand::{hook_command_variant_value})"
                     )
                 lines += [
-                    f"VulkanCommand {{",
+                    "VulkanCommand {",
                     f'    name: "{proc_name}",',
                     f'    features: smallvec![{", ".join(features)}],',
                     f"    hooked: {hooked_expr},",
                     f"    proc: unsafe {{ std::mem::transmute({rust_fn_name} as {fp_type_name})}},",
-                    f"}},",
+                    "},",
                 ]
             return "".join([" " * indent + line + "\n" for line in lines])
 

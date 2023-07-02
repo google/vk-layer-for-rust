@@ -11,4 +11,20 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-pub mod vk_layer;
+use thiserror::Error;
+
+pub mod generated;
+pub use generated::*;
+
+#[must_use]
+#[derive(Clone)]
+pub enum LayerResult<T> {
+    Handled(T),
+    Unhandled,
+}
+
+#[derive(Error, Debug)]
+pub enum TryFromVulkanCommandError {
+    #[error("unknown command `{0}`")]
+    UnknownCommand(String),
+}

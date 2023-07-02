@@ -21,25 +21,18 @@ use std::{
 
 use ash::vk;
 
-pub mod global_simple_intercept;
-pub mod layer_trait;
-
-use crate::VkLayerInstanceLink;
-use global_simple_intercept::Extension;
-use layer_trait::{DeviceHooks, InstanceHooks, VulkanCommand as LayerVulkanCommand};
 use smallvec::SmallVec;
 use thiserror::Error;
+
+pub mod generated;
+pub use generated::*;
+
+use crate::{DeviceHooks, InstanceHooks, LayerResult, LayerVulkanCommand, VkLayerInstanceLink};
 
 #[derive(Error, Debug)]
 pub enum TryFromExtensionError {
     #[error("unknown extension `{0}`")]
     UnknownExtension(String),
-}
-
-#[derive(Error, Debug)]
-pub enum TryFromVulkanCommandError {
-    #[error("unknown command `{0}`")]
-    UnknownCommand(String),
 }
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone)]
@@ -90,13 +83,6 @@ impl From<ApiVersion> for u32 {
     fn from(value: ApiVersion) -> Self {
         vk::make_api_version(0, value.major.into(), value.minor.into(), 0)
     }
-}
-
-#[must_use]
-#[derive(Clone)]
-pub enum LayerResult<T> {
-    Handled(T),
-    Unhandled,
 }
 
 pub(crate) struct VulkanCommand {
@@ -191,18 +177,24 @@ impl From<ExtensionProperties> for vk::ExtensionProperties {
     }
 }
 
-pub trait Layer: Sync + Default + 'static {
-    const LAYER_NAME: &'static str;
-    const SPEC_VERSION: u32;
-    const IMPLEMENTATION_VERSION: u32;
-    const LAYER_DESCRIPTION: &'static str;
-    const DEVICE_EXTENSIONS: &'static [ExtensionProperties] = &[];
+#[non_exhaustive]
+#[derive(Default, Clone)]
+pub struct LayerManifest {
+    pub name: &'static str,
+    pub spec_version: u32,
+    pub implementation_version: u32,
+    pub description: &'static str,
+    pub device_extensions: &'static [ExtensionProperties],
+}
 
+pub trait Layer: Sync + Default + 'static {
     type GlobalHooksInfo: GlobalHooksInfo;
     type InstanceInfo: InstanceInfo;
     type DeviceInfo: DeviceInfo;
     type InstanceInfoContainer: Borrow<Self::InstanceInfo> + Sync + Send;
     type DeviceInfoContainer: Borrow<Self::DeviceInfo> + Sync + Send;
+
+    fn manifest() -> LayerManifest;
 
     fn get_global_hooks_info(&self) -> &Self::GlobalHooksInfo;
 

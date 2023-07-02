@@ -26,6 +26,8 @@ use std::{
 
 use bindgen::EnumVariation;
 
+type Task = Box<dyn FnOnce() + Send + 'static>;
+
 // May not be precise, but should be enough for generating copyright comments.
 fn current_year() -> u64 {
     let since_epoch = SystemTime::now()
@@ -35,8 +37,12 @@ fn current_year() -> u64 {
     since_epoch.as_secs() / SECONDS_PER_YEAR + 1970
 }
 
-fn generate_vulkan_layer_header_binding(vulkan_headers_dir: &Path, dst: &Path) {
-    info!("Generating the binding for vulkan_layer.h...");
+fn generate_vulkan_layer_header_binding(
+    vulkan_headers_dir: &Path,
+    dst: &Path,
+    platform_specific_dst: &Path,
+) -> Vec<Task> {
+    info!("Preparing the task to generate vulkan_layer.h...");
 
     let rustfmt_path = {
         let output = Command::new("rustup")
@@ -58,7 +64,6 @@ fn generate_vulkan_layer_header_binding(vulkan_headers_dir: &Path, dst: &Path) {
     vk_layer_h_path.push("vulkan");
     vk_layer_h_path.push("vk_layer.h");
 
-    let mut file = File::create(dst).unwrap();
     let license_comments = format!(
         "// Copyright {} Google LLC\n\
          //\n\
@@ -75,40 +80,89 @@ fn generate_vulkan_layer_header_binding(vulkan_headers_dir: &Path, dst: &Path) {
          // limitations under the License.\n\n",
         current_year()
     );
-    file.write_all(license_comments.as_bytes()).unwrap();
+    let set_common_bindgen_configs = {
+        let rustfmt_path = rustfmt_path.to_owned();
+        move |bindgen_builder: bindgen::Builder| -> bindgen::Builder {
+            bindgen_builder
+                .with_rustfmt(rustfmt_path)
+                .header(vk_layer_h_path.as_os_str().to_str().unwrap())
+                .clang_args(&[
+                    "-I",
+                    vulkan_headers_include_dir.as_os_str().to_str().unwrap(),
+                ])
+                .default_enum_style(EnumVariation::NewType {
+                    is_bitfield: false,
+                    is_global: false,
+                })
+                .derive_default(true)
+                // We expect ash to cover most type definitions for us.
+                .allowlist_recursively(false)
+        }
+    };
 
-    bindgen::Builder::default()
-        .with_rustfmt(rustfmt_path)
-        .header(vk_layer_h_path.as_os_str().to_str().unwrap())
-        .clang_args(&[
-            "-I",
-            vulkan_headers_include_dir.as_os_str().to_str().unwrap(),
-        ])
-        .default_enum_style(EnumVariation::NewType {
-            is_bitfield: false,
-            is_global: false,
-        })
-        .derive_default(true)
-        .allowlist_file("vk_layer.h")
-        .allowlist_type("VkNegotiateLayerInterface")
-        .allowlist_type("VkLayerDeviceCreateInfo")
-        .allowlist_type("VkLayerFunction_?")
-        .allowlist_type("VkLayerInstanceCreateInfo")
-        .allowlist_type("VkNegotiateLayerStructType")
-        .allowlist_type("PFN_GetPhysicalDeviceProcAddr")
-        .allowlist_type("VkLayerInstanceLink_?")
-        .allowlist_type("PFN_vkSetInstanceLoaderData")
-        .allowlist_type("PFN_vkLayerCreateDevice")
-        .allowlist_type("PFN_vkLayerDestroyDevice")
-        .allowlist_type("VkLayerDeviceLink_?")
-        .allowlist_type("PFN_vkSetDeviceLoaderData")
-        // We expect ash to cover most type definitions for us.
-        .allowlist_recursively(false)
-        .generate()
-        .unwrap()
-        .write(Box::new(file))
-        .unwrap();
-    info!("The binding for vulkan_layer.h completes generation.");
+    let mut tasks: Vec<Task> = vec![];
+    tasks.push(Box::new({
+        let license_comments = license_comments.clone();
+        let set_common_bindgen_configs = set_common_bindgen_configs.clone();
+        let dst = dst.to_owned();
+        move || {
+            info!("generating bindings for vk_layer.h...");
+            let mut out_file = File::create(dst).unwrap();
+            let mut out_preamble = license_comments;
+            out_preamble.push_str(
+                "use super::*;\n\
+             use ash::vk::*;\n\
+             #[cfg(unix)]\n\
+             mod unix;\n\
+             #[cfg(windows)]\n\
+             mod windows;\n\
+             #[cfg(unix)]\n\
+             pub use unix::*;\n\
+             #[cfg(windows)]\n\
+             pub use windows::*;\n\n",
+            );
+            out_file.write_all(out_preamble.as_bytes()).unwrap();
+            set_common_bindgen_configs(Default::default())
+                .allowlist_file("vk_layer.h")
+                .allowlist_type("VkNegotiateLayerInterface")
+                .allowlist_type("VkLayerDeviceCreateInfo")
+                .allowlist_type("VkLayerInstanceCreateInfo")
+                .allowlist_type("PFN_GetPhysicalDeviceProcAddr")
+                .allowlist_type("VkLayerInstanceLink_?")
+                .allowlist_type("PFN_vkSetInstanceLoaderData")
+                .allowlist_type("PFN_vkLayerCreateDevice")
+                .allowlist_type("PFN_vkLayerDestroyDevice")
+                .allowlist_type("VkLayerDeviceLink_?")
+                .allowlist_type("PFN_vkSetDeviceLoaderData")
+                .generate()
+                .unwrap()
+                .write(Box::new(out_file))
+                .unwrap();
+            info!("The binding for vk_layer.h completes generation.");
+        }
+    }));
+
+    tasks.push(Box::new({
+        let platform_specific_dst = platform_specific_dst.to_owned();
+        move || {
+            info!("generating platform specific bindings for vk_layer.h...");
+            let mut platform_specific_out_file = File::create(platform_specific_dst).unwrap();
+            platform_specific_out_file
+                .write_all(license_comments.as_bytes())
+                .unwrap();
+
+            set_common_bindgen_configs(Default::default())
+                .allowlist_type("VkLayerFunction_?")
+                .allowlist_type("VkNegotiateLayerStructType")
+                .generate()
+                .unwrap()
+                .write(Box::new(platform_specific_out_file))
+                .unwrap();
+            info!("The platform specific binding for vk_layer.h completes generation.");
+        }
+    }));
+
+    tasks
 }
 
 fn guess_python_command() -> Option<&'static str> {
@@ -136,14 +190,15 @@ fn run_vulkan_layer_genvk(
         out_dir,
     }: &GenvkArgs,
 ) {
+    let target = PathBuf::from(target);
     let mut output_file_path = out_dir.clone();
-    output_file_path.push(target);
+    output_file_path.push(target.clone());
     info!("Generating {}...", output_file_path.display());
     let python_command = guess_python_command().expect("Failed to find installed python.");
     let status = Command::new(python_command)
         .args([
             script_path.as_os_str(),
-            target,
+            target.as_os_str(),
             OsStr::new("-registry"),
             registry.as_os_str(),
             OsStr::new("-o"),
@@ -180,7 +235,7 @@ fn main() {
     let mut project_root_dir = cargo_manifest_dir;
     assert!(project_root_dir.pop());
 
-    let mut tasks: Vec<Box<dyn FnOnce() + Send + 'static>> = vec![];
+    let mut tasks: Vec<Task> = vec![];
 
     let mut vulkan_headers_dir = project_root_dir.clone();
     vulkan_headers_dir.push("third_party");
@@ -191,13 +246,20 @@ fn main() {
     let mut out_file = vulkan_layer_dir.clone();
     out_file.push("src");
     out_file.push("bindings");
-    out_file.push("generated");
-    out_file.push("vk_layer_bindings.rs");
+    out_file.push("vk_layer");
+    let mut platform_specific_out = out_file.clone();
+    out_file.push("generated.rs");
+    platform_specific_out.push("generated");
+    #[cfg(windows)]
+    platform_specific_out.push("windows.rs");
+    #[cfg(unix)]
+    platform_specific_out.push("unix.rs");
 
-    tasks.push({
-        let vulkan_headers_dir = vulkan_headers_dir.clone();
-        Box::new(move || generate_vulkan_layer_header_binding(&vulkan_headers_dir, &out_file))
-    });
+    tasks.append(&mut generate_vulkan_layer_header_binding(
+        &vulkan_headers_dir,
+        &out_file,
+        &platform_specific_out,
+    ));
 
     let mut vulkan_layer_genvk_path = project_root_dir.clone();
     vulkan_layer_genvk_path.push("scripts");
@@ -210,12 +272,11 @@ fn main() {
     let mut vulkan_layer_generated_dir = project_root_dir.clone();
     vulkan_layer_generated_dir.push("vulkan-layer");
     vulkan_layer_generated_dir.push("src");
-    vulkan_layer_generated_dir.push("generated");
 
     tasks.push({
         let genvk_args = GenvkArgs {
             script_path: vulkan_layer_genvk_path.clone(),
-            target: OsString::from("layer_trait.rs"),
+            target: OsString::from("layer_trait/generated.rs"),
             registry: vk_xml_path.clone(),
             out_dir: vulkan_layer_generated_dir.clone(),
         };
@@ -224,7 +285,7 @@ fn main() {
     tasks.push({
         let genvk_args = GenvkArgs {
             script_path: vulkan_layer_genvk_path.clone(),
-            target: OsString::from("global_simple_intercept.rs"),
+            target: OsString::from("global_simple_intercept/generated.rs"),
             registry: vk_xml_path.clone(),
             out_dir: vulkan_layer_generated_dir.clone(),
         };

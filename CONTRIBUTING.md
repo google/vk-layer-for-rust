@@ -47,6 +47,12 @@ All done! ✨ 🍰 ✨
 4 files left unchanged.
 ```
 
+Use [ruff](https://github.com/astral-sh/ruff) to lint the python scripts:
+
+```bash
+python -m ruff check . --fix
+```
+
 ### Regenerate code
 
 1. Install LLVM and set up the environment variable required by `bindgen`: [link](https://rust-lang.github.io/rust-bindgen/requirements.html), because `bindgen` is used in the codegen process.
@@ -75,4 +81,8 @@ Files are generated in different mechanism:
 
 ### Test
 
-Just run `cargo test`. However, `cargo +nightly test -Z panic-abort-tests` is nicer because the library is supposed to be built with `panic="abort"`.
+`cargo-nextest` is the recommended way to run the test.  Run `cargo nextest run` to run all tests. This is how CI runs the tests. All tests are supposed to only run in a separate process.
+
+Vanilla `cargo test` is not supported, because that will run tests in the same binary in the same process. However, `cargo +nightly test -Z panic-abort-tests` is Ok because it will [allow subprocess testing](https://github.com/rust-lang/rust/issues/67650). In addition, the library is supposed to be built with `panic="abort"`.
+
+[`cargo-llvm-cov`](https://github.com/taiki-e/cargo-llvm-cov) [with `cargo-nextest`](https://nexte.st/book/test-coverage.html#llvm-cov) is used to generate the code coverage info. To generate the `lcov` coverage file locally under `target/lcov.info`, run `cargo llvm-cov nextest --lcov --output-path target/lcov.info`.

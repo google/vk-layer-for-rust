@@ -29,22 +29,21 @@ use std::{
 pub use vk_utils::{VulkanBaseInStructChain, VulkanBaseOutStructChain};
 
 mod bindings;
-mod generated;
+mod global_simple_intercept;
+mod layer_trait;
 #[cfg(any(feature = "_test", test))]
 pub mod test_utils;
 mod vk_utils;
 
-use bindings::{VkLayerDeviceCreateInfo, VkLayerFunction, VkLayerInstanceCreateInfo};
-pub use bindings::{VkLayerDeviceLink, VkLayerInstanceLink};
-pub use generated::{
-    global_simple_intercept::Extension,
-    layer_trait::{DeviceHooks, InstanceHooks, VulkanCommand as LayerVulkanCommand},
-    ApiVersion, DeviceInfo, ExtensionProperties, Feature, GlobalHooks, GlobalHooksInfo,
-    InstanceInfo, Layer, LayerResult,
+use bindings::vk_layer::{VkLayerDeviceCreateInfo, VkLayerFunction, VkLayerInstanceCreateInfo};
+pub use bindings::vk_layer::{VkLayerDeviceLink, VkLayerInstanceLink};
+pub use global_simple_intercept::{
+    ApiVersion, DeviceInfo, Extension, ExtensionProperties, Feature, GlobalHooks, GlobalHooksInfo,
+    InstanceInfo, Layer, LayerManifest,
 };
-use generated::{
-    global_simple_intercept::{DeviceDispatchTable, InstanceDispatchTable},
-    VulkanCommand,
+use global_simple_intercept::{DeviceDispatchTable, InstanceDispatchTable, VulkanCommand};
+pub use layer_trait::{
+    DeviceHooks, InstanceHooks, LayerResult, VulkanCommand as LayerVulkanCommand,
 };
 pub use vulkan_layer_macros::{
     auto_deviceinfo_impl, auto_globalhooksinfo_impl, auto_instanceinfo_impl,
@@ -636,6 +635,7 @@ impl<T: Layer> Global<T> {
         } else {
             LayerResult::Unhandled
         };
+        let layer_manifest = T::manifest();
         let device = match create_device_res {
             LayerResult::Handled(Ok(device)) => device,
             LayerResult::Handled(Err(e)) => return e,
@@ -651,7 +651,8 @@ impl<T: Layer> Global<T> {
                             Ok(extension) => extension,
                             Err(_) => return Some(extension_name_cstring),
                         };
-                        if T::DEVICE_EXTENSIONS
+                        if layer_manifest
+                            .device_extensions
                             .iter()
                             .any(|layer_extension| layer_extension.name == extension)
                         {
@@ -775,19 +776,20 @@ impl<T: Layer> Global<T> {
     }
 
     fn layer_properties() -> Vec<vk::LayerProperties> {
+        let layer_manifest = T::manifest();
         // layer_name and description will be set later
         let mut layer_property: vk::LayerProperties = vk::LayerProperties::builder()
-            .spec_version(vk::API_VERSION_1_1)
-            .implementation_version(1)
+            .spec_version(layer_manifest.spec_version)
+            .implementation_version(layer_manifest.implementation_version)
             .build();
-        assert!(T::LAYER_NAME.len() < vk::MAX_EXTENSION_NAME_SIZE);
-        let layer_name = CString::new(T::LAYER_NAME).unwrap();
+        assert!(layer_manifest.name.len() < vk::MAX_EXTENSION_NAME_SIZE);
+        let layer_name = CString::new(layer_manifest.name).unwrap();
         let layer_name = as_i8_slice(&layer_name);
         layer_property.layer_name[..layer_name.len()].copy_from_slice(layer_name);
 
-        assert!(T::LAYER_DESCRIPTION.len() < vk::MAX_DESCRIPTION_SIZE);
-        let layer_description = CString::new(T::LAYER_DESCRIPTION).unwrap();
+        let layer_description = CString::new(layer_manifest.description).unwrap();
         let layer_description = as_i8_slice(&layer_description);
+        assert!(layer_description.len() < vk::MAX_DESCRIPTION_SIZE);
         layer_property.description[..layer_description.len()].copy_from_slice(layer_description);
         vec![layer_property]
     }
@@ -835,7 +837,7 @@ impl<T: Layer> Global<T> {
                 "According to VUID-vkEnumerateInstanceExtensionProperties-pLayerName-parameter, ",
                 "if p_layer_name is not NULL, p_layer_name must be a null-terminated UTF-8 string."
             ));
-            if layer_name == T::LAYER_NAME {
+            if layer_name == T::manifest().name {
                 // Safe, because the caller guarantees that if the passed in `property_count` is not
                 // null, it's a valid pointer to u32.
                 if let Some(property_count) = unsafe { property_count.as_mut() } {
@@ -885,12 +887,13 @@ impl<T: Layer> Global<T> {
         p_property_count: *mut u32,
         p_properties: *mut vk::ExtensionProperties,
     ) -> vk::Result {
+        let layer_manifest = T::manifest();
         let is_this_layer = if p_layer_name.is_null() {
             false
         } else {
             unsafe { CStr::from_ptr(p_layer_name) }
                 .to_str()
-                .map(|layer_name| layer_name == T::LAYER_NAME)
+                .map(|layer_name| layer_name == layer_manifest.name)
                 .unwrap_or(false)
         };
         if !is_this_layer {
@@ -917,7 +920,8 @@ impl<T: Layer> Global<T> {
         // `p_property_count` doesn't point to 0, p_properties is either NULL or a valid pointer to
         // an array of `p_property_count` `vk::ExtensionProperties` structures according to
         // VUID-vkEnumerateDeviceExtensionProperties-pProperties-parameter.
-        let device_extensions = T::DEVICE_EXTENSIONS
+        let device_extensions = layer_manifest
+            .device_extensions
             .iter()
             .cloned()
             .map(Into::<vk::ExtensionProperties>::into)
@@ -1097,21 +1101,17 @@ impl<T: Layer> Default for Global<T> {
 
 #[cfg(test)]
 mod test {
-    use crate::{
-        generated::VulkanCommand,
-        test_utils::{TestLayer, TestLayerWrapper},
-        Global,
-    };
+    use crate::test_utils::TestLayerWrapper;
     use std::{cmp::Ordering, sync::Arc};
+
+    use super::*;
 
     #[test]
     fn commands_must_be_sorted() {
-        #[derive(Default)]
-        struct Tag;
-        impl TestLayer for Tag {}
-        type StubLayer = Arc<TestLayerWrapper<Tag>>;
+        let _ctx = TestLayerWrapper::<0>::context();
+        type StubLayer = Arc<TestLayerWrapper>;
         #[inline]
-        fn check<'a, T: PartialOrd>(last: &'a mut T) -> impl FnMut(T) -> bool + 'a {
+        fn check<T: PartialOrd>(last: &mut T) -> impl FnMut(T) -> bool + '_ {
             move |curr| {
                 if let Some(Ordering::Greater) | None = (*last).partial_cmp(&curr) {
                     return false;
@@ -1138,5 +1138,74 @@ mod test {
         let mut last = name_iter.next().unwrap();
 
         assert!(name_iter.all(check(&mut last)));
+    }
+
+    #[test]
+    fn fill_vk_out_array_should_handle_zero_count_correctly() {
+        let extensions = [ExtensionProperties {
+            name: Extension::KHRSwapchain,
+            spec_version: 1,
+        }]
+        .into_iter()
+        .map(Into::<vk::ExtensionProperties>::into)
+        .collect::<Vec<_>>();
+
+        let mut count = 0;
+        assert_eq!(
+            unsafe { fill_vk_out_array(&extensions, (&mut count).into(), null_mut()) },
+            vk::Result::SUCCESS
+        );
+        assert_eq!(count, extensions.len());
+
+        count = 0;
+        let mut extension_property = MaybeUninit::<vk::ExtensionProperties>::uninit();
+        assert_eq!(
+            unsafe {
+                fill_vk_out_array(
+                    &extensions,
+                    (&mut count).into(),
+                    extension_property.as_mut_ptr(),
+                )
+            },
+            vk::Result::INCOMPLETE
+        );
+        assert_eq!(count, 0);
+
+        count = 0;
+        assert_eq!(
+            unsafe { fill_vk_out_array(&[], (&mut count).into(), extension_property.as_mut_ptr()) },
+            vk::Result::SUCCESS
+        );
+    }
+
+    #[test]
+    fn fill_vk_out_array_should_return_incomplete_with_short_out_array() {
+        let extensions = [
+            ExtensionProperties {
+                name: Extension::KHRSwapchain,
+                spec_version: 1,
+            },
+            ExtensionProperties {
+                name: Extension::KHRSamplerYcbcrConversion,
+                spec_version: 1,
+            },
+        ]
+        .into_iter()
+        .map(Into::<vk::ExtensionProperties>::into)
+        .collect::<Vec<_>>();
+
+        let mut count = 1;
+        let mut extension_property = MaybeUninit::<vk::ExtensionProperties>::uninit();
+        assert_eq!(
+            unsafe {
+                fill_vk_out_array(
+                    &extensions,
+                    (&mut count).into(),
+                    extension_property.as_mut_ptr(),
+                )
+            },
+            vk::Result::INCOMPLETE
+        );
+        assert_eq!(count, 1);
     }
 }

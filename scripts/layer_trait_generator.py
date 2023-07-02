@@ -94,8 +94,8 @@ class LayerTraitGenerator(OutputGenerator):
                 if hooks_trait_lines is not None:
                     hooks_trait_lines += [
                         f"    {command.to_string()} {{",
-                        f"        LayerResult::Unhandled",
-                        f"    }}",
+                        "        LayerResult::Unhandled",
+                        "    }",
                     ]
                 original_name = command.vk_xml_cmd.name
                 enum_variant_name = snake_case_to_upper_camel_case(command.name)
