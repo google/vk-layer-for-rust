@@ -12,9 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::{ffi::{CString, CStr}, ptr::{null, null_mut}, sync::Arc};
+use std::{
+    collections::{BTreeSet, HashMap},
+    ffi::{CStr, CString},
+    mem::MaybeUninit,
+    ptr::{null, null_mut},
+    sync::{Arc, Mutex},
+};
 
-use ash::{prelude::VkResult, vk::{self, Handle}};
+use ash::{
+    prelude::VkResult,
+    vk::{self, Handle},
+};
 use bumpalo::Bump;
 
 use crate::{
@@ -28,7 +37,7 @@ use log::{error, info, warn};
 use vulkan_layer::{
     auto_deviceinfo_impl, auto_globalhooksinfo_impl, auto_instanceinfo_impl, DeviceHooks,
     Extension, ExtensionProperties, GlobalHooks, InstanceHooks, Layer, LayerResult,
-    VulkanBaseInStructChain, VulkanBaseOutStructChain,
+    VkLayerDeviceLink, VulkanBaseInStructChain, VulkanBaseOutStructChain,
 };
 
 mod minigbm_bindings {
@@ -54,6 +63,29 @@ mod minigbm_bindings {
     pub const BO_USE_FRONT_RENDERING: u64 = 1u64 << 16;
     pub const BO_USE_RENDERSCRIPT: u64 = 1u64 << 17;
     pub const BO_USE_GPU_DATA_BUFFER: u64 = 1u64 << 18;
+}
+
+trait CrosGrallocHandleExt {
+    fn get_vk_format(&self) -> vk::Format;
+    fn get_vk_allocation_size(&self) -> u64;
+}
+
+impl CrosGrallocHandleExt for cros_gralloc_handle {
+    fn get_vk_format(&self) -> vk::Format {
+        match AHardwareBuffer_Format(self.droid_format as u32) {
+            AHardwareBuffer_Format::AHARDWAREBUFFER_FORMAT_R16G16B16A16_FLOAT => {
+                vk::Format::R16G16B16A16_SFLOAT
+            }
+            AHardwareBuffer_Format::AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM => {
+                vk::Format::R8G8B8A8_UNORM
+            }
+            _ => unimplemented!("Unsupported AHardwareBuffer format: {}", self.droid_format),
+        }
+    }
+
+    fn get_vk_allocation_size(&self) -> u64 {
+        self.total_size - self.reserved_region_size
+    }
 }
 
 fn find_in_struct<T: vk::TaggedStructure>(
@@ -109,7 +141,9 @@ impl From<vk::SwapchainImageCreateInfoANDROID> for SwapchainImageCreateInfoANDRO
 
 pub(crate) struct NexusLayer;
 
-pub(crate) struct NexusInstanceInfo;
+pub(crate) struct NexusInstanceInfo {
+    instance: vk::Instance,
+}
 
 #[auto_instanceinfo_impl]
 impl InstanceHooks for NexusInstanceInfo {
@@ -139,13 +173,162 @@ impl InstanceHooks for NexusInstanceInfo {
         }
         LayerResult::Unhandled
     }
+
+    fn create_device(
+        &self,
+        physical_device: vk::PhysicalDevice,
+        create_info: &vk::DeviceCreateInfo,
+        layer_device_link: &VkLayerDeviceLink,
+        allocator: Option<&vk::AllocationCallbacks>,
+    ) -> LayerResult<VkResult<vk::Device>> {
+        let mut create_info = *create_info;
+        if create_info.pp_enabled_extension_names == null() {
+            return LayerResult::Unhandled;
+        }
+        let mut extensions = unsafe {
+            std::slice::from_raw_parts(
+                create_info.pp_enabled_extension_names,
+                create_info.enabled_extension_count.try_into().unwrap(),
+            )
+        }
+        .iter()
+        .map(|extension_name| unsafe { CStr::from_ptr(*extension_name) })
+        .collect::<BTreeSet<_>>();
+        if !extensions.contains(vk::AndroidNativeBufferFn::name()) {
+            return LayerResult::Unhandled;
+        }
+        extensions.insert(vk::KhrExternalMemoryFdFn::name());
+        let extensions = extensions
+            .iter()
+            .map(|extension_name| extension_name.as_ptr())
+            .collect::<Vec<_>>();
+        create_info.pp_enabled_extension_names = extensions.as_ptr();
+        create_info.enabled_extension_count = extensions.len().try_into().unwrap();
+
+        let create_device_name: CString = CString::new("vkCreateDevice").unwrap();
+        let create_device = unsafe {
+            (layer_device_link.pfnNextGetInstanceProcAddr)(
+                self.instance,
+                create_device_name.as_ptr(),
+            )
+        }
+        .unwrap();
+        let create_device: vk::PFN_vkCreateDevice = unsafe { std::mem::transmute(create_device) };
+        let mut device = MaybeUninit::<vk::Device>::uninit();
+        let allocator = allocator.map_or_else(null, |allocator| allocator as *const _);
+        let res = unsafe {
+            create_device(
+                physical_device,
+                &create_info,
+                allocator,
+                device.as_mut_ptr(),
+            )
+        };
+        if res != vk::Result::SUCCESS {
+            LayerResult::Handled(Err(res))
+        } else {
+            LayerResult::Handled(Ok(unsafe { device.assume_init() }))
+        }
+    }
 }
 
 const VK_GET_SWAPCHAIN_GRALLOC_USAGE2_ANDROID_NAME: &str = "vkGetSwapchainGrallocUsage2ANDROID";
 
+struct NativeBufferImage {
+    memory: vk::DeviceMemory,
+}
+
 pub(crate) struct NexusDeviceInfo {
     device: Arc<ash::Device>,
     get_swapchain_gralloc_usage2_android: Option<vk::PFN_vkGetSwapchainGrallocUsage2ANDROID>,
+    native_buffer_images: Mutex<HashMap<vk::Image, NativeBufferImage>>,
+}
+
+impl NexusDeviceInfo {
+    fn create_native_buffer_image(
+        &self,
+        create_info: vk::ImageCreateInfoBuilder<'_>,
+        native_buffer: &vk::NativeBufferANDROID,
+        allocation_callbacks: Option<&vk::AllocationCallbacks>,
+    ) -> VkResult<vk::Image> {
+        use std::collections::hash_map::Entry;
+        let cros_gralloc_handle =
+            match unsafe { cros_gralloc_convert_handle(native_buffer.handle as *const _) } {
+                Some(handle) => handle,
+                None => {
+                    error!("Failed to convert the native buffer to cros gralloc handle.");
+                    return Err(vk::Result::ERROR_INVALID_EXTERNAL_HANDLE_KHR);
+                }
+            };
+
+        let p_next_chain = unsafe { (create_info.p_next as *const vk::BaseInStructure).as_ref() };
+        let next_chain: VulkanBaseInStructChain = p_next_chain.into();
+        for next_element in next_chain {
+            error!(
+                "Unsupported native buffer image pNext element: {}",
+                next_element.s_type.as_raw()
+            );
+        }
+        let mut external_memory_image_create_info = vk::ExternalMemoryImageCreateInfo::builder()
+            .handle_types(vk::ExternalMemoryHandleTypeFlags::OPAQUE_FD);
+        let mut create_info = create_info.push_next(&mut external_memory_image_create_info);
+        let expected_format = cros_gralloc_handle.get_vk_format();
+        if create_info.format != expected_format {
+            warn!("Native buffer image format mismatch: the gralloc buffer is created with {:?}, the client wants to create the VkImage with {:?}. Will use the expected format {:?}.", expected_format, create_info.format, expected_format);
+            create_info = create_info.format(expected_format);
+        }
+        let image = match unsafe { self.device.create_image(&create_info, allocation_callbacks) } {
+            Ok(image) => image,
+            Err(e) => {
+                error!(
+                    "Failed to create the VkImage from the driver for a native buffer VkImage: {}",
+                    e
+                );
+                return Err(e);
+            }
+        };
+        let mut allocate_info = vk::MemoryAllocateInfo::builder()
+            .allocation_size(cros_gralloc_handle.get_vk_allocation_size())
+            .memory_type_index(cros_gralloc_handle.memory_type_index);
+        let mut import_memory_fd = vk::ImportMemoryFdInfoKHR::builder()
+            .handle_type(vk::ExternalMemoryHandleTypeFlags::OPAQUE_FD)
+            .fd(cros_gralloc_handle.fds[0]);
+        allocate_info = allocate_info.push_next(&mut import_memory_fd);
+        let mut dedicated_allocation = vk::MemoryDedicatedAllocateInfo::builder().image(image);
+        if cros_gralloc_handle.dedicated_allocation != 0 {
+            allocate_info = allocate_info.push_next(&mut dedicated_allocation);
+        }
+        let memory = match unsafe {
+            self.device
+                .allocate_memory(&allocate_info, allocation_callbacks)
+        } {
+            Ok(memory) => memory,
+            Err(e) => {
+                error!(
+                    "Failed to allocate VkDeviceMemory for the native buffer image: {}",
+                    e
+                );
+                unsafe { self.device.destroy_image(image, allocation_callbacks) };
+                return Err(e);
+            }
+        };
+        if let Err(e) = unsafe { self.device.bind_image_memory(image, memory, 0) } {
+            error!(
+                "Failed to bind the native buffer image to the memory: {}",
+                e
+            );
+            unsafe { self.device.free_memory(memory, allocation_callbacks) };
+            unsafe { self.device.destroy_image(image, allocation_callbacks) };
+            return Err(e);
+        }
+        let mut native_buffer_images = self.native_buffer_images.lock().unwrap();
+        let entry = match native_buffer_images.entry(image) {
+            Entry::Occupied(_) => panic!("Image {:#010x} already existed.", image.as_raw()),
+            Entry::Vacant(e) => e,
+        };
+        entry.insert(NativeBufferImage { memory });
+        Ok(image)
+    }
 }
 
 #[auto_deviceinfo_impl]
@@ -173,6 +356,7 @@ impl DeviceHooks for NexusDeviceInfo {
                 create_info.queue_family_index_count.try_into().unwrap(),
             )
         };
+        let mut native_buffer: Option<&vk::NativeBufferANDROID> = None;
         let bump = Bump::new();
         let mut local_create_info = vk::ImageCreateInfo::builder()
             .flags(create_info.flags)
@@ -286,11 +470,7 @@ impl DeviceHooks for NexusDeviceInfo {
                         local_create_info = local_create_info.push_next(p_next);
                     }
                     p_next @ vk::NativeBufferANDROID => {
-                        let p_next: &mut NativeBufferANDROIDWrapper = bump.alloc((*p_next).into());
-                        p_next.0.p_next = null();
-                        local_create_info = local_create_info.push_next(p_next);
-                        // TODO(nexus): required for VK_ANDROID_native_buffer
-                        error!("vk::NativeBufferANDROID in create_image unimplemented");
+                        native_buffer = Some(p_next);
                     }
                     p_next @ vk::SwapchainImageCreateInfoANDROID => {
                         let p_next: &mut SwapchainImageCreateInfoANDROIDWrapper =
@@ -308,6 +488,13 @@ impl DeviceHooks for NexusDeviceInfo {
                     }
                 })
             }
+        }
+        if let Some(native_buffer) = native_buffer {
+            return LayerResult::Handled(self.create_native_buffer_image(
+                local_create_info,
+                native_buffer,
+                allocation_callbacks,
+            ));
         }
         LayerResult::Handled(unsafe {
             self.device
@@ -386,20 +573,6 @@ impl DeviceHooks for NexusDeviceInfo {
         let properties_p_next_chain: VulkanBaseOutStructChain =
             unsafe { (properties.p_next as *mut vk::BaseOutStructure).as_mut() }.into();
         for p_next in properties_p_next_chain {
-            fn get_vk_format(cros_gralloc_handle: &cros_gralloc_handle) -> vk::Format {
-                match AHardwareBuffer_Format(cros_gralloc_handle.droid_format as u32) {
-                    AHardwareBuffer_Format::AHARDWAREBUFFER_FORMAT_R16G16B16A16_FLOAT => {
-                        vk::Format::R16G16B16A16_SFLOAT
-                    }
-                    AHardwareBuffer_Format::AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM => {
-                        vk::Format::R8G8B8A8_UNORM
-                    }
-                    _ => unimplemented!(
-                        "Unsupported AHardwareBuffer format: {}",
-                        cros_gralloc_handle.droid_format
-                    ),
-                }
-            }
             fn get_vk_format_features(
                 cros_gralloc_handle: &cros_gralloc_handle,
             ) -> vk::FormatFeatureFlags {
@@ -428,7 +601,7 @@ impl DeviceHooks for NexusDeviceInfo {
                         let p_next = format_properties2.p_next;
                         *format_properties2 =
                             *vk::AndroidHardwareBufferFormatProperties2ANDROID::builder()
-                                .format(get_vk_format(cros_gralloc_handle))
+                                .format(cros_gralloc_handle.get_vk_format())
                                 .external_format(0)
                                 .format_features(get_vk_format_features2(cros_gralloc_handle))
                                 .sampler_ycbcr_conversion_components(vk::ComponentMapping {
@@ -449,7 +622,7 @@ impl DeviceHooks for NexusDeviceInfo {
                         let p_next = format_properties.p_next;
                         *format_properties =
                             *vk::AndroidHardwareBufferFormatPropertiesANDROID::builder()
-                                .format(get_vk_format(cros_gralloc_handle))
+                                .format(cros_gralloc_handle.get_vk_format())
                                 .external_format(0)
                                 .format_features(get_vk_format_features(cros_gralloc_handle))
                                 .sampler_ycbcr_conversion_components(vk::ComponentMapping {
@@ -478,8 +651,7 @@ impl DeviceHooks for NexusDeviceInfo {
                 })
             };
         }
-        properties.allocation_size =
-            cros_gralloc_handle.total_size - cros_gralloc_handle.reserved_region_size;
+        properties.allocation_size = cros_gralloc_handle.get_vk_allocation_size();
         properties.memory_type_bits = 1 << cros_gralloc_handle.memory_type_index;
         LayerResult::Handled(Ok(()))
     }
@@ -699,14 +871,32 @@ impl DeviceHooks for NexusDeviceInfo {
         LayerResult::Unhandled
     }
 
-    fn create_shader_module(
+    // fn create_shader_module(
+    //     &self,
+    //     create_info: &vk::ShaderModuleCreateInfo,
+    //     _p_allocator: Option<&vk::AllocationCallbacks>,
+    // ) -> LayerResult<VkResult<vk::ShaderModule>> { let code = unsafe {
+    //   std::slice::from_raw_parts(create_info.p_code, create_info.code_size / 4) };
+    //   info!("create_shader_module:"); info!("{:#?}", code); LayerResult::Unhandled
+    // }
+
+    fn destroy_image(
         &self,
-        create_info: &vk::ShaderModuleCreateInfo,
-        _p_allocator: Option<&vk::AllocationCallbacks>,
-    ) -> LayerResult<VkResult<vk::ShaderModule>> {
-        let code = unsafe { std::slice::from_raw_parts(create_info.p_code, create_info.code_size / 4) };
-        info!("create_shader_module:");
-        info!("{:#?}", code);
+        image: vk::Image,
+        allocator: Option<&vk::AllocationCallbacks>,
+    ) -> LayerResult<()> {
+        if let Some(image) = self.native_buffer_images.lock().unwrap().remove(&image) {
+            unsafe { self.device.free_memory(image.memory, allocator) };
+        }
+        LayerResult::Unhandled
+    }
+
+    fn free_memory(
+        &self,
+        memory: vk::DeviceMemory,
+        _allocator: Option<&vk::AllocationCallbacks>,
+    ) -> LayerResult<()> {
+        error!("vkFreeMemory: memory = {:#010x}", memory.as_raw());
         LayerResult::Unhandled
     }
 }
@@ -739,11 +929,13 @@ impl Layer for NexusLayer {
         &self,
         _: &vk::InstanceCreateInfo,
         _: Option<&vk::AllocationCallbacks>,
-        _: Arc<ash::Instance>,
+        instance: Arc<ash::Instance>,
         _: vk::PFN_vkGetInstanceProcAddr,
     ) -> Self::InstanceInfo {
         info!("create instance from {}", Self::LAYER_NAME);
-        NexusInstanceInfo
+        NexusInstanceInfo {
+            instance: instance.handle(),
+        }
     }
 
     fn create_device_info(
@@ -762,6 +954,7 @@ impl Layer for NexusLayer {
         NexusDeviceInfo {
             device,
             get_swapchain_gralloc_usage2_android,
+            native_buffer_images: Default::default(),
         }
     }
 }
