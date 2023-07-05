@@ -88,6 +88,8 @@ trait ToVulkanHandle: Sized {
 }
 
 pub trait FromVulkanHandle<T: vk::Handle>: Sized {
+    /// # Safety
+    /// The raw Vulkan handle must be created from the Self type.
     #[deny(unsafe_op_in_unsafe_fn)]
     unsafe fn from_handle(handle: T) -> Arc<Self> {
         let raw_handle: usize = handle.as_raw().try_into().unwrap();
@@ -225,8 +227,7 @@ static VULKAN_COMMANDS: Lazy<BTreeMap<VulkanCommandName, VulkanCommand>> = Lazy:
                             extension.as_str().try_into().ok()
                         })
                         .collect::<_>();
-                        let dispatch_table =
-                            Box::into_pin(Box::<InstanceDispatchTable>::new(Default::default()));
+                        let dispatch_table = Box::into_pin(Box::<InstanceDispatchTable>::default());
                         let version = application_info
                             .map(|application_info| {
                                 let mut api_version = application_info.api_version;
@@ -307,8 +308,7 @@ static VULKAN_COMMANDS: Lazy<BTreeMap<VulkanCommandName, VulkanCommand>> = Lazy:
                     ) -> vk::Result {
                         // TODO: assert that the ICD shouldn't receive a non-zero-length
                         // VkLayerDeviceLink
-                        let dispatch_table =
-                            Box::into_pin(Box::<DeviceDispatchTable>::new(Default::default()));
+                        let dispatch_table = Box::into_pin(Box::<DeviceDispatchTable>::default());
                         let physical_device =
                             unsafe { PhysicalDeviceData::from_handle(physical_device) };
                         let instance_data = physical_device.owner_instance.upgrade().unwrap();
@@ -717,11 +717,7 @@ static VULKAN_COMMANDS: Lazy<BTreeMap<VulkanCommandName, VulkanCommand>> = Lazy:
                             unsafe { PhysicalDeviceData::from_handle(physical_device) };
                         let instance_data = physical_device_data.owner_instance.upgrade().unwrap();
                         *unsafe { properties.as_mut() }.unwrap() = vk::PhysicalDeviceProperties {
-                            api_version: instance_data
-                                .supported_device_version
-                                .lock()
-                                .unwrap()
-                                .clone()
+                            api_version: (*instance_data.supported_device_version.lock().unwrap())
                                 .into(),
                             driver_version: 0,
                             vendor_id: 0x1AE0,
@@ -747,7 +743,7 @@ static VULKAN_COMMANDS: Lazy<BTreeMap<VulkanCommandName, VulkanCommand>> = Lazy:
     commands.into_iter().collect()
 });
 
-pub extern "system" fn get_instance_proc_addr(
+unsafe extern "system" fn get_instance_proc_addr(
     instance: vk::Instance,
     p_name: *const i8,
 ) -> vk::PFN_vkVoidFunction {
@@ -804,7 +800,7 @@ pub extern "system" fn get_instance_proc_addr(
     }
 }
 
-pub type MockLayer<T> = Arc<TestLayerWrapper<T>>;
+pub type MockLayer = TestLayerWrapper;
 
 pub fn create_entry<T: Layer>() -> ash::Entry {
     unsafe {
@@ -852,14 +848,11 @@ impl<T: Layers> ArcDelInstanceContextExt<T> for ArcDel<InstanceContext<T>> {
                 .next()
                 .unwrap()
         };
-        assert!(
-            unsafe {
-                self.instance
-                    .get_physical_device_queue_family_properties(physical_device)
-            }
-            .len()
-                >= 1
-        );
+        assert!(!unsafe {
+            self.instance
+                .get_physical_device_queue_family_properties(physical_device)
+        }
+        .is_empty());
         let queue_priorities = [1.0];
         let queue_create_infos = [vk::DeviceQueueCreateInfo::builder()
             .queue_family_index(0)
@@ -890,7 +883,7 @@ impl<T: Layers> ArcDelInstanceContextExt<T> for ArcDel<InstanceContext<T>> {
         let device_context = DeviceContext {
             device,
             next_device_dispatch,
-            instance_context: self.into(),
+            instance_context: self,
         };
         Ok(Del::new(device_context, move |device_context| unsafe {
             device_context.device.destroy_device(None)

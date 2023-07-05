@@ -67,6 +67,5 @@ TODO
 - [ ] Testing
   - [ ] e2e test: the test boundary is the Vulkan layer ABI. The Vulkan loader and the mock ICD will be used for testing. Write a `cdylib` crate named `tests`, with a layer that is allowed to customize the behavior through a function exported as a dynamic library symbol. We run different tests in different processes. For different tests, we customize the layer differently, and asserts either inside the customization point or after it returns, e.g. to test initialization and destruction on DLL loading and unloading time, we can customize the ctor and the drop implementation for the layer, then load and unload the Vulkan library then verify if the ctor is called the same time as the drop. We also need to create a `e2e` task to build the DLL, generate the json, set the environement variables, and spawn tests in different processes(cargo-nextest can be used here since it runs tests in their own process).
   - [x] `vulkan-layer` level integration test
-- [ ] Investigate slow compile speed for integration test
 - [ ] Handle different enum underlying representation: generate `VkLayerFunction` in platform specific files, and also stop using `include!` which could confuse the `rust-analyzer`.
 - [ ] catch unwind at the FFI boundary to allow the library to be compiled with `panic="unwind"`.

@@ -16,17 +16,14 @@ use ash::vk;
 use std::sync::Arc;
 use vulkan_layer::{
     auto_deviceinfo_impl, auto_globalhooksinfo_impl, auto_instanceinfo_impl,
-    test_utils::{MockGlobalHooksInfo, MockInstanceInfo, TestLayer, TestLayerWrapper},
+    test_utils::{MockGlobalHooksInfo, MockInstanceInfo, TestLayerWrapper},
     DeviceHooks, Global, GlobalHooks, InstanceHooks, Layer, LayerResult, LayerVulkanCommand,
 };
 
 #[test]
 fn test_auto_globalhooksinfo_should_intercept_hooked_proc() {
-    #[derive(Default)]
-    struct Tag;
-    impl TestLayer for Tag {}
-
-    type MockLayer = Arc<TestLayerWrapper<Tag, TestGlobalHooks>>;
+    type MockLayer = TestLayerWrapper<0, TestGlobalHooks>;
+    let _ctx = MockLayer::context();
     #[derive(Default)]
     struct TestGlobalHooks;
     #[auto_globalhooksinfo_impl]
@@ -40,7 +37,7 @@ fn test_auto_globalhooksinfo_should_intercept_hooked_proc() {
             unimplemented!()
         }
     }
-    let hooked_commands = &Global::<MockLayer>::instance()
+    let hooked_commands = &Global::<Arc<MockLayer>>::instance()
         .layer_info
         .hooked_commands()
         .collect::<Vec<_>>();
@@ -49,11 +46,9 @@ fn test_auto_globalhooksinfo_should_intercept_hooked_proc() {
 
 #[test]
 fn test_auto_instanceinfo_should_intercept_hooked_proc() {
-    #[derive(Default)]
-    struct Tag;
-    impl TestLayer for Tag {}
-
-    type MockLayer = Arc<TestLayerWrapper<Tag, MockGlobalHooksInfo<Tag>, TestInstanceInfo>>;
+    const SLOT: usize = 0;
+    type MockLayer = TestLayerWrapper<SLOT, MockGlobalHooksInfo<SLOT>, TestInstanceInfo>;
+    let _ctx = MockLayer::context();
     #[derive(Default)]
     struct TestInstanceInfo;
     #[auto_instanceinfo_impl]
@@ -66,7 +61,7 @@ fn test_auto_instanceinfo_should_intercept_hooked_proc() {
             unimplemented!()
         }
     }
-    let hooked_commands = &Global::<MockLayer>::instance()
+    let hooked_commands = &Global::<Arc<MockLayer>>::instance()
         .layer_info
         .hooked_commands()
         .collect::<Vec<_>>();
@@ -75,12 +70,10 @@ fn test_auto_instanceinfo_should_intercept_hooked_proc() {
 
 #[test]
 fn test_auto_deviceinfo_should_intercept_hooked_proc() {
-    #[derive(Default)]
-    struct Tag;
-    impl TestLayer for Tag {}
-
+    const SLOT: usize = 0;
     type MockLayer =
-        Arc<TestLayerWrapper<Tag, MockGlobalHooksInfo<Tag>, MockInstanceInfo<Tag>, TestDeviceInfo>>;
+        TestLayerWrapper<SLOT, MockGlobalHooksInfo<SLOT>, MockInstanceInfo<SLOT>, TestDeviceInfo>;
+    let _ctx = MockLayer::context();
     #[derive(Default)]
     struct TestDeviceInfo;
     #[auto_deviceinfo_impl]
@@ -93,7 +86,7 @@ fn test_auto_deviceinfo_should_intercept_hooked_proc() {
             unimplemented!()
         }
     }
-    let hooked_commands = &Global::<MockLayer>::instance()
+    let hooked_commands = &Global::<Arc<MockLayer>>::instance()
         .layer_info
         .hooked_commands()
         .collect::<Vec<_>>();
