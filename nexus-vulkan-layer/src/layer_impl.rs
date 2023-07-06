@@ -16,6 +16,7 @@ use std::{
     collections::{BTreeSet, HashMap},
     ffi::{CStr, CString},
     mem::MaybeUninit,
+    os::fd::{AsRawFd, BorrowedFd, OwnedFd},
     ptr::{null, null_mut},
     sync::{Arc, Mutex},
 };
@@ -28,8 +29,8 @@ use bumpalo::Bump;
 
 use crate::{
     bindings::{
-        cros_gralloc_handle, AHardwareBuffer, AHardwareBuffer_Format,
-        AHardwareBuffer_getNativeHandle,
+        cros_gralloc_handle, AHardwareBuffer, AHardwareBuffer_Format, AHardwareBuffer_acquire,
+        AHardwareBuffer_getNativeHandle, AHardwareBuffer_release,
     },
     cros_gralloc_helpers::cros_gralloc_convert_handle,
 };
@@ -68,6 +69,7 @@ mod minigbm_bindings {
 trait CrosGrallocHandleExt {
     fn get_vk_format(&self) -> vk::Format;
     fn get_vk_allocation_size(&self) -> u64;
+    fn get_opaque_fd(&self) -> BorrowedFd;
 }
 
 impl CrosGrallocHandleExt for cros_gralloc_handle {
@@ -85,6 +87,10 @@ impl CrosGrallocHandleExt for cros_gralloc_handle {
 
     fn get_vk_allocation_size(&self) -> u64 {
         self.total_size - self.reserved_region_size
+    }
+
+    fn get_opaque_fd(&self) -> BorrowedFd {
+        unsafe { BorrowedFd::borrow_raw(self.fds[0]) }
     }
 }
 
@@ -238,10 +244,17 @@ struct NativeBufferImage {
     memory: vk::DeviceMemory,
 }
 
+struct AHardwareBufferMemory {
+    ahardware_buffer: *mut AHardwareBuffer,
+}
+unsafe impl Send for AHardwareBufferMemory {}
+unsafe impl Sync for AHardwareBufferMemory {}
+
 pub(crate) struct NexusDeviceInfo {
     device: Arc<ash::Device>,
     get_swapchain_gralloc_usage2_android: Option<vk::PFN_vkGetSwapchainGrallocUsage2ANDROID>,
     native_buffer_images: Mutex<HashMap<vk::Image, NativeBufferImage>>,
+    ahardware_buffer_memories: Mutex<HashMap<vk::DeviceMemory, AHardwareBufferMemory>>,
 }
 
 impl NexusDeviceInfo {
@@ -260,6 +273,17 @@ impl NexusDeviceInfo {
                     return Err(vk::Result::ERROR_INVALID_EXTERNAL_HANDLE_KHR);
                 }
             };
+        let opaque_fd = cros_gralloc_handle.get_opaque_fd();
+        let opaque_fd = match opaque_fd.try_clone_to_owned() {
+            Ok(fd) => fd,
+            Err(e) => {
+                error!(
+                    "Failed to duplicate the opaque fd({:?}) for the native gralloc buffer: {:?}",
+                    opaque_fd, e
+                );
+                return Err(vk::Result::ERROR_INVALID_EXTERNAL_HANDLE_KHR);
+            }
+        };
 
         let p_next_chain = unsafe { (create_info.p_next as *const vk::BaseInStructure).as_ref() };
         let next_chain: VulkanBaseInStructChain = p_next_chain.into();
@@ -292,7 +316,7 @@ impl NexusDeviceInfo {
             .memory_type_index(cros_gralloc_handle.memory_type_index);
         let mut import_memory_fd = vk::ImportMemoryFdInfoKHR::builder()
             .handle_type(vk::ExternalMemoryHandleTypeFlags::OPAQUE_FD)
-            .fd(cros_gralloc_handle.fds[0]);
+            .fd(opaque_fd.as_raw_fd());
         allocate_info = allocate_info.push_next(&mut import_memory_fd);
         let mut dedicated_allocation = vk::MemoryDedicatedAllocateInfo::builder().image(image);
         if cros_gralloc_handle.dedicated_allocation != 0 {
@@ -312,6 +336,8 @@ impl NexusDeviceInfo {
                 return Err(e);
             }
         };
+        // The ownership of the fd has been transferred to the ICD.
+        std::mem::forget(opaque_fd);
         if let Err(e) = unsafe { self.device.bind_image_memory(image, memory, 0) } {
             error!(
                 "Failed to bind the native buffer image to the memory: {}",
@@ -674,6 +700,11 @@ impl DeviceHooks for NexusDeviceInfo {
         let mut local_allocate_info = vk::MemoryAllocateInfo::builder()
             .allocation_size(allocate_info.allocation_size)
             .memory_type_index(allocate_info.memory_type_index);
+        struct AHardwareBufferInfo {
+            opaque_fd: OwnedFd,
+            ahardware_buffer: *mut AHardwareBuffer,
+        }
+        let mut ahardwarebuffer_info: Option<AHardwareBufferInfo> = None;
         for p_next in p_next_chain {
             let p_next_ptr = p_next as *const vk::BaseInStructure;
             unsafe {
@@ -764,7 +795,9 @@ impl DeviceHooks for NexusDeviceInfo {
                         local_allocate_info = local_allocate_info.push_next(p_next);
                     }
                     p_next @ vk::ImportAndroidHardwareBufferInfoANDROID => {
-                        fn get_opaque_fd_from_ahb(ahb: *const AHardwareBuffer) -> VkResult<i32> {
+                        fn get_opaque_fd_from_ahb(
+                            ahb: *const AHardwareBuffer,
+                        ) -> VkResult<OwnedFd> {
                             let native_buffer = unsafe { AHardwareBuffer_getNativeHandle(ahb) };
                             if native_buffer.is_null() {
                                 error!(
@@ -781,9 +814,16 @@ impl DeviceHooks for NexusDeviceInfo {
                                     return Err(vk::Result::ERROR_INVALID_EXTERNAL_HANDLE_KHR);
                                 }
                             };
-                            Ok(cros_gralloc_handle.fds[0])
+                            let borrowed_fd = cros_gralloc_handle.get_opaque_fd();
+                            match borrowed_fd.try_clone_to_owned() {
+                                Ok(fd) => Ok(fd),
+                                Err(e) => {
+                                    error!("Failed to duplicate the opaque fd({:?}) of the AHardwareBuffer: {:?}", borrowed_fd, e);
+                                    Err(vk::Result::ERROR_INVALID_EXTERNAL_HANDLE_KHR)
+                                }
+                            }
                         }
-                        let fd = match get_opaque_fd_from_ahb(p_next.buffer as *const _) {
+                        let opaque_fd = match get_opaque_fd_from_ahb(p_next.buffer as *const _) {
                             Ok(fd) => fd,
                             Err(e) => return LayerResult::Handled(Err(e)),
                         };
@@ -791,10 +831,14 @@ impl DeviceHooks for NexusDeviceInfo {
                             bump.alloc(
                                 vk::ImportMemoryFdInfoKHR::builder()
                                     .handle_type(vk::ExternalMemoryHandleTypeFlags::OPAQUE_FD)
-                                    .fd(fd)
+                                    .fd(opaque_fd.as_raw_fd())
                                     .build(),
                             ),
                         );
+                        ahardwarebuffer_info = Some(AHardwareBufferInfo {
+                            ahardware_buffer: p_next.buffer as *mut AHardwareBuffer,
+                            opaque_fd,
+                        });
                     }
                     _ => {
                         error!(
@@ -805,10 +849,29 @@ impl DeviceHooks for NexusDeviceInfo {
                 })
             }
         }
-        LayerResult::Handled(unsafe {
+        let res = unsafe {
             self.device
                 .allocate_memory(&local_allocate_info, allocation_callbacks)
-        })
+        };
+        if let (Ok(device_memory), Some(ahardwarebuffer_info)) = (res, ahardwarebuffer_info) {
+            use std::collections::hash_map::Entry;
+            unsafe { AHardwareBuffer_acquire(ahardwarebuffer_info.ahardware_buffer) };
+            // Since the allocation succeeds, the ICD has obtained the ownership of this fd.
+            // Avoiding closing the fd from our side.
+            std::mem::forget(ahardwarebuffer_info.opaque_fd);
+            let mut ahardware_buffer_memories = self.ahardware_buffer_memories.lock().unwrap();
+            let entry = ahardware_buffer_memories.entry(device_memory);
+            let entry = match entry {
+                Entry::Occupied(_) => {
+                    panic!("Memory {:#010x} already existed.", device_memory.as_raw())
+                }
+                Entry::Vacant(e) => e,
+            };
+            entry.insert(AHardwareBufferMemory {
+                ahardware_buffer: ahardwarebuffer_info.ahardware_buffer,
+            });
+        }
+        LayerResult::Handled(res)
     }
 
     // VK_ANDROID_native_buffer commands
@@ -896,7 +959,15 @@ impl DeviceHooks for NexusDeviceInfo {
         memory: vk::DeviceMemory,
         _allocator: Option<&vk::AllocationCallbacks>,
     ) -> LayerResult<()> {
-        error!("vkFreeMemory: memory = {:#010x}", memory.as_raw());
+        info!("vkFreeMemory: memory = {:#010x}", memory.as_raw());
+        if let Some(memory) = self
+            .ahardware_buffer_memories
+            .lock()
+            .unwrap()
+            .remove(&memory)
+        {
+            unsafe { AHardwareBuffer_release(memory.ahardware_buffer) };
+        }
         LayerResult::Unhandled
     }
 }
@@ -961,6 +1032,7 @@ impl Layer for NexusLayer {
             device,
             get_swapchain_gralloc_usage2_android,
             native_buffer_images: Default::default(),
+            ahardware_buffer_memories: Default::default(),
         }
     }
 }
