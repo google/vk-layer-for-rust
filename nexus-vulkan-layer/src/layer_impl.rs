@@ -36,7 +36,7 @@ use crate::{
 use log::{error, info, warn};
 use vulkan_layer::{
     auto_deviceinfo_impl, auto_globalhooksinfo_impl, auto_instanceinfo_impl, DeviceHooks,
-    Extension, ExtensionProperties, GlobalHooks, InstanceHooks, Layer, LayerResult,
+    Extension, ExtensionProperties, GlobalHooks, InstanceHooks, Layer, LayerManifest, LayerResult,
     VkLayerDeviceLink, VulkanBaseInStructChain, VulkanBaseOutStructChain,
 };
 
@@ -182,7 +182,7 @@ impl InstanceHooks for NexusInstanceInfo {
         allocator: Option<&vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::Device>> {
         let mut create_info = *create_info;
-        if create_info.pp_enabled_extension_names == null() {
+        if create_info.pp_enabled_extension_names.is_null() {
             return LayerResult::Unhandled;
         }
         let mut extensions = unsafe {
@@ -347,7 +347,6 @@ impl DeviceHooks for NexusDeviceInfo {
         create_info: &vk::ImageCreateInfo,
         allocation_callbacks: Option<&vk::AllocationCallbacks>,
     ) -> LayerResult<VkResult<vk::Image>> {
-        info!("Create image from {}", NexusLayer::LAYER_NAME);
         let p_next_chain = unsafe { (create_info.p_next as *const vk::BaseInStructure).as_ref() };
         let next_chain: VulkanBaseInStructChain = p_next_chain.into();
         let queue_family_indices = unsafe {
@@ -490,6 +489,7 @@ impl DeviceHooks for NexusDeviceInfo {
             }
         }
         if let Some(native_buffer) = native_buffer {
+            info!("Creating native buffer image from {}", LAYER_NAME);
             return LayerResult::Handled(self.create_native_buffer_image(
                 local_create_info,
                 native_buffer,
@@ -901,25 +901,31 @@ impl DeviceHooks for NexusDeviceInfo {
     }
 }
 
+const LAYER_NAME: &str = "VK_LAYER_GOOGLE_nexus";
+
 #[auto_globalhooksinfo_impl]
 impl GlobalHooks for NexusLayer {}
 
 impl Layer for NexusLayer {
-    const LAYER_NAME: &'static str = "VK_LAYER_GOOGLE_nexus";
-    const LAYER_DESCRIPTION: &'static str =
-        "Emulate some Android Vulkan extensions support where the ICD doesn't support them.";
-    const IMPLEMENTATION_VERSION: u32 = 1;
-    const SPEC_VERSION: u32 = vk::API_VERSION_1_1;
-    const DEVICE_EXTENSIONS: &'static [ExtensionProperties] = &[ExtensionProperties {
-        name: Extension::ANDROIDExternalMemoryAndroidHardwareBuffer,
-        spec_version: 5,
-    }];
-
     type GlobalHooksInfo = Self;
     type InstanceInfo = NexusInstanceInfo;
     type DeviceInfo = NexusDeviceInfo;
     type InstanceInfoContainer = NexusInstanceInfo;
     type DeviceInfoContainer = NexusDeviceInfo;
+
+    fn manifest() -> LayerManifest {
+        let mut layer_manifest = LayerManifest::default();
+        layer_manifest.name = LAYER_NAME;
+        layer_manifest.implementation_version = 1;
+        layer_manifest.spec_version = vk::API_VERSION_1_1;
+        layer_manifest.device_extensions = &[ExtensionProperties {
+            name: Extension::ANDROIDExternalMemoryAndroidHardwareBuffer,
+            spec_version: 5,
+        }];
+        layer_manifest.description =
+            "Emulate some Android Vulkan extensions support where the ICD doesn't support them.";
+        layer_manifest
+    }
 
     fn get_global_hooks_info(&self) -> &Self::GlobalHooksInfo {
         self
@@ -932,7 +938,7 @@ impl Layer for NexusLayer {
         instance: Arc<ash::Instance>,
         _: vk::PFN_vkGetInstanceProcAddr,
     ) -> Self::InstanceInfo {
-        info!("create instance from {}", Self::LAYER_NAME);
+        info!("create instance from {}", LAYER_NAME);
         NexusInstanceInfo {
             instance: instance.handle(),
         }
@@ -946,7 +952,7 @@ impl Layer for NexusLayer {
         device: Arc<ash::Device>,
         next_get_device_proc_addr: vk::PFN_vkGetDeviceProcAddr,
     ) -> Self::DeviceInfo {
-        info!("create device from {}", Self::LAYER_NAME);
+        info!("create device from {}", LAYER_NAME);
         let func_name_c_str = CString::new(VK_GET_SWAPCHAIN_GRALLOC_USAGE2_ANDROID_NAME).unwrap();
         let get_swapchain_gralloc_usage2_android =
             unsafe { next_get_device_proc_addr(device.handle(), func_name_c_str.as_ptr()) }
@@ -992,13 +998,13 @@ impl Default for NexusLayer {
             #[cfg(feature = "aosp_build")]
             logger::init(
                 logger::Config::default()
-                    .with_tag_on_device(Self::LAYER_NAME)
+                    .with_tag_on_device(LAYER_NAME)
                     .with_min_level(log::Level::Trace),
             );
             #[cfg(not(feature = "aosp_build"))]
             android_logger::init_once(
                 android_logger::Config::default()
-                    .with_tag(Self::LAYER_NAME)
+                    .with_tag(LAYER_NAME)
                     .format(|f, record| {
                         write!(
                             f,
