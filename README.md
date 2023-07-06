@@ -58,8 +58,7 @@ TODO
 - [x] Auto-generate the `global_simple_intercept.rs` from `vk.xml`.
 - [x] Auto-generate the `layer_trait.rs` file from `vk.xml`.
 - [x] Use a attribute macro to track which function is implemented in the `LayerTrait`, and don't inject all other functions for performance.
-- [ ] Do not auto generate global commands: the interfaces are always different.
-- [ ] Release global resources when the dynamic library is unloaded. Use platform specific way. This is a more serious issue for Android, because Vulkan is a SP-HAL that can be loaded into and unloaded from the process multiple times. We can use `Mutex<Option<Box<T>>>` for that.
+- [ ] Make global instance trivially destructible after all instances are destroyed. We can't rely on the destructor of DLL to perform clean up. We need to require the user to declare the global static, and declare one for each layer. User's `Layer` global instance will also be created before the first `vkCreateInstance` is returned and will be destroyed after the last `vkDestroyInstance` is called.
 - [ ] Use procedure macro to generate the export functions in `lib.rs` file for the layer user.
 - [ ] Use the xtask workflow to generate the layer json file.
 - [ ] Support the latest layer interface version. Currently 2 is the latest version. e.g. correctly handle the `vk_layerGetPhysicalDeviceProcAddr` case.
@@ -68,5 +67,5 @@ TODO
 - [ ] Testing
   - [ ] e2e test: the test boundary is the Vulkan layer ABI. The Vulkan loader and the mock ICD will be used for testing. Write a `cdylib` crate named `tests`, with a layer that is allowed to customize the behavior through a function exported as a dynamic library symbol. We run different tests in different processes. For different tests, we customize the layer differently, and asserts either inside the customization point or after it returns, e.g. to test initialization and destruction on DLL loading and unloading time, we can customize the ctor and the drop implementation for the layer, then load and unload the Vulkan library then verify if the ctor is called the same time as the drop. We also need to create a `e2e` task to build the DLL, generate the json, set the environement variables, and spawn tests in different processes(cargo-nextest can be used here since it runs tests in their own process).
   - [x] `vulkan-layer` level integration test
-- [ ] Investigate slow compile speed for integration test
 - [ ] Handle different enum underlying representation: generate `VkLayerFunction` in platform specific files, and also stop using `include!` which could confuse the `rust-analyzer`.
+- [ ] catch unwind at the FFI boundary to allow the library to be compiled with `panic="unwind"`.

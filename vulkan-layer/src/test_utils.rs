@@ -13,15 +13,14 @@
 // limitations under the License.
 
 use crate::{
-    generated::GlobalHooksInfo, DeviceInfo, ExtensionProperties, InstanceInfo, Layer,
-    LayerVulkanCommand,
+    generated::GlobalHooksInfo, DeviceInfo, InstanceInfo, Layer, LayerManifest, LayerVulkanCommand,
 };
 use ash::vk;
 use mockall::mock;
+use once_cell::sync::OnceCell;
 use std::{
     borrow::Borrow,
     collections::HashMap,
-    marker::PhantomData,
     ops::Deref,
     sync::{Arc, Mutex, MutexGuard, Weak},
 };
@@ -38,9 +37,11 @@ use device_hooks_mock::MockDeviceHooks;
 use global_hooks_mock::MockGlobalHooks;
 use instance_hooks_mock::MockInstanceHooks;
 
+type Deleter<T> = Box<dyn FnOnce(&mut T) + Send + Sync>;
+
 pub struct Del<T> {
     data: T,
-    deleter: Option<Box<dyn FnOnce(&mut T) + Send + Sync>>,
+    deleter: Option<Deleter<T>>,
 }
 
 impl<T> Del<T> {
@@ -124,14 +125,19 @@ mock! {
     }
 }
 
+const MAX_TEST_LAYER_SLOTS: usize = 2;
+#[allow(clippy::declare_interior_mutable_const)]
+const TEST_LAYER_INIT_VALUE: Mutex<OnceCell<TestLayer>> = Mutex::new(OnceCell::new());
+static TEST_LAYERS: [Mutex<OnceCell<TestLayer>>; MAX_TEST_LAYER_SLOTS] =
+    [TEST_LAYER_INIT_VALUE; MAX_TEST_LAYER_SLOTS];
+
 #[derive(Default)]
-pub struct MockInstanceInfo<T: TestLayer> {
+pub struct MockInstanceInfo<const SLOT: usize> {
     pub mock_hooks: Mutex<MockInstanceHooks>,
     mock_drop: Mutex<Option<MockDrop>>,
-    _marker: PhantomData<T>,
 }
 
-impl<T: TestLayer> MockInstanceInfo<T> {
+impl<const SLOT: usize> MockInstanceInfo<SLOT> {
     pub fn with_mock_drop(&self, f: impl FnOnce(&mut MockDrop)) {
         let mut mock_drop = self.mock_drop.lock().unwrap();
         let mock_drop = mock_drop.get_or_insert_with(Default::default);
@@ -139,11 +145,16 @@ impl<T: TestLayer> MockInstanceInfo<T> {
     }
 }
 
-impl<T: TestLayer> InstanceInfo for MockInstanceInfo<T> {
+impl<const SLOT: usize> InstanceInfo for MockInstanceInfo<SLOT> {
     type HooksType = MockInstanceHooks;
     type HooksRefType<'a> = MutexGuard<'a, MockInstanceHooks>;
     fn hooked_commands() -> &'static [LayerVulkanCommand] {
-        T::hooked_instance_commands()
+        TEST_LAYERS[SLOT]
+            .lock()
+            .unwrap()
+            .get()
+            .unwrap()
+            .hooked_instance_commands
     }
 
     fn hooks(&self) -> Self::HooksRefType<'_> {
@@ -152,13 +163,12 @@ impl<T: TestLayer> InstanceInfo for MockInstanceInfo<T> {
 }
 
 #[derive(Default)]
-pub struct MockDeviceInfo<T: TestLayer> {
+pub struct MockDeviceInfo<const SLOT: usize> {
     pub mock_hooks: Mutex<MockDeviceHooks>,
     mock_drop: Mutex<Option<MockDrop>>,
-    _marker: PhantomData<T>,
 }
 
-impl<T: TestLayer> MockDeviceInfo<T> {
+impl<const SLOT: usize> MockDeviceInfo<SLOT> {
     pub fn with_mock_drop(&self, f: impl FnOnce(&mut MockDrop)) {
         let mut mock_drop = self.mock_drop.lock().unwrap();
         let mock_drop = mock_drop.get_or_insert_with(Default::default);
@@ -166,11 +176,16 @@ impl<T: TestLayer> MockDeviceInfo<T> {
     }
 }
 
-impl<T: TestLayer> DeviceInfo for MockDeviceInfo<T> {
+impl<const SLOT: usize> DeviceInfo for MockDeviceInfo<SLOT> {
     type HooksType = MockDeviceHooks;
     type HooksRefType<'a> = MutexGuard<'a, MockDeviceHooks>;
     fn hooked_commands() -> &'static [LayerVulkanCommand] {
-        T::hooked_device_commands()
+        TEST_LAYERS[SLOT]
+            .lock()
+            .unwrap()
+            .get()
+            .unwrap()
+            .hooked_device_commands
     }
 
     fn hooks(&self) -> Self::HooksRefType<'_> {
@@ -179,16 +194,20 @@ impl<T: TestLayer> DeviceInfo for MockDeviceInfo<T> {
 }
 
 #[derive(Default)]
-pub struct MockGlobalHooksInfo<T: TestLayer> {
+pub struct MockGlobalHooksInfo<const SLOT: usize> {
     pub mock_hooks: Mutex<MockGlobalHooks>,
-    _marker: PhantomData<T>,
 }
 
-impl<T: TestLayer> GlobalHooksInfo for MockGlobalHooksInfo<T> {
+impl<const SLOT: usize> GlobalHooksInfo for MockGlobalHooksInfo<SLOT> {
     type HooksType = MockGlobalHooks;
     type HooksRefType<'a> = MutexGuard<'a, MockGlobalHooks>;
     fn hooked_commands() -> &'static [LayerVulkanCommand] {
-        T::hooked_global_commands()
+        TEST_LAYERS[SLOT]
+            .lock()
+            .unwrap()
+            .get()
+            .unwrap()
+            .hooked_global_commands
     }
 
     fn hooks(&self) -> Self::HooksRefType<'_> {
@@ -196,39 +215,108 @@ impl<T: TestLayer> GlobalHooksInfo for MockGlobalHooksInfo<T> {
     }
 }
 
-pub trait TestLayer: Send + Sync + Default + 'static {
-    const LAYER_NAME: &'static str = "VK_LAYER_GOOGLE_test";
-    const LAYER_DESCRIPTION: &'static str = "";
-    const IMPLEMENTATION_VERSION: u32 = 1;
-    const SPEC_VERSION: u32 = vk::API_VERSION_1_1;
-    const DEVICE_EXTENSIONS: &'static [ExtensionProperties] = &[];
+pub trait LayerManifestExt {
+    fn test_default() -> Self;
+}
 
-    fn hooked_global_commands() -> &'static [LayerVulkanCommand] {
-        &[]
+impl LayerManifestExt for LayerManifest {
+    fn test_default() -> Self {
+        Self {
+            name: "VK_LAYER_GOOGLE_test",
+            spec_version: vk::API_VERSION_1_1,
+            ..Default::default()
+        }
+    }
+}
+
+struct TestLayer {
+    layer_manifest: LayerManifest,
+    hooked_global_commands: &'static [LayerVulkanCommand],
+    hooked_instance_commands: &'static [LayerVulkanCommand],
+    hooked_device_commands: &'static [LayerVulkanCommand],
+}
+
+impl Default for TestLayer {
+    fn default() -> Self {
+        Self {
+            layer_manifest: LayerManifest::test_default(),
+            hooked_global_commands: &[],
+            hooked_instance_commands: &[],
+            hooked_device_commands: &[],
+        }
+    }
+}
+
+pub struct TestLayerContext {
+    slot: usize,
+}
+
+impl TestLayerContext {
+    fn new(slot: usize) -> Self {
+        TEST_LAYERS[slot]
+            .lock()
+            .unwrap()
+            .set(Default::default())
+            .unwrap_or_else(|_| panic!("Trying to create overlapped test contexts."));
+        Self { slot }
     }
 
-    // Will only be used when work with MockInstanceInfo<Self> and TestLayerWrapper so that we can
-    // use TestLayer and TestLayerWrapper with an actual InstanceInfo type that implements the
-    // hooked_commands interface.
-    fn hooked_instance_commands() -> &'static [LayerVulkanCommand] {
-        &[]
+    fn with_mut_test_layer(&self, f: impl FnOnce(&mut TestLayer)) {
+        let mut test_layer = TEST_LAYERS[self.slot].lock().unwrap();
+        let test_layer = test_layer
+            .get_mut()
+            .unwrap_or_else(|| panic!("TestLayer not initialized yet."));
+        f(test_layer);
     }
 
-    // Will only be used when work with MockDeviceInfo<Self> and TestLayerWrapper so that we can
-    // use TestLayer and TestLayerWrapper with an actual DeviceInfo type that implements the
-    // hooked_commands interface.
-    fn hooked_device_commands() -> &'static [LayerVulkanCommand] {
-        &[]
+    pub fn set_layer_manifest(&self, layer_manifest: LayerManifest) -> &Self {
+        self.with_mut_test_layer(move |test_layer| test_layer.layer_manifest = layer_manifest);
+        self
+    }
+
+    pub fn set_hooked_global_commands(
+        &self,
+        hooked_global_commands: &'static [LayerVulkanCommand],
+    ) -> &Self {
+        self.with_mut_test_layer(move |test_layer| {
+            test_layer.hooked_global_commands = hooked_global_commands
+        });
+        self
+    }
+
+    pub fn set_hooked_instance_commands(
+        &self,
+        hooked_instance_commands: &'static [LayerVulkanCommand],
+    ) -> &Self {
+        self.with_mut_test_layer(move |test_layer| {
+            test_layer.hooked_instance_commands = hooked_instance_commands
+        });
+        self
+    }
+
+    pub fn set_hooked_device_commands(
+        &self,
+        hooked_device_commands: &'static [LayerVulkanCommand],
+    ) -> &Self {
+        self.with_mut_test_layer(move |test_layer| {
+            test_layer.hooked_device_commands = hooked_device_commands
+        });
+        self
+    }
+}
+
+impl Drop for TestLayerContext {
+    fn drop(&mut self) {
+        TEST_LAYERS[self.slot].lock().unwrap().take().unwrap();
     }
 }
 
 pub struct TestLayerWrapper<
-    T,
-    U = MockGlobalHooksInfo<T>,
-    V = MockInstanceInfo<T>,
-    W = MockDeviceInfo<T>,
+    const SLOT: usize = 0,
+    U = MockGlobalHooksInfo<SLOT>,
+    V = MockInstanceInfo<SLOT>,
+    W = MockDeviceInfo<SLOT>,
 > where
-    T: TestLayer,
     U: GlobalHooksInfo + 'static,
     V: InstanceInfo + 'static,
     W: DeviceInfo + 'static,
@@ -236,12 +324,10 @@ pub struct TestLayerWrapper<
     global_hooks_info: U,
     instances: Mutex<HashMap<vk::Instance, Weak<Del<V>>>>,
     devices: Mutex<HashMap<vk::Device, Weak<Del<W>>>>,
-    _marker: PhantomData<T>,
 }
 
-impl<T, U, V, W> TestLayerWrapper<T, U, V, W>
+impl<const SLOT: usize, U, V, W> TestLayerWrapper<SLOT, U, V, W>
 where
-    T: TestLayer,
     U: GlobalHooksInfo + 'static,
     V: InstanceInfo + 'static,
     W: DeviceInfo + 'static,
@@ -261,11 +347,14 @@ where
             .get(&device)
             .and_then(Weak::upgrade)
     }
+
+    pub fn context() -> TestLayerContext {
+        TestLayerContext::new(SLOT)
+    }
 }
 
-impl<T, U, V, W> Default for TestLayerWrapper<T, U, V, W>
+impl<const SLOT: usize, U, V, W> Default for TestLayerWrapper<SLOT, U, V, W>
 where
-    T: TestLayer,
     U: GlobalHooksInfo + Default + 'static,
     V: InstanceInfo + 'static,
     W: DeviceInfo + 'static,
@@ -275,14 +364,12 @@ where
             global_hooks_info: Default::default(),
             instances: Default::default(),
             devices: Default::default(),
-            _marker: Default::default(),
         }
     }
 }
 
-impl<T, U, V, W> Layer for Arc<TestLayerWrapper<T, U, V, W>>
+impl<const SLOT: usize, U, V, W> Layer for Arc<TestLayerWrapper<SLOT, U, V, W>>
 where
-    T: TestLayer,
     U: GlobalHooksInfo + Default + 'static,
     V: InstanceInfo + Default + 'static,
     W: DeviceInfo + Default + 'static,
@@ -293,11 +380,15 @@ where
     type InstanceInfoContainer = ArcDel<Self::InstanceInfo>;
     type DeviceInfoContainer = ArcDel<Self::DeviceInfo>;
 
-    const LAYER_NAME: &'static str = <T as TestLayer>::LAYER_NAME;
-    const LAYER_DESCRIPTION: &'static str = <T as TestLayer>::LAYER_DESCRIPTION;
-    const IMPLEMENTATION_VERSION: u32 = <T as TestLayer>::IMPLEMENTATION_VERSION;
-    const SPEC_VERSION: u32 = T::SPEC_VERSION;
-    const DEVICE_EXTENSIONS: &'static [ExtensionProperties] = T::DEVICE_EXTENSIONS;
+    fn manifest() -> LayerManifest {
+        TEST_LAYERS[SLOT]
+            .lock()
+            .unwrap()
+            .get()
+            .unwrap()
+            .layer_manifest
+            .clone()
+    }
 
     fn get_global_hooks_info(&self) -> &Self::GlobalHooksInfo {
         &self.global_hooks_info

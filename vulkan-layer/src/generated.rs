@@ -191,18 +191,24 @@ impl From<ExtensionProperties> for vk::ExtensionProperties {
     }
 }
 
-pub trait Layer: Sync + Default + 'static {
-    const LAYER_NAME: &'static str;
-    const SPEC_VERSION: u32;
-    const IMPLEMENTATION_VERSION: u32;
-    const LAYER_DESCRIPTION: &'static str;
-    const DEVICE_EXTENSIONS: &'static [ExtensionProperties] = &[];
+#[non_exhaustive]
+#[derive(Default, Clone)]
+pub struct LayerManifest {
+    pub name: &'static str,
+    pub spec_version: u32,
+    pub implementation_version: u32,
+    pub description: &'static str,
+    pub device_extensions: &'static [ExtensionProperties],
+}
 
+pub trait Layer: Sync + Default + 'static {
     type GlobalHooksInfo: GlobalHooksInfo;
     type InstanceInfo: InstanceInfo;
     type DeviceInfo: DeviceInfo;
     type InstanceInfoContainer: Borrow<Self::InstanceInfo> + Sync + Send;
     type DeviceInfoContainer: Borrow<Self::DeviceInfo> + Sync + Send;
+
+    fn manifest() -> LayerManifest;
 
     fn get_global_hooks_info(&self) -> &Self::GlobalHooksInfo;
 
