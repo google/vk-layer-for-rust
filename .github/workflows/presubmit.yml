@@ -1,0 +1,24 @@
+# For safety reasons, we have to pin a third-party github action to a specific commit hash.
+
+on:
+  pull_request:
+    branches: [ "main" ]
+  
+
+name: presubmit
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      # dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@4f366e621dc8fa63f557ca04b8f4361824a35a45
+      - name: Cargo check
+        run: cargo check --workspace --all-targets --all-features
+      
