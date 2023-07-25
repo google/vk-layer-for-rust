@@ -1,0 +1,56 @@
+# Copyright 2023 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+on:
+  push:
+    branches: [ "main" ]
+
+name: postsubmit
+
+jobs:
+  run_presubmit:
+    name: Run presubmit
+    uses: ./.github/workflows/presubmit.yml
+  
+  upload_static_resources:
+    name: Upload static resources
+    needs: run_presubmit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: static_resource
+      - run: rm -rf coverage-Linux
+      - name: Download Linux coverage artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: coverage-Linux
+          path: coverage-Linux
+      - run: rm -rf coverage-Windows
+      - name: Download Windows coverage artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: coverage-Windows
+          path: coverage-Windows
+      - name: Commit files
+        run: |
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add .
+          git commit -a -m "Upload artifacts for $GITHUB_SHA"
+      - name: Push changes
+        # ad-m/github-push-action@master
+        uses: ad-m/github-push-action@d9117be7cad08757e9e906a1bcd1716d6b192db5
+        with:
+          branch: static_resource

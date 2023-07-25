@@ -18,7 +18,6 @@ use ash::{
 };
 use once_cell::sync::Lazy;
 use std::{
-    borrow::Borrow,
     collections::{BTreeMap, BTreeSet},
     ffi::{c_char, c_void, CStr, CString},
     marker::PhantomData,
@@ -111,7 +110,7 @@ struct InstanceDispatchTable {
 
 impl Default for InstanceDispatchTable {
     fn default() -> Self {
-        let commands: &BTreeMap<VulkanCommandName, VulkanCommand> = VULKAN_COMMANDS.borrow();
+        let commands: &BTreeMap<VulkanCommandName, VulkanCommand> = &VULKAN_COMMANDS;
         Self {
             _magic_number: 0x10d0,
             commands: Mutex::new(commands.clone()),

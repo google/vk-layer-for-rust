@@ -22,10 +22,11 @@ fn main() {
         .map(ToOwned::to_owned)
         .chain(args)
         .collect::<Vec<_>>();
-    Command::new("cargo")
+    assert!(Command::new("cargo")
         .args(cargo_args)
         .spawn()
         .unwrap()
         .wait()
-        .unwrap();
+        .unwrap()
+        .success());
 }

@@ -1,0 +1,191 @@
+# Copyright 2023 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# For safety reasons, we have to pin a third-party github action to a specific commit hash.
+
+on:
+  pull_request:
+    branches: [ "main" ]
+  workflow_call: {}
+
+name: presubmit
+
+jobs:
+  buildtest:
+    name: Rust build and test
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: Set up stable Rust toolchain
+        # dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@4f366e621dc8fa63f557ca04b8f4361824a35a45
+      - name: Set up Rust dependency cache
+        # Swatinem/rust-cache@v2.5.1
+        uses: Swatinem/rust-cache@dd05243424bd5c0e585e4b55eb2d7615cdd32f1f
+        with:
+          key: ${{ runner.os }}
+      - name: Install cargo nextest
+        run: cargo install cargo-nextest --locked
+      - name: Cargo check
+        run: cargo check --workspace --all-targets --all-features
+      - name: Cargo clippy
+        run: cargo clippy --workspace --all-targets --all-features -- -D warnings
+      - name: Test
+        if: ${{ !cancelled() }}
+        run: cargo nextest run --all-targets --all-features
+    
+  coverage:
+    name: Code coverage
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: Set up stable Rust toolchain
+        # dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@4f366e621dc8fa63f557ca04b8f4361824a35a45
+        with:
+          components: llvm-tools-preview
+      - name: Set up Rust dependency cache
+        # Swatinem/rust-cache@v2.5.1
+        uses: Swatinem/rust-cache@dd05243424bd5c0e585e4b55eb2d7615cdd32f1f
+        with:
+          key: ${{ runner.os }}
+      - name: Install cargo nextest
+        run: cargo install cargo-nextest --locked
+      - name: Install cargo llvm cov
+        run: cargo install cargo-llvm-cov
+      - name: Generate lcov coverage report
+        run: cargo llvm-cov nextest --lcov --output-path target/lcov.info --all-features --all-targets
+      - name: Generate JSON coverage report
+        run: cargo llvm-cov nextest --json --summary-only --output-path target/coverage.json --all-features --all-targets
+      - name: Generate coverage badge JSON
+        run: ${{ format('cargo xtask ci --label ''{0} coverage'' --output-path target/coverage_badge.json target/coverage.json', runner.os) }}
+      # Must run the HTML coverage last. Otherwise other commands can clear this directory.
+      - name: Generate HTML coverage report
+        run: cargo llvm-cov nextest --html --all-features --all-targets
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ${{ format('coverage-{0}', runner.os) }}
+          path: |
+            target/lcov.info
+            target/llvm-cov
+            target/coverage_badge.json
+
+  rust-fmt:
+    name: Rust format
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: Set up nightly Rust toolchain
+        # dtolnay/rust-toolchain@nightly
+        uses: dtolnay/rust-toolchain@f2f3c4b315c5bb8415dbb043af44ec90f68ae503
+        with:
+          components: rustfmt
+      - run: cargo +nightly fmt --check
+
+  py-lint:
+    name: Python lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - uses: actions/setup-python@v4 
+        with:
+          python-version: '3.9.13' 
+          cache: 'pipenv'
+      - name: Install pipenv
+        run: python -m pip install pipenv==2023.7.23
+      - run: pipenv install
+      - run: pipenv run black --check .
+      - run: pipenv run ruff check .
+  
+  codegen:
+    name: Rust codegen
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+        - {
+          os: ubuntu-latest,
+          llvm_path: ./llvm,
+        }
+        - {
+          os: windows-latest,
+          llvm_path: "C:/Program Files/LLVM",
+        }
+    runs-on: ${{ matrix.config.os }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: Cache LLVM and Clang
+        id: cache-llvm
+        uses: actions/cache@v3
+        with:
+          path: ${{ matrix.config.llvm_path }}
+          key: ${{ format('llvm-16.0.0-{0}', runner.os) }}
+      - name: Install LLVM and Clang
+        # KyleMayes/install-llvm-action@v1.8.3
+        uses: KyleMayes/install-llvm-action@c135b3937686fd69c2651507aabc9925a8f9eee8
+        with:
+          version: "16.0.0"
+          cached: ${{ steps.cache-llvm.outputs.cache-hit }}
+      - name: Install missing depedencis
+        run: sudo apt-get install libtinfo5
+        if: matrix.config.os == 'ubuntu-latest'
+      - name: Set LIBCLANG_PATH
+        run: echo "LIBCLANG_PATH=$((gcm clang).source -replace "clang.exe")" >> $env:GITHUB_ENV
+        if: matrix.config.os == 'windows-latest'
+      - name: Set up nightly rustfmt
+        # dtolnay/rust-toolchain@nightly
+        uses: dtolnay/rust-toolchain@f2f3c4b315c5bb8415dbb043af44ec90f68ae503
+        with:
+          components: rustfmt
+      - name: Set up stable Rust toolchain
+        # dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@4f366e621dc8fa63f557ca04b8f4361824a35a45
+      - name: Set up Rust dependency cache
+        # Swatinem/rust-cache@v2.5.1
+        uses: Swatinem/rust-cache@dd05243424bd5c0e585e4b55eb2d7615cdd32f1f
+        with:
+          key: ${{ runner.os }}
+      - run: cargo xtask codegen
+      - run: git diff --exit-code
+  
+  license:
+    name: License check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install addlicense
+        run: go install github.com/google/addlicense@latest
+      - run: ~/go/bin/addlicense -check -ignore "third_party/**" -ignore "target/**" .
+
