@@ -1,4 +1,7 @@
 # Vulkan Layer for Rust
+[![postsubmit](https://github.com/google/vk-layer-for-rust/actions/workflows/postsubmit.yml/badge.svg)](https://github.com/google/vk-layer-for-rust/actions/workflows/postsubmit.yml)
+[![Linux coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fgoogle%2Fvk-layer-for-rust%2Fstatic_resource%2Fcoverage-Linux%2Fcoverage_badge.json)](https://google.github.io/vk-layer-for-rust/coverage-Linux/llvm-cov/html/index.html)
+[![Windows coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fgoogle%2Fvk-layer-for-rust%2Fstatic_resource%2Fcoverage-Windows%2Fcoverage_badge.json)](https://google.github.io/vk-layer-for-rust/coverage-Windows/llvm-cov/html/index.html)
 
 This project provides a way to use safe Rust to write a [Vulkan layer](https://github.com/KhronosGroup/Vulkan-Loader/blob/121c1f42025a82dca7922a503ca77df51c37b394/docs/LoaderInterfaceArchitecture.md#layers).
 
@@ -55,7 +58,6 @@ TODO
 - [x] Set up `Android.bp` to build in an Android tree.
   - [ ] Upgrade ash in aosp, and remove vulkano, so that we can build from aosp/master.
 - [x] Auto-generate the binding from [`vk_layer.h`](https://github.com/KhronosGroup/Vulkan-Headers/blob/9e61870ecbd32514113b467e0a0c46f60ed222c7/include/vulkan/vk_layer.h).
-  - [ ] C `union` has different underlying representation on Windows and Linux. Add platform specific module for relevant types.
 - [x] Auto-generate the `global_simple_intercept.rs` from `vk.xml`.
 - [x] Auto-generate the `layer_trait.rs` file from `vk.xml`.
 - [x] Use a attribute macro to track which function is implemented in the `LayerTrait`, and don't inject all other functions for performance.
@@ -68,11 +70,8 @@ TODO
 - [ ] Testing
   - [ ] e2e test: the test boundary is the Vulkan layer ABI. The Vulkan loader and the mock ICD will be used for testing. Write a `cdylib` crate named `tests`, with a layer that is allowed to customize the behavior through a function exported as a dynamic library symbol. We run different tests in different processes. For different tests, we customize the layer differently, and asserts either inside the customization point or after it returns, e.g. to test initialization and destruction on DLL loading and unloading time, we can customize the ctor and the drop implementation for the layer, then load and unload the Vulkan library then verify if the ctor is called the same time as the drop. We also need to create a `e2e` task to build the DLL, generate the json, set the environement variables, and spawn tests in different processes(cargo-nextest can be used here since it runs tests in their own process).
   - [x] `vulkan-layer` level integration test
-- [ ] Handle different enum underlying representation: generate `VkLayerFunction` in platform specific files, and also stop using `include!` which could confuse the `rust-analyzer`.
 - [ ] catch unwind at the FFI boundary to allow the library to be compiled with `panic="unwind"`.
 - [ ] Set up CI:
   - Use [`lcov-reporter-action`](https://github.com/marketplace/actions/code-coverage-report) to report the code coverage on every presubmit and postsubmit.
-  - Write an CI xtask to generate a json file to describe the coverage badge and the build badge. Use `github-push-action` to push the json to an unprotected branch(e.g. static_resources). Use the [sheilds API](https://shields.io/badges/dynamic-json-badge) to refer to the badge image, and use URL similar to `https://github.com/badges/shields/raw/master/package.json` to refer to the json file. Remember to also tag the commit SHA in the json file.
   - Set up `.config/nextest.toml` correctly to not retry for now.
-  - Run all xtask in presubmit. Postsubmit should extend presubmit and avoid calling new xtask to avoid CLs that breaks postsubmit isn't caught by presubmit.
   - Consider adding miri to catch memory leak and UB.
