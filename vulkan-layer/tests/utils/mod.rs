@@ -211,21 +211,26 @@ static VULKAN_COMMANDS: Lazy<BTreeMap<VulkanCommandName, VulkanCommand>> = Lazy:
                         // VkLayerInstanceLink
                         let create_info = unsafe { create_info.as_ref() }.unwrap();
                         let application_info = unsafe { create_info.p_application_info.as_ref() };
-                        let enabled_extensions = unsafe {
-                            std::slice::from_raw_parts(
-                                create_info.pp_enabled_extension_names,
-                                create_info.enabled_extension_count.try_into().unwrap(),
-                            )
-                        }
-                        .iter()
-                        .filter_map(|enabled_extension| {
-                            let extension = unsafe { CStr::from_ptr(*enabled_extension) }
-                                .to_owned()
-                                .into_string()
-                                .unwrap();
-                            extension.as_str().try_into().ok()
-                        })
-                        .collect::<_>();
+                        let enabled_extensions = if create_info.enabled_extension_count == 0 {
+                            &[]
+                        } else {
+                            unsafe {
+                                std::slice::from_raw_parts(
+                                    create_info.pp_enabled_extension_names,
+                                    create_info.enabled_extension_count.try_into().unwrap(),
+                                )
+                            }
+                        };
+                        let enabled_extensions = enabled_extensions
+                            .iter()
+                            .filter_map(|enabled_extension| {
+                                let extension = unsafe { CStr::from_ptr(*enabled_extension) }
+                                    .to_owned()
+                                    .into_string()
+                                    .unwrap();
+                                extension.as_str().try_into().ok()
+                            })
+                            .collect::<_>();
                         let dispatch_table = Box::into_pin(Box::<InstanceDispatchTable>::default());
                         let version = application_info
                             .map(|application_info| {
@@ -312,23 +317,29 @@ static VULKAN_COMMANDS: Lazy<BTreeMap<VulkanCommandName, VulkanCommand>> = Lazy:
                             unsafe { PhysicalDeviceData::from_handle(physical_device) };
                         let instance_data = physical_device.owner_instance.upgrade().unwrap();
                         let device_create_info = unsafe { device_create_info.as_ref() }.unwrap();
-                        let enabled_extensions = unsafe {
-                            std::slice::from_raw_parts(
-                                device_create_info.pp_enabled_extension_names,
-                                device_create_info
-                                    .enabled_extension_count
+                        let enabled_extensions = if device_create_info.enabled_extension_count == 0
+                        {
+                            &[]
+                        } else {
+                            unsafe {
+                                std::slice::from_raw_parts(
+                                    device_create_info.pp_enabled_extension_names,
+                                    device_create_info
+                                        .enabled_extension_count
+                                        .try_into()
+                                        .unwrap(),
+                                )
+                            }
+                        };
+                        let enabled_extensions = enabled_extensions
+                            .iter()
+                            .map(|extension_name| {
+                                unsafe { CStr::from_ptr(*extension_name) }
+                                    .to_str()
+                                    .unwrap()
                                     .try_into()
-                                    .unwrap(),
-                            )
-                        }
-                        .iter()
-                        .map(|extension_name| {
-                            unsafe { CStr::from_ptr(*extension_name) }
-                                .to_str()
-                                .unwrap()
-                                .try_into()
-                        })
-                        .collect::<Vec<Result<Extension, _>>>();
+                            })
+                            .collect::<Vec<Result<Extension, _>>>();
                         if enabled_extensions.iter().any(Result::is_err) {
                             return vk::Result::ERROR_EXTENSION_NOT_PRESENT;
                         }
@@ -993,7 +1004,7 @@ impl InstanceCreateInfoExt for vk::InstanceCreateInfoBuilder<'_> {
             function: VkLayerFunction::VK_LAYER_LINK_INFO,
             u: Default::default(),
         };
-        *unsafe { layer_create_info.u.pLayerInfo.as_mut() } = if layer_links.is_empty() {
+        layer_create_info.u.pLayerInfo = if layer_links.is_empty() {
             null_mut()
         } else {
             layer_links[0].as_mut()
