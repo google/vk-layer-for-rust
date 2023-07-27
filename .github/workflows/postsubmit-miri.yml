@@ -1,0 +1,47 @@
+# Copyright 2023 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# For safety reasons, we have to pin a third-party github action to a specific commit hash.
+
+on:
+  push:
+    branches: [ "main" ]
+
+name: postsubmit miri
+
+jobs:
+  miri:
+    name: Rust Miri test
+    # Miri test has the best support on x86_64-unknown-linux-gnu target, and the Linux runner is
+    # generally faster.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up nightly Rust toolchain
+        # dtolnay/rust-toolchain@nightly
+        uses: dtolnay/rust-toolchain@f2f3c4b315c5bb8415dbb043af44ec90f68ae503
+        with:
+          components: |
+            rust-src
+            miri
+      - name: Set up Rust dependency cache
+        # Swatinem/rust-cache@v2.5.1
+        uses: Swatinem/rust-cache@dd05243424bd5c0e585e4b55eb2d7615cdd32f1f
+      - name: Install cargo nextest
+        run: cargo install cargo-nextest --locked
+      - name: Run tests with Miri
+        # Run 2 tests in parallel
+        run: cargo +nightly miri nextest run --all-targets --all-features --no-fail-fast --failure-output immediate-final -j2
+        env:
+          MIRIFLAGS: -Zmiri-tree-borrows

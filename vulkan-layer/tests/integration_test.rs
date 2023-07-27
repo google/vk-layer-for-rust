@@ -197,6 +197,7 @@ mod get_instance_proc_addr {
         }
 
         #[test]
+        #[cfg_attr(miri, ignore)]
         fn test_should_return_fp_for_get_instance_proc_addr() {
             let _ctx = MockLayer::context();
             let ctx = vk::InstanceCreateInfo::builder().default_instance::<(Arc<MockLayer>,)>();
@@ -597,11 +598,9 @@ mod get_instance_proc_addr {
 }
 
 mod create_destroy_instance {
-
-    use vulkan_layer::test_utils::TestLayerWrapper;
-
     use super::*;
     #[test]
+    #[cfg_attr(miri, ignore)]
     fn test_should_move_layer_instance_link_forward() {
         let ctx1 = TestLayerWrapper::<0>::context();
         ctx1.set_hooked_global_commands(&[LayerVulkanCommand::CreateInstance]);
@@ -658,9 +657,7 @@ mod create_destroy_instance {
                     if layer_instance_create_info.function != VkLayerFunction::VK_LAYER_LINK_INFO {
                         return None;
                     }
-                    let layer_link_head =
-                        *unsafe { layer_instance_create_info.u.pLayerInfo.as_ref() };
-                    unsafe { layer_link_head.as_ref() }
+                    unsafe { layer_instance_create_info.u.pLayerInfo.as_ref() }
                 });
                 layer_instance_link_equal(&layer_link_head, &next_layer_link.as_ref())
                     && layer_instance_link_equal(
@@ -1466,6 +1463,7 @@ mod create_destroy_device {
     }
 
     #[test]
+    #[cfg_attr(miri, ignore)]
     fn test_should_move_layer_device_link_forward() {
         let ctx1 = TestLayerWrapper::<0>::context();
         ctx1.set_hooked_instance_commands(&[LayerVulkanCommand::CreateDevice]);
