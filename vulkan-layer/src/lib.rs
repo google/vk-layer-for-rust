@@ -319,11 +319,11 @@ impl<T: Layer> Global<T> {
                 return vk::Result::ERROR_INITIALIZATION_FAILED;
             }
         };
-        let layer_info = unsafe { layer_create_info.u.pLayerInfo.as_ref() };
-        let layer_info = unsafe { layer_info.as_ref() }.unwrap();
+        let layer_info = unsafe { layer_create_info.u.pLayerInfo.as_ref() }.unwrap();
+        layer_create_info.u.pLayerInfo = layer_info.pNext;
+
         let get_instance_proc_addr: vk::PFN_vkGetInstanceProcAddr =
             layer_info.pfnNextGetInstanceProcAddr;
-        *unsafe { layer_create_info.u.pLayerInfo.as_mut() } = layer_info.pNext;
 
         let global = Self::instance();
         let hooked = global
@@ -376,25 +376,30 @@ impl<T: Layer> Global<T> {
         };
 
         let create_info = unsafe { create_info.as_ref() }.unwrap();
-        let enabled_extensions = unsafe {
-            std::slice::from_raw_parts(
-                create_info.pp_enabled_extension_names,
-                create_info.enabled_extension_count.try_into().unwrap(),
-            )
-        }
-        .iter()
-        .filter_map(|extension_name| -> Option<Extension> {
-            let extension_name = unsafe { CStr::from_ptr(*extension_name) };
-            let extension_name = extension_name.to_str().unwrap_or_else(|e| {
-                panic!(
-                    "Invalid extension name {}: {}",
-                    extension_name.to_string_lossy(),
-                    e
+        let enabled_extensions = if create_info.enabled_extension_count == 0 {
+            &[]
+        } else {
+            unsafe {
+                std::slice::from_raw_parts(
+                    create_info.pp_enabled_extension_names,
+                    create_info.enabled_extension_count.try_into().unwrap(),
                 )
-            });
-            extension_name.try_into().ok()
-        })
-        .collect();
+            }
+        };
+        let enabled_extensions = enabled_extensions
+            .iter()
+            .filter_map(|extension_name| -> Option<Extension> {
+                let extension_name = unsafe { CStr::from_ptr(*extension_name) };
+                let extension_name = extension_name.to_str().unwrap_or_else(|e| {
+                    panic!(
+                        "Invalid extension name {}: {}",
+                        extension_name.to_string_lossy(),
+                        e
+                    )
+                });
+                extension_name.try_into().ok()
+            })
+            .collect();
         let api_version = unsafe { create_info.p_application_info.as_ref() }
             .map(|app_info| app_info.api_version)
             .unwrap_or(0);
@@ -599,27 +604,32 @@ impl<T: Layer> Global<T> {
         let next_create_device: vk::PFN_vkCreateDevice =
             unsafe { std::mem::transmute(next_create_device) };
         let mut create_info = *create_info;
-        let requested_extensions = unsafe {
-            std::slice::from_raw_parts(
-                create_info.pp_enabled_extension_names,
-                create_info.enabled_extension_count.try_into().unwrap(),
-            )
-        }
-        .iter()
-        .map(|extension_name| {
-            let extension_name = unsafe { CStr::from_ptr(*extension_name) };
-            extension_name
-                .to_str()
-                .unwrap_or_else(|e| {
-                    panic!(
-                        "Failed to decode the extension name {}: {}",
-                        extension_name.to_string_lossy(),
-                        e
-                    )
-                })
-                .to_owned()
-        })
-        .collect::<Vec<_>>();
+        let requested_extensions = if create_info.enabled_extension_count == 0 {
+            &[]
+        } else {
+            unsafe {
+                std::slice::from_raw_parts(
+                    create_info.pp_enabled_extension_names,
+                    create_info.enabled_extension_count.try_into().unwrap(),
+                )
+            }
+        };
+        let requested_extensions = requested_extensions
+            .iter()
+            .map(|extension_name| {
+                let extension_name = unsafe { CStr::from_ptr(*extension_name) };
+                extension_name
+                    .to_str()
+                    .unwrap_or_else(|e| {
+                        panic!(
+                            "Failed to decode the extension name {}: {}",
+                            extension_name.to_string_lossy(),
+                            e
+                        )
+                    })
+                    .to_owned()
+            })
+            .collect::<Vec<_>>();
         let create_device_res = if global
             .layer_info
             .hooked_commands()

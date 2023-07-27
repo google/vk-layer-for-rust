@@ -49,7 +49,7 @@ jobs:
         run: cargo clippy --workspace --all-targets --all-features -- -D warnings
       - name: Test
         if: ${{ !cancelled() }}
-        run: cargo nextest run --all-targets --all-features
+        run: cargo nextest run --all-targets --all-features --profile ci
     
   coverage:
     name: Code coverage
@@ -77,6 +77,22 @@ jobs:
         run: cargo install cargo-llvm-cov
       - name: Generate lcov coverage report
         run: cargo llvm-cov nextest --lcov --output-path target/lcov.info --all-features --all-targets
+      - name: Checkout base coverage
+        uses: actions/checkout@v3
+        with:
+          ref: static_resource
+          sparse-checkout: |
+            ${{ format('coverage-{0}/lcov.info', runner.os) }}
+          sparse-checkout-cone-mode: false
+          path: target/base-coverage
+      - name: Report coverage as comments
+        # romeovs/lcov-reporter-action@master
+        uses: romeovs/lcov-reporter-action@4cf015aa4afa87b78238301f1e3dc140ea0e1ec6
+        with:
+          lcov-file: target/lcov.info
+          lcov-base: ${{ format('target/base-coverage/coverage-{0}/lcov.info', runner.os) }}
+          filter-changed-files: true
+          title: ${{ format('Test coverage for {0}', runner.os) }}
       - name: Generate JSON coverage report
         run: cargo llvm-cov nextest --json --summary-only --output-path target/coverage.json --all-features --all-targets
       - name: Generate coverage badge JSON
@@ -87,6 +103,9 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           name: ${{ format('coverage-{0}', runner.os) }}
+          # lcov.info is needed for the next commit and PR to diff the coverage report of the base
+          # HTML results are needed for human to check the coverage report
+          # The coverage badge is used in the README.md.
           path: |
             target/lcov.info
             target/llvm-cov
@@ -188,4 +207,3 @@ jobs:
       - name: Install addlicense
         run: go install github.com/google/addlicense@latest
       - run: ~/go/bin/addlicense -check -ignore "third_party/**" -ignore "target/**" .
-

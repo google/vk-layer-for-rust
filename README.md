@@ -71,7 +71,5 @@ TODO
   - [ ] e2e test: the test boundary is the Vulkan layer ABI. The Vulkan loader and the mock ICD will be used for testing. Write a `cdylib` crate named `tests`, with a layer that is allowed to customize the behavior through a function exported as a dynamic library symbol. We run different tests in different processes. For different tests, we customize the layer differently, and asserts either inside the customization point or after it returns, e.g. to test initialization and destruction on DLL loading and unloading time, we can customize the ctor and the drop implementation for the layer, then load and unload the Vulkan library then verify if the ctor is called the same time as the drop. We also need to create a `e2e` task to build the DLL, generate the json, set the environement variables, and spawn tests in different processes(cargo-nextest can be used here since it runs tests in their own process).
   - [x] `vulkan-layer` level integration test
 - [ ] catch unwind at the FFI boundary to allow the library to be compiled with `panic="unwind"`.
-- [ ] Set up CI:
-  - Use [`lcov-reporter-action`](https://github.com/marketplace/actions/code-coverage-report) to report the code coverage on every presubmit and postsubmit.
-  - Set up `.config/nextest.toml` correctly to not retry for now.
-  - Consider adding miri to catch memory leak and UB.
+- [ ] Imporve Miri test
+  - Check why fp comparison in miri fails in test_should_move_layer_device_link_forward, test_should_move_layer_device_link_forward, and test_should_return_fp_for_get_instance_proc_addr.

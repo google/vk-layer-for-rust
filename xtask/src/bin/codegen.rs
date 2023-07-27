@@ -126,7 +126,6 @@ fn generate_vulkan_layer_header_binding(
                 .allowlist_file("vk_layer.h")
                 .allowlist_type("VkNegotiateLayerInterface")
                 .allowlist_type("VkLayerDeviceCreateInfo")
-                .allowlist_type("VkLayerInstanceCreateInfo")
                 .allowlist_type("PFN_GetPhysicalDeviceProcAddr")
                 .allowlist_type("VkLayerInstanceLink_?")
                 .allowlist_type("PFN_vkSetInstanceLoaderData")
