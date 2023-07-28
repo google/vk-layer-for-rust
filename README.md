@@ -1,5 +1,6 @@
 # Vulkan Layer for Rust
 [![postsubmit](https://github.com/google/vk-layer-for-rust/actions/workflows/postsubmit.yml/badge.svg)](https://github.com/google/vk-layer-for-rust/actions/workflows/postsubmit.yml)
+[![postsubmit miri](https://github.com/google/vk-layer-for-rust/actions/workflows/postsubmit-miri.yml/badge.svg?branch=main)](https://github.com/google/vk-layer-for-rust/actions/workflows/postsubmit-miri.yml)
 [![Linux coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fgoogle%2Fvk-layer-for-rust%2Fstatic_resource%2Fcoverage-Linux%2Fcoverage_badge.json)](https://google.github.io/vk-layer-for-rust/coverage-Linux/llvm-cov/html/index.html)
 [![Windows coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fgoogle%2Fvk-layer-for-rust%2Fstatic_resource%2Fcoverage-Windows%2Fcoverage_badge.json)](https://google.github.io/vk-layer-for-rust/coverage-Windows/llvm-cov/html/index.html)
 
