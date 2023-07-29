@@ -85,14 +85,16 @@ jobs:
             ${{ format('coverage-{0}/lcov.info', runner.os) }}
           sparse-checkout-cone-mode: false
           path: target/base-coverage
-      - name: Report coverage as comments
-        # romeovs/lcov-reporter-action@master
-        uses: romeovs/lcov-reporter-action@4cf015aa4afa87b78238301f1e3dc140ea0e1ec6
+      - name: Report coverage
+        # 06393993/lcov-reporter-action@master
+        # TODO: once the upstream accept the PR, change back to romeovs/lcov-reporter-action@master
+        uses: 06393993/lcov-reporter-action@45b31bf53fa5ac82d0f49039198080afdb535288
         with:
           lcov-file: target/lcov.info
           lcov-base: ${{ format('target/base-coverage/coverage-{0}/lcov.info', runner.os) }}
           filter-changed-files: true
           title: ${{ format('Test coverage for {0}', runner.os) }}
+          post-to: ${{ github.event_name == 'push' && 'comment' || 'job-summary' }}
       - name: Generate JSON coverage report
         run: cargo llvm-cov nextest --json --summary-only --output-path target/coverage.json --all-features --all-targets
       - name: Generate coverage badge JSON
