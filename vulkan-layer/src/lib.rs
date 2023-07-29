@@ -13,7 +13,8 @@
 // limitations under the License.
 
 use ash::vk::{self, Handle};
-use log::error;
+use bytemuck::cast_slice;
+use log::{error, warn};
 use num_traits::Zero;
 use once_cell::sync::OnceCell;
 use std::{
@@ -49,11 +50,6 @@ pub use vulkan_layer_macros::{
     auto_deviceinfo_impl, auto_globalhooksinfo_impl, auto_instanceinfo_impl,
 };
 
-fn as_i8_slice(input: &CString) -> &[i8] {
-    let bytes = input.as_bytes();
-    unsafe { std::slice::from_raw_parts(input.as_ptr() as *const i8, bytes.len()) }
-}
-
 pub trait IsCommandEnabled {
     #[allow(clippy::wrong_self_convention)]
     fn is_command_enabled(
@@ -77,7 +73,43 @@ impl<'a, T: IntoIterator<Item = &'a Feature>> IsCommandEnabled for T {
 }
 
 /// # Safety
-/// p_count must be a valid pointer to a u32. If p_count doesn't reference 0, and p_out is not null,
+/// Follow the safety requirements for `std::slice::from_raw_parts` with one major difference: if
+/// `len` is `0`, `data` can be a null pointer, unlike `std::slice::from_raw_parts`.
+#[deny(unsafe_op_in_unsafe_fn)]
+unsafe fn slice_from_raw_parts<'a, T>(data: *const T, len: u32) -> &'a [T] {
+    if len == 0 {
+        return &[];
+    }
+    let len = len.try_into().unwrap();
+    // Safety: since `len` isn't 0 at this point, the caller guarantees that the safety requirement
+    // for `std::slice::from_raw_parts` is met.
+    unsafe { std::slice::from_raw_parts(data, len) }
+}
+
+/// # Safety
+/// Every entry of `cstr_ptrs` must meet the safety requirement of `CStr::from_ptr`.
+///
+/// # Panic
+/// When iterating the returned iterator, it will panic if the pointer doesn't point to a valid UTF8
+/// string.
+#[deny(unsafe_op_in_unsafe_fn)]
+unsafe fn slice_to_owned_strings(cstr_ptrs: &[*const i8]) -> impl Iterator<Item = String> + '_ {
+    cstr_ptrs.iter().map(|cstr_ptr| {
+        let cstr = unsafe { CStr::from_ptr(*cstr_ptr) };
+        cstr.to_str()
+            .unwrap_or_else(|e| {
+                panic!(
+                    "Failed to decode the string {}: {}",
+                    cstr.to_string_lossy(),
+                    e
+                )
+            })
+            .to_owned()
+    })
+}
+
+/// # Safety
+/// p_count must be a valid pointer to U. If p_count doesn't reference 0, and p_out is not null,
 /// p_out must be a valid pointer to *p_count number of T's.
 #[deny(unsafe_op_in_unsafe_fn)]
 pub unsafe fn fill_vk_out_array<T, U>(
@@ -376,28 +408,22 @@ impl<T: Layer> Global<T> {
         };
 
         let create_info = unsafe { create_info.as_ref() }.unwrap();
-        let enabled_extensions = if create_info.enabled_extension_count == 0 {
-            &[]
-        } else {
-            unsafe {
-                std::slice::from_raw_parts(
-                    create_info.pp_enabled_extension_names,
-                    create_info.enabled_extension_count.try_into().unwrap(),
-                )
-            }
+        let enabled_extensions = unsafe {
+            slice_from_raw_parts(
+                create_info.pp_enabled_extension_names,
+                create_info.enabled_extension_count,
+            )
         };
-        let enabled_extensions = enabled_extensions
-            .iter()
-            .filter_map(|extension_name| -> Option<Extension> {
-                let extension_name = unsafe { CStr::from_ptr(*extension_name) };
-                let extension_name = extension_name.to_str().unwrap_or_else(|e| {
-                    panic!(
-                        "Invalid extension name {}: {}",
-                        extension_name.to_string_lossy(),
-                        e
-                    )
-                });
-                extension_name.try_into().ok()
+        let enabled_extensions = unsafe { slice_to_owned_strings(enabled_extensions) }
+            .filter_map(|extension_name| match extension_name.as_str().try_into() {
+                Ok(extension) => Some(extension),
+                Err(e) => {
+                    warn!(
+                        "Failed to recognize the extension {}: {}",
+                        extension_name, e
+                    );
+                    None
+                }
             })
             .collect();
         let api_version = unsafe { create_info.p_application_info.as_ref() }
@@ -491,12 +517,8 @@ impl<T: Layer> Global<T> {
             && !p_physical_devices.is_null()
         {
             let physical_device_count = unsafe { p_physical_device_count.as_ref() }.unwrap();
-            let physical_devices = unsafe {
-                std::slice::from_raw_parts(
-                    p_physical_devices,
-                    (*physical_device_count).try_into().unwrap(),
-                )
-            };
+            let physical_devices =
+                unsafe { slice_from_raw_parts(p_physical_devices, *physical_device_count) };
             global.create_physical_device_infos(instance, physical_devices);
         }
         res
@@ -526,9 +548,9 @@ impl<T: Layer> Global<T> {
             let physical_device_group_count =
                 *unsafe { p_physical_device_group_count.as_ref() }.unwrap();
             let physical_device_groups = unsafe {
-                std::slice::from_raw_parts(
+                slice_from_raw_parts(
                     p_physical_device_group_properties,
-                    physical_device_group_count.try_into().unwrap(),
+                    physical_device_group_count,
                 )
             };
             let physical_devices =
@@ -604,32 +626,14 @@ impl<T: Layer> Global<T> {
         let next_create_device: vk::PFN_vkCreateDevice =
             unsafe { std::mem::transmute(next_create_device) };
         let mut create_info = *create_info;
-        let requested_extensions = if create_info.enabled_extension_count == 0 {
-            &[]
-        } else {
-            unsafe {
-                std::slice::from_raw_parts(
-                    create_info.pp_enabled_extension_names,
-                    create_info.enabled_extension_count.try_into().unwrap(),
-                )
-            }
+        let requested_extensions = unsafe {
+            slice_from_raw_parts(
+                create_info.pp_enabled_extension_names,
+                create_info.enabled_extension_count,
+            )
         };
-        let requested_extensions = requested_extensions
-            .iter()
-            .map(|extension_name| {
-                let extension_name = unsafe { CStr::from_ptr(*extension_name) };
-                extension_name
-                    .to_str()
-                    .unwrap_or_else(|e| {
-                        panic!(
-                            "Failed to decode the extension name {}: {}",
-                            extension_name.to_string_lossy(),
-                            e
-                        )
-                    })
-                    .to_owned()
-            })
-            .collect::<Vec<_>>();
+        let requested_extensions =
+            unsafe { slice_to_owned_strings(requested_extensions) }.collect::<Vec<_>>();
         let create_device_res = if global
             .layer_info
             .hooked_commands()
@@ -794,11 +798,11 @@ impl<T: Layer> Global<T> {
             .build();
         assert!(layer_manifest.name.len() < vk::MAX_EXTENSION_NAME_SIZE);
         let layer_name = CString::new(layer_manifest.name).unwrap();
-        let layer_name = as_i8_slice(&layer_name);
+        let layer_name = cast_slice(layer_name.as_bytes());
         layer_property.layer_name[..layer_name.len()].copy_from_slice(layer_name);
 
         let layer_description = CString::new(layer_manifest.description).unwrap();
-        let layer_description = as_i8_slice(&layer_description);
+        let layer_description = cast_slice(layer_description.as_bytes());
         assert!(layer_description.len() < vk::MAX_DESCRIPTION_SIZE);
         layer_property.description[..layer_description.len()].copy_from_slice(layer_description);
         vec![layer_property]
