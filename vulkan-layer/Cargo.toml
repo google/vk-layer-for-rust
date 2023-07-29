@@ -12,6 +12,7 @@ smallvec = "1.10.0"
 thiserror = "1.0.40"
 vulkan-layer-macros = { path = "../vulkan-layer-macros" }
 mockall = { version = "0.11.4", optional = true }
+bytemuck = "1.13.1"
 
 [features]
 default = []
