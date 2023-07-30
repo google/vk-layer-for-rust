@@ -676,9 +676,11 @@ dependencies = [
 name = "vulkan-layer-macros"
 version = "0.1.0"
 dependencies = [
+ "ash",
  "proc-macro2",
  "quote",
  "syn 2.0.27",
+ "vulkan-layer",
 ]
 
 [[package]]

@@ -48,6 +48,7 @@ pub use layer_trait::{
 };
 pub use vulkan_layer_macros::{
     auto_deviceinfo_impl, auto_globalhooksinfo_impl, auto_instanceinfo_impl,
+    declare_introspection_queries,
 };
 
 pub trait IsCommandEnabled {

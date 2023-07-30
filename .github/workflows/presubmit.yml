@@ -50,6 +50,9 @@ jobs:
       - name: Test
         if: ${{ !cancelled() }}
         run: cargo nextest run --all-targets --all-features --profile ci
+      - name: Documentation tests
+        if: ${{ !cancelled() }}
+        run: cargo test --doc --all-features --workspace -- --show-output
     
   coverage:
     name: Code coverage
