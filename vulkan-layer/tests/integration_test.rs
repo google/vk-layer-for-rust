@@ -17,17 +17,20 @@ use mockall::predicate::{always, eq};
 use std::{
     ffi::{CStr, CString},
     iter::zip,
+    marker::PhantomData,
     mem::MaybeUninit,
     ptr::{null, null_mut},
     sync::Arc,
 };
 use vulkan_layer::{
+    auto_deviceinfo_impl, auto_globalhooksinfo_impl, auto_instanceinfo_impl,
     test_utils::{
         LayerManifestExt, TestLayerWrapper, VkLayerDeviceCreateInfo, VkLayerDeviceLink,
         VkLayerFunction, VkLayerInstanceCreateInfo,
     },
-    ApiVersion, Extension, ExtensionProperties, Global, InstanceInfo, Layer, LayerManifest,
-    LayerResult, LayerVulkanCommand, VkLayerInstanceLink, VulkanBaseInStructChain,
+    ApiVersion, DeviceHooks, Extension, ExtensionProperties, Global, GlobalHooks, InstanceHooks,
+    InstanceInfo, Layer, LayerManifest, LayerResult, LayerVulkanCommand, VkLayerInstanceLink,
+    VulkanBaseInStructChain,
 };
 
 pub mod utils;
@@ -1698,4 +1701,75 @@ fn enumerate_instance_layer_properties_should_return_correct_properties() {
         layer_manifest.implementation_version
     );
     assert_eq!(property_description, layer_manifest.description);
+}
+
+#[test]
+fn global_should_be_sync() {
+    #[derive(Default)]
+    struct Test<T: Sync>(PhantomData<T>);
+    let _: Test<Global<Arc<MockLayer>>> = Default::default();
+}
+
+#[test]
+fn global_should_be_trivially_destructible() {
+    struct InstanceInfo;
+
+    #[auto_instanceinfo_impl]
+    impl InstanceHooks for InstanceInfo {}
+
+    struct DeviceInfo;
+
+    #[auto_deviceinfo_impl]
+    impl DeviceHooks for DeviceInfo {}
+
+    #[derive(Default)]
+    struct MyLayer;
+
+    #[auto_globalhooksinfo_impl]
+    impl GlobalHooks for MyLayer {}
+
+    impl Layer for MyLayer {
+        type GlobalHooksInfo = Self;
+        type InstanceInfo = InstanceInfo;
+        type DeviceInfo = DeviceInfo;
+        type InstanceInfoContainer = InstanceInfo;
+        type DeviceInfoContainer = DeviceInfo;
+
+        fn manifest() -> LayerManifest {
+            LayerManifest::test_default()
+        }
+
+        fn get_global_hooks_info(&self) -> &Self::GlobalHooksInfo {
+            self
+        }
+
+        fn create_instance_info(
+            &self,
+            _: &vk::InstanceCreateInfo,
+            _: Option<&vk::AllocationCallbacks>,
+            _: Arc<ash::Instance>,
+            _next_get_instance_proc_addr: vk::PFN_vkGetInstanceProcAddr,
+        ) -> Self::InstanceInfoContainer {
+            InstanceInfo
+        }
+
+        fn create_device_info(
+            &self,
+            _: vk::PhysicalDevice,
+            _: &vk::DeviceCreateInfo,
+            _: Option<&vk::AllocationCallbacks>,
+            _: Arc<ash::Device>,
+            _next_get_device_proc_addr: vk::PFN_vkGetDeviceProcAddr,
+        ) -> Self::DeviceInfoContainer {
+            DeviceInfo
+        }
+    }
+
+    // We rely on Miri to catch the memory leak here to make sure Global is trivially destructible.
+    {
+        let global = Global::<MyLayer>::default();
+        std::mem::forget(global);
+    }
+    // TODO: once we change to use a global object, also check other cases where a VkInstance is
+    // created and destroyed and a VkDevice is created and is destroyed.
 }
