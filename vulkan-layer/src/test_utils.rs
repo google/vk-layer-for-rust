@@ -12,6 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//! Utilities used in the integration tests of this crate.
+//!
+//! The Vulkan layer essentially provides a bunch of function pointers to the loader. To mock
+//! multiple layers in the same process, it is required to use different types so different
+//! function pointers will be generated. To avoid extremely long compile time, we shouldn't create
+//! a new layer type for every test case. Instead we run test cases in different processes, and
+//! share the same layer type as possible. If a test case needs multiple layers at the same time,
+//! multiple layer types should be used.
+//!
+//! Follow the following steps to write a unit test:
+//! 1. Use [`TestGlobal::builder`] to construct the static resources needed to mock one layer. Mocks
+//!    to static methods can be set with different builder functions.
+//! 2. Call [`TestGlobal::create_context`] to set up the scope for expections.
+//! 3. Use [`TestLayer`] as a layer implementation.
+
 use crate::{
     DeviceInfo, Global, GlobalHooksInfo, InstanceInfo, Layer, LayerManifest, LayerVulkanCommand,
 };
@@ -41,12 +56,16 @@ use instance_hooks_mock::MockInstanceHooks;
 
 type Deleter<T> = Box<dyn FnOnce(&mut T) + Send + Sync>;
 
+/// A wrapper for T but with a user defined deleter. 'Del' stands for 'deleter'.
+///
+/// The deleter will be called on drop. Used to mock the [`Drop`] trait.
 pub struct Del<T> {
     data: T,
     deleter: Option<Deleter<T>>,
 }
 
 impl<T> Del<T> {
+    /// Constructs a new [`Del<T>`] with a custom deleter.
     pub fn new(data: T, deleter: impl FnOnce(&mut T) + Send + Sync + 'static) -> Self {
         Del {
             data,
@@ -75,9 +94,11 @@ impl<T> AsRef<T> for Del<T> {
     }
 }
 
+/// A thread-safe reference-counting pointer, but with a custom deleter.
 pub struct ArcDel<T>(pub Arc<Del<T>>);
 
 impl<T> ArcDel<T> {
+    /// Constructs a new [`ArcDel<T>`] with a custom deleter.
     pub fn new(data: T, deleter: impl FnOnce(&mut T) + Send + Sync + 'static) -> Self {
         ArcDel(Arc::new(Del::new(data, deleter)))
     }
@@ -127,19 +148,43 @@ mock! {
     }
 }
 
+/// A set of interfaces that the integration tests are interested to mock.
 pub trait TestLayerMock: 'static {
+    /// The associated type that implements the [`Layer`] trait. Should be a specialized
+    /// [`TestLayer`].
     type TestLayerType: Layer;
+
+    /// Used to mock [`Layer::global_instance`].
     fn instance() -> &'static Global<Self::TestLayerType>;
+
+    /// Used to obtain the singleton of this object.
+    ///
+    /// This interface is used to obtain the mock object in the static methods like
+    /// [`DeviceInfo::hooked_commands`]. The mock object can't be part of [`Global`], because we
+    /// want to allow the mocked interfaces to be called during or before
+    /// the initialization of [`Global`].
     fn mock() -> &'static Self;
 
+    /// Used to mock [`Layer::manifest`].
     fn manifest(&self) -> LayerManifest;
+
+    /// Used to mock [`GlobalHooksInfo::hooked_commands`].
     fn hooked_global_commands(&self) -> &[LayerVulkanCommand];
+
+    /// Used to mock [`InstanceInfo::hooked_commands`].
     fn hooked_instance_commands(&self) -> &[LayerVulkanCommand];
+
+    /// Used to mock [`DeviceInfo::hooked_commands`].
     fn hooked_device_commands(&self) -> &[LayerVulkanCommand];
 }
 
+/// A mock struct that implements the [`GlobalHooksInfo`] trait.
+///
+/// The `T` type parameter is a [`TestLayerMock`] type that provides the mock of
+/// [`GlobalHooksInfo::hooked_commands`].
 #[derive(Default)]
 pub struct MockGlobalHooksInfo<T: TestLayerMock> {
+    /// The mock of the [`GlobalHooks`][crate::GlobalHooks] trait.
     pub mock_hooks: Mutex<MockGlobalHooks>,
     _marker: PhantomData<fn(T)>,
 }
@@ -156,14 +201,23 @@ impl<T: TestLayerMock> GlobalHooksInfo for MockGlobalHooksInfo<T> {
     }
 }
 
+/// A mock struct that implements the [`InstanceInfo`] trait.
+///
+/// The `T` type parameter is a [`TestLayerMock`] type that provides the mock of
+/// [`InstanceInfo::hooked_commands`].
 #[derive(Default)]
 pub struct MockInstanceInfo<T: TestLayerMock> {
+    /// The mock of the [`InstanceHooks`][crate::InstanceHooks].
     pub mock_hooks: Mutex<MockInstanceHooks>,
     mock_drop: Mutex<Option<MockDrop>>,
     _marker: PhantomData<fn(T)>,
 }
 
 impl<T: TestLayerMock> MockInstanceInfo<T> {
+    /// Mock the drop behavior.
+    ///
+    /// The expections can be set through the `f` argument. If this method is never called, the
+    /// struct will be dropped as if the drop is not mocked, i.e. won't check how drop is called.
     pub fn with_mock_drop(&self, f: impl FnOnce(&mut MockDrop)) {
         let mut mock_drop = self.mock_drop.lock().unwrap();
         let mock_drop = mock_drop.get_or_insert_with(Default::default);
@@ -183,14 +237,23 @@ impl<T: TestLayerMock> InstanceInfo for MockInstanceInfo<T> {
     }
 }
 
+/// A mock struct that implements the [`DeviceInfo`] trait.
+///
+/// The `T` type parameter is a [`TestLayerMock`] type that provides the mock of
+/// [`DeviceInfo::hooked_commands`].
 #[derive(Default)]
 pub struct MockDeviceInfo<T: TestLayerMock> {
+    /// The mock of the [`DeviceHooks`][crate::DeviceHooks].
     pub mock_hooks: Mutex<MockDeviceHooks>,
     mock_drop: Mutex<Option<MockDrop>>,
     _marker: PhantomData<fn(T)>,
 }
 
 impl<T: TestLayerMock> MockDeviceInfo<T> {
+    /// Mock the drop behavior.
+    ///
+    /// The expections can be set through the `f` argument. If this method is never called, the
+    /// struct will be dropped as if the drop is not mocked, i.e. won't check how drop is called.
     pub fn with_mock_drop(&self, f: impl FnOnce(&mut MockDrop)) {
         let mut mock_drop = self.mock_drop.lock().unwrap();
         let mock_drop = mock_drop.get_or_insert_with(Default::default);
@@ -211,12 +274,19 @@ impl<T: TestLayerMock> DeviceInfo for MockDeviceInfo<T> {
     }
 }
 
+/// Test layer tags to distinguish different [`TestLayer`]. Different `I` will result in different
+/// types.
 pub struct Tag<const I: usize>;
 
+/// A trait used to include all possible [`Tag<I>`].
 pub trait TestLayerTag: Sync + Send + 'static {}
 
 impl<const I: usize> TestLayerTag for Tag<I> {}
 
+/// The mock for the [`Layer`] trait.
+///
+/// Different `T` will result in different types, default to [`Tag<0>`]. [`TestGlobal<T>`] contains
+/// the static resources(e.g. [`Global<TestLayer<T>>`]) related to this mock layer.
 pub struct TestLayer<T: TestLayerTag = Tag<0>> {
     global_hooks_info: MockGlobalHooksInfo<MockTestLayer<T>>,
     instances: Mutex<HashMap<vk::Instance, Weak<Del<<Self as Layer>::InstanceInfo>>>>,
@@ -225,6 +295,7 @@ pub struct TestLayer<T: TestLayerTag = Tag<0>> {
 }
 
 impl<T: TestLayerTag> TestLayer<T> {
+    /// Get the [`InstanceInfo`] mock from a `VkInstance`.
     pub fn get_instance_info(
         &self,
         instance: vk::Instance,
@@ -236,6 +307,7 @@ impl<T: TestLayerTag> TestLayer<T> {
             .and_then(Weak::upgrade)
     }
 
+    /// Get the [`DeviceInfo`] mock from a `VkDevice`.
     pub fn get_device_info(
         &self,
         device: vk::Device,
@@ -335,6 +407,8 @@ mock! {
 }
 
 impl<T: TestLayerTag> MockTestLayer<T> {
+    /// Set the default behavior of the [`MockTestLayer`]: intercept no commands and a valid
+    /// [`LayerManifest`].
     pub fn set_default_expections(&mut self) {
         self.expect_manifest()
             .return_const(LayerManifest::test_default());
@@ -344,17 +418,29 @@ impl<T: TestLayerTag> MockTestLayer<T> {
     }
 }
 
+/// The container of the static resources related to [`TestLayer<T>`].
+///
+/// Use the [`TestGlobal::builder`] to construct one.
 pub struct TestGlobal<T: TestLayerTag = Tag<0>> {
     layer_mock: Lazy<MockTestLayer<T>>,
     layer_global: Lazy<Global<TestLayer<T>>>,
 }
 
+/// The builder for [`TestGlobal`].
 pub struct TestGlobalBuilder<T: TestLayerTag = Tag<0>> {
     layer_mock_builder: fn() -> MockTestLayer<T>,
     layer_global_builder: fn() -> Global<TestLayer<T>>,
 }
 
 impl<T: TestLayerTag> TestGlobalBuilder<T> {
+    /// Specify how [`MockTestLayer`] should be created.
+    ///
+    /// Can be used to customize the behavior of pre-initialized methods, like
+    /// [`InstanceInfo::hooked_commands`].
+    ///
+    /// Pre-initialized methods are almost always called, so it is usually needed to call
+    /// [`MockTestLayer::set_default_expections`] right before return to provide a meaningful
+    /// default behavior.
     pub const fn set_layer_mock_builder(
         self,
         layer_mock_builder: fn() -> MockTestLayer<T>,
@@ -365,6 +451,11 @@ impl<T: TestLayerTag> TestGlobalBuilder<T> {
         }
     }
 
+    /// Specify how [`Global<TestLayer<T>>`] should be created.
+    ///
+    /// Can be used to customize the behavior and expections of layer behaviors after [`Global`] is
+    /// initialized, especially the global commands, e.g.
+    /// [`GlobalHooks::create_instance`][crate::GlobalHooks::create_instance].
     pub const fn set_layer_global_builder(
         self,
         layer_global_builder: fn() -> Global<TestLayer<T>>,
@@ -375,6 +466,9 @@ impl<T: TestLayerTag> TestGlobalBuilder<T> {
         }
     }
 
+    /// Construct the [`TestGlobal<T>`].
+    ///
+    /// This is a const function, and can be directly used to initialize a static variable.
     pub const fn build(&self) -> TestGlobal<T> {
         TestGlobal {
             layer_mock: Lazy::new(self.layer_mock_builder),
@@ -384,6 +478,7 @@ impl<T: TestLayerTag> TestGlobalBuilder<T> {
 }
 
 impl<T: TestLayerTag> TestGlobal<T> {
+    /// Create the builder for initialization.
     pub const fn builder() -> TestGlobalBuilder<T> {
         TestGlobalBuilder {
             layer_mock_builder: || {
@@ -394,6 +489,8 @@ impl<T: TestLayerTag> TestGlobal<T> {
             layer_global_builder: Default::default,
         }
     }
+
+    /// Create a context for expectations for the static object.
     pub fn create_context(&'static self) -> Box<dyn Any> {
         let layer_mock_ctx = MockTestLayer::mock_context();
         layer_mock_ctx.expect().return_const(&*self.layer_mock);
@@ -403,7 +500,9 @@ impl<T: TestLayerTag> TestGlobal<T> {
     }
 }
 
+/// A trait to provide an extra meaningful constructor for [`LayerManifest`].
 pub trait LayerManifestExt {
+    /// Create a [`LayerManifest`] with reasonable fields.
     fn test_default() -> Self;
 }
 

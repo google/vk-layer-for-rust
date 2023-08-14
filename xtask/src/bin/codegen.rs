@@ -110,9 +110,18 @@ fn generate_vulkan_layer_header_binding(
             let mut out_file = File::create(dst).unwrap();
             let mut out_preamble = license_comments;
             out_preamble.push_str(
-                "use super::*;\nuse ash::vk::*;\n#[cfg(unix)]\nmod unix;\n#[cfg(windows)]\nmod \
-                 windows;\n#[cfg(unix)]\npub use unix::*;\n#[cfg(windows)]\npub use \
-                 windows::*;\n\n",
+                "#![allow(missing_docs)]
+use super::*;
+use ash::vk::*;
+#[cfg(unix)]
+mod unix;
+#[cfg(windows)]
+mod windows;
+#[cfg(unix)]
+pub use unix::*;
+#[cfg(windows)]
+pub use windows::*;
+",
             );
             out_file.write_all(out_preamble.as_bytes()).unwrap();
             set_common_bindgen_configs(Default::default())

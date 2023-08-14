@@ -176,7 +176,7 @@ def escape_rust_keywords(id: str) -> str:
     return escape_rust_keywords("_" + id)
 
 
-def write_license(file):
+def write_preamble(file):
     today = datetime.date.today()
     file.write(
         "".join(
@@ -194,6 +194,8 @@ def write_license(file):
                 "// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n",
                 "// See the License for the specific language governing permissions and\n",
                 "// limitations under the License.\n",
+                "\n",
+                "#![allow(missing_docs)]\n",
             ]
         )
     )

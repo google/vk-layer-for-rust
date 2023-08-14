@@ -12,6 +12,411 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#![warn(missing_docs)]
+#![cfg_attr(all(doc, RUSTC_NIGHTLY), feature(doc_auto_cfg))]
+
+//! This crate provides a convenient framework to develop
+//! [Vulkan layers](https://github.com/KhronosGroup/Vulkan-Loader/blob/main/docs/LoaderLayerInterface.md)
+//! in Rust on top of the [ash](https://crates.io/crates/ash) crate. If you are not familiar how to
+//! write a Vulkan layer, [this C++ tutorial](https://renderdoc.org/vulkan-layer-guide.html) by
+//! Baldur Karlsson is a good reference to start with.
+//!
+//! Key features provided by this crate includes:
+//!
+//! * Support the look-up map fashion of implementing a Vulkan layer.
+//!
+//!   The look-up maps for `VkDevice` and `VkInstance` are handled by this crate.
+//!
+//! * Implement `vkGet*ProcAddr` automatically.
+//!
+//!   This is a non-trivial work to comply with the spec, because of extensions and the
+//!   required/supported Vulkan API level. See the
+//!   [spec](https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkGetInstanceProcAddr.html)
+//!   of `vkGetInstanceProc` for details.
+//!
+//! * Handle dispatch tables, `vkCreateInstance` and `vkCreateDevice`.
+//!
+//!   This mainly includes using the `vkGet*ProcAddr` function pointer correctly, and advancing the
+//!   `VkLayer*CreateInfo::u::pLayerInfo` link list. One common mistake in layer implementation
+//!   in `vkCreateDevice` is to call `getInstanceProcAddr(VK_NULL_HANDLE, "vkCreateDevice")` to
+//!   obtain the function pointer to `vkCreateDevice`. According to
+//!   [the spec](https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkGetInstanceProcAddr.html#_description),
+//!   `getInstanceProcAddr` should return `NULL`. This framework helps you avoid bugs like this.
+//!
+//! Note that object wrapping is not supported by this crate, and we don't plan such support,
+//! because object wrapping requires us to intercept ALL Vulkan commands related to one handle type,
+//! so it can't handle unknown commands. In addition, object wrapping is more complicated because it
+//! is required to call loader callback on every dispatchable handle creation and destruction.
+//!
+//! # Overview
+//!
+//! The primary types in this crate are the [`Layer`] trait and the [`Global`] struct. The user
+//! implements the [`Layer`] trait for a type `T`, and the [`Global<T>`] will include all necessary
+//! functions needed to export from this dynamic link library. With the help of the
+//! [`declare_introspection_queries`] macro, the user can export those functions in oneline.
+//!
+//! ```
+//! use ash::{self, vk};
+//! use once_cell::sync::Lazy;
+//! use std::sync::Arc;
+//! use vulkan_layer::{
+//!     declare_introspection_queries, Global, Layer, LayerManifest, StubDeviceInfo,
+//!     StubGlobalHooks, StubInstanceInfo,
+//! };
+//!
+//! // Define the layer type.
+//! #[derive(Default)]
+//! struct MyLayer(StubGlobalHooks);
+//!
+//! // Implement the Layer trait.
+//! impl Layer for MyLayer {
+//!     type GlobalHooksInfo = StubGlobalHooks;
+//!     type InstanceInfo = StubInstanceInfo;
+//!     type DeviceInfo = StubDeviceInfo;
+//!     type InstanceInfoContainer = StubInstanceInfo;
+//!     type DeviceInfoContainer = StubDeviceInfo;
+//!
+//!     fn global_instance() -> &'static Global<Self> {
+//!         static GLOBAL: Lazy<Global<MyLayer>> = Lazy::new(Default::default);
+//!         &*GLOBAL
+//!     }
+//!
+//!     fn manifest() -> LayerManifest {
+//!         Default::default()
+//!     }
+//!
+//!     fn get_global_hooks_info(&self) -> &Self::GlobalHooksInfo {
+//!         &self.0
+//!     }
+//!
+//!     fn create_instance_info(
+//!         &self,
+//!         _: &vk::InstanceCreateInfo,
+//!         _: Option<&vk::AllocationCallbacks>,
+//!         _: Arc<ash::Instance>,
+//!         _next_get_instance_proc_addr: vk::PFN_vkGetInstanceProcAddr,
+//!     ) -> Self::InstanceInfoContainer {
+//!         Default::default()
+//!     }
+//!
+//!     fn create_device_info(
+//!         &self,
+//!         _: vk::PhysicalDevice,
+//!         _: &vk::DeviceCreateInfo,
+//!         _: Option<&vk::AllocationCallbacks>,
+//!         _: Arc<ash::Device>,
+//!         _next_get_device_proc_addr: vk::PFN_vkGetDeviceProcAddr,
+//!     ) -> Self::DeviceInfoContainer {
+//!         Default::default()
+//!     }
+//! }
+//!
+//! // Define the global type from the layer type.
+//! type MyGlobal = Global<MyLayer>;
+//! // Export C functions.
+//! declare_introspection_queries!(MyGlobal);
+//! ```
+//! The user can provide their own types that implement different traits to intercept different
+//! commands and custom the layer behavior:
+//! * [`GlobalHooks`], [`InstanceHooks`], [`DeviceHooks`]: Implements the interception to different
+//!   Vulkan commands based on the dispatch types.
+//! * [`GlobalHooksInfo`], [`InstanceInfo`], [`DeviceInfo`]: Container of [`GlobalHooks`],
+//!   [`InstanceHooks`], [`DeviceHooks`]. Provide the list of commands to intercept for the
+//!   framework. Can be automatically implemented through the [`auto_deviceinfo_impl`],
+//!   [`auto_globalhooksinfo_impl`], [`auto_instanceinfo_impl`] macros from the [`GlobalHooks`],
+//!   [`InstanceHooks`], [`DeviceHooks`] implementation respectively.
+//! * [`Layer`]: Provide the metadata of a layer through [`LayerManifest`], e.g. the name, version,
+//!   exported extensions of the layer. Provide the storage for the [`Global`] object. Container of
+//!   [`GlobalHooksInfo`] type. The factory type of the [`InstanceInfo`], [`DeviceInfo`] types.
+//!
+//! # Usage
+//!
+//! First, create a Rust lib crate.
+//! ```bash
+//! $ mkdir vulkan-layer-rust-example
+//! $ cd vulkan-layer-rust-example
+//! $ cargo init --lib
+//!      Created library package
+//! ```
+//!
+//! Second, modify the crate type to `cdylib` and set the panic behavior to abort in `Cargo.toml`.
+//! ```toml
+//! [lib]
+//! crate-type = ["cdylib"]
+//!
+//! [profile.dev]
+//! panic = "abort"
+//!
+//! [profile.release]
+//! panic = "abort"
+//! ```
+//! We need to set panic to abort to avoid unwinding from Rust to the caller(most likely C/C++),
+//! because unwinding into other language from Rust is
+//! [undefined behavior](https://doc.rust-lang.org/beta/nomicon/unwinding.html).
+//!
+//! If you want to try the layer on Android, also modify the crate name to
+//! `VkLayer_vendor_rust_example`, because Android requires that the layer shared object library
+//! follow a specific name convention.
+//! ```toml
+//! [package]
+//! name = "VkLayer_vendor_rust_example"
+//! ```
+//!
+//! Third, set up the dependency in `Cargo.toml`. In my case, I checkout the project repository in
+//! the same directory where the `vulkan-layer-rust-example` folder lives.
+//! ```toml
+//! [dependencies]
+//! vulkan-layer = { path = "../vk-layer-for-rust/vulkan-layer" }
+//! ```
+//! Other dependencies.
+//! ```bash
+//! cargo add ash once_cell
+//! ```
+//!
+//! Fourth, implement the layer trait in `lib.rs`.
+//! ```
+//! use ash::{self, vk};
+//! use once_cell::sync::Lazy;
+//! use std::sync::Arc;
+//! use vulkan_layer::{
+//!     declare_introspection_queries, Global, Layer, LayerManifest, StubDeviceInfo,
+//!     StubGlobalHooks, StubInstanceInfo,
+//! };
+//!
+//! #[derive(Default)]
+//! struct MyLayer(StubGlobalHooks);
+//!
+//! impl Layer for MyLayer {
+//!     type GlobalHooksInfo = StubGlobalHooks;
+//!     type InstanceInfo = StubInstanceInfo;
+//!     type DeviceInfo = StubDeviceInfo;
+//!     type InstanceInfoContainer = StubInstanceInfo;
+//!     type DeviceInfoContainer = StubDeviceInfo;
+//!
+//!     fn global_instance() -> &'static Global<Self> {
+//!         static GLOBAL: Lazy<Global<MyLayer>> = Lazy::new(Default::default);
+//!         &*GLOBAL
+//!     }
+//!
+//!     fn manifest() -> LayerManifest {
+//!         let mut manifest = LayerManifest::default();
+//!         manifest.name = "VK_LAYER_VENDOR_rust_example";
+//!         manifest.spec_version = vk::API_VERSION_1_1;
+//!         manifest.description = "Rust test layer";
+//!         manifest
+//!     }
+//!
+//!     fn get_global_hooks_info(&self) -> &Self::GlobalHooksInfo {
+//!         &self.0
+//!     }
+//!
+//!     fn create_instance_info(
+//!         &self,
+//!         _: &vk::InstanceCreateInfo,
+//!         _: Option<&vk::AllocationCallbacks>,
+//!         _: Arc<ash::Instance>,
+//!         _next_get_instance_proc_addr: vk::PFN_vkGetInstanceProcAddr,
+//!     ) -> Self::InstanceInfoContainer {
+//!         Default::default()
+//!     }
+//!
+//!     fn create_device_info(
+//!         &self,
+//!         _: vk::PhysicalDevice,
+//!         _: &vk::DeviceCreateInfo,
+//!         _: Option<&vk::AllocationCallbacks>,
+//!         _: Arc<ash::Device>,
+//!         _next_get_device_proc_addr: vk::PFN_vkGetDeviceProcAddr,
+//!     ) -> Self::DeviceInfoContainer {
+//!         println!("Hello from the Rust Vulkan layer!");
+//!         Default::default()
+//!     }
+//! }
+//! ```
+//!
+//! Fifth, export functions through the [`declare_introspection_queries`] macro
+//! ```
+//! # use ash::{self, vk};
+//! # use once_cell::sync::Lazy;
+//! # use std::sync::Arc;
+//! # use vulkan_layer::{
+//! #     declare_introspection_queries, Global, Layer, LayerManifest, StubDeviceInfo,
+//! #     StubGlobalHooks, StubInstanceInfo,
+//! # };
+//! #
+//! # #[derive(Default)]
+//! # struct MyLayer(StubGlobalHooks);
+//! #
+//! # impl Layer for MyLayer {
+//! #     type GlobalHooksInfo = StubGlobalHooks;
+//! #     type InstanceInfo = StubInstanceInfo;
+//! #     type DeviceInfo = StubDeviceInfo;
+//! #     type InstanceInfoContainer = StubInstanceInfo;
+//! #     type DeviceInfoContainer = StubDeviceInfo;
+//! #
+//! #     fn global_instance() -> &'static Global<Self> {
+//! #         static GLOBAL: Lazy<Global<MyLayer>> = Lazy::new(Default::default);
+//! #         &*GLOBAL
+//! #     }
+//! #
+//! #     fn manifest() -> LayerManifest {
+//! #         let mut manifest = LayerManifest::default();
+//! #         manifest.name = "VK_LAYER_VENDOR_rust_example";
+//! #         manifest.spec_version = vk::API_VERSION_1_1;
+//! #         manifest.description = "Rust test layer";
+//! #         manifest
+//! #     }
+//! #
+//! #     fn get_global_hooks_info(&self) -> &Self::GlobalHooksInfo {
+//! #         &self.0
+//! #     }
+//! #
+//! #     fn create_instance_info(
+//! #         &self,
+//! #         _: &vk::InstanceCreateInfo,
+//! #         _: Option<&vk::AllocationCallbacks>,
+//! #         _: Arc<ash::Instance>,
+//! #         _next_get_instance_proc_addr: vk::PFN_vkGetInstanceProcAddr,
+//! #     ) -> Self::InstanceInfoContainer {
+//! #         Default::default()
+//! #     }
+//! #
+//! #     fn create_device_info(
+//! #         &self,
+//! #         _: vk::PhysicalDevice,
+//! #         _: &vk::DeviceCreateInfo,
+//! #         _: Option<&vk::AllocationCallbacks>,
+//! #         _: Arc<ash::Device>,
+//! #         _next_get_device_proc_addr: vk::PFN_vkGetDeviceProcAddr,
+//! #     ) -> Self::DeviceInfoContainer {
+//! #         println!("Hello from the Rust Vulkan layer!");
+//! #         Default::default()
+//! #     }
+//! # }
+//! declare_introspection_queries!(Global::<MyLayer>);
+//! ```
+//!
+//! Sixth, build and check the exported symbol of the build artifacts, and we should see Vulkan
+//! introspection APIs are exported.
+//!
+//! On Windows, use
+//! [`dumpbin`](https://learn.microsoft.com/en-us/cpp/build/reference/dumpbin-reference?view=msvc-170)
+//! ```cmd
+//! $ dumpbin /exports .\target\debug\VkLayer_vendor_rust_example.dll
+//! Microsoft (R) COFF/PE Dumper Version 14.36.32537.0
+//! Copyright (C) Microsoft Corporation.  All rights reserved.
+//!
+//!
+//! Dump of file .\target\debug\VkLayer_vendor_rust_example.dll
+//!
+//! File Type: DLL
+//!
+//!   Section contains the following exports for VkLayer_vendor_rust_example.dll
+//!
+//!     00000000 characteristics
+//!     FFFFFFFF time date stamp
+//!         0.00 version
+//!            1 ordinal base
+//!            6 number of functions
+//!            6 number of names
+//!
+//!     ordinal hint RVA      name
+//!
+//!           1    0 000F1840 vkEnumerateDeviceExtensionProperties = vkEnumerateDeviceExtensionProperties
+//!           2    1 000F1820 vkEnumerateDeviceLayerProperties = vkEnumerateDeviceLayerProperties
+//!           3    2 000F1800 vkEnumerateInstanceExtensionProperties = vkEnumerateInstanceExtensionProperties
+//!           4    3 000F17E0 vkEnumerateInstanceLayerProperties = vkEnumerateInstanceLayerProperties
+//!           5    4 000F1890 vkGetDeviceProcAddr = vkGetDeviceProcAddr
+//!           6    5 000F1870 vkGetInstanceProcAddr = vkGetInstanceProcAddr
+//!
+//!   Summary
+//!
+//!         1000 .data
+//!        11000 .pdata
+//!        37000 .rdata
+//!         2000 .reloc
+//!       171000 .text
+//! ```
+//! On Linux, use [`objdump`](https://linux.die.net/man/1/objdump).
+//! ```bat
+//! $ objdump -TC target/debug/libVkLayer_vendor_rust_example.so
+//!
+//! target/debug/libVkLayer_vendor_rust_example.so:     file format elf64-x86-64
+//!
+//! DYNAMIC SYMBOL TABLE:
+//! (omit some irrelevant symbols...)
+//! 00000000000fad20 g    DF .text  0000000000000022  Base        vkEnumerateDeviceExtensionProperties
+//! 00000000000face0 g    DF .text  000000000000001c  Base        vkEnumerateInstanceExtensionProperties
+//! 00000000000fad50 g    DF .text  0000000000000018  Base        vkGetInstanceProcAddr
+//! 00000000000facc0 g    DF .text  0000000000000018  Base        vkEnumerateInstanceLayerProperties
+//! 00000000000fad00 g    DF .text  000000000000001c  Base        vkEnumerateDeviceLayerProperties
+//! 00000000000fad70 g    DF .text  0000000000000018  Base        vkGetDeviceProcAddr
+//! ```
+//!
+//! Seventh, create the layer manifest file named `rust_example_layer.json` right beside the built
+//! artifact. If targeting Android, the json manifest file is not needed.
+//!
+//! For Windows,
+//! ```json
+//! {
+//!     "file_format_version" : "1.2.1",
+//!     "layer": {
+//!         "name": "VK_LAYER_VENDOR_rust_example",
+//!         "type": "INSTANCE",
+//!         "library_path": ".\\VkLayer_vendor_rust_example.dll",
+//!         "library_arch" : "64",
+//!         "api_version" : "1.1.0",
+//!         "implementation_version" : "0",
+//!         "description" : "Rust test layer"
+//!     }
+//! }
+//! ```
+//!
+//! For Linux,
+//! ```json
+//! {
+//!     "file_format_version" : "1.2.1",
+//!     "layer": {
+//!         "name": "VK_LAYER_VENDOR_rust_example",
+//!         "type": "INSTANCE",
+//!         "library_path": "./libVkLayer_vendor_rust_example.so",
+//!         "library_arch" : "64",
+//!         "api_version" : "1.1.0",
+//!         "implementation_version" : "0",
+//!         "description" : "Rust test layer"
+//!     }
+//! }
+//! ```
+//! This json file will define an explicit layer named `VK_LAYER_VENDOR_rust_example`.
+//!
+//! Eighth, use [`VkConfig`](https://github.com/LunarG/VulkanTools/blob/main/vkconfig/README.md)
+//! (i.e. Vulkan Configurator) to force enable this explicit layer, and launch the vkcube
+//! application through `VkConfig`. In the log view, we should see the
+//! `"Hello from the Rust Vulkan layer!"` log line. For Android, follow
+//! [this instruction](https://developer.android.com/ndk/guides/graphics/validation-layer) to enable
+//! the layer. [`println!`] won't write to logcat, so one needs to change the layer implementation
+//! to write to the logcat.
+//!
+//! # Global initialization and clean up
+//!
+//! See [the][Layer#initialization] [document][Layer#global-clean-up] of [`Layer`] for details.
+//!
+//! # Extensions
+//!
+//! TODO
+//!
+//! # Synchronization
+//!
+//! TODO
+//!
+//! # Safety
+//!
+//! TODO
+//!
+//! # API stability
+//!
+//! TODO
+
 use ash::vk::{self, Handle};
 use bytemuck::cast_slice;
 use log::{error, warn};
@@ -24,58 +429,35 @@ use std::{
     ptr::{null, null_mut, NonNull},
     sync::{Arc, Mutex},
 };
-pub use vk_utils::{VulkanBaseInStructChain, VulkanBaseOutStructChain};
 extern crate self as vulkan_layer;
 
 mod bindings;
 mod global_simple_intercept;
 mod layer_trait;
+mod lazy_collection;
 #[cfg(any(feature = "_test", test))]
 pub mod test_utils;
-cfg_if::cfg_if! {
-    if #[cfg(feature = "_test")] {
-        pub mod lazy_collection;
-    } else {
-        mod lazy_collection;
-    }
-}
+
+#[cfg(feature = "unstable")]
+pub mod unstable_api;
+#[cfg(not(feature = "unstable"))]
+mod unstable_api;
 mod vk_utils;
 
 use bindings::vk_layer::{VkLayerDeviceCreateInfo, VkLayerFunction, VkLayerInstanceCreateInfo};
 pub use bindings::vk_layer::{VkLayerDeviceLink, VkLayerInstanceLink};
-pub use global_simple_intercept::{ApiVersion, Extension, Feature};
+pub use global_simple_intercept::Extension;
 use global_simple_intercept::{DeviceDispatchTable, InstanceDispatchTable, VulkanCommand};
 pub use layer_trait::{
     DeviceHooks, DeviceInfo, ExtensionProperties, GlobalHooks, GlobalHooksInfo, InstanceHooks,
     InstanceInfo, Layer, LayerManifest, LayerResult, VulkanCommand as LayerVulkanCommand,
 };
-use lazy_collection::LazyCollection;
+use unstable_api::{ApiVersion, IsCommandEnabled, LazyCollection};
+pub use vk_utils::{VulkanBaseInStructChain, VulkanBaseOutStructChain};
 pub use vulkan_layer_macros::{
     auto_deviceinfo_impl, auto_globalhooksinfo_impl, auto_instanceinfo_impl,
     declare_introspection_queries,
 };
-
-pub trait IsCommandEnabled {
-    #[allow(clippy::wrong_self_convention)]
-    fn is_command_enabled(
-        self,
-        api_version: &ApiVersion,
-        enabled_extensions: &BTreeSet<Extension>,
-    ) -> bool;
-}
-
-impl<'a, T: IntoIterator<Item = &'a Feature>> IsCommandEnabled for T {
-    fn is_command_enabled(
-        self,
-        api_version: &ApiVersion,
-        enabled_extensions: &BTreeSet<Extension>,
-    ) -> bool {
-        self.into_iter().any(|feature| match feature {
-            Feature::Extension(extension) => enabled_extensions.contains(extension),
-            Feature::Core(version) => version <= api_version,
-        })
-    }
-}
 
 /// # Safety
 /// Follow the safety requirements for `std::slice::from_raw_parts` with one major difference: if
@@ -238,24 +620,34 @@ struct DeviceInfoWrapper<T: Layer> {
     customized_info: T::DeviceInfoContainer,
 }
 
+/// A struct that implements all necessarly functions for a layer given a type that implements
+/// [`Layer`].
+///
+/// The layer implementation should use [`Global::default`] to construct a [`Global`] object.
+/// When all `VkInstance`s and `VkDevice`s are destroyed, the drop of [`Global`] is no-op if the
+/// drop of `T` is no-op under such circumstances. See [the][Layer#initialization]
+/// [document][Layer#global-clean-up] of [`Layer`] for details on global initialization and
+/// clean-up.
+///
+/// This is supposed to be a global singleton for a layer to store all necessary data to implement a
+/// Vulkan layer including dispatch tables, maps between the Vulkan objects and their wrappers, etc.
 pub struct Global<T: Layer> {
     instance_map: Mutex<LazyCollection<BTreeMap<InstanceDispatchKey, Arc<InstanceInfoWrapper<T>>>>>,
     physical_device_map:
         Mutex<LazyCollection<BTreeMap<vk::PhysicalDevice, Arc<PhysicalDeviceInfoWrapper>>>>,
     device_map: Mutex<LazyCollection<BTreeMap<DeviceDispatchKey, Arc<DeviceInfoWrapper<T>>>>>,
-    // layer_info won't be moved into InstanceInfoWrapper like instance_commands and
-    // device_commands. For instance_commands and device_commands, although they should be shared
-    // globally, we allow multiple existence of them - we only care about the value. T can be
-    // different, because we want to guarantee that there is only one unique layer_info, so that
-    // the client can put global state in T, and can perform global initialization(e.g. the
-    // global logger) in T::default. If the client needs Global to be trivially destructible,
-    // the client must guarantee that T is also trivially destructible.
+    /// Access to the underlying `T`.
+    // layer_info can't be lazily constructed when the first VkInstance is created, because we want
+    // to guarantee that T::default is only called once during the lifetime of Global, so that the
+    // client can put global state in T, and can perform global initialization(e.g. the global
+    // logger) in T::default. If the client needs Global to be trivially destructible, the client
+    // must guarantee that T is also trivially destructible.
     pub layer_info: T,
     get_instance_addr_proc_hooked: bool,
 }
 
 impl<T: Layer> Global<T> {
-    pub fn instance() -> &'static Self {
+    fn instance() -> &'static Self {
         T::global_instance()
     }
 
@@ -832,7 +1224,7 @@ impl<T: Layer> Global<T> {
 
     /// # Safety
     /// See valid usage of `vkEnumerateInstanceLayerProperties` at
-    /// https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkEnumerateInstanceLayerProperties.html
+    /// <https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkEnumerateInstanceLayerProperties.html>.
     #[deny(unsafe_op_in_unsafe_fn)]
     pub unsafe extern "system" fn enumerate_instance_layer_properties(
         property_count: *mut u32,
@@ -856,7 +1248,7 @@ impl<T: Layer> Global<T> {
 
     /// # Safety
     /// See valid usage of `vkEnumerateInstanceExtensionProperties` at
-    /// https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkEnumerateInstanceExtensionProperties.html.
+    /// <https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkEnumerateInstanceExtensionProperties.html>.
     #[deny(unsafe_op_in_unsafe_fn)]
     pub unsafe extern "system" fn enumerate_instance_extension_properties(
         layer_name: *const c_char,
@@ -886,7 +1278,7 @@ impl<T: Layer> Global<T> {
 
     /// # Safety
     /// See valid usage of `vkEnumerateDeviceLayerProperties` at
-    /// https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkEnumerateDeviceLayerProperties.html.
+    /// <https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkEnumerateDeviceLayerProperties.html>.
     #[deny(unsafe_op_in_unsafe_fn)]
     pub unsafe extern "system" fn enumerate_device_layer_properties(
         _: vk::PhysicalDevice,
@@ -916,7 +1308,7 @@ impl<T: Layer> Global<T> {
 
     /// # Safety
     /// See valid usage of `vkEnumerateDeviceExtensionProperties` at
-    /// https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkEnumerateDeviceExtensionProperties.html.
+    /// <https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkEnumerateDeviceExtensionProperties.html>.
     #[deny(unsafe_op_in_unsafe_fn)]
     pub unsafe extern "system" fn enumerate_device_extension_properties(
         physical_device: vk::PhysicalDevice,
@@ -968,7 +1360,7 @@ impl<T: Layer> Global<T> {
 
     /// # Safety
     /// See valid usage of `vkGetInstanceProcAddr` at
-    /// https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkGetInstanceProcAddr.html.
+    /// <https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkGetInstanceProcAddr.html>.
     #[deny(unsafe_op_in_unsafe_fn)]
     pub unsafe extern "system" fn get_instance_proc_addr(
         instance: vk::Instance,
@@ -1075,7 +1467,7 @@ impl<T: Layer> Global<T> {
 
     /// # Safety
     /// See valid usage of `vkGetInstanceProcAddr` at
-    /// https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkGetDeviceProcAddr.html.
+    /// <https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkGetDeviceProcAddr.html>.
     #[deny(unsafe_op_in_unsafe_fn)]
     pub unsafe extern "system" fn get_device_proc_addr(
         device: vk::Device,
@@ -1132,18 +1524,23 @@ impl<T: Layer> Default for Global<T> {
     }
 }
 
+/// A stub struct that intercept no commands, which implements [`GlobalHooks`] and
+/// [`GlobalHooksInfo`].
 #[derive(Default)]
 pub struct StubGlobalHooks;
 
 #[auto_globalhooksinfo_impl]
 impl GlobalHooks for StubGlobalHooks {}
 
+/// A stub struct that intercept no commands, which implements [`InstanceHooks`] and
+/// [`InstanceInfo`].
 #[derive(Default)]
 pub struct StubInstanceInfo;
 
 #[auto_instanceinfo_impl]
 impl InstanceHooks for StubInstanceInfo {}
 
+/// A stub struct that intercept no commands, which implements [`DeviceHooks`] and [`DeviceInfo`].
 #[derive(Default)]
 pub struct StubDeviceInfo;
 

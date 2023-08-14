@@ -23,7 +23,7 @@ from vk_xml_util import (
     UnhandledCommand,
     generate_unhandled_command_comments,
     VulkanAliases,
-    write_license,
+    write_preamble,
     snake_case_to_upper_camel_case,
 )
 
@@ -38,7 +38,7 @@ class LayerTraitGenerator(OutputGenerator):
 
     def beginFile(self, gen_opts):
         super().beginFile(gen_opts)
-        write_license(self.outFile)
+        write_preamble(self.outFile)
         self.newline()
         self.outFile.write("// This file is generated from the Vulkan XML API registry.\n")
         self.outFile.write("#![allow(clippy::too_many_arguments)]\n")

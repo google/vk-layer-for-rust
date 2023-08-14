@@ -21,8 +21,32 @@ use std::mem::MaybeUninit;
 
 use ash::vk;
 
-pub mod generated;
-pub use generated::*;
+mod generated;
+
+/// Bindings for the C `PFN_vkLayerCreateDevice` type defined in the `vk_layer.h` file.
+pub use generated::PFN_vkLayerCreateDevice;
+/// Bindings for the C `PFN_vkLayerDestroyDevice` type defined in the `vk_layer.h` file.
+pub use generated::PFN_vkLayerDestroyDevice;
+/// Bindings for the C `PFN_vkSetInstanceLoaderData` type defined in the `vk_layer.h` file.
+pub use generated::PFN_vkSetInstanceLoaderData;
+/// Sub type of structure for instance and device loader ext of CreateInfo. Bindings for the C
+/// `VkLayerDeviceCreateInfo` type defined in the `vk_layer.h` file.
+///
+/// When `sType` is
+/// [`VK_STRUCTURE_TYPE_LOADER_DEVICE_CREATE_INFO`](https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkStructureType.html)
+/// then [`VkLayerFunction`] indicates struct type pointed to by pNext.
+pub use generated::VkLayerDeviceCreateInfo;
+/// A list node that contains the next entity's `vkGetInstanceProcAddr` and
+/// `vkGetDeviceProcAddr` used by a layer. One possible payload of [`VkLayerDeviceCreateInfo`]
+pub use generated::VkLayerDeviceLink;
+/// Bindings for the C `VkLayerFunction` type defined in the `vk_layer.h` file.
+///
+/// Used to distinguish the payload of the loader extension of CreateInfo:
+/// [`VkLayerDeviceCreateInfo`], [`VkLayerInstanceCreateInfo`].
+pub use generated::VkLayerFunction;
+/// A list node that contains the next entity's vkGetInstanceProcAddr used by a layer. One
+/// possible payload of [`VkLayerInstanceCreateInfo`].
+pub use generated::VkLayerInstanceLink;
 
 type VkInstance = vk::Instance;
 type VkPhysicalDevice = vk::PhysicalDevice;
@@ -67,10 +91,20 @@ impl Default for VkLayerInstanceCreateInfoUField {
 }
 
 #[repr(C)]
+/// Sub type of structure for instance and device loader ext of CreateInfo.
+///
+/// When `sType` is
+/// [`VK_STRUCTURE_TYPE_LOADER_INSTANCE_CREATE_INFO`](https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkStructureType.html)
+/// then [`VkLayerFunction`] indicates struct type pointed to by pNext.
 pub struct VkLayerInstanceCreateInfo {
+    /// A `VkStructureType` value identifying this struct. Must be
+    /// `VK_STRUCTURE_TYPE_LOADER_INSTANCE_CREATE_INFO`.
     pub sType: VkStructureType,
+    /// Either `NULL` or a pointer to a structure extending this structure.
     pub pNext: *const ::std::os::raw::c_void,
+    /// A [`VkLayerFunction`] value identifying the payload in the `u` field.
     pub function: VkLayerFunction,
+    /// The actual payload.
     pub u: VkLayerInstanceCreateInfoUField,
 }
 

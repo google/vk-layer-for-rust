@@ -28,9 +28,17 @@ pub enum TryFromExtensionError {
     UnknownExtension(String),
 }
 
+/// A union type of extensions and core API version.
+///
+/// In `vk.xml`, Vulkan commands and types are grouped under different API version and extensions.
+/// The tag of those group XML elements is `feature` or `extension`. One command will have only one
+/// single correspondent feature. This type is mostly used to tell if a command should be returned
+/// by `vkGet*ProcAddr` given the supported/enabled Vulkan API version and extensions.
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone)]
 pub enum Feature {
+    /// Vulkan core API interface.
     Core(ApiVersion),
+    /// Vulkan extension interface.
     Extension(Extension),
 }
 
@@ -46,16 +54,26 @@ impl From<Extension> for Feature {
     }
 }
 
+/// Vulkan API version number.
+///
+/// Can be used to store the result decoded from
+/// [`VK_MAKE_API_VERSION`](https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VK_MAKE_API_VERSION.html).
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 pub struct ApiVersion {
-    // At most 7 bits
+    /// The major version number. At most 7 bits.
     pub major: u8,
-    // At most 10 bits
+    /// The minor version number. At most 10 bits
     pub minor: u16,
 }
 
 impl ApiVersion {
+    /// Vulkan version 1.0. The initial release of the Vulkan API.
+    ///
+    /// <https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VK_VERSION_1_0.html>
     pub const V1_0: Self = Self { major: 1, minor: 0 };
+    /// Vulkan version 1.1.
+    ///
+    /// <https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VK_VERSION_1_1.html>
     pub const V1_1: Self = Self { major: 1, minor: 1 };
 }
 

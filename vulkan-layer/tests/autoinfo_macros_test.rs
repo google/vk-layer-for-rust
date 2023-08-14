@@ -127,7 +127,7 @@ fn test_auto_instanceinfo_should_intercept_hooked_proc() {
             unimplemented!()
         }
     }
-    let hooked_commands = Global::<MockLayer>::instance()
+    let hooked_commands = MockLayer::global_instance()
         .layer_info
         .hooked_instance_commands(&Default::default())
         .collect::<Vec<_>>();
@@ -152,7 +152,7 @@ fn test_auto_deviceinfo_should_intercept_hooked_proc() {
             unimplemented!()
         }
     }
-    let hooked_commands = Global::<MockLayer>::instance()
+    let hooked_commands = MockLayer::global_instance()
         .layer_info
         .hooked_device_commands(&Default::default(), None)
         .collect::<Vec<_>>();

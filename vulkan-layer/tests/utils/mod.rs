@@ -32,8 +32,8 @@ use vulkan_layer::{
         ArcDel, Del, VkLayerDeviceCreateInfo, VkLayerDeviceLink, VkLayerFunction,
         VkLayerInstanceCreateInfo,
     },
-    ApiVersion, Extension, ExtensionProperties, Feature, Global, IsCommandEnabled, Layer,
-    LayerVulkanCommand, VkLayerInstanceLink,
+    unstable_api::{ApiVersion, Feature, IsCommandEnabled},
+    Extension, ExtensionProperties, Global, Layer, LayerVulkanCommand, VkLayerInstanceLink,
 };
 
 #[derive(Clone)]

@@ -84,7 +84,7 @@ pub fn auto_deviceinfo_impl(_: TokenStream, item: TokenStream) -> TokenStream {
 /// `vulkan_layer::Global` type.
 ///
 /// All functions are defined without name mangling, so that they are exported as C symbols in the
-/// generated dynamic library.  This is recommended by
+/// generated dynamic library. This is recommended by
 /// [the Vulkan loader doc](https://github.com/KhronosGroup/Vulkan-Loader/blob/280997da523951c4016f4ca6af66d58a31e36ab3/docs/LoaderLayerInterface.md#layer-manifest-file-usage:~:text=These%20introspection%20functions%20are%20not%20used%20by%20the%20Khronos%20loader%20but%20should%20be%20present%20in%20layers%20to%20maintain%20consistency.%20The%20specific%20%22introspection%22%20functions%20are%20called%20out%20in%20the%20Layer%20Manifest%20File%20Format%20table):
 ///
 /// > These introspection functions are not used by the Khronos loader but should be present in
@@ -120,7 +120,7 @@ pub fn auto_deviceinfo_impl(_: TokenStream, item: TokenStream) -> TokenStream {
 /// #     
 /// #     fn global_instance() -> &'static Global<Self> {
 /// #         static GLOBAL: Lazy<Global<MyLayer>> = Lazy::new(Default::default);
-/// #         &*GLOBAL
+/// #         &GLOBAL
 /// #     }
 /// #
 /// #     fn manifest() -> LayerManifest {
