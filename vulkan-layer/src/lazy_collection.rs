@@ -69,9 +69,11 @@ impl<T: CheckEmpty> LazyCollection<T> {
     ///
     /// # Examples
     /// ```
-    /// # use vulkan_layer::lazy_collection::LazyCollection;
+    /// # use vulkan_layer::unstable_api::LazyCollection;
     /// let c = LazyCollection::new(vec![42]);
     /// ```
+    #[allow(dead_code)]
+    // Only test uses this function.
     pub fn new(value: T) -> Self {
         Self {
             inner: OnceCell::with_value(value),
@@ -84,7 +86,7 @@ impl<T: CheckEmpty> LazyCollection<T> {
     ///
     /// # Examples
     /// ```
-    /// # use vulkan_layer::lazy_collection::LazyCollection;
+    /// # use vulkan_layer::unstable_api::LazyCollection;
     /// let vec = LazyCollection::new(vec![42]);
     /// let vec1 = vec.get();
     /// assert_eq!(*vec1, vec![42]);
@@ -107,7 +109,7 @@ impl<T: CheckEmpty> LazyCollection<T> {
     ///
     /// # Examples
     /// ```
-    /// # use vulkan_layer::lazy_collection::LazyCollection;
+    /// # use vulkan_layer::unstable_api::LazyCollection;
     /// let mut vec = LazyCollection::<Vec<u32>>::default();
     /// let mut mut_vec = vec.get_mut_or_default();
     /// mut_vec.push(42);

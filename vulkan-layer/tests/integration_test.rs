@@ -21,16 +21,17 @@ use std::{
     marker::PhantomData,
     mem::MaybeUninit,
     ptr::{null, null_mut},
-    sync::Arc,
+    sync::{atomic::AtomicBool, Arc},
 };
 use vulkan_layer::{
     test_utils::{
         LayerManifestExt, MockTestLayer, Tag, TestGlobal, TestLayer, VkLayerDeviceCreateInfo,
         VkLayerDeviceLink, VkLayerFunction, VkLayerInstanceCreateInfo,
     },
-    ApiVersion, DeviceInfo, Extension, ExtensionProperties, Global, InstanceInfo, Layer,
-    LayerManifest, LayerResult, LayerVulkanCommand, StubDeviceInfo, StubGlobalHooks,
-    StubInstanceInfo, VkLayerInstanceLink, VulkanBaseInStructChain,
+    unstable_api::ApiVersion,
+    DeviceInfo, Extension, ExtensionProperties, Global, InstanceInfo, Layer, LayerManifest,
+    LayerResult, LayerVulkanCommand, StubDeviceInfo, StubGlobalHooks, StubInstanceInfo,
+    VkLayerInstanceLink, VulkanBaseInStructChain,
 };
 
 pub mod utils;
@@ -361,7 +362,7 @@ mod get_instance_proc_addr {
                 };
                 let destroy_surface: vk::PFN_vkDestroySurfaceKHR =
                     unsafe { std::mem::transmute(destroy_surface.unwrap()) };
-                let instance_hooks_mock = &Global::<TestLayer>::instance()
+                let instance_hooks_mock = &TestLayer::<Tag<0>>::global_instance()
                     .layer_info
                     .get_instance_info(instance.handle())
                     .unwrap()
@@ -615,7 +616,7 @@ mod get_instance_proc_addr {
                     })
                     .unwrap();
                 let DeviceContext { device, .. } = device_ctx.as_ref();
-                let layer_device_info = Global::<TestLayer>::instance()
+                let layer_device_info = TestLayer::<Tag<0>>::global_instance()
                     .layer_info
                     .get_device_info(device_ctx.device.handle())
                     .unwrap();
@@ -805,8 +806,8 @@ mod create_destroy_instance {
         }
 
         {
-            let layer1_info = &Global::<TestLayer<Tag<0>>>::instance().layer_info;
-            let layer2_info = &Global::<TestLayer<Tag<1>>>::instance().layer_info;
+            let layer1_info = &TestLayer::<Tag<0>>::global_instance().layer_info;
+            let layer2_info = &TestLayer::<Tag<1>>::global_instance().layer_info;
             {
                 let mut layer1_global_hooks = layer1_info.get_global_hooks();
                 layer1_global_hooks
@@ -874,18 +875,25 @@ mod create_destroy_instance {
     fn test_destroy_instance_will_actually_destroy_underlying_instance_info() {
         static TEST_GLOBAL: TestGlobal = TestGlobal::builder().build();
         let _ctx = TEST_GLOBAL.create_context();
+        let dropped: Arc<AtomicBool> = Arc::new(AtomicBool::new(false));
         {
             let ctx = vk::InstanceCreateInfo::builder().default_instance::<(TestLayer,)>();
             let InstanceContext { instance, .. } = ctx.as_ref();
-            let instance_data = Global::<TestLayer>::instance()
+            let instance_data = TestLayer::<Tag<0>>::global_instance()
                 .layer_info
                 .get_instance_info(instance.handle())
                 .unwrap();
             instance_data.with_mock_drop(|mock_drop| {
-                mock_drop.expect_drop().once().return_const(());
+                mock_drop.expect_drop().once().return_once({
+                    let dropped = Arc::clone(&dropped);
+                    move || {
+                        dropped.store(true, std::sync::atomic::Ordering::SeqCst);
+                    }
+                });
             });
             // Calling vkDestroyInstance through RAII.
         }
+        assert!(dropped.load(std::sync::atomic::Ordering::SeqCst));
     }
 
     // Requirements of Well-Behaved Layers number LLP_LAYER_21.
@@ -904,7 +912,7 @@ mod create_destroy_instance {
         let _ctx = TEST_GLOBAL1.create_context();
         let _ctx = TEST_GLOBAL2.create_context();
         let mut instance = MaybeUninit::<vk::Instance>::uninit();
-        Global::<TestLayer<Tag<1>>>::instance()
+        TestLayer::<Tag<1>>::global_instance()
             .layer_info
             .get_global_hooks()
             .expect_create_instance()
@@ -1081,7 +1089,7 @@ mod get_device_proc_addr {
         };
         let destroy_sampler_ycbcr_conversion: vk::PFN_vkDestroySamplerYcbcrConversion =
             unsafe { std::mem::transmute(destroy_sampler_ycbcr_conversion.unwrap()) };
-        let layer_device_info = Global::<TestLayer>::instance()
+        let layer_device_info = TestLayer::<Tag<0>>::global_instance()
             .layer_info
             .get_device_info(device.handle())
             .unwrap();
@@ -1331,6 +1339,12 @@ mod get_device_proc_addr {
     fn test_layer_hooked_device_commands_should_take_priority() {
         todo!()
     }
+
+    #[test]
+    #[ignore]
+    fn test_should_return_the_same_function_pointers_if_the_command_has_multiple_names() {
+        todo!()
+    }
 }
 
 mod device_commands {
@@ -1352,7 +1366,7 @@ mod device_commands {
             .default_device()
             .unwrap();
         let DeviceContext { device, .. } = ctx.as_ref();
-        let device_info = Global::<TestLayer>::instance()
+        let device_info = TestLayer::<Tag<0>>::global_instance()
             .layer_info
             .get_device_info(device.handle())
             .unwrap();
@@ -1383,7 +1397,7 @@ mod device_commands {
             .default_device()
             .unwrap();
         let DeviceContext { device, .. } = ctx.as_ref();
-        let device_info = Global::<TestLayer>::instance()
+        let device_info = TestLayer::<Tag<0>>::global_instance()
             .layer_info
             .get_device_info(device.handle())
             .unwrap();
@@ -1860,11 +1874,11 @@ mod create_destroy_device {
                     )
             }
         }
-        let layer1_instance_info = &Global::<TestLayer<Tag<0>>>::instance()
+        let layer1_instance_info = &TestLayer::<Tag<0>>::global_instance()
             .layer_info
             .get_instance_info(instance.handle())
             .unwrap();
-        let layer2_instance_info = &Global::<TestLayer<Tag<1>>>::instance()
+        let layer2_instance_info = &TestLayer::<Tag<1>>::global_instance()
             .layer_info
             .get_instance_info(instance.handle())
             .unwrap();
@@ -1919,7 +1933,7 @@ mod create_destroy_device {
         let instance_ctx = vk::InstanceCreateInfo::builder()
             .enabled_extension_names(&instance_extensions)
             .default_instance::<(TestLayer,)>();
-        let instance_info = Global::<TestLayer>::instance()
+        let instance_info = TestLayer::<Tag<0>>::global_instance()
             .layer_info
             .get_instance_info(instance_ctx.instance.handle())
             .unwrap();
@@ -1965,22 +1979,28 @@ mod create_destroy_device {
     fn test_destroy_device_will_actually_destroy_underlying_device_info() {
         static TEST_GLOBAL: TestGlobal = TestGlobal::builder().build();
         let _ctx = TEST_GLOBAL.create_context();
-
+        let dropped: Arc<AtomicBool> = Arc::new(AtomicBool::new(false));
         {
             let ctx = vk::InstanceCreateInfo::builder()
                 .default_instance::<(TestLayer,)>()
                 .default_device()
                 .unwrap();
             let DeviceContext { device, .. } = ctx.as_ref();
-            let device_data = Global::<TestLayer>::instance()
+            let device_data = TestLayer::<Tag<0>>::global_instance()
                 .layer_info
                 .get_device_info(device.handle())
                 .unwrap();
             device_data.with_mock_drop(|mock_drop| {
-                mock_drop.expect_drop().once().return_const(());
+                mock_drop.expect_drop().once().return_once({
+                    let dropped = Arc::clone(&dropped);
+                    move || {
+                        dropped.store(true, std::sync::atomic::Ordering::SeqCst);
+                    }
+                });
             });
             // Calling vkDestroyDevice through RAII.
         }
+        assert!(dropped.load(std::sync::atomic::Ordering::SeqCst));
     }
 
     #[test]
@@ -2000,7 +2020,7 @@ mod create_destroy_device {
         let instance_ctx = vk::InstanceCreateInfo::builder()
             .default_instance::<(TestLayer<Tag<0>>, TestLayer<Tag<1>>)>();
         let mut device = MaybeUninit::<vk::Device>::uninit();
-        Global::<TestLayer<Tag<1>>>::instance()
+        TestLayer::<Tag<1>>::global_instance()
             .layer_info
             .get_instance_info(instance_ctx.instance.handle())
             .unwrap()
@@ -2170,4 +2190,16 @@ fn global_should_be_trivially_destructible() {
         let global = unsafe { GLOBAL.take() };
         std::mem::forget(global);
     }
+}
+
+#[test]
+#[ignore]
+fn global_should_only_call_layer_ctor_once_even_if_multiple_instance_device_created() {
+    todo!()
+}
+
+#[test]
+#[ignore]
+fn global_should_only_call_layer_ctor_once_even_if_multiple_calls_to_global_commands() {
+    todo!()
 }

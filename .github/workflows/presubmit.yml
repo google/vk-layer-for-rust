@@ -204,6 +204,31 @@ jobs:
       - run: cargo xtask codegen
       - run: git diff --exit-code
   
+  doctest:
+    name: Rust doc test
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: Set up nightly Rust toolchain
+        # dtolnay/rust-toolchain@nightly
+        uses: dtolnay/rust-toolchain@f2f3c4b315c5bb8415dbb043af44ec90f68ae503
+      - name: Set up Rust dependency cache
+        # Swatinem/rust-cache@v2.5.1
+        uses: Swatinem/rust-cache@dd05243424bd5c0e585e4b55eb2d7615cdd32f1f
+        with:
+          key: ${{ runner.os }}
+      - run: cargo +nightly test --doc --all-features --workspace -- --show-output
+      - run: cargo +nightly doc --workspace --all-features --no-deps
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ${{ format('doc-{0}', runner.os) }}
+          path: target/doc
+
   license:
     name: License check
     runs-on: ubuntu-latest

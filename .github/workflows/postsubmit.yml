@@ -43,6 +43,18 @@ jobs:
         with:
           name: coverage-Windows
           path: coverage-Windows
+      - run: rm -rf doc-Linux
+      - name: Download Linux doc artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: doc-Linux
+          path: doc-Linux
+      - run: rm -rf doc-Windows
+      - name: Download Windows doc artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: doc-Windows
+          path: doc-Windows
       - name: Commit files
         run: |
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"

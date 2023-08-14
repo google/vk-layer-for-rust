@@ -30,7 +30,7 @@ from vk_xml_util import (
     VkXmlParam,
     opaque_type_map,
     VulkanAliases,
-    write_license,
+    write_preamble,
 )
 from dataclasses import dataclass, field
 
@@ -693,7 +693,7 @@ class GlobalSimpleInterceptGenerator(OutputGenerator):
     def beginFile(self, gen_opts):
         super().beginFile(gen_opts)
 
-        write_license(self.outFile)
+        write_preamble(self.outFile)
         self.newline()
 
         self.outFile.write("// This file is generated from the Vulkan XML API registry.\n")

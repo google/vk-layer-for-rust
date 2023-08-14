@@ -17,7 +17,12 @@ cfg-if = "1.0.0"
 
 [features]
 default = []
-_test = ["dep:mockall"]
+unstable = []
+_test = ["dep:mockall", "unstable"]
 
 [dev-dependencies]
+env_logger = "0.10.0"
 vulkan-layer = { path = ".", default-features = false, features = ["_test"] }
+
+[build-dependencies]
+rustc_version = "0.4.0"

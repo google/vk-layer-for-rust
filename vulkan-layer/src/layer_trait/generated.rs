@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#![allow(missing_docs)]
 // This file is generated from the Vulkan XML API registry.
 #![allow(clippy::too_many_arguments)]
 use std::ffi::{c_int, c_void};
