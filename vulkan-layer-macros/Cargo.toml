@@ -13,4 +13,5 @@ syn = { version = "2.0.18", features = ["full"] }
 
 [dev-dependencies]
 ash = "0.37.2"
+once_cell = "1.18.0"
 vulkan-layer = { path = "../vulkan-layer" }

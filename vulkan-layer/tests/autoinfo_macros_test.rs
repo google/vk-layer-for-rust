@@ -13,17 +13,101 @@
 // limitations under the License.
 
 use ash::vk;
-use std::sync::Arc;
+use mockall::automock;
+use once_cell::sync::Lazy;
+use std::{marker::PhantomData, sync::Arc};
 use vulkan_layer::{
     auto_deviceinfo_impl, auto_globalhooksinfo_impl, auto_instanceinfo_impl,
-    test_utils::{MockGlobalHooksInfo, MockInstanceInfo, TestLayerWrapper},
-    DeviceHooks, Global, GlobalHooks, InstanceHooks, Layer, LayerResult, LayerVulkanCommand,
+    test_utils::LayerManifestExt, DeviceHooks, DeviceInfo, Global, GlobalHooks, GlobalHooksInfo,
+    InstanceHooks, InstanceInfo, Layer, LayerManifest, LayerResult, LayerVulkanCommand,
 };
+
+#[automock]
+pub trait GlobalInstanceProvider<T: Layer> {
+    fn instance() -> &'static Global<T>;
+}
+
+#[derive(Default)]
+struct MockGlobalHooks;
+
+#[auto_globalhooksinfo_impl]
+impl GlobalHooks for MockGlobalHooks {}
+
+#[derive(Default)]
+struct MockInstanceInfo;
+
+#[auto_instanceinfo_impl]
+impl InstanceHooks for MockInstanceInfo {}
+
+#[derive(Default)]
+struct MockDeviceInfo;
+
+#[auto_deviceinfo_impl]
+impl DeviceHooks for MockDeviceInfo {}
+
+#[derive(Default)]
+struct TestLayer<T, U, V>
+where
+    T: GlobalHooksInfo + Default + 'static,
+    U: InstanceInfo + Default + 'static,
+    V: DeviceInfo + Default + 'static,
+{
+    global_hooks: T,
+    _marker: PhantomData<fn(T, U, V)>,
+}
+
+impl<T, U, V> Layer for TestLayer<T, U, V>
+where
+    T: GlobalHooksInfo + Default + 'static,
+    U: InstanceInfo + Default + 'static,
+    V: DeviceInfo + Default + 'static,
+{
+    type GlobalHooksInfo = T;
+    type InstanceInfo = U;
+    type DeviceInfo = V;
+    type InstanceInfoContainer = U;
+    type DeviceInfoContainer = V;
+
+    fn global_instance() -> &'static Global<Self> {
+        MockGlobalInstanceProvider::<Self>::instance()
+    }
+
+    fn manifest() -> LayerManifest {
+        LayerManifest::test_default()
+    }
+
+    fn get_global_hooks_info(&self) -> &Self::GlobalHooksInfo {
+        &self.global_hooks
+    }
+
+    fn create_device_info(
+        &self,
+        _: vk::PhysicalDevice,
+        _: &vk::DeviceCreateInfo,
+        _: Option<&vk::AllocationCallbacks>,
+        _: Arc<ash::Device>,
+        _next_get_device_proc_addr: vk::PFN_vkGetDeviceProcAddr,
+    ) -> Self::DeviceInfoContainer {
+        Default::default()
+    }
+
+    fn create_instance_info(
+        &self,
+        _: &vk::InstanceCreateInfo,
+        _: Option<&vk::AllocationCallbacks>,
+        _: Arc<ash::Instance>,
+        _next_get_instance_proc_addr: vk::PFN_vkGetInstanceProcAddr,
+    ) -> Self::InstanceInfoContainer {
+        Default::default()
+    }
+}
 
 #[test]
 fn test_auto_globalhooksinfo_should_intercept_hooked_proc() {
-    type MockLayer = TestLayerWrapper<0, TestGlobalHooks>;
-    let _ctx = MockLayer::context();
+    type MockLayer = TestLayer<TestGlobalHooks, MockInstanceInfo, MockDeviceInfo>;
+    static GLOBAL: Lazy<Global<MockLayer>> = Lazy::new(Default::default);
+    let ctx = MockGlobalInstanceProvider::instance_context();
+    ctx.expect().return_const(&*GLOBAL);
     #[derive(Default)]
     struct TestGlobalHooks;
     #[auto_globalhooksinfo_impl]
@@ -37,7 +121,7 @@ fn test_auto_globalhooksinfo_should_intercept_hooked_proc() {
             unimplemented!()
         }
     }
-    let hooked_commands = &Global::<Arc<MockLayer>>::instance()
+    let hooked_commands = &Global::<MockLayer>::instance()
         .layer_info
         .hooked_commands()
         .collect::<Vec<_>>();
@@ -46,9 +130,10 @@ fn test_auto_globalhooksinfo_should_intercept_hooked_proc() {
 
 #[test]
 fn test_auto_instanceinfo_should_intercept_hooked_proc() {
-    const SLOT: usize = 0;
-    type MockLayer = TestLayerWrapper<SLOT, MockGlobalHooksInfo<SLOT>, TestInstanceInfo>;
-    let _ctx = MockLayer::context();
+    type MockLayer = TestLayer<MockGlobalHooks, TestInstanceInfo, MockDeviceInfo>;
+    static GLOBAL: Lazy<Global<MockLayer>> = Lazy::new(Default::default);
+    let ctx = MockGlobalInstanceProvider::instance_context();
+    ctx.expect().return_const(&*GLOBAL);
     #[derive(Default)]
     struct TestInstanceInfo;
     #[auto_instanceinfo_impl]
@@ -61,7 +146,7 @@ fn test_auto_instanceinfo_should_intercept_hooked_proc() {
             unimplemented!()
         }
     }
-    let hooked_commands = &Global::<Arc<MockLayer>>::instance()
+    let hooked_commands = &Global::<MockLayer>::instance()
         .layer_info
         .hooked_commands()
         .collect::<Vec<_>>();
@@ -70,10 +155,10 @@ fn test_auto_instanceinfo_should_intercept_hooked_proc() {
 
 #[test]
 fn test_auto_deviceinfo_should_intercept_hooked_proc() {
-    const SLOT: usize = 0;
-    type MockLayer =
-        TestLayerWrapper<SLOT, MockGlobalHooksInfo<SLOT>, MockInstanceInfo<SLOT>, TestDeviceInfo>;
-    let _ctx = MockLayer::context();
+    type MockLayer = TestLayer<MockGlobalHooks, MockInstanceInfo, TestDeviceInfo>;
+    static GLOBAL: Lazy<Global<MockLayer>> = Lazy::new(Default::default);
+    let ctx = MockGlobalInstanceProvider::instance_context();
+    ctx.expect().return_const(&*GLOBAL);
     #[derive(Default)]
     struct TestDeviceInfo;
     #[auto_deviceinfo_impl]
@@ -86,7 +171,7 @@ fn test_auto_deviceinfo_should_intercept_hooked_proc() {
             unimplemented!()
         }
     }
-    let hooked_commands = &Global::<Arc<MockLayer>>::instance()
+    let hooked_commands = &Global::<MockLayer>::instance()
         .layer_info
         .hooked_commands()
         .collect::<Vec<_>>();
