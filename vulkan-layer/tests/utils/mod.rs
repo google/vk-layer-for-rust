@@ -28,7 +28,7 @@ use std::{
 use vulkan_layer::{
     fill_vk_out_array,
     test_utils::{
-        ArcDel, Del, TestLayerWrapper, VkLayerDeviceCreateInfo, VkLayerDeviceLink, VkLayerFunction,
+        ArcDel, Del, VkLayerDeviceCreateInfo, VkLayerDeviceLink, VkLayerFunction,
         VkLayerInstanceCreateInfo,
     },
     ApiVersion, Extension, ExtensionProperties, Feature, Global, IsCommandEnabled, Layer,
@@ -809,8 +809,6 @@ unsafe extern "system" fn get_instance_proc_addr(
         }
     }
 }
-
-pub type MockLayer = TestLayerWrapper;
 
 pub fn create_entry<T: Layer>() -> ash::Entry {
     unsafe {

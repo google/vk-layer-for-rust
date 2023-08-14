@@ -16,9 +16,7 @@ use ash::vk::{self, Handle};
 use bytemuck::cast_slice;
 use log::{error, warn};
 use num_traits::Zero;
-use once_cell::sync::OnceCell;
 use std::{
-    any::{Any, TypeId},
     borrow::Borrow,
     collections::{BTreeMap, BTreeSet},
     ffi::{c_char, c_void, CStr, CString},
@@ -258,21 +256,7 @@ pub struct Global<T: Layer> {
 
 impl<T: Layer> Global<T> {
     pub fn instance() -> &'static Self {
-        static INSTANCES: OnceCell<Mutex<BTreeMap<TypeId, &(dyn Any + Sync + 'static)>>> =
-            OnceCell::new();
-        let instances = INSTANCES.get_or_init(|| Mutex::new(Default::default()));
-        let type_id = TypeId::of::<T>();
-        let mut instances = instances.lock().unwrap();
-        if let Some(instance) = instances.get(&type_id) {
-            let instance: &'static dyn Any = *instance;
-            return instance
-                .downcast_ref::<Global<T>>()
-                .expect("The instance map should always stores the Global<T> object.");
-        }
-        let instance: Box<Global<T>> = Box::default();
-        let instance = Box::leak(instance);
-        instances.insert(TypeId::of::<T>(), instance);
-        instance
+        T::global_instance()
     }
 
     fn get_instance_info(
@@ -1173,15 +1157,16 @@ impl<T: Layer> Default for Global<T> {
 
 #[cfg(test)]
 mod test {
-    use crate::test_utils::TestLayerWrapper;
-    use std::{cmp::Ordering, sync::Arc};
+    use crate::test_utils::{TestGlobal, TestLayer};
+    use std::cmp::Ordering;
 
     use super::*;
 
     #[test]
     fn commands_must_be_sorted() {
-        let _ctx = TestLayerWrapper::<0>::context();
-        type StubLayer = Arc<TestLayerWrapper>;
+        static TEST_GLOBAL: TestGlobal = TestGlobal::builder().build();
+        let _ctx = TEST_GLOBAL.create_context();
+        type StubLayer = TestLayer;
         #[inline]
         fn check<T: PartialOrd>(last: &mut T) -> impl FnMut(T) -> bool + '_ {
             move |curr| {

@@ -101,6 +101,7 @@ pub fn auto_deviceinfo_impl(_: TokenStream, item: TokenStream) -> TokenStream {
 /// ```
 /// # use std::sync::Arc;
 /// # use vulkan_layer::{InstanceHooks, DeviceHooks, auto_instanceinfo_impl, auto_deviceinfo_impl, declare_introspection_queries, auto_globalhooksinfo_impl, GlobalHooks, Layer, LayerManifest, Global};
+/// # use once_cell::sync::Lazy;
 /// # use ash::{vk, self};
 /// #
 /// struct InstanceInfo;
@@ -127,6 +128,11 @@ pub fn auto_deviceinfo_impl(_: TokenStream, item: TokenStream) -> TokenStream {
 /// #     type InstanceInfoContainer = InstanceInfo;
 /// #     type DeviceInfoContainer = DeviceInfo;
 /// #     
+/// #     fn global_instance() -> &'static Global<Self> {
+/// #         static GLOBAL: Lazy<Global<MyLayer>> = Lazy::new(Default::default);
+/// #         &*GLOBAL
+/// #     }
+/// #
 /// #     fn manifest() -> LayerManifest {
 /// #         Default::default()
 /// #     }

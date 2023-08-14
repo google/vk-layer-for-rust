@@ -27,7 +27,9 @@ use thiserror::Error;
 pub mod generated;
 pub use generated::*;
 
-use crate::{DeviceHooks, InstanceHooks, LayerResult, LayerVulkanCommand, VkLayerInstanceLink};
+use crate::{
+    DeviceHooks, Global, InstanceHooks, LayerResult, LayerVulkanCommand, VkLayerInstanceLink,
+};
 
 #[derive(Error, Debug)]
 pub enum TryFromExtensionError {
@@ -195,6 +197,8 @@ pub trait Layer: Sync + Default + 'static {
     type DeviceInfoContainer: Borrow<Self::DeviceInfo> + Sync + Send;
 
     fn manifest() -> LayerManifest;
+
+    fn global_instance() -> &'static Global<Self>;
 
     fn get_global_hooks_info(&self) -> &Self::GlobalHooksInfo;
 

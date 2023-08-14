@@ -14,6 +14,7 @@
 
 use ash::vk;
 use mockall::predicate::{always, eq};
+use once_cell::sync::Lazy;
 use std::{
     ffi::{CStr, CString},
     iter::zip,
@@ -25,19 +26,19 @@ use std::{
 use vulkan_layer::{
     auto_deviceinfo_impl, auto_globalhooksinfo_impl, auto_instanceinfo_impl,
     test_utils::{
-        LayerManifestExt, TestLayerWrapper, VkLayerDeviceCreateInfo, VkLayerDeviceLink,
-        VkLayerFunction, VkLayerInstanceCreateInfo,
+        LayerManifestExt, MockTestLayer, Tag, TestGlobal, TestLayer, VkLayerDeviceCreateInfo,
+        VkLayerDeviceLink, VkLayerFunction, VkLayerInstanceCreateInfo,
     },
-    ApiVersion, DeviceHooks, Extension, ExtensionProperties, Global, GlobalHooks, InstanceHooks,
-    InstanceInfo, Layer, LayerManifest, LayerResult, LayerVulkanCommand, VkLayerInstanceLink,
-    VulkanBaseInStructChain,
+    ApiVersion, DeviceHooks, DeviceInfo, Extension, ExtensionProperties, Global, GlobalHooks,
+    InstanceHooks, InstanceInfo, Layer, LayerManifest, LayerResult, LayerVulkanCommand,
+    VkLayerInstanceLink, VulkanBaseInStructChain,
 };
 
 pub mod utils;
 
 use utils::{
     create_entry, DeviceContext, DeviceData, FromVulkanHandle, InstanceContext,
-    InstanceCreateInfoExt, InstanceData, Layers, MockLayer,
+    InstanceCreateInfoExt, InstanceData, Layers,
 };
 
 use crate::utils::ArcDelInstanceContextExt;
@@ -48,8 +49,10 @@ mod get_instance_proc_addr {
         use super::*;
         #[test]
         fn test_should_return_fp_when_called_with_get_instance_proc_addr_name() {
-            let _ctx = MockLayer::context();
-            let entry = create_entry::<Arc<MockLayer>>();
+            static TEST_GLOBAL: TestGlobal = TestGlobal::builder().build();
+            let _ctx = TEST_GLOBAL.create_context();
+
+            let entry = create_entry::<TestLayer>();
             let get_instance_proc_addr_name = b"vkGetInstanceProcAddr\0".as_ptr() as *const i8;
             let get_instance_proc_addr = unsafe {
                 entry.get_instance_proc_addr(vk::Instance::null(), get_instance_proc_addr_name)
@@ -63,10 +66,11 @@ mod get_instance_proc_addr {
 
         #[test]
         fn test_should_return_fp_when_called_with_global_command_name() {
-            let _ctx = MockLayer::context();
-            let entry = create_entry::<Arc<MockLayer>>();
+            static TEST_GLOBAL: TestGlobal = TestGlobal::builder().build();
+            let _ctx = TEST_GLOBAL.create_context();
 
-            let layer_name = CString::new(Arc::<MockLayer>::manifest().name).unwrap();
+            let entry = create_entry::<TestLayer>();
+            let layer_name = CString::new(TestLayer::<Tag<0>>::manifest().name).unwrap();
             entry
                 .enumerate_instance_extension_properties(Some(&layer_name))
                 .unwrap();
@@ -83,28 +87,40 @@ mod get_instance_proc_addr {
 
         #[test]
         fn test_should_return_null_when_called_with_core_instance_dispatchable_command() {
-            let _ctx1 = TestLayerWrapper::<0>::context();
-            let entry = create_entry::<Arc<TestLayerWrapper<0>>>();
-            assert!(unsafe {
-                entry.get_instance_proc_addr(
-                    vk::Instance::null(),
-                    b"vkDestroyInstance\0".as_ptr() as *const i8,
-                )
+            {
+                static TEST_GLOBAL: TestGlobal = TestGlobal::builder().build();
+                let _ctx = TEST_GLOBAL.create_context();
+                let entry = create_entry::<TestLayer>();
+                assert!(unsafe {
+                    entry.get_instance_proc_addr(
+                        vk::Instance::null(),
+                        b"vkDestroyInstance\0".as_ptr() as *const i8,
+                    )
+                }
+                .is_none());
             }
-            .is_none());
 
-            let ctx2 = TestLayerWrapper::<1>::context();
-            ctx2.set_hooked_instance_commands(&[
-                LayerVulkanCommand::GetPhysicalDeviceSparseImageFormatProperties2,
-            ]);
-            let entry = create_entry::<Arc<TestLayerWrapper<1>>>();
-            assert!(unsafe {
-                entry.get_instance_proc_addr(
-                    vk::Instance::null(),
-                    b"vkGetPhysicalDeviceSparseImageFormatProperties2\0".as_ptr() as *const i8,
-                )
+            {
+                static TEST_GLOBAL: TestGlobal = TestGlobal::builder()
+                    .set_layer_mock_builder(|| {
+                        let mut mock = MockTestLayer::default();
+                        mock.expect_hooked_instance_commands().return_const(vec![
+                            LayerVulkanCommand::GetPhysicalDeviceSparseImageFormatProperties2,
+                        ]);
+                        mock.set_default_expections();
+                        mock
+                    })
+                    .build();
+                let _ctx = TEST_GLOBAL.create_context();
+                let entry = create_entry::<TestLayer>();
+                assert!(unsafe {
+                    entry.get_instance_proc_addr(
+                        vk::Instance::null(),
+                        b"vkGetPhysicalDeviceSparseImageFormatProperties2\0".as_ptr() as *const i8,
+                    )
+                }
+                .is_none());
             }
-            .is_none());
         }
 
         #[test]
@@ -118,92 +134,121 @@ mod get_instance_proc_addr {
 
         #[test]
         fn test_should_return_null_when_called_with_available_device_extension_commands() {
-            let _ctx1 = TestLayerWrapper::<0>::context();
-            let entry = create_entry::<Arc<TestLayerWrapper<0>>>();
-            assert!(unsafe {
-                entry.get_instance_proc_addr(
-                    vk::Instance::null(),
-                    b"vkDestroySwapchainKHR\0".as_ptr() as *const i8,
-                )
+            {
+                static TEST_GLOBAL: TestGlobal = TestGlobal::builder().build();
+                let _ctx = TEST_GLOBAL.create_context();
+                let entry = create_entry::<TestLayer>();
+                assert!(unsafe {
+                    entry.get_instance_proc_addr(
+                        vk::Instance::null(),
+                        b"vkDestroySwapchainKHR\0".as_ptr() as *const i8,
+                    )
+                }
+                .is_none());
             }
-            .is_none());
 
-            let mut layer_manifest = LayerManifest::test_default();
-            layer_manifest.device_extensions = &[ExtensionProperties {
-                name: Extension::KHRSwapchain,
-                spec_version: 1,
-            }];
-            let ctx2 = TestLayerWrapper::<1>::context();
-            ctx2.set_layer_manifest(layer_manifest);
-            let entry = create_entry::<Arc<TestLayerWrapper<1>>>();
-            assert!(unsafe {
-                entry.get_instance_proc_addr(
-                    vk::Instance::null(),
-                    b"vkDestroySwapchainKHR\0".as_ptr() as *const i8,
-                )
+            {
+                static TEST_GLOBAL: TestGlobal = TestGlobal::builder()
+                    .set_layer_mock_builder(|| {
+                        let mut mock = MockTestLayer::default();
+                        mock.expect_manifest().return_const({
+                            let mut layer_manifest = LayerManifest::test_default();
+                            layer_manifest.device_extensions = &[ExtensionProperties {
+                                name: Extension::KHRSwapchain,
+                                spec_version: 1,
+                            }];
+                            layer_manifest
+                        });
+                        mock.set_default_expections();
+                        mock
+                    })
+                    .build();
+                let _ctx = TEST_GLOBAL.create_context();
+                let entry = create_entry::<TestLayer>();
+                assert!(unsafe {
+                    entry.get_instance_proc_addr(
+                        vk::Instance::null(),
+                        b"vkDestroySwapchainKHR\0".as_ptr() as *const i8,
+                    )
+                }
+                .is_none());
             }
-            .is_none());
         }
     }
 
     mod valid_instance {
-
-        use ash::vk::ApplicationInfo;
-        use vulkan_layer::test_utils::TestLayerWrapper;
-
         use super::*;
 
         #[test]
         fn test_should_return_null_for_global_commands() {
-            let _ctx1 = TestLayerWrapper::<0>::context();
-            let ctx =
-                vk::InstanceCreateInfo::builder().default_instance::<(Arc<TestLayerWrapper<0>>,)>();
+            {
+                static TEST_GLOBAL: TestGlobal = TestGlobal::builder().build();
+                let _ctx = TEST_GLOBAL.create_context();
+                let ctx = vk::InstanceCreateInfo::builder().default_instance::<(TestLayer,)>();
 
-            let InstanceContext {
-                entry, instance, ..
-            } = ctx.as_ref();
-            let global_commands = [
-                "vkEnumerateInstanceVersion",
-                "vkEnumerateInstanceExtensionProperties",
-                "vkEnumerateInstanceLayerProperties",
-                "vkCreateInstance",
-            ];
-            for global_command in &global_commands {
-                let global_command = CString::new(global_command.to_owned()).unwrap();
-                let proc_addr = unsafe {
-                    entry.get_instance_proc_addr(instance.handle(), global_command.as_ptr())
-                };
-                assert!(
-                    proc_addr.is_none(),
-                    "{} should be null",
-                    global_command.to_string_lossy()
-                );
+                let InstanceContext {
+                    entry, instance, ..
+                } = ctx.as_ref();
+                let global_commands = [
+                    "vkEnumerateInstanceVersion",
+                    "vkEnumerateInstanceExtensionProperties",
+                    "vkEnumerateInstanceLayerProperties",
+                    "vkCreateInstance",
+                ];
+                for global_command in &global_commands {
+                    let global_command = CString::new(global_command.to_owned()).unwrap();
+                    let proc_addr = unsafe {
+                        entry.get_instance_proc_addr(instance.handle(), global_command.as_ptr())
+                    };
+                    assert!(
+                        proc_addr.is_none(),
+                        "{} should be null",
+                        global_command.to_string_lossy()
+                    );
+                }
             }
 
-            let ctx2 = TestLayerWrapper::<1>::context();
-            ctx2.set_hooked_global_commands(&[LayerVulkanCommand::CreateInstance]);
-            Global::<Arc<TestLayerWrapper<1>>>::instance()
-                .layer_info
-                .get_global_hooks()
-                .expect_create_instance()
-                .once()
-                .return_const(LayerResult::Unhandled);
-            let ctx =
-                vk::InstanceCreateInfo::builder().default_instance::<(Arc<TestLayerWrapper<1>>,)>();
-            let create_instance = unsafe {
-                ctx.entry.get_instance_proc_addr(
-                    instance.handle(),
-                    b"vkCreateInstance\0".as_ptr() as *const i8,
-                )
-            };
-            assert!(create_instance.is_none());
+            // Test if vkCreateInstance is NULL even if we intercept vkCreateInstance.
+            {
+                static TEST_GLOBAL: TestGlobal = TestGlobal::builder()
+                    .set_layer_mock_builder(|| {
+                        let mut mock = MockTestLayer::default();
+                        mock.expect_hooked_global_commands()
+                            .return_const(vec![LayerVulkanCommand::CreateInstance]);
+                        mock.set_default_expections();
+                        mock
+                    })
+                    .set_layer_global_builder(|| {
+                        let global: Global<TestLayer> = Default::default();
+                        global
+                            .layer_info
+                            .get_global_hooks()
+                            .expect_create_instance()
+                            .once()
+                            .return_const(LayerResult::Unhandled);
+                        global
+                    })
+                    .build();
+                let _ctx = TEST_GLOBAL.create_context();
+                let ctx = vk::InstanceCreateInfo::builder().default_instance::<(TestLayer,)>();
+
+                let InstanceContext { instance, .. } = ctx.as_ref();
+                let create_instance = unsafe {
+                    ctx.entry.get_instance_proc_addr(
+                        instance.handle(),
+                        b"vkCreateInstance\0".as_ptr() as *const i8,
+                    )
+                };
+                assert!(create_instance.is_none());
+            }
         }
 
         #[test]
         #[cfg_attr(miri, ignore)]
         fn test_should_return_fp_for_get_instance_proc_addr() {
-            let _ctx = MockLayer::context();
-            let ctx = vk::InstanceCreateInfo::builder().default_instance::<(Arc<MockLayer>,)>();
+            static TEST_GLOBAL: TestGlobal = TestGlobal::builder().build();
+            let _ctx = TEST_GLOBAL.create_context();
+            let ctx = vk::InstanceCreateInfo::builder().default_instance::<(TestLayer,)>();
             let InstanceContext {
                 entry, instance, ..
             } = ctx.as_ref();
@@ -215,15 +260,16 @@ mod get_instance_proc_addr {
             let get_instance_proc_addr: vk::PFN_vkGetInstanceProcAddr =
                 unsafe { std::mem::transmute(get_instance_proc_addr) };
             assert_eq!(
-                get_instance_proc_addr as usize,
-                entry.static_fn().get_instance_proc_addr as usize
+                get_instance_proc_addr,
+                entry.static_fn().get_instance_proc_addr
             );
         }
 
         #[test]
         fn test_should_return_fp_for_core_dispatchable_command() {
-            let _ctx = MockLayer::context();
-            let ctx = vk::InstanceCreateInfo::builder().default_instance::<(Arc<MockLayer>,)>();
+            static TEST_GLOBAL: TestGlobal = TestGlobal::builder().build();
+            let _ctx = TEST_GLOBAL.create_context();
+            let ctx = vk::InstanceCreateInfo::builder().default_instance::<(TestLayer,)>();
             let InstanceContext {
                 entry, instance, ..
             } = ctx.as_ref();
@@ -234,17 +280,18 @@ mod get_instance_proc_addr {
                 )
             };
             assert!(destroy_instance.is_some());
-            // vkDestroyInstance will be called in with_instance after this function is
-            // returned.
+            // vkDestroyInstance will be called in the destructor of the instance context.
         }
 
         #[test]
         fn test_should_return_next_proc_addr_for_not_intercepted_command() {
-            let _ctx = MockLayer::context();
+            static TEST_GLOBAL: TestGlobal = TestGlobal::builder().build();
+            let _ctx = TEST_GLOBAL.create_context();
+
             let enabled_extensions = [vk::KhrSurfaceFn::name().as_ptr()];
             let ctx = vk::InstanceCreateInfo::builder()
                 .enabled_extension_names(&enabled_extensions)
-                .default_instance::<(Arc<MockLayer>,)>();
+                .default_instance::<(TestLayer,)>();
 
             let InstanceContext {
                 entry,
@@ -266,60 +313,77 @@ mod get_instance_proc_addr {
 
         #[test]
         fn test_should_return_fp_for_enabled_instance_extension_command() {
-            let _ctx = TestLayerWrapper::<0>::context();
-            let application_info = ApplicationInfo::builder().api_version(vk::API_VERSION_1_1);
-            let ctx = vk::InstanceCreateInfo::builder()
-                .application_info(&application_info)
-                .default_instance::<(Arc<TestLayerWrapper<0>>,)>();
+            {
+                static TEST_GLOBAL: TestGlobal = TestGlobal::builder().build();
+                let _ctx = TEST_GLOBAL.create_context();
 
-            let InstanceContext {
-                entry, instance, ..
-            } = ctx.as_ref();
-            let fp = unsafe {
-                entry.get_instance_proc_addr(
-                    instance.handle(),
-                    b"vkGetPhysicalDeviceSparseImageFormatProperties2\0".as_ptr() as *const i8,
-                )
-            };
-            assert!(fp.is_some());
+                let application_info =
+                    vk::ApplicationInfo::builder().api_version(vk::API_VERSION_1_1);
+                let ctx = vk::InstanceCreateInfo::builder()
+                    .application_info(&application_info)
+                    .default_instance::<(TestLayer,)>();
 
-            let enabled_extensions = [vk::KhrSurfaceFn::name().as_ptr()];
-            let ctx = TestLayerWrapper::<1>::context();
-            ctx.set_hooked_instance_commands(&[LayerVulkanCommand::DestroySurfaceKhr]);
-            let ctx = vk::InstanceCreateInfo::builder()
-                .enabled_extension_names(&enabled_extensions)
-                .default_instance::<(Arc<TestLayerWrapper<1>>,)>();
-            let InstanceContext {
-                entry, instance, ..
-            } = ctx.as_ref();
-            let destroy_surface = unsafe {
-                entry.get_instance_proc_addr(
-                    instance.handle(),
-                    b"vkDestroySurfaceKHR\0".as_ptr() as *const i8,
-                )
-            };
-            let destroy_surface: vk::PFN_vkDestroySurfaceKHR =
-                unsafe { std::mem::transmute(destroy_surface.unwrap()) };
-            let instance_hooks_mock = &Global::<Arc<TestLayerWrapper<1>>>::instance()
-                .layer_info
-                .get_instance_info(instance.handle())
-                .unwrap()
-                .mock_hooks;
-            instance_hooks_mock
-                .lock()
-                .unwrap()
-                .expect_destroy_surface_khr()
-                .times(1)
-                .return_const(LayerResult::Unhandled);
-            unsafe { destroy_surface(instance.handle(), vk::SurfaceKHR::null(), null()) };
+                let InstanceContext {
+                    entry, instance, ..
+                } = ctx.as_ref();
+                let fp = unsafe {
+                    entry.get_instance_proc_addr(
+                        instance.handle(),
+                        b"vkGetPhysicalDeviceSparseImageFormatProperties2\0".as_ptr() as *const i8,
+                    )
+                };
+                assert!(fp.is_some());
+            }
+
+            {
+                static TEST_GLOBAL: TestGlobal = TestGlobal::builder()
+                    .set_layer_mock_builder(|| {
+                        let mut mock = MockTestLayer::default();
+                        mock.expect_hooked_instance_commands()
+                            .return_const(vec![LayerVulkanCommand::DestroySurfaceKhr]);
+                        mock.set_default_expections();
+                        mock
+                    })
+                    .build();
+                let _ctx = TEST_GLOBAL.create_context();
+
+                let enabled_extensions = [vk::KhrSurfaceFn::name().as_ptr()];
+                let ctx = vk::InstanceCreateInfo::builder()
+                    .enabled_extension_names(&enabled_extensions)
+                    .default_instance::<(TestLayer,)>();
+                let InstanceContext {
+                    entry, instance, ..
+                } = ctx.as_ref();
+                let destroy_surface = unsafe {
+                    entry.get_instance_proc_addr(
+                        instance.handle(),
+                        b"vkDestroySurfaceKHR\0".as_ptr() as *const i8,
+                    )
+                };
+                let destroy_surface: vk::PFN_vkDestroySurfaceKHR =
+                    unsafe { std::mem::transmute(destroy_surface.unwrap()) };
+                let instance_hooks_mock = &Global::<TestLayer>::instance()
+                    .layer_info
+                    .get_instance_info(instance.handle())
+                    .unwrap()
+                    .mock_hooks;
+                instance_hooks_mock
+                    .lock()
+                    .unwrap()
+                    .expect_destroy_surface_khr()
+                    .times(1)
+                    .return_const(LayerResult::Unhandled);
+                unsafe { destroy_surface(instance.handle(), vk::SurfaceKHR::null(), null()) };
+            }
             // TODO: when we allow customize instance layer extensions, also test with the extension
             // provided by the layer
         }
 
         #[test]
         fn test_if_extension_is_not_enabled_null_should_be_returned_for_not_hooked_proc() {
-            let _ctx = MockLayer::context();
-            let ctx = vk::InstanceCreateInfo::builder().default_instance::<(Arc<MockLayer>,)>();
+            static TEST_GLOBAL: TestGlobal = TestGlobal::builder().build();
+            let _ctx = TEST_GLOBAL.create_context();
+            let ctx = vk::InstanceCreateInfo::builder().default_instance::<(TestLayer,)>();
             let InstanceContext {
                 entry, instance, ..
             } = ctx.as_ref();
@@ -341,12 +405,19 @@ mod get_instance_proc_addr {
 
         #[test]
         fn test_if_extension_is_not_enabled_null_should_be_returned_for_hooked_proc() {
-            let ctx = MockLayer::context();
-            ctx.set_hooked_instance_commands(&[
-                LayerVulkanCommand::DestroySurfaceKhr,
-                LayerVulkanCommand::GetPhysicalDeviceSparseImageFormatProperties2,
-            ]);
-            let ctx = vk::InstanceCreateInfo::builder().default_instance::<(Arc<MockLayer>,)>();
+            static TEST_GLOBAL: TestGlobal = TestGlobal::builder()
+                .set_layer_mock_builder(|| {
+                    let mut mock = MockTestLayer::default();
+                    mock.expect_hooked_instance_commands().return_const(vec![
+                        LayerVulkanCommand::DestroySurfaceKhr,
+                        LayerVulkanCommand::GetPhysicalDeviceSparseImageFormatProperties2,
+                    ]);
+                    mock.set_default_expections();
+                    mock
+                })
+                .build();
+            let _ctx = TEST_GLOBAL.create_context();
+            let ctx = vk::InstanceCreateInfo::builder().default_instance::<(TestLayer,)>();
             let InstanceContext {
                 entry, instance, ..
             } = ctx.as_ref();
@@ -368,11 +439,12 @@ mod get_instance_proc_addr {
 
         #[test]
         fn test_commands_that_should_always_be_intercepted() {
-            let _ctx = MockLayer::context();
-            let app_info = ApplicationInfo::builder().api_version(vk::API_VERSION_1_3);
+            static TEST_GLOBAL: TestGlobal = TestGlobal::builder().build();
+            let _ctx = TEST_GLOBAL.create_context();
+            let app_info = vk::ApplicationInfo::builder().api_version(vk::API_VERSION_1_3);
             let ctx = vk::InstanceCreateInfo::builder()
                 .application_info(&app_info)
-                .default_instance::<(Arc<MockLayer>,)>();
+                .default_instance::<(TestLayer,)>();
             let InstanceContext {
                 entry,
                 instance,
@@ -419,49 +491,66 @@ mod get_instance_proc_addr {
 
         #[test]
         fn test_should_return_fp_with_available_device_dispatch_command() {
-            let _ctx1 = TestLayerWrapper::<0>::context();
-            let ctx =
-                vk::InstanceCreateInfo::builder().default_instance::<(Arc<TestLayerWrapper<0>>,)>();
-            let InstanceContext {
-                instance, entry, ..
-            } = ctx.as_ref();
-            let instance_data = unsafe { InstanceData::from_handle(instance.handle()) };
-            instance_data.set_available_device_extensions(&[Extension::KHRSwapchain]);
-            let destroy_swapchain = unsafe {
-                entry.get_instance_proc_addr(
-                    instance.handle(),
-                    b"vkDestroySwapchainKHR\0".as_ptr() as *const i8,
-                )
-            };
-            assert!(destroy_swapchain.is_some());
+            {
+                static TEST_GLOBAL: TestGlobal = TestGlobal::builder().build();
+                let _ctx = TEST_GLOBAL.create_context();
+                let ctx = vk::InstanceCreateInfo::builder().default_instance::<(TestLayer,)>();
+                let InstanceContext {
+                    instance, entry, ..
+                } = ctx.as_ref();
+                let instance_data = unsafe { InstanceData::from_handle(instance.handle()) };
+                instance_data.set_available_device_extensions(&[Extension::KHRSwapchain]);
+                let destroy_swapchain = unsafe {
+                    entry.get_instance_proc_addr(
+                        instance.handle(),
+                        b"vkDestroySwapchainKHR\0".as_ptr() as *const i8,
+                    )
+                };
+                assert!(destroy_swapchain.is_some());
+            }
 
-            let ctx2 = TestLayerWrapper::<1>::context();
-            ctx2.set_hooked_device_commands(&[LayerVulkanCommand::DestroySwapchainKhr]);
-            let ctx =
-                vk::InstanceCreateInfo::builder().default_instance::<(Arc<TestLayerWrapper<1>>,)>();
-            let InstanceContext {
-                instance, entry, ..
-            } = ctx.as_ref();
-            let instance_data = unsafe { InstanceData::from_handle(instance.handle()) };
-            instance_data.set_available_device_extensions(&[Extension::KHRSwapchain]);
-            let destroy_swapchain = unsafe {
-                entry.get_instance_proc_addr(
-                    instance.handle(),
-                    b"vkDestroySwapchainKHR\0".as_ptr() as *const i8,
-                )
-            };
-            assert!(destroy_swapchain.is_some());
+            {
+                static TEST_GLOBAL: TestGlobal = TestGlobal::builder()
+                    .set_layer_mock_builder(|| {
+                        let mut mock = MockTestLayer::default();
+                        mock.expect_hooked_device_commands()
+                            .return_const(vec![LayerVulkanCommand::DestroySwapchainKhr]);
+                        mock.set_default_expections();
+                        mock
+                    })
+                    .build();
+                let _ctx = TEST_GLOBAL.create_context();
+                let ctx = vk::InstanceCreateInfo::builder().default_instance::<(TestLayer,)>();
+                let InstanceContext {
+                    instance, entry, ..
+                } = ctx.as_ref();
+                let instance_data = unsafe { InstanceData::from_handle(instance.handle()) };
+                instance_data.set_available_device_extensions(&[Extension::KHRSwapchain]);
+                let destroy_swapchain = unsafe {
+                    entry.get_instance_proc_addr(
+                        instance.handle(),
+                        b"vkDestroySwapchainKHR\0".as_ptr() as *const i8,
+                    )
+                };
+                assert!(destroy_swapchain.is_some());
+            }
         }
 
         mod icd_unavaiilable_device_dispatch_command {
-            use vulkan_layer::DeviceInfo;
-
             use super::*;
             #[test]
             fn test_should_return_null_if_layer_also_doesnt_implement_the_extension() {
-                let ctx = MockLayer::context();
-                ctx.set_hooked_device_commands(&[LayerVulkanCommand::DestroySwapchainKhr]);
-                let ctx = vk::InstanceCreateInfo::builder().default_instance::<(Arc<MockLayer>,)>();
+                static TEST_GLOBAL: TestGlobal = TestGlobal::builder()
+                    .set_layer_mock_builder(|| {
+                        let mut mock = MockTestLayer::default();
+                        mock.expect_hooked_device_commands()
+                            .return_const(vec![LayerVulkanCommand::DestroySwapchainKhr]);
+                        mock.set_default_expections();
+                        mock
+                    })
+                    .build();
+                let _ctx = TEST_GLOBAL.create_context();
+                let ctx = vk::InstanceCreateInfo::builder().default_instance::<(TestLayer,)>();
                 let InstanceContext {
                     instance,
                     entry,
@@ -494,17 +583,27 @@ mod get_instance_proc_addr {
             fn test_should_return_fp_if_layer_implements_the_extension() {
                 let instance_extensions = [vk::KhrSurfaceFn::name().as_ptr()];
                 let device_extensions = [vk::KhrSwapchainFn::name().as_ptr()];
-                let ctx = MockLayer::context();
-                let mut layer_manifest = LayerManifest::test_default();
-                layer_manifest.device_extensions = &[ExtensionProperties {
-                    name: Extension::KHRSwapchain,
-                    spec_version: 1,
-                }];
-                ctx.set_hooked_device_commands(&[LayerVulkanCommand::DestroySwapchainKhr])
-                    .set_layer_manifest(layer_manifest);
+                static TEST_GLOBAL: TestGlobal = TestGlobal::builder()
+                    .set_layer_mock_builder(|| {
+                        let mut mock = MockTestLayer::default();
+                        mock.expect_manifest().return_const({
+                            let mut layer_manifest = LayerManifest::test_default();
+                            layer_manifest.device_extensions = &[ExtensionProperties {
+                                name: Extension::KHRSwapchain,
+                                spec_version: 1,
+                            }];
+                            layer_manifest
+                        });
+                        mock.expect_hooked_device_commands()
+                            .return_const(vec![LayerVulkanCommand::DestroySwapchainKhr]);
+                        mock.set_default_expections();
+                        mock
+                    })
+                    .build();
+                let _ctx = TEST_GLOBAL.create_context();
                 let instance_ctx = vk::InstanceCreateInfo::builder()
                     .enabled_extension_names(&instance_extensions)
-                    .default_instance::<(Arc<MockLayer>,)>();
+                    .default_instance::<(TestLayer,)>();
                 let InstanceContext { instance, .. } = instance_ctx.as_ref();
                 unsafe { InstanceData::from_handle(instance.handle()) }
                     .set_available_device_extensions(&[]);
@@ -517,7 +616,7 @@ mod get_instance_proc_addr {
                     })
                     .unwrap();
                 let DeviceContext { device, .. } = device_ctx.as_ref();
-                let layer_device_info = Global::<Arc<MockLayer>>::instance()
+                let layer_device_info = Global::<TestLayer>::instance()
                     .layer_info
                     .get_device_info(device_ctx.device.handle())
                     .unwrap();
@@ -548,8 +647,9 @@ mod get_instance_proc_addr {
             }
             let test_command = test_command as unsafe extern "system" fn();
 
-            let _ctx = MockLayer::context();
-            let ctx = vk::InstanceCreateInfo::builder().default_instance::<(Arc<MockLayer>,)>();
+            static TEST_GLOBAL: TestGlobal = TestGlobal::builder().build();
+            let _ctx = TEST_GLOBAL.create_context();
+            let ctx = vk::InstanceCreateInfo::builder().default_instance::<(TestLayer,)>();
             let InstanceContext {
                 instance,
                 entry,
@@ -573,17 +673,22 @@ mod get_instance_proc_addr {
             let actual_new_command = unsafe {
                 entry.get_instance_proc_addr(instance.handle(), new_command_name_cstr.as_ptr())
             };
-            assert_eq!(
-                actual_new_command.map(|fp| fp as usize),
-                Some(test_command as usize)
-            );
+            assert_eq!(actual_new_command.unwrap(), test_command);
         }
 
         #[test]
         fn test_should_return_null_with_unsupported_device_commands() {
-            let ctx = MockLayer::context();
-            ctx.set_hooked_device_commands(&[LayerVulkanCommand::DestroySwapchainKhr]);
-            let ctx = vk::InstanceCreateInfo::builder().default_instance::<(Arc<MockLayer>,)>();
+            static TEST_GLOBAL: TestGlobal = TestGlobal::builder()
+                .set_layer_mock_builder(|| {
+                    let mut mock = MockTestLayer::default();
+                    mock.expect_hooked_device_commands()
+                        .return_const(vec![LayerVulkanCommand::DestroySwapchainKhr]);
+                    mock.set_default_expections();
+                    mock
+                })
+                .build();
+            let _ctx = TEST_GLOBAL.create_context();
+            let ctx = vk::InstanceCreateInfo::builder().default_instance::<(TestLayer,)>();
             let InstanceContext {
                 entry, instance, ..
             } = ctx.as_ref();
@@ -605,12 +710,29 @@ mod create_destroy_instance {
     #[test]
     #[cfg_attr(miri, ignore)]
     fn test_should_move_layer_instance_link_forward() {
-        let ctx1 = TestLayerWrapper::<0>::context();
-        ctx1.set_hooked_global_commands(&[LayerVulkanCommand::CreateInstance]);
-        let ctx2 = TestLayerWrapper::<1>::context();
-        ctx2.set_hooked_global_commands(&[LayerVulkanCommand::CreateInstance]);
+        static TEST_GLOBAL0: TestGlobal<Tag<0>> = TestGlobal::builder()
+            .set_layer_mock_builder(|| {
+                let mut mock = MockTestLayer::default();
+                mock.expect_hooked_global_commands()
+                    .return_const(vec![LayerVulkanCommand::CreateInstance]);
+                mock.set_default_expections();
+                mock
+            })
+            .build();
+        let _ctx = TEST_GLOBAL0.create_context();
+        static TEST_GLOBAL1: TestGlobal<Tag<1>> = TestGlobal::builder()
+            .set_layer_mock_builder(|| {
+                let mut mock = MockTestLayer::default();
+                mock.expect_hooked_global_commands()
+                    .return_const(vec![LayerVulkanCommand::CreateInstance]);
+                mock.set_default_expections();
+                mock
+            })
+            .build();
+        let _ctx = TEST_GLOBAL1.create_context();
+
         let icd_layer_link = <()>::head_instance_link();
-        let second_layer_link = <(Arc<TestLayerWrapper<1>>,)>::head_instance_link();
+        let second_layer_link = <(TestLayer<Tag<1>>,)>::head_instance_link();
 
         fn layer_instance_link_equal(
             lhs: &Option<&VkLayerInstanceLink>,
@@ -671,10 +793,8 @@ mod create_destroy_instance {
         }
 
         {
-            let layer1_info =
-                Arc::clone(&Global::<Arc<TestLayerWrapper<0>>>::instance().layer_info);
-            let layer2_info =
-                Arc::clone(&Global::<Arc<TestLayerWrapper<1>>>::instance().layer_info);
+            let layer1_info = &Global::<TestLayer<Tag<0>>>::instance().layer_info;
+            let layer2_info = &Global::<TestLayer<Tag<1>>>::instance().layer_info;
             {
                 let mut layer1_global_hooks = layer1_info.get_global_hooks();
                 layer1_global_hooks
@@ -696,7 +816,7 @@ mod create_destroy_instance {
             }
 
             let instance = vk::InstanceCreateInfo::builder()
-                .default_instance::<(Arc<TestLayerWrapper<0>>, Arc<TestLayerWrapper<1>>)>();
+                .default_instance::<(TestLayer<Tag<0>>, TestLayer<Tag<1>>)>();
             {
                 layer1_info.get_global_hooks().checkpoint();
                 layer2_info.get_global_hooks().checkpoint();
@@ -707,11 +827,12 @@ mod create_destroy_instance {
 
     #[test]
     fn test_create_instance_with_0_api_version() {
-        let _ctx = MockLayer::context();
+        static TEST_GLOBAL: TestGlobal = TestGlobal::builder().build();
+        let _ctx = TEST_GLOBAL.create_context();
         let app_info = vk::ApplicationInfo::builder().api_version(0);
         let ctx = vk::InstanceCreateInfo::builder()
             .application_info(&app_info)
-            .default_instance::<(Arc<MockLayer>,)>();
+            .default_instance::<(TestLayer,)>();
         let InstanceContext {
             entry, instance, ..
         } = ctx.as_ref();
@@ -726,11 +847,12 @@ mod create_destroy_instance {
 
     #[test]
     fn test_destroy_instance_with_null_handle() {
-        let _ctx = MockLayer::context();
+        static TEST_GLOBAL: TestGlobal = TestGlobal::builder().build();
+        let _ctx = TEST_GLOBAL.create_context();
         let app_info = vk::ApplicationInfo::builder().api_version(0);
         let ctx = vk::InstanceCreateInfo::builder()
             .application_info(&app_info)
-            .default_instance::<(Arc<MockLayer>,)>();
+            .default_instance::<(TestLayer,)>();
         let InstanceContext { instance, .. } = ctx.as_ref();
         let destroy_instance = instance.fp_v1_0().destroy_instance;
         unsafe { destroy_instance(vk::Instance::null(), null()) };
@@ -738,11 +860,12 @@ mod create_destroy_instance {
 
     #[test]
     fn test_destroy_instance_will_actually_destroy_underlying_instance_info() {
-        let _ctx = MockLayer::context();
+        static TEST_GLOBAL: TestGlobal = TestGlobal::builder().build();
+        let _ctx = TEST_GLOBAL.create_context();
         {
-            let ctx = vk::InstanceCreateInfo::builder().default_instance::<(Arc<MockLayer>,)>();
+            let ctx = vk::InstanceCreateInfo::builder().default_instance::<(TestLayer,)>();
             let InstanceContext { instance, .. } = ctx.as_ref();
-            let instance_data = Global::<Arc<MockLayer>>::instance()
+            let instance_data = Global::<TestLayer>::instance()
                 .layer_info
                 .get_instance_info(instance.handle())
                 .unwrap();
@@ -758,9 +881,10 @@ mod get_device_proc_addr {
     use super::*;
     #[test]
     fn test_should_return_null_for_global_commands() {
-        let _ctx = MockLayer::context();
+        static TEST_GLOBAL: TestGlobal = TestGlobal::builder().build();
+        let _ctx = TEST_GLOBAL.create_context();
         let ctx = vk::InstanceCreateInfo::builder()
-            .default_instance::<(Arc<MockLayer>,)>()
+            .default_instance::<(TestLayer,)>()
             .default_device()
             .unwrap();
 
@@ -793,14 +917,21 @@ mod get_device_proc_addr {
 
     #[test]
     fn test_should_return_null_for_instance_commands() {
-        let ctx = MockLayer::context();
-        ctx.set_hooked_instance_commands(&[
-            LayerVulkanCommand::GetPhysicalDeviceSparseImageFormatProperties2,
-        ]);
+        static TEST_GLOBAL: TestGlobal = TestGlobal::builder()
+            .set_layer_mock_builder(|| {
+                let mut mock = MockTestLayer::default();
+                mock.expect_hooked_instance_commands().return_const(vec![
+                    LayerVulkanCommand::GetPhysicalDeviceSparseImageFormatProperties2,
+                ]);
+                mock.set_default_expections();
+                mock
+            })
+            .build();
+        let _ctx = TEST_GLOBAL.create_context();
         let app_info = vk::ApplicationInfo::builder().api_version(vk::API_VERSION_1_2);
         let ctx = vk::InstanceCreateInfo::builder()
             .application_info(&app_info)
-            .default_instance::<(Arc<MockLayer>,)>()
+            .default_instance::<(TestLayer,)>()
             .default_device()
             .unwrap();
 
@@ -820,9 +951,17 @@ mod get_device_proc_addr {
 
     #[test]
     fn test_should_return_null_for_available_but_not_enabled_commands() {
-        let ctx = MockLayer::context();
-        ctx.set_hooked_device_commands(&[LayerVulkanCommand::DestroySwapchainKhr]);
-        let ctx = vk::InstanceCreateInfo::builder().default_instance::<(Arc<MockLayer>,)>();
+        static TEST_GLOBAL: TestGlobal = TestGlobal::builder()
+            .set_layer_mock_builder(|| {
+                let mut mock = MockTestLayer::default();
+                mock.expect_hooked_device_commands()
+                    .return_const(vec![LayerVulkanCommand::DestroySwapchainKhr]);
+                mock.set_default_expections();
+                mock
+            })
+            .build();
+        let _ctx = TEST_GLOBAL.create_context();
+        let ctx = vk::InstanceCreateInfo::builder().default_instance::<(TestLayer,)>();
         let InstanceContext {
             instance, entry, ..
         } = ctx.as_ref();
@@ -864,12 +1003,20 @@ mod get_device_proc_addr {
 
     #[test]
     fn test_should_return_fp_for_requested_core_version_device_commands() {
-        let ctx = MockLayer::context();
-        ctx.set_hooked_device_commands(&[LayerVulkanCommand::DestroySamplerYcbcrConversion]);
+        static TEST_GLOBAL: TestGlobal = TestGlobal::builder()
+            .set_layer_mock_builder(|| {
+                let mut mock = MockTestLayer::default();
+                mock.expect_hooked_device_commands()
+                    .return_const(vec![LayerVulkanCommand::DestroySamplerYcbcrConversion]);
+                mock.set_default_expections();
+                mock
+            })
+            .build();
+        let _ctx = TEST_GLOBAL.create_context();
         let app_info = vk::ApplicationInfo::builder().api_version(vk::API_VERSION_1_1);
         let ctx = vk::InstanceCreateInfo::builder()
             .application_info(&app_info)
-            .default_instance::<(Arc<MockLayer>,)>()
+            .default_instance::<(TestLayer,)>()
             .default_device()
             .unwrap();
         let DeviceContext {
@@ -885,7 +1032,7 @@ mod get_device_proc_addr {
         };
         let destroy_sampler_ycbcr_conversion: vk::PFN_vkDestroySamplerYcbcrConversion =
             unsafe { std::mem::transmute(destroy_sampler_ycbcr_conversion.unwrap()) };
-        let layer_device_info = Global::<Arc<MockLayer>>::instance()
+        let layer_device_info = Global::<TestLayer>::instance()
             .layer_info
             .get_device_info(device.handle())
             .unwrap();
@@ -909,13 +1056,22 @@ mod get_device_proc_addr {
 
     #[test]
     fn test_should_return_null_for_unrequested_core_version_device_commands() {
-        // For this test case, the specified `VkApplicationInfo::apiVersion` is low.
-        let ctx = MockLayer::context();
-        ctx.set_hooked_device_commands(&[LayerVulkanCommand::DestroySamplerYcbcrConversion]);
+        static TEST_GLOBAL: TestGlobal = TestGlobal::builder()
+            .set_layer_mock_builder(|| {
+                let mut mock = MockTestLayer::default();
+                mock.expect_hooked_device_commands()
+                    .return_const(vec![LayerVulkanCommand::DestroySamplerYcbcrConversion]);
+                mock.set_default_expections();
+                mock
+            })
+            .build();
+        let _ctx = TEST_GLOBAL.create_context();
+        // For this test case, we specify a low `VkApplicationInfo::apiVersion` where
+        // `vkDestroySamplerYcbcrConversion` isn't introduced.
         let app_info = vk::ApplicationInfo::builder().api_version(vk::API_VERSION_1_0);
         let ctx = vk::InstanceCreateInfo::builder()
             .application_info(&app_info)
-            .default_instance::<(Arc<MockLayer>,)>()
+            .default_instance::<(TestLayer,)>()
             .default_device()
             .unwrap();
         let DeviceContext {
@@ -934,15 +1090,23 @@ mod get_device_proc_addr {
 
     #[test]
     fn test_should_return_null_for_unsupported_core_version_device_commands() {
-        // For this test case, the specified `VkApplicationInfo::apiVersion` is high enough, but the
-        // `VkPhysicalDeviceProperties::apiVersion` is low.
-        // For this test case, the specified `VkApplicationInfo::apiVersion` is low.
-        let ctx = MockLayer::context();
-        ctx.set_hooked_device_commands(&[LayerVulkanCommand::DestroySamplerYcbcrConversion]);
+        // For this test case, the specified `VkApplicationInfo::apiVersion` is high enough where
+        // `vkDestroySamplerYcbcrConversion` is already introduced, but the
+        // `VkPhysicalDeviceProperties::apiVersion`, i.e. the underlying ICD Vulkan version, is low.
+        static TEST_GLOBAL: TestGlobal = TestGlobal::builder()
+            .set_layer_mock_builder(|| {
+                let mut mock = MockTestLayer::default();
+                mock.expect_hooked_device_commands()
+                    .return_const(vec![LayerVulkanCommand::DestroySamplerYcbcrConversion]);
+                mock.set_default_expections();
+                mock
+            })
+            .build();
+        let _ctx = TEST_GLOBAL.create_context();
         let app_info = vk::ApplicationInfo::builder().api_version(vk::API_VERSION_1_1);
         let ctx = vk::InstanceCreateInfo::builder()
             .application_info(&app_info)
-            .default_instance::<(Arc<MockLayer>,)>();
+            .default_instance::<(TestLayer,)>();
         unsafe { InstanceData::from_handle(ctx.instance.handle()) }
             .set_supported_device_version(&ApiVersion::V1_0);
 
@@ -996,68 +1160,90 @@ mod get_device_proc_addr {
         let instance_extensions = [vk::KhrSurfaceFn::name().as_ptr()];
         let device_extensions = [vk::KhrSwapchainFn::name().as_ptr()];
         let destroy_swapchain_name = CString::new("vkDestroySwapchainKHR").unwrap();
-        let _ctx = TestLayerWrapper::<0>::context();
-        let ctx = vk::InstanceCreateInfo::builder()
-            .enabled_extension_names(&instance_extensions)
-            .default_instance::<(Arc<TestLayerWrapper<0>>,)>()
-            .create_device(|create_info_builder, create_device| {
-                let create_info_builder =
-                    create_info_builder.enabled_extension_names(&device_extensions);
-                create_device(create_info_builder)
-            })
-            .unwrap();
-        let DeviceContext {
-            device,
-            instance_context,
-            ..
-        } = ctx.as_ref();
-        let destroy_swapchain = unsafe {
-            instance_context
-                .instance
-                .get_device_proc_addr(device.handle(), destroy_swapchain_name.as_ptr())
-        };
-        assert!(destroy_swapchain.is_some());
+        {
+            static TEST_GLOBAL: TestGlobal = TestGlobal::builder().build();
+            let _ctx = TEST_GLOBAL.create_context();
+            let ctx = vk::InstanceCreateInfo::builder()
+                .enabled_extension_names(&instance_extensions)
+                .default_instance::<(TestLayer,)>()
+                .create_device(|create_info_builder, create_device| {
+                    let create_info_builder =
+                        create_info_builder.enabled_extension_names(&device_extensions);
+                    create_device(create_info_builder)
+                })
+                .unwrap();
+            let DeviceContext {
+                device,
+                instance_context,
+                ..
+            } = ctx.as_ref();
+            let destroy_swapchain = unsafe {
+                instance_context
+                    .instance
+                    .get_device_proc_addr(device.handle(), destroy_swapchain_name.as_ptr())
+            };
+            assert!(destroy_swapchain.is_some());
+        }
 
-        let ctx = TestLayerWrapper::<1>::context();
-        ctx.set_hooked_device_commands(&[LayerVulkanCommand::DestroySwapchainKhr]);
-        let ctx = vk::InstanceCreateInfo::builder()
-            .enabled_extension_names(&instance_extensions)
-            .default_instance::<(Arc<TestLayerWrapper<1>>,)>()
-            .create_device(|create_info_builder, create_device| {
-                let create_info_builder =
-                    create_info_builder.enabled_extension_names(&device_extensions);
-                create_device(create_info_builder)
-            })
-            .unwrap();
-        let DeviceContext {
-            device,
-            instance_context,
-            ..
-        } = ctx.as_ref();
-        let destroy_swapchain = unsafe {
-            instance_context
-                .instance
-                .get_device_proc_addr(device.handle(), destroy_swapchain_name.as_ptr())
-        };
-        assert!(destroy_swapchain.is_some());
+        {
+            static TEST_GLOBAL: TestGlobal = TestGlobal::builder()
+                .set_layer_mock_builder(|| {
+                    let mut mock = MockTestLayer::default();
+                    mock.expect_hooked_device_commands()
+                        .return_const(vec![LayerVulkanCommand::DestroySwapchainKhr]);
+                    mock.set_default_expections();
+                    mock
+                })
+                .build();
+            let _ctx = TEST_GLOBAL.create_context();
+            let ctx = vk::InstanceCreateInfo::builder()
+                .enabled_extension_names(&instance_extensions)
+                .default_instance::<(TestLayer,)>()
+                .create_device(|create_info_builder, create_device| {
+                    let create_info_builder =
+                        create_info_builder.enabled_extension_names(&device_extensions);
+                    create_device(create_info_builder)
+                })
+                .unwrap();
+            let DeviceContext {
+                device,
+                instance_context,
+                ..
+            } = ctx.as_ref();
+            let destroy_swapchain = unsafe {
+                instance_context
+                    .instance
+                    .get_device_proc_addr(device.handle(), destroy_swapchain_name.as_ptr())
+            };
+            assert!(destroy_swapchain.is_some());
+        }
     }
 
     #[test]
     fn test_should_return_fp_for_enabled_layer_extension_device_commands() {
-        let mut layer_manifest = LayerManifest::test_default();
-        layer_manifest.device_extensions = &[ExtensionProperties {
-            name: Extension::KHRSwapchain,
-            spec_version: 1,
-        }];
-        let layer_manifest = layer_manifest;
-        let ctx = MockLayer::context();
-        ctx.set_layer_manifest(layer_manifest)
-            .set_hooked_device_commands(&[LayerVulkanCommand::DestroySwapchainKhr]);
+        static TEST_GLOBAL: TestGlobal = TestGlobal::builder()
+            .set_layer_mock_builder(|| {
+                let mut mock = MockTestLayer::default();
+                mock.expect_manifest().return_const({
+                    let mut layer_manifest = LayerManifest::test_default();
+                    layer_manifest.device_extensions = &[ExtensionProperties {
+                        name: Extension::KHRSwapchain,
+                        spec_version: 1,
+                    }];
+                    layer_manifest
+                });
+                mock.expect_hooked_device_commands()
+                    .return_const(vec![LayerVulkanCommand::DestroySwapchainKhr]);
+                mock.set_default_expections();
+                mock
+            })
+            .build();
+        let _ctx = TEST_GLOBAL.create_context();
         let instance_extensions = [vk::KhrSurfaceFn::name().as_ptr()];
         let device_extensions = [vk::KhrSwapchainFn::name().as_ptr()];
         let ctx = vk::InstanceCreateInfo::builder()
             .enabled_extension_names(&instance_extensions)
-            .default_instance::<(Arc<MockLayer>,)>();
+            .default_instance::<(TestLayer,)>();
         unsafe { InstanceData::from_handle(ctx.instance.handle()) }
             .set_available_device_extensions(&[]);
 
@@ -1096,14 +1282,22 @@ mod device_commands {
     use super::*;
     #[test]
     fn test_hooked_device_proc_should_be_called() {
-        let ctx = MockLayer::context();
-        ctx.set_hooked_device_commands(&[LayerVulkanCommand::DestroyImage]);
+        static TEST_GLOBAL: TestGlobal = TestGlobal::builder()
+            .set_layer_mock_builder(|| {
+                let mut mock = MockTestLayer::default();
+                mock.expect_hooked_device_commands()
+                    .return_const(vec![LayerVulkanCommand::DestroyImage]);
+                mock.set_default_expections();
+                mock
+            })
+            .build();
+        let _ctx = TEST_GLOBAL.create_context();
         let ctx = vk::InstanceCreateInfo::builder()
-            .default_instance::<(Arc<MockLayer>,)>()
+            .default_instance::<(TestLayer,)>()
             .default_device()
             .unwrap();
         let DeviceContext { device, .. } = ctx.as_ref();
-        let device_info = Global::<Arc<MockLayer>>::instance()
+        let device_info = Global::<TestLayer>::instance()
             .layer_info
             .get_device_info(device.handle())
             .unwrap();
@@ -1120,14 +1314,21 @@ mod device_commands {
 
     #[test]
     fn test_unhooked_device_proc_should_not_be_called() {
-        let ctx = MockLayer::context();
-        ctx.set_hooked_device_commands(&[]);
+        static TEST_GLOBAL: TestGlobal = TestGlobal::builder()
+            .set_layer_mock_builder(|| {
+                let mut mock = MockTestLayer::default();
+                mock.expect_hooked_device_commands().return_const(vec![]);
+                mock.set_default_expections();
+                mock
+            })
+            .build();
+        let _ctx = TEST_GLOBAL.create_context();
         let ctx = vk::InstanceCreateInfo::builder()
-            .default_instance::<(Arc<MockLayer>,)>()
+            .default_instance::<(TestLayer,)>()
             .default_device()
             .unwrap();
         let DeviceContext { device, .. } = ctx.as_ref();
-        let device_info = Global::<Arc<MockLayer>>::instance()
+        let device_info = Global::<TestLayer>::instance()
             .layer_info
             .get_device_info(device.handle())
             .unwrap();
@@ -1145,15 +1346,23 @@ mod enumerate_device_extensions {
     use super::*;
     #[test]
     fn test_should_return_defined_extensions() {
-        let mut layer_manifest = LayerManifest::test_default();
-        layer_manifest.device_extensions = &[ExtensionProperties {
-            name: Extension::KHRExternalMemory,
-            spec_version: 1,
-        }];
-        let layer_manifest = layer_manifest;
-        let ctx = MockLayer::context();
-        ctx.set_layer_manifest(layer_manifest.clone());
-        let ctx = vk::InstanceCreateInfo::builder().default_instance::<(Arc<MockLayer>,)>();
+        static TEST_GLOBAL: TestGlobal = TestGlobal::builder()
+            .set_layer_mock_builder(|| {
+                let mut mock = MockTestLayer::default();
+                mock.expect_manifest().return_const({
+                    let mut layer_manifest = LayerManifest::test_default();
+                    layer_manifest.device_extensions = &[ExtensionProperties {
+                        name: Extension::KHRExternalMemory,
+                        spec_version: 1,
+                    }];
+                    layer_manifest
+                });
+                mock.set_default_expections();
+                mock
+            })
+            .build();
+        let _ctx = TEST_GLOBAL.create_context();
+        let ctx = vk::InstanceCreateInfo::builder().default_instance::<(TestLayer,)>();
         let InstanceContext { instance, .. } = ctx.as_ref();
         unsafe { InstanceData::from_handle(instance.handle()) }
             .set_available_device_extensions(&[]);
@@ -1161,7 +1370,7 @@ mod enumerate_device_extensions {
             .unwrap()
             .first()
             .unwrap();
-        let layer_name = CString::new(Arc::<MockLayer>::manifest().name).unwrap();
+        let layer_name = CString::new(TestLayer::<Tag<0>>::manifest().name).unwrap();
         let properties = {
             let mut property_count = MaybeUninit::uninit();
             let res = unsafe {
@@ -1187,7 +1396,7 @@ mod enumerate_device_extensions {
             assert_eq!(res, vk::Result::SUCCESS);
             properties.into_boxed_slice()
         };
-        let expected_properties = layer_manifest
+        let expected_properties = TestLayer::<Tag<0>>::manifest()
             .device_extensions
             .iter()
             .cloned()
@@ -1214,15 +1423,23 @@ mod enumerate_device_extensions {
 
     #[test]
     fn test_should_call_into_the_next_chain_if_layer_name_doesnt_match() {
-        let mut layer_manifest = LayerManifest::test_default();
-        layer_manifest.device_extensions = &[ExtensionProperties {
-            name: Extension::KHRExternalMemory,
-            spec_version: 1,
-        }];
-        let layer_manifest = layer_manifest;
-        let ctx = MockLayer::context();
-        ctx.set_layer_manifest(layer_manifest);
-        let ctx = vk::InstanceCreateInfo::builder().default_instance::<(Arc<MockLayer>,)>();
+        static TEST_GLOBAL: TestGlobal = TestGlobal::builder()
+            .set_layer_mock_builder(|| {
+                let mut mock = MockTestLayer::default();
+                mock.expect_manifest().return_const({
+                    let mut layer_manifest = LayerManifest::test_default();
+                    layer_manifest.device_extensions = &[ExtensionProperties {
+                        name: Extension::KHRExternalMemory,
+                        spec_version: 1,
+                    }];
+                    layer_manifest
+                });
+                mock.set_default_expections();
+                mock
+            })
+            .build();
+        let _ctx = TEST_GLOBAL.create_context();
+        let ctx = vk::InstanceCreateInfo::builder().default_instance::<(TestLayer,)>();
         let InstanceContext { instance, .. } = ctx.as_ref();
         let available_device_extensions = &[Extension::KHRSwapchain];
         unsafe { InstanceData::from_handle(instance.handle()) }
@@ -1277,19 +1494,28 @@ mod enumerate_device_extensions {
 
     #[test]
     fn test_should_return_defined_extensions_with_null_physical_device() {
-        let mut layer_manifest = LayerManifest::test_default();
-        layer_manifest.device_extensions = &[ExtensionProperties {
-            name: Extension::KHRExternalMemory,
-            spec_version: 1,
-        }];
-        let layer_manifest = layer_manifest;
-        let ctx = MockLayer::context();
-        ctx.set_layer_manifest(layer_manifest.clone());
-        let ctx = vk::InstanceCreateInfo::builder().default_instance::<(Arc<MockLayer>,)>();
+        static TEST_GLOBAL: TestGlobal = TestGlobal::builder()
+            .set_layer_mock_builder(|| {
+                let mut mock = MockTestLayer::default();
+                mock.expect_manifest().return_const({
+                    let mut layer_manifest = LayerManifest::test_default();
+                    layer_manifest.device_extensions = &[ExtensionProperties {
+                        name: Extension::KHRExternalMemory,
+                        spec_version: 1,
+                    }];
+                    layer_manifest
+                });
+                mock.set_default_expections();
+                mock
+            })
+            .build();
+        let _ctx = TEST_GLOBAL.create_context();
+
+        let ctx = vk::InstanceCreateInfo::builder().default_instance::<(TestLayer,)>();
         let InstanceContext { instance, .. } = ctx.as_ref();
         unsafe { InstanceData::from_handle(instance.handle()) }
             .set_available_device_extensions(&[]);
-        let layer_name = CString::new(Arc::<MockLayer>::manifest().name).unwrap();
+        let layer_name = CString::new(TestLayer::<Tag<0>>::manifest().name).unwrap();
         let properties = {
             let mut property_count = MaybeUninit::uninit();
             let res = unsafe {
@@ -1315,7 +1541,7 @@ mod enumerate_device_extensions {
             assert_eq!(res, vk::Result::SUCCESS);
             properties.into_boxed_slice()
         };
-        let expected_properties = layer_manifest
+        let expected_properties = TestLayer::<Tag<0>>::manifest()
             .device_extensions
             .iter()
             .cloned()
@@ -1343,18 +1569,26 @@ mod create_destroy_device {
     use super::*;
     #[test]
     fn test_should_always_pass_through_non_layer_extensions() {
-        let mut layer_manifest = LayerManifest::test_default();
-        layer_manifest.device_extensions = &[ExtensionProperties {
-            name: Extension::KHRGetPhysicalDeviceProperties2,
-            spec_version: 1,
-        }];
-        let layer_manifest = layer_manifest;
-        let ctx = MockLayer::context();
-        ctx.set_layer_manifest(layer_manifest);
+        static TEST_GLOBAL: TestGlobal = TestGlobal::builder()
+            .set_layer_mock_builder(|| {
+                let mut mock = MockTestLayer::default();
+                mock.expect_manifest().return_const({
+                    let mut layer_manifest = LayerManifest::test_default();
+                    layer_manifest.device_extensions = &[ExtensionProperties {
+                        name: Extension::KHRGetPhysicalDeviceProperties2,
+                        spec_version: 1,
+                    }];
+                    layer_manifest
+                });
+                mock.set_default_expections();
+                mock
+            })
+            .build();
+        let _ctx = TEST_GLOBAL.create_context();
         let instance_extensions = [vk::KhrSurfaceFn::name().as_ptr()];
         let instance_ctx = vk::InstanceCreateInfo::builder()
             .enabled_extension_names(&instance_extensions)
-            .default_instance::<(Arc<MockLayer>,)>();
+            .default_instance::<(TestLayer,)>();
         unsafe { InstanceData::from_handle(instance_ctx.instance.handle()) }
             .set_available_device_extensions(&[Extension::KHRSwapchain]);
         let enabled_device_extensions = [
@@ -1394,17 +1628,24 @@ mod create_destroy_device {
 
     #[test]
     fn test_should_always_filter_out_layer_extensions() {
-        let mut layer_manifest = LayerManifest::test_default();
-        layer_manifest.device_extensions = &[ExtensionProperties {
-            name: Extension::KHRGetPhysicalDeviceProperties2,
-            spec_version: 1,
-        }];
-        let layer_manifest = layer_manifest;
+        static TEST_GLOBAL: TestGlobal = TestGlobal::builder()
+            .set_layer_mock_builder(|| {
+                let mut mock = MockTestLayer::default();
+                mock.expect_manifest().return_const({
+                    let mut layer_manifest = LayerManifest::test_default();
+                    layer_manifest.device_extensions = &[ExtensionProperties {
+                        name: Extension::KHRGetPhysicalDeviceProperties2,
+                        spec_version: 1,
+                    }];
+                    layer_manifest
+                });
+                mock.set_default_expections();
+                mock
+            })
+            .build();
+        let _ctx = TEST_GLOBAL.create_context();
 
-        let ctx = MockLayer::context();
-        ctx.set_layer_manifest(layer_manifest);
-        let instance_ctx =
-            vk::InstanceCreateInfo::builder().default_instance::<(Arc<MockLayer>,)>();
+        let instance_ctx = vk::InstanceCreateInfo::builder().default_instance::<(TestLayer,)>();
         let enabled_device_extensions = [vk::KhrGetPhysicalDeviceProperties2Fn::name().as_ptr()];
 
         unsafe { InstanceData::from_handle(instance_ctx.instance.handle()) }
@@ -1439,22 +1680,30 @@ mod create_destroy_device {
 
     #[test]
     fn test_should_always_pass_through_unknown_extensions() {
-        let mut layer_manifest = LayerManifest::test_default();
-        layer_manifest.device_extensions = &[ExtensionProperties {
-            name: Extension::KHRGetPhysicalDeviceProperties2,
-            spec_version: 1,
-        }];
-        let layer_manifest = layer_manifest;
+        static TEST_GLOBAL: TestGlobal = TestGlobal::builder()
+            .set_layer_mock_builder(|| {
+                let mut mock = MockTestLayer::default();
+                mock.expect_manifest().return_const({
+                    let mut layer_manifest = LayerManifest::test_default();
+                    layer_manifest.device_extensions = &[ExtensionProperties {
+                        name: Extension::KHRGetPhysicalDeviceProperties2,
+                        spec_version: 1,
+                    }];
+                    layer_manifest
+                });
+                mock.set_default_expections();
+                mock
+            })
+            .build();
+        let _ctx = TEST_GLOBAL.create_context();
 
-        let ctx = MockLayer::context();
-        ctx.set_layer_manifest(layer_manifest);
         let device_extensions = [CString::new("VK_UNKNOWN_unknown_extension").unwrap()];
         let device_extensions = device_extensions
             .iter()
             .map(|extension| extension.as_ptr())
             .collect::<Vec<_>>();
         let device_create_res = vk::InstanceCreateInfo::builder()
-            .default_instance::<(Arc<MockLayer>,)>()
+            .default_instance::<(TestLayer,)>()
             .create_device(|create_info, create_device| {
                 create_device(create_info.enabled_extension_names(&device_extensions))
             })
@@ -1468,16 +1717,33 @@ mod create_destroy_device {
     #[test]
     #[cfg_attr(miri, ignore)]
     fn test_should_move_layer_device_link_forward() {
-        let ctx1 = TestLayerWrapper::<0>::context();
-        ctx1.set_hooked_instance_commands(&[LayerVulkanCommand::CreateDevice]);
-        let ctx2 = TestLayerWrapper::<1>::context();
-        ctx2.set_hooked_instance_commands(&[LayerVulkanCommand::CreateDevice]);
+        static TEST_GLOBAL0: TestGlobal<Tag<0>> = TestGlobal::builder()
+            .set_layer_mock_builder(|| {
+                let mut mock = MockTestLayer::default();
+                mock.expect_hooked_instance_commands()
+                    .return_const(vec![LayerVulkanCommand::CreateDevice]);
+                mock.set_default_expections();
+                mock
+            })
+            .build();
+        let _ctx = TEST_GLOBAL0.create_context();
+        static TEST_GLOBAL1: TestGlobal<Tag<1>> = TestGlobal::builder()
+            .set_layer_mock_builder(|| {
+                let mut mock = MockTestLayer::default();
+                mock.expect_hooked_instance_commands()
+                    .return_const(vec![LayerVulkanCommand::CreateDevice]);
+                mock.set_default_expections();
+                mock
+            })
+            .build();
+        let _ctx = TEST_GLOBAL1.create_context();
+
         let instance_ctx = vk::InstanceCreateInfo::builder()
-            .default_instance::<(Arc<TestLayerWrapper<0>>, Arc<TestLayerWrapper<1>>)>();
+            .default_instance::<(TestLayer<Tag<0>>, TestLayer<Tag<1>>)>();
         let InstanceContext { instance, .. } = instance_ctx.as_ref();
 
         let icd_layer_link = <()>::head_device_link(instance.handle());
-        let second_layer_link = <(Arc<TestLayerWrapper<1>>,)>::head_device_link(instance.handle());
+        let second_layer_link = <(TestLayer<Tag<1>>,)>::head_device_link(instance.handle());
 
         fn layer_device_link_equal(
             lhs: &Option<&VkLayerDeviceLink>,
@@ -1538,14 +1804,14 @@ mod create_destroy_device {
                     )
             }
         }
-        let layer1_instance_info =
-            Arc::clone(&Global::<Arc<TestLayerWrapper<0>>>::instance().layer_info)
-                .get_instance_info(instance.handle())
-                .unwrap();
-        let layer2_instance_info =
-            Arc::clone(&Global::<Arc<TestLayerWrapper<1>>>::instance().layer_info)
-                .get_instance_info(instance.handle())
-                .unwrap();
+        let layer1_instance_info = &Global::<TestLayer<Tag<0>>>::instance()
+            .layer_info
+            .get_instance_info(instance.handle())
+            .unwrap();
+        let layer2_instance_info = &Global::<TestLayer<Tag<1>>>::instance()
+            .layer_info
+            .get_instance_info(instance.handle())
+            .unwrap();
         layer1_instance_info
             .hooks()
             .expect_create_device()
@@ -1576,19 +1842,28 @@ mod create_destroy_device {
             .map(|s| s.as_ptr())
             .collect::<Vec<_>>();
 
-        let mut layer_manifest = LayerManifest::test_default();
-        layer_manifest.device_extensions = &[ExtensionProperties {
-            name: Extension::KHRSwapchain,
-            spec_version: 1,
-        }];
-        let layer_manifest = layer_manifest;
-        let ctx = MockLayer::context();
-        ctx.set_layer_manifest(layer_manifest)
-            .set_hooked_instance_commands(&[LayerVulkanCommand::CreateDevice]);
+        static TEST_GLOBAL: TestGlobal = TestGlobal::builder()
+            .set_layer_mock_builder(|| {
+                let mut mock = MockTestLayer::default();
+                mock.expect_manifest().return_const({
+                    let mut layer_manifest = LayerManifest::test_default();
+                    layer_manifest.device_extensions = &[ExtensionProperties {
+                        name: Extension::KHRSwapchain,
+                        spec_version: 1,
+                    }];
+                    layer_manifest
+                });
+                mock.expect_hooked_instance_commands()
+                    .return_const(vec![LayerVulkanCommand::CreateDevice]);
+                mock.set_default_expections();
+                mock
+            })
+            .build();
+        let _ctx = TEST_GLOBAL.create_context();
         let instance_ctx = vk::InstanceCreateInfo::builder()
             .enabled_extension_names(&instance_extensions)
-            .default_instance::<(Arc<MockLayer>,)>();
-        let instance_info = Global::<Arc<MockLayer>>::instance()
+            .default_instance::<(TestLayer,)>();
+        let instance_info = Global::<TestLayer>::instance()
             .layer_info
             .get_instance_info(instance_ctx.instance.handle())
             .unwrap();
@@ -1621,9 +1896,10 @@ mod create_destroy_device {
 
     #[test]
     fn test_destroy_device_with_null_handle() {
-        let _ctx = MockLayer::context();
+        static TEST_GLOBAL: TestGlobal = TestGlobal::builder().build();
+        let _ctx = TEST_GLOBAL.create_context();
         let ctx = vk::InstanceCreateInfo::builder()
-            .default_instance::<(Arc<MockLayer>,)>()
+            .default_instance::<(TestLayer,)>()
             .default_device()
             .unwrap();
         unsafe { (ctx.device.fp_v1_0().destroy_device)(vk::Device::null(), null()) };
@@ -1631,15 +1907,16 @@ mod create_destroy_device {
 
     #[test]
     fn test_destroy_device_will_actually_destroy_underlying_device_info() {
-        let _ctx = MockLayer::context();
+        static TEST_GLOBAL: TestGlobal = TestGlobal::builder().build();
+        let _ctx = TEST_GLOBAL.create_context();
 
         {
             let ctx = vk::InstanceCreateInfo::builder()
-                .default_instance::<(Arc<MockLayer>,)>()
+                .default_instance::<(TestLayer,)>()
                 .default_device()
                 .unwrap();
             let DeviceContext { device, .. } = ctx.as_ref();
-            let device_data = Global::<Arc<MockLayer>>::instance()
+            let device_data = Global::<TestLayer>::instance()
                 .layer_info
                 .get_device_info(device.handle())
                 .unwrap();
@@ -1653,19 +1930,28 @@ mod create_destroy_device {
 
 #[test]
 fn enumerate_instance_layer_properties_should_return_correct_properties() {
-    let mut layer_manifest = LayerManifest::test_default();
-    layer_manifest.name = "VK_LAYER_UNKNWON_TESTLAYER";
-    layer_manifest.description = "A test description.";
-    layer_manifest.spec_version = vk::API_VERSION_1_3;
-    layer_manifest.implementation_version = 42;
-    let layer_manifest = layer_manifest;
+    static LAYER_MANIFEST: Lazy<LayerManifest> = Lazy::new(|| {
+        let mut layer_manifest = LayerManifest::test_default();
+        layer_manifest.name = "VK_LAYER_UNKNWON_TESTLAYER";
+        layer_manifest.description = "A test description.";
+        layer_manifest.spec_version = vk::API_VERSION_1_3;
+        layer_manifest.implementation_version = 42;
+        layer_manifest
+    });
 
-    let ctx = MockLayer::context();
-    ctx.set_layer_manifest(layer_manifest.clone());
+    static TEST_GLOBAL: TestGlobal = TestGlobal::builder()
+        .set_layer_mock_builder(|| {
+            let mut mock = MockTestLayer::default();
+            mock.expect_manifest().return_const(LAYER_MANIFEST.clone());
+            mock.set_default_expections();
+            mock
+        })
+        .build();
+    let _ctx = TEST_GLOBAL.create_context();
     let mut property_count = MaybeUninit::<u32>::uninit();
     assert_eq!(
         unsafe {
-            Global::<Arc<MockLayer>>::enumerate_instance_layer_properties(
+            Global::<TestLayer>::enumerate_instance_layer_properties(
                 property_count.as_mut_ptr(),
                 null_mut(),
             )
@@ -1677,7 +1963,7 @@ fn enumerate_instance_layer_properties_should_return_correct_properties() {
     let mut property = MaybeUninit::<vk::LayerProperties>::uninit();
     assert_eq!(
         unsafe {
-            Global::<Arc<MockLayer>>::enumerate_instance_layer_properties(
+            Global::<TestLayer>::enumerate_instance_layer_properties(
                 &mut property_count,
                 property.as_mut_ptr(),
             )
@@ -1694,20 +1980,20 @@ fn enumerate_instance_layer_properties_should_return_correct_properties() {
         unsafe { CStr::from_ptr(property.description.as_ptr() as *const i8) }
             .to_str()
             .unwrap();
-    assert_eq!(property_layer_name, layer_manifest.name);
-    assert_eq!(property.spec_version, layer_manifest.spec_version);
+    assert_eq!(property_layer_name, LAYER_MANIFEST.name);
+    assert_eq!(property.spec_version, LAYER_MANIFEST.spec_version);
     assert_eq!(
         property.implementation_version,
-        layer_manifest.implementation_version
+        LAYER_MANIFEST.implementation_version
     );
-    assert_eq!(property_description, layer_manifest.description);
+    assert_eq!(property_description, LAYER_MANIFEST.description);
 }
 
 #[test]
 fn global_should_be_sync() {
     #[derive(Default)]
     struct Test<T: Sync>(PhantomData<T>);
-    let _: Test<Global<Arc<MockLayer>>> = Default::default();
+    let _: Test<Global<TestLayer>> = Default::default();
 }
 
 #[test]
@@ -1728,12 +2014,18 @@ fn global_should_be_trivially_destructible() {
     #[auto_globalhooksinfo_impl]
     impl GlobalHooks for MyLayer {}
 
+    static mut GLOBAL: Option<Global<MyLayer>> = None;
+
     impl Layer for MyLayer {
         type GlobalHooksInfo = Self;
         type InstanceInfo = InstanceInfo;
         type DeviceInfo = DeviceInfo;
         type InstanceInfoContainer = InstanceInfo;
         type DeviceInfoContainer = DeviceInfo;
+
+        fn global_instance() -> &'static Global<Self> {
+            unsafe { GLOBAL.as_ref() }.unwrap()
+        }
 
         fn manifest() -> LayerManifest {
             LayerManifest::test_default()
@@ -1770,6 +2062,27 @@ fn global_should_be_trivially_destructible() {
         let global = Global::<MyLayer>::default();
         std::mem::forget(global);
     }
-    // TODO: once we change to use a global object, also check other cases where a VkInstance is
-    // created and destroyed and a VkDevice is created and is destroyed.
+    {
+        let global = Global::<MyLayer>::default();
+        assert!(unsafe { GLOBAL.replace(global) }.is_none());
+
+        let instance_ctx = vk::InstanceCreateInfo::builder().default_instance::<(MyLayer,)>();
+        drop(instance_ctx);
+
+        let global = unsafe { GLOBAL.take() };
+        std::mem::forget(global);
+    }
+    {
+        let global = Global::<MyLayer>::default();
+        assert!(unsafe { GLOBAL.replace(global) }.is_none());
+
+        let device_ctx = vk::InstanceCreateInfo::builder()
+            .default_instance::<(MyLayer,)>()
+            .default_device()
+            .unwrap();
+        drop(device_ctx);
+
+        let global = unsafe { GLOBAL.take() };
+        std::mem::forget(global);
+    }
 }
