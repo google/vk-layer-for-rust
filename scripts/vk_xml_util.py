@@ -670,7 +670,7 @@ class RustMethod(NamedTuple):
             RustParam.from_vk_xml_param(vk_xml_param) for vk_xml_param in not_len_xml_params
         ]
         if vk_xml_cmd.name == "vkCreateDevice":
-            # Also pass the current VkLayerDeviceLink to the layer.
+            # Also pass the current VkLayerDeviceLink and the pDevice to the layer.
             rust_params.insert(
                 2,
                 RustParam(
@@ -697,6 +697,10 @@ class RustMethod(NamedTuple):
                 if not_len_xml_params[-1].type.decayed_type().is_struct():
                     # For struct type, we don't treat it as a return type given the complication of
                     # pNext chain of the return parameter, and possible input fields.
+                    pass
+                elif vk_xml_cmd.name == "vkCreateDevice":
+                    # We don't treat VkDevice just as a return value, because the layer is supposed
+                    # to pass through the passed in pDevice parameter.
                     pass
                 elif (
                     last_param_type.refers_to is not None and not last_param_type.refers_to.is_const

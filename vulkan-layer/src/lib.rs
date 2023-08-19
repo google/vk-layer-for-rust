@@ -21,7 +21,6 @@ use std::{
     collections::{BTreeMap, BTreeSet},
     ffi::{c_char, c_void, CStr, CString},
     fmt::Debug,
-    mem::MaybeUninit,
     ptr::{null, null_mut, NonNull},
     sync::{Arc, Mutex},
 };
@@ -396,13 +395,14 @@ impl<T: Layer> Global<T> {
                 unsafe { create_info.as_ref() }.unwrap(),
                 layer_info,
                 unsafe { allocator.as_ref() },
+                p_instance,
             )
         } else {
             LayerResult::Unhandled
         };
 
-        let instance = match layer_result {
-            LayerResult::Handled(Ok(instance)) => instance,
+        match layer_result {
+            LayerResult::Handled(Ok(())) => {}
             LayerResult::Handled(Err(e)) => return e,
             LayerResult::Unhandled => {
                 let get_proc_addr = |name: &CStr| -> *const c_void {
@@ -415,18 +415,15 @@ impl<T: Layer> Global<T> {
                 };
                 let entry = vk::EntryFnV1_0::load(get_proc_addr);
 
-                let mut instance = MaybeUninit::<vk::Instance>::uninit();
-                let ret: vk::Result = unsafe {
-                    (entry.create_instance)(create_info, allocator, instance.as_mut_ptr())
-                };
+                let ret: vk::Result =
+                    unsafe { (entry.create_instance)(create_info, allocator, p_instance) };
                 if !matches!(ret, vk::Result::SUCCESS) {
                     return ret;
                 }
-                unsafe { instance.assume_init() }
             }
         };
 
-        *unsafe { p_instance.as_mut() }.unwrap() = instance;
+        let instance = *unsafe { p_instance.as_ref() }.unwrap();
         let ash_instance = unsafe {
             ash::Instance::load(
                 &ash::vk::StaticFn {
@@ -685,15 +682,19 @@ impl<T: Layer> Global<T> {
                 .customized_info
                 .borrow()
                 .hooks()
-                .create_device(physical_device, &create_info, layer_link, unsafe {
-                    p_allocator.as_ref()
-                })
+                .create_device(
+                    physical_device,
+                    &create_info,
+                    layer_link,
+                    unsafe { p_allocator.as_ref() },
+                    unsafe { p_device.as_mut() }.unwrap(),
+                )
         } else {
             LayerResult::Unhandled
         };
         let layer_manifest = T::manifest();
-        let device = match create_device_res {
-            LayerResult::Handled(Ok(device)) => device,
+        match create_device_res {
+            LayerResult::Handled(Ok(())) => {}
             LayerResult::Handled(Err(e)) => return e,
             LayerResult::Unhandled => {
                 let enabled_extensions = requested_extensions
@@ -728,25 +729,16 @@ impl<T: Layer> Global<T> {
                 } else {
                     enabled_extensions.as_ptr()
                 };
-                let mut device = MaybeUninit::<vk::Device>::uninit();
                 let res = unsafe {
-                    next_create_device(
-                        physical_device,
-                        &create_info,
-                        p_allocator,
-                        device.as_mut_ptr(),
-                    )
+                    next_create_device(physical_device, &create_info, p_allocator, p_device)
                 };
                 if res != vk::Result::SUCCESS {
                     return res;
                 }
-                // Safe because vkCreateDevice returns VK_SUCCESS, so VkDevice is correctly
-                // initialized.
-                unsafe { device.assume_init() }
             }
-        };
+        }
 
-        *unsafe { p_device.as_mut() }.unwrap() = device;
+        let device = *unsafe { p_device.as_ref() }.unwrap();
         let ash_instance = Arc::clone(&instance_info.dispatch_table.core);
         let ash_device = unsafe {
             // ash will also try to load instance-level dispatchable commands with
@@ -1158,7 +1150,7 @@ impl<T: Layer> Default for Global<T> {
 #[cfg(test)]
 mod test {
     use crate::test_utils::{TestGlobal, TestLayer};
-    use std::cmp::Ordering;
+    use std::{cmp::Ordering, mem::MaybeUninit};
 
     use super::*;
 

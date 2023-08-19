@@ -4765,7 +4765,8 @@ pub trait InstanceHooks: Send + Sync {
         _p_create_info: &vk::DeviceCreateInfo,
         _layer_device_link: &VkLayerDeviceLink,
         _p_allocator: Option<&vk::AllocationCallbacks>,
-    ) -> LayerResult<VkResult<vk::Device>> {
+        _p_device: &mut vk::Device,
+    ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_physical_device_sparse_image_format_properties(
