@@ -144,7 +144,8 @@ pub trait GlobalHooks: Send + Sync {
         _p_create_info: &vk::InstanceCreateInfo,
         _layer_instance_link: &VkLayerInstanceLink,
         _p_allocator: Option<&vk::AllocationCallbacks>,
-    ) -> LayerResult<ash::prelude::VkResult<vk::Instance>> {
+        _p_instance: *mut vk::Instance,
+    ) -> LayerResult<ash::prelude::VkResult<()>> {
         LayerResult::Unhandled
     }
 }

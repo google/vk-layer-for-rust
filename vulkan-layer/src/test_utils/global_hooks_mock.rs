@@ -25,6 +25,7 @@ mock! {
             _p_create_info: &vk::InstanceCreateInfo,
             _layer_instance_link: &VkLayerInstanceLink,
             _p_allocator: Option<&'a vk::AllocationCallbacks>,
-        ) -> LayerResult<VkResult<vk::Instance>>;
+            _p_instance: *mut vk::Instance,
+        ) -> LayerResult<VkResult<()>>;
     }
 }

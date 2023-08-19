@@ -21,6 +21,7 @@ use std::{
     collections::{BTreeMap, BTreeSet},
     ffi::{c_char, c_void, CStr, CString},
     marker::PhantomData,
+    mem::MaybeUninit,
     pin::Pin,
     ptr::{null, null_mut, NonNull},
     sync::{Arc, Mutex, Weak},
@@ -104,7 +105,6 @@ impl<T: vk::Handle, U: ToVulkanHandle<Handle = T>> FromVulkanHandle<T> for U {}
 
 #[repr(C)]
 struct InstanceDispatchTable {
-    _magic_number: u32,
     commands: Mutex<BTreeMap<VulkanCommandName, VulkanCommand>>,
 }
 
@@ -112,7 +112,6 @@ impl Default for InstanceDispatchTable {
     fn default() -> Self {
         let commands: &BTreeMap<VulkanCommandName, VulkanCommand> = &VULKAN_COMMANDS;
         Self {
-            _magic_number: 0x10d0,
             commands: Mutex::new(commands.clone()),
         }
     }
@@ -827,7 +826,18 @@ pub struct InstanceContext<T: Layers> {
 }
 
 pub trait ArcDelInstanceContextExt<T: Layers>: Sized {
-    fn create_device(
+    /// # Safety
+    /// <https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkCreateDevice.html>
+    unsafe fn create_device(
+        &self,
+        create_info_builder: impl FnOnce(
+            vk::DeviceCreateInfoBuilder,
+            &mut dyn for<'a> FnMut(vk::DeviceCreateInfoBuilder<'a>),
+        ),
+        p_device: *mut vk::Device,
+    ) -> vk::Result;
+
+    fn create_device_context(
         self,
         create_info_builder: impl FnOnce(
             vk::DeviceCreateInfoBuilder,
@@ -836,18 +846,19 @@ pub trait ArcDelInstanceContextExt<T: Layers>: Sized {
     ) -> VkResult<Del<DeviceContext<T>>>;
 
     fn default_device(self) -> VkResult<Del<DeviceContext<T>>> {
-        self.create_device(|create_info, create_device| create_device(create_info))
+        self.create_device_context(|create_info, create_device| create_device(create_info))
     }
 }
 
 impl<T: Layers> ArcDelInstanceContextExt<T> for ArcDel<InstanceContext<T>> {
-    fn create_device(
-        self,
+    unsafe fn create_device(
+        &self,
         create_info_builder: impl FnOnce(
             vk::DeviceCreateInfoBuilder,
             &mut dyn for<'a> FnMut(vk::DeviceCreateInfoBuilder<'a>),
         ),
-    ) -> VkResult<Del<DeviceContext<T>>> {
+        p_device: *mut vk::Device,
+    ) -> vk::Result {
         let physical_device = unsafe {
             self.instance
                 .enumerate_physical_devices()
@@ -877,15 +888,35 @@ impl<T: Layers> ArcDelInstanceContextExt<T> for ArcDel<InstanceContext<T>> {
         let device_create_info = vk::DeviceCreateInfo::builder()
             .queue_create_infos(&queue_create_infos)
             .push_next(&mut layer_create_info);
-        let mut device: Option<VkResult<ash::Device>> = None;
+        let mut res: Option<vk::Result> = None;
         create_info_builder(device_create_info, &mut |create_info| {
-            assert!(device.is_none());
-            device.replace(unsafe {
-                self.instance
-                    .create_device(physical_device, &create_info, None)
+            assert!(res.is_none());
+            res.replace({
+                let create_info: &vk::DeviceCreateInfo = &create_info;
+                unsafe {
+                    (self.instance.fp_v1_0().create_device)(
+                        physical_device,
+                        create_info,
+                        null(),
+                        p_device,
+                    )
+                }
             });
         });
-        let device = device.unwrap()?;
+        res.unwrap()
+    }
+
+    fn create_device_context(
+        self,
+        create_info_builder: impl FnOnce(
+            vk::DeviceCreateInfoBuilder,
+            &mut dyn for<'a> FnMut(vk::DeviceCreateInfoBuilder<'a>),
+        ),
+    ) -> VkResult<Del<DeviceContext<T>>> {
+        let mut device = MaybeUninit::<vk::Device>::uninit();
+        let res = unsafe { self.create_device(create_info_builder, device.as_mut_ptr()) };
+        let device = unsafe { res.assume_init_on_success(device) }?;
+        let device = unsafe { ash::Device::load(self.instance.fp_v1_0(), device) };
         let next_device_dispatch =
             unsafe { ash::Device::load(self.next_instance_dispatch.fp_v1_0(), device.handle()) };
         let device_context = DeviceContext {
@@ -989,11 +1020,15 @@ impl<T: Layer, U: Layer> Layers for (T, U) {
 }
 
 pub trait InstanceCreateInfoExt {
+    /// # Safety
+    /// <https://www.khronos.org/registry/vulkan/specs/1.3-extensions/man/html/vkCreateInstance.html>
+    unsafe fn create_instance<T: Layers>(self, p_instance: *mut vk::Instance) -> vk::Result;
     fn default_instance<T: Layers>(self) -> ArcDel<InstanceContext<T>>;
 }
 
 impl InstanceCreateInfoExt for vk::InstanceCreateInfoBuilder<'_> {
-    fn default_instance<T: Layers>(self) -> ArcDel<InstanceContext<T>> {
+    #[deny(unsafe_op_in_unsafe_fn)]
+    unsafe fn create_instance<T: Layers>(self, p_instance: *mut vk::Instance) -> vk::Result {
         let entry = T::create_entry();
         let mut layer_links = T::RestLayers::instance_links();
         let mut layer_create_info = VkLayerInstanceCreateInfo {
@@ -1009,7 +1044,16 @@ impl InstanceCreateInfoExt for vk::InstanceCreateInfoBuilder<'_> {
         };
 
         let create_instance_info = self.push_next(&mut layer_create_info);
-        let instance = unsafe { entry.create_instance(&create_instance_info, None) }.unwrap();
+        let create_instance_info: &vk::InstanceCreateInfo = &create_instance_info;
+        unsafe { (entry.fp_v1_0().create_instance)(create_instance_info, null(), p_instance) }
+    }
+
+    fn default_instance<T: Layers>(self) -> ArcDel<InstanceContext<T>> {
+        let mut instance = MaybeUninit::<vk::Instance>::uninit();
+        let res = unsafe { self.create_instance::<T>(instance.as_mut_ptr()) };
+        let instance = unsafe { res.assume_init_on_success(instance) }.unwrap();
+        let entry = T::create_entry();
+        let instance = unsafe { ash::Instance::load(entry.static_fn(), instance) };
         assert_ne!(instance.handle(), vk::Instance::null());
         let icd_entry = unsafe {
             ash::Entry::from_static_fn(vk::StaticFn {

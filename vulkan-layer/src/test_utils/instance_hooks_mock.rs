@@ -33,6 +33,7 @@ mock! {
             _p_create_info: &vk::DeviceCreateInfo,
             _layer_device_link: &VkLayerDeviceLink,
             _p_allocator: Option<&'a vk::AllocationCallbacks>,
-        ) -> LayerResult<VkResult<vk::Device>>;
+            _p_device: &mut vk::Device,
+        ) -> LayerResult<VkResult<()>>;
     }
 }

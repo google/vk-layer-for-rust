@@ -609,7 +609,7 @@ mod get_instance_proc_addr {
                     .set_available_device_extensions(&[]);
                 let device_ctx = instance_ctx
                     .clone()
-                    .create_device(|create_info_builder, create_device| {
+                    .create_device_context(|create_info_builder, create_device| {
                         let create_info_builder =
                             create_info_builder.enabled_extension_names(&device_extensions);
                         create_device(create_info_builder);
@@ -755,6 +755,7 @@ mod create_destroy_instance {
             &vk::InstanceCreateInfo,
             &VkLayerInstanceLink,
             &Option<&vk::AllocationCallbacks>,
+            &*mut vk::Instance,
         ) -> bool {
             let next_layer_link = next_layer_link.map(|layer_link| VkLayerInstanceLink {
                 pNext: null_mut(),
@@ -764,7 +765,7 @@ mod create_destroy_instance {
                 pNext: null_mut(),
                 ..*current_layer_link
             };
-            move |create_info, layer_instance_link, _| {
+            move |create_info, layer_instance_link, _, _| {
                 let mut p_next_chain: VulkanBaseInStructChain =
                     unsafe { (create_info.p_next as *const vk::BaseInStructure).as_ref() }.into();
                 let layer_link_head = p_next_chain.find_map(|in_struct| {
@@ -874,6 +875,43 @@ mod create_destroy_instance {
             });
             // Calling vkDestroyInstance through RAII.
         }
+    }
+
+    // Requirements of Well-Behaved Layers number LLP_LAYER_21.
+    #[test]
+    fn layer_shouldnt_modify_the_pinstance_pointer_when_calling_create_instance() {
+        static TEST_GLOBAL1: TestGlobal<Tag<0>> = TestGlobal::<Tag<0>>::builder().build();
+        static TEST_GLOBAL2: TestGlobal<Tag<1>> = TestGlobal::<Tag<1>>::builder()
+            .set_layer_mock_builder(|| {
+                let mut mock = MockTestLayer::default();
+                mock.expect_hooked_global_commands()
+                    .return_const(vec![LayerVulkanCommand::CreateInstance]);
+                mock.set_default_expections();
+                mock
+            })
+            .build();
+        let _ctx = TEST_GLOBAL1.create_context();
+        let _ctx = TEST_GLOBAL2.create_context();
+        let mut instance = MaybeUninit::<vk::Instance>::uninit();
+        Global::<TestLayer<Tag<1>>>::instance()
+            .layer_info
+            .get_global_hooks()
+            .expect_create_instance()
+            .once()
+            .withf_st({
+                let instance_ptr = instance.as_mut_ptr();
+                move |_, _, _, p_instance| *p_instance == instance_ptr
+            })
+            .return_const(LayerResult::Unhandled);
+        let res = unsafe {
+            vk::InstanceCreateInfo::builder()
+                .create_instance::<(TestLayer<Tag<0>>, TestLayer<Tag<1>>)>(instance.as_mut_ptr())
+        };
+        assert_eq!(res, vk::Result::SUCCESS);
+        let instance = unsafe { instance.assume_init() };
+        let entry = <(TestLayer<Tag<0>>, TestLayer<Tag<1>>) as Layers>::create_entry();
+        let instance = unsafe { ash::Instance::load(entry.static_fn(), instance) };
+        unsafe { instance.destroy_instance(None) };
     }
 }
 
@@ -1166,7 +1204,7 @@ mod get_device_proc_addr {
             let ctx = vk::InstanceCreateInfo::builder()
                 .enabled_extension_names(&instance_extensions)
                 .default_instance::<(TestLayer,)>()
-                .create_device(|create_info_builder, create_device| {
+                .create_device_context(|create_info_builder, create_device| {
                     let create_info_builder =
                         create_info_builder.enabled_extension_names(&device_extensions);
                     create_device(create_info_builder)
@@ -1199,7 +1237,7 @@ mod get_device_proc_addr {
             let ctx = vk::InstanceCreateInfo::builder()
                 .enabled_extension_names(&instance_extensions)
                 .default_instance::<(TestLayer,)>()
-                .create_device(|create_info_builder, create_device| {
+                .create_device_context(|create_info_builder, create_device| {
                     let create_info_builder =
                         create_info_builder.enabled_extension_names(&device_extensions);
                     create_device(create_info_builder)
@@ -1248,7 +1286,7 @@ mod get_device_proc_addr {
             .set_available_device_extensions(&[]);
 
         let ctx = ctx
-            .create_device(|create_info_builder, create_device| {
+            .create_device_context(|create_info_builder, create_device| {
                 let create_info_builder =
                     create_info_builder.enabled_extension_names(&device_extensions);
                 create_device(create_info_builder)
@@ -1598,7 +1636,7 @@ mod create_destroy_device {
         ];
         let device_ctx = instance_ctx
             .clone()
-            .create_device(|create_info, create_device| {
+            .create_device_context(|create_info, create_device| {
                 create_device(create_info.enabled_extension_names(&enabled_device_extensions))
             })
             .unwrap();
@@ -1616,7 +1654,7 @@ mod create_destroy_device {
             vk::KhrGetPhysicalDeviceProperties2Fn::name().as_ptr(),
         ];
         let device_create_res = instance_ctx
-            .create_device(|create_info, create_device| {
+            .create_device_context(|create_info, create_device| {
                 create_device(create_info.enabled_extension_names(&enabled_device_extensions))
             })
             .map(drop);
@@ -1652,7 +1690,7 @@ mod create_destroy_device {
             .set_available_device_extensions(&[Extension::KHRGetPhysicalDeviceProperties2]);
         let device_ctx = instance_ctx
             .clone()
-            .create_device(|create_info, create_device| {
+            .create_device_context(|create_info, create_device| {
                 create_device(create_info.enabled_extension_names(&enabled_device_extensions))
             })
             .unwrap();
@@ -1666,7 +1704,7 @@ mod create_destroy_device {
         unsafe { InstanceData::from_handle(instance_ctx.instance.handle()) }
             .set_available_device_extensions(&[]);
         let device_ctx = instance_ctx
-            .create_device(|create_info, create_device| {
+            .create_device_context(|create_info, create_device| {
                 create_device(create_info.enabled_extension_names(&enabled_device_extensions))
             })
             .unwrap();
@@ -1704,7 +1742,7 @@ mod create_destroy_device {
             .collect::<Vec<_>>();
         let device_create_res = vk::InstanceCreateInfo::builder()
             .default_instance::<(TestLayer,)>()
-            .create_device(|create_info, create_device| {
+            .create_device_context(|create_info, create_device| {
                 create_device(create_info.enabled_extension_names(&device_extensions))
             })
             .map(drop);
@@ -1767,6 +1805,7 @@ mod create_destroy_device {
             &vk::DeviceCreateInfo,
             &VkLayerDeviceLink,
             &Option<&vk::AllocationCallbacks>,
+            &vk::Device,
         ) -> bool {
             let next_layer_link = next_layer_link.map(|layer_link| VkLayerDeviceLink {
                 pNext: null_mut(),
@@ -1776,7 +1815,7 @@ mod create_destroy_device {
                 pNext: null_mut(),
                 ..*current_layer_link
             };
-            move |_, create_info, layer_instance_link, _| {
+            move |_, create_info, layer_instance_link, _, _| {
                 let mut p_next_chain: VulkanBaseInStructChain =
                     unsafe { (create_info.p_next as *const vk::BaseInStructure).as_ref() }.into();
                 let layer_link_head = p_next_chain.find_map(|in_struct| {
@@ -1870,7 +1909,7 @@ mod create_destroy_device {
         instance_info
             .hooks()
             .expect_create_device()
-            .withf(move |_, create_info, _, _| {
+            .withf(move |_, create_info, _, _, _| {
                 let extensions = unsafe {
                     std::slice::from_raw_parts(
                         create_info.pp_enabled_extension_names,
@@ -1886,7 +1925,7 @@ mod create_destroy_device {
             .once()
             .return_const(LayerResult::Unhandled);
         let device_ctx = instance_ctx
-            .create_device(|create_info, create_device| {
+            .create_device_context(|create_info, create_device| {
                 create_device(create_info.enabled_extension_names(&device_extensions))
             })
             .unwrap();
@@ -1925,6 +1964,48 @@ mod create_destroy_device {
             });
             // Calling vkDestroyDevice through RAII.
         }
+    }
+
+    #[test]
+    fn layer_shouldnt_modify_the_pdevice_pointer_when_calling_create_device() {
+        static TEST_GLOBAL1: TestGlobal<Tag<0>> = TestGlobal::<Tag<0>>::builder().build();
+        static TEST_GLOBAL2: TestGlobal<Tag<1>> = TestGlobal::<Tag<1>>::builder()
+            .set_layer_mock_builder(|| {
+                let mut mock = MockTestLayer::default();
+                mock.expect_hooked_instance_commands()
+                    .return_const(vec![LayerVulkanCommand::CreateDevice]);
+                mock.set_default_expections();
+                mock
+            })
+            .build();
+        let _ctx = TEST_GLOBAL1.create_context();
+        let _ctx = TEST_GLOBAL2.create_context();
+        let instance_ctx = vk::InstanceCreateInfo::builder()
+            .default_instance::<(TestLayer<Tag<0>>, TestLayer<Tag<1>>)>();
+        let mut device = MaybeUninit::<vk::Device>::uninit();
+        Global::<TestLayer<Tag<1>>>::instance()
+            .layer_info
+            .get_instance_info(instance_ctx.instance.handle())
+            .unwrap()
+            .hooks()
+            .expect_create_device()
+            .once()
+            .withf_st({
+                let device_ptr = device.as_ptr();
+                move |_, _, _, _, p_device| p_device as *const _ == device_ptr
+            })
+            .return_const(LayerResult::Unhandled);
+        let res = unsafe {
+            instance_ctx.create_device(
+                |create_info_builder, create_device| {
+                    create_device(create_info_builder);
+                },
+                device.as_mut_ptr(),
+            )
+        };
+        let device = unsafe { res.assume_init_on_success(device) }.unwrap();
+        let device = unsafe { ash::Device::load(instance_ctx.instance.fp_v1_0(), device) };
+        unsafe { device.destroy_device(None) };
     }
 }
 

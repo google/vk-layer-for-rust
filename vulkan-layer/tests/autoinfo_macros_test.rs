@@ -117,7 +117,8 @@ fn test_auto_globalhooksinfo_should_intercept_hooked_proc() {
             _p_create_info: &vk::InstanceCreateInfo,
             _layer_instance_link: &vulkan_layer::VkLayerInstanceLink,
             _p_allocator: Option<&vk::AllocationCallbacks>,
-        ) -> LayerResult<ash::prelude::VkResult<vk::Instance>> {
+            _: *mut vk::Instance,
+        ) -> LayerResult<ash::prelude::VkResult<()>> {
             unimplemented!()
         }
     }
