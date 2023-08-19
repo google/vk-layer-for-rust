@@ -42,13 +42,11 @@ mod vk_utils;
 
 use bindings::vk_layer::{VkLayerDeviceCreateInfo, VkLayerFunction, VkLayerInstanceCreateInfo};
 pub use bindings::vk_layer::{VkLayerDeviceLink, VkLayerInstanceLink};
-pub use global_simple_intercept::{
-    ApiVersion, DeviceInfo, Extension, ExtensionProperties, Feature, GlobalHooks, GlobalHooksInfo,
-    InstanceInfo, Layer, LayerManifest,
-};
+pub use global_simple_intercept::{ApiVersion, Extension, Feature};
 use global_simple_intercept::{DeviceDispatchTable, InstanceDispatchTable, VulkanCommand};
 pub use layer_trait::{
-    DeviceHooks, InstanceHooks, LayerResult, VulkanCommand as LayerVulkanCommand,
+    DeviceHooks, DeviceInfo, ExtensionProperties, GlobalHooks, GlobalHooksInfo, InstanceHooks,
+    InstanceInfo, Layer, LayerManifest, LayerResult, VulkanCommand as LayerVulkanCommand,
 };
 use lazy_collection::LazyCollection;
 pub use vulkan_layer_macros::{
