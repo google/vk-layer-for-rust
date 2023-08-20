@@ -1534,8 +1534,15 @@ impl InstanceDispatchTable {
 //   yet.
 
 impl<T: Layer> Global<T> {
-    pub(crate) fn create_device_commands(layer_info: &T) -> Box<[VulkanCommand]> {
-        let hooked_commands = layer_info.hooked_commands().collect::<HashSet<_>>();
+    pub(crate) fn create_device_commands(
+        &self,
+        instance_info: &T::InstanceInfo,
+        device_info: Option<&T::DeviceInfo>,
+    ) -> Box<[VulkanCommand]> {
+        let hooked_commands = self
+            .layer_info
+            .hooked_device_commands(instance_info, device_info)
+            .collect::<HashSet<_>>();
         Box::new([
             VulkanCommand {
                 name: "vkAcquireFullScreenExclusiveModeEXT",
@@ -6854,8 +6861,14 @@ impl<T: Layer> Global<T> {
             },
         ])
     }
-    pub(crate) fn create_instance_commands(layer_info: &T) -> Box<[VulkanCommand]> {
-        let hooked_commands = layer_info.hooked_commands().collect::<HashSet<_>>();
+    pub(crate) fn create_instance_commands(
+        &self,
+        instance_info: &T::InstanceInfo,
+    ) -> Box<[VulkanCommand]> {
+        let hooked_commands = self
+            .layer_info
+            .hooked_instance_commands(instance_info)
+            .collect::<HashSet<_>>();
         Box::new([
             VulkanCommand {
                 name: "vkAcquireDrmDisplayEXT",

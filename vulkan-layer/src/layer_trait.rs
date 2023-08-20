@@ -137,25 +137,18 @@ pub trait Layer: Sync + Default + 'static {
         next_get_device_proc_addr: vk::PFN_vkGetDeviceProcAddr,
     ) -> Self::DeviceInfoContainer;
 
-    fn hooked_instance_commands(&self) -> &[VulkanCommand] {
-        Self::InstanceInfo::hooked_commands()
+    fn hooked_instance_commands(
+        &self,
+        _instance_info: &Self::InstanceInfo,
+    ) -> Box<dyn Iterator<Item = VulkanCommand>> {
+        Box::new(Self::InstanceInfo::hooked_commands().iter().cloned())
     }
 
-    fn hooked_device_commands(&self) -> &[VulkanCommand] {
-        Self::DeviceInfo::hooked_commands()
-    }
-
-    fn hooked_global_commands(&self) -> &[VulkanCommand] {
-        Self::GlobalHooksInfo::hooked_commands()
-    }
-
-    fn hooked_commands(&self) -> Box<dyn Iterator<Item = VulkanCommand> + '_> {
-        Box::new(
-            self.hooked_global_commands()
-                .iter()
-                .chain(self.hooked_device_commands())
-                .chain(self.hooked_instance_commands())
-                .cloned(),
-        )
+    fn hooked_device_commands(
+        &self,
+        _instance_info: &Self::InstanceInfo,
+        _device_info: Option<&Self::DeviceInfo>,
+    ) -> Box<dyn Iterator<Item = VulkanCommand>> {
+        Box::new(Self::DeviceInfo::hooked_commands().iter().cloned())
     }
 }

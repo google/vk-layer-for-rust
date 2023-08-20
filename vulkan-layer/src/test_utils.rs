@@ -201,6 +201,7 @@ impl<T: TestLayerMock> MockDeviceInfo<T> {
 impl<T: TestLayerMock> DeviceInfo for MockDeviceInfo<T> {
     type HooksType = MockDeviceHooks;
     type HooksRefType<'a> = MutexGuard<'a, MockDeviceHooks>;
+
     fn hooked_commands() -> &'static [LayerVulkanCommand] {
         T::mock().hooked_device_commands()
     }
