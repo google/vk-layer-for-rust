@@ -24,14 +24,13 @@ use std::{
     sync::Arc,
 };
 use vulkan_layer::{
-    auto_deviceinfo_impl, auto_globalhooksinfo_impl, auto_instanceinfo_impl,
     test_utils::{
         LayerManifestExt, MockTestLayer, Tag, TestGlobal, TestLayer, VkLayerDeviceCreateInfo,
         VkLayerDeviceLink, VkLayerFunction, VkLayerInstanceCreateInfo,
     },
-    ApiVersion, DeviceHooks, DeviceInfo, Extension, ExtensionProperties, Global, GlobalHooks,
-    InstanceHooks, InstanceInfo, Layer, LayerManifest, LayerResult, LayerVulkanCommand,
-    VkLayerInstanceLink, VulkanBaseInStructChain,
+    ApiVersion, DeviceInfo, Extension, ExtensionProperties, Global, InstanceInfo, Layer,
+    LayerManifest, LayerResult, LayerVulkanCommand, StubDeviceInfo, StubGlobalHooks,
+    StubInstanceInfo, VkLayerInstanceLink, VulkanBaseInStructChain,
 };
 
 pub mod utils;
@@ -703,6 +702,18 @@ mod get_instance_proc_addr {
             assert!(destroy_swapchain.is_none());
         }
     }
+
+    #[test]
+    #[ignore]
+    fn test_layer_hooked_instance_commands_should_take_priority() {
+        todo!()
+    }
+
+    #[test]
+    #[ignore]
+    fn test_layer_hooked_device_commands_should_take_priority() {
+        todo!()
+    }
 }
 
 mod create_destroy_instance {
@@ -1313,6 +1324,12 @@ mod get_device_proc_addr {
             instance.get_device_proc_addr(device.handle(), destroy_swapchain_name.as_ptr())
         };
         assert!(destroy_swapchain.is_some());
+    }
+
+    #[test]
+    #[ignore]
+    fn test_layer_hooked_device_commands_should_take_priority() {
+        todo!()
     }
 }
 
@@ -2079,30 +2096,17 @@ fn global_should_be_sync() {
 
 #[test]
 fn global_should_be_trivially_destructible() {
-    struct InstanceInfo;
-
-    #[auto_instanceinfo_impl]
-    impl InstanceHooks for InstanceInfo {}
-
-    struct DeviceInfo;
-
-    #[auto_deviceinfo_impl]
-    impl DeviceHooks for DeviceInfo {}
-
     #[derive(Default)]
-    struct MyLayer;
-
-    #[auto_globalhooksinfo_impl]
-    impl GlobalHooks for MyLayer {}
+    struct MyLayer(StubGlobalHooks);
 
     static mut GLOBAL: Option<Global<MyLayer>> = None;
 
     impl Layer for MyLayer {
-        type GlobalHooksInfo = Self;
-        type InstanceInfo = InstanceInfo;
-        type DeviceInfo = DeviceInfo;
-        type InstanceInfoContainer = InstanceInfo;
-        type DeviceInfoContainer = DeviceInfo;
+        type GlobalHooksInfo = StubGlobalHooks;
+        type InstanceInfo = StubInstanceInfo;
+        type DeviceInfo = StubDeviceInfo;
+        type InstanceInfoContainer = StubInstanceInfo;
+        type DeviceInfoContainer = StubDeviceInfo;
 
         fn global_instance() -> &'static Global<Self> {
             unsafe { GLOBAL.as_ref() }.unwrap()
@@ -2113,7 +2117,7 @@ fn global_should_be_trivially_destructible() {
         }
 
         fn get_global_hooks_info(&self) -> &Self::GlobalHooksInfo {
-            self
+            &self.0
         }
 
         fn create_instance_info(
@@ -2123,7 +2127,7 @@ fn global_should_be_trivially_destructible() {
             _: Arc<ash::Instance>,
             _next_get_instance_proc_addr: vk::PFN_vkGetInstanceProcAddr,
         ) -> Self::InstanceInfoContainer {
-            InstanceInfo
+            Default::default()
         }
 
         fn create_device_info(
@@ -2134,7 +2138,7 @@ fn global_should_be_trivially_destructible() {
             _: Arc<ash::Device>,
             _next_get_device_proc_addr: vk::PFN_vkGetDeviceProcAddr,
         ) -> Self::DeviceInfoContainer {
-            DeviceInfo
+            Default::default()
         }
     }
 

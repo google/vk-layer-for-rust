@@ -25,6 +25,7 @@ use std::{
     sync::{Arc, Mutex},
 };
 pub use vk_utils::{VulkanBaseInStructChain, VulkanBaseOutStructChain};
+extern crate self as vulkan_layer;
 
 mod bindings;
 mod global_simple_intercept;
@@ -213,12 +214,11 @@ struct InstanceInfoWrapper<T: Layer> {
     dispatch_table: InstanceDispatchTable,
     api_version: ApiVersion,
     enabled_extensions: BTreeSet<Extension>,
-    // instance_commands and device_commands are shared across all instances as much as possible.
-    // We allow multiple instance_commands or device_commands exist due the race condition in
-    // vkCreateInstance. Global can't own these arrays, because Arc and Weak are not trivially
-    // destructible.
-    instance_commands: Arc<[VulkanCommand]>,
-    device_commands: Arc<[VulkanCommand]>,
+    // instance_commands and device_commands are recalculated on every vkCreateInstance, so that
+    // the layer can decide which commands to intercept dynamically.
+    instance_commands: Box<[VulkanCommand]>,
+    device_commands: Box<[VulkanCommand]>,
+    is_create_device_hooked: bool,
     customized_info: T::InstanceInfoContainer,
 }
 
@@ -232,6 +232,9 @@ struct DeviceInfoWrapper<T: Layer> {
     get_device_proc_addr: vk::PFN_vkGetDeviceProcAddr,
     api_version: ApiVersion,
     enabled_extensions: BTreeSet<Extension>,
+    // device_commands are recalculated on every vkCreateDevice, so that the layer can decide
+    // which commands to intercept dynamically.
+    device_commands: Box<[VulkanCommand]>,
     customized_info: T::DeviceInfoContainer,
 }
 
@@ -266,26 +269,6 @@ impl<T: Layer> Global<T> {
             .get()
             .get(&instance.get_dispatch_key())
             .map(Arc::clone)
-    }
-
-    // If there is at least one instance, we reuse the calculated VulkanCommand array stored in that
-    // instance. Otherwise, we create a new VulkanCommand array.
-    fn get_instance_commands(&self) -> Arc<[VulkanCommand]> {
-        let instance_map = self.instance_map.lock().unwrap();
-        if let Some(instance) = instance_map.get().values().next() {
-            Arc::clone(&instance.instance_commands)
-        } else {
-            Arc::from(Self::create_instance_commands(&self.layer_info))
-        }
-    }
-
-    fn get_device_commands(&self) -> Arc<[VulkanCommand]> {
-        let instance_map = self.instance_map.lock().unwrap();
-        if let Some(instance) = instance_map.get().values().next() {
-            Arc::clone(&instance.device_commands)
-        } else {
-            Arc::from(Self::create_device_commands(&self.layer_info))
-        }
     }
 
     fn create_physical_device_infos<U: Borrow<vk::PhysicalDevice>>(
@@ -384,10 +367,9 @@ impl<T: Layer> Global<T> {
             layer_info.pfnNextGetInstanceProcAddr;
 
         let global = Self::instance();
-        let hooked = global
-            .layer_info
-            .hooked_commands()
-            .any(|command| command == LayerVulkanCommand::CreateInstance);
+        let hooked = T::GlobalHooksInfo::hooked_commands()
+            .iter()
+            .any(|command| *command == LayerVulkanCommand::CreateInstance);
         let layer_result = if hooked {
             global.layer_info.get_global_hooks().create_instance(
                 unsafe { create_info.as_ref() }.unwrap(),
@@ -458,11 +440,20 @@ impl<T: Layer> Global<T> {
         } else {
             api_version.into()
         };
+        let ash_instance = Arc::new(ash_instance);
+        let customized_info = global.layer_info.create_instance_info(
+            create_info,
+            unsafe { allocator.as_ref() },
+            Arc::clone(&ash_instance),
+            get_instance_proc_addr,
+        );
+        let is_create_device_hooked = global
+            .layer_info
+            .hooked_instance_commands(customized_info.borrow())
+            .any(|command| command == LayerVulkanCommand::CreateDevice);
+        let instance_commands = global.create_instance_commands(customized_info.borrow());
+        let device_commands = global.create_device_commands(customized_info.borrow(), None);
         {
-            // These 2 functions will try to lock the instance map, so we need to call them before
-            // we later lock the instance map.
-            let instance_commands = global.get_instance_commands();
-            let device_commands = global.get_device_commands();
             let key = instance.get_dispatch_key();
             let mut instance_map = global.instance_map.lock().unwrap();
             let mut instance_map = instance_map.get_mut_or_default();
@@ -473,25 +464,20 @@ impl<T: Layer> Global<T> {
                 );
                 return vk::Result::ERROR_INITIALIZATION_FAILED;
             }
-            let ash_instance = Arc::new(ash_instance);
             instance_map.insert(
                 key,
                 Arc::new(InstanceInfoWrapper {
                     get_instance_proc_addr,
                     dispatch_table: InstanceDispatchTable::load(
                         get_instance_proc_addr,
-                        Arc::clone(&ash_instance),
+                        ash_instance,
                     ),
                     api_version,
                     enabled_extensions,
                     instance_commands,
                     device_commands,
-                    customized_info: global.layer_info.create_instance_info(
-                        create_info,
-                        unsafe { allocator.as_ref() },
-                        ash_instance,
-                        get_instance_proc_addr,
-                    ),
+                    is_create_device_hooked,
+                    customized_info,
                 }),
             );
         }
@@ -671,11 +657,7 @@ impl<T: Layer> Global<T> {
         };
         let requested_extensions =
             unsafe { slice_to_owned_strings(requested_extensions) }.collect::<Vec<_>>();
-        let create_device_res = if global
-            .layer_info
-            .hooked_commands()
-            .any(|command| command == LayerVulkanCommand::CreateDevice)
-        {
+        let create_device_res = if instance_info.is_create_device_hooked {
             instance_info
                 .customized_info
                 .borrow()
@@ -763,6 +745,17 @@ impl<T: Layer> Global<T> {
         let api_version = instance_info
             .api_version
             .min(physical_device_info.properties.api_version.into());
+        let customized_info = global.layer_info.create_device_info(
+            physical_device,
+            &create_info,
+            unsafe { p_allocator.as_ref() },
+            Arc::clone(&ash_device),
+            get_device_proc_addr,
+        );
+        let device_commands = global.create_device_commands(
+            instance_info.customized_info.borrow(),
+            Some(customized_info.borrow()),
+        );
         {
             let mut device_map = global.device_map.lock().unwrap();
             let mut device_map = device_map.get_mut_or_default();
@@ -774,20 +767,12 @@ impl<T: Layer> Global<T> {
             device_map.insert(
                 device.get_dispatch_key(),
                 Arc::new(DeviceInfoWrapper {
-                    dispatch_table: DeviceDispatchTable::load(
-                        get_device_proc_addr,
-                        Arc::clone(&ash_device),
-                    ),
+                    dispatch_table: DeviceDispatchTable::load(get_device_proc_addr, ash_device),
                     get_device_proc_addr,
                     api_version,
                     enabled_extensions,
-                    customized_info: global.layer_info.create_device_info(
-                        physical_device,
-                        &create_info,
-                        unsafe { p_allocator.as_ref() },
-                        ash_device,
-                        get_device_proc_addr,
-                    ),
+                    device_commands,
+                    customized_info,
                 }),
             );
         }
@@ -882,9 +867,11 @@ impl<T: Layer> Global<T> {
             let layer_name = unsafe { CStr::from_ptr(layer_name) }
                 .to_str()
                 .expect(concat!(
-                "According to VUID-vkEnumerateInstanceExtensionProperties-pLayerName-parameter, ",
-                "if p_layer_name is not NULL, p_layer_name must be a null-terminated UTF-8 string."
-            ));
+                    "According to \
+                     VUID-vkEnumerateInstanceExtensionProperties-pLayerName-parameter, ",
+                    "if p_layer_name is not NULL, p_layer_name must be a null-terminated UTF-8 \
+                     string."
+                ));
             if layer_name == T::manifest().name {
                 // Safe, because the caller guarantees that if the passed in `property_count` is not
                 // null, it's a valid pointer to u32.
@@ -1048,7 +1035,7 @@ impl<T: Layer> Global<T> {
         }
         let get_next_proc_addr =
             || unsafe { (instance_info.get_instance_proc_addr)(instance, p_name) };
-        let instance_commands = global.get_instance_commands();
+        let instance_commands = &instance_info.instance_commands;
         let instance_command = match instance_commands
             .binary_search_by_key(&name, |VulkanCommand { name, .. }| name)
         {
@@ -1068,7 +1055,7 @@ impl<T: Layer> Global<T> {
             }
             return instance_command.proc;
         }
-        let device_commands = global.get_device_commands();
+        let device_commands = &instance_info.device_commands;
         let device_command =
             match device_commands.binary_search_by_key(&name, |VulkanCommand { name, .. }| name) {
                 Ok(index) => Some(&device_commands[index]),
@@ -1108,7 +1095,7 @@ impl<T: Layer> Global<T> {
         }
         let get_next_device_proc_addr =
             || unsafe { (device_info.get_device_proc_addr)(device, p_name) };
-        let device_commands = global.get_device_commands();
+        let device_commands = &device_info.device_commands;
         let command = if let Ok(index) =
             device_commands.binary_search_by_key(&name, |VulkanCommand { name, .. }| name)
         {
@@ -1132,9 +1119,9 @@ impl<T: Layer> Global<T> {
 impl<T: Layer> Default for Global<T> {
     fn default() -> Self {
         let layer_info: T = Default::default();
-        let get_instance_addr_proc_hooked = layer_info
-            .hooked_commands()
-            .any(|command| command == LayerVulkanCommand::GetInstanceProcAddr);
+        let get_instance_addr_proc_hooked = T::GlobalHooksInfo::hooked_commands()
+            .iter()
+            .any(|command| *command == LayerVulkanCommand::GetInstanceProcAddr);
         Self {
             instance_map: Default::default(),
             physical_device_map: Default::default(),
@@ -1145,18 +1132,81 @@ impl<T: Layer> Default for Global<T> {
     }
 }
 
+#[derive(Default)]
+pub struct StubGlobalHooks;
+
+#[auto_globalhooksinfo_impl]
+impl GlobalHooks for StubGlobalHooks {}
+
+#[derive(Default)]
+pub struct StubInstanceInfo;
+
+#[auto_instanceinfo_impl]
+impl InstanceHooks for StubInstanceInfo {}
+
+#[derive(Default)]
+pub struct StubDeviceInfo;
+
+#[auto_deviceinfo_impl]
+impl DeviceHooks for StubDeviceInfo {}
+
 #[cfg(test)]
 mod test {
-    use crate::test_utils::{TestGlobal, TestLayer};
+    use once_cell::sync::Lazy;
+
+    use crate::test_utils::LayerManifestExt;
     use std::{cmp::Ordering, mem::MaybeUninit};
 
     use super::*;
 
     #[test]
     fn commands_must_be_sorted() {
-        static TEST_GLOBAL: TestGlobal = TestGlobal::builder().build();
-        let _ctx = TEST_GLOBAL.create_context();
-        type StubLayer = TestLayer;
+        #[derive(Default)]
+        struct TestLayer(StubGlobalHooks);
+
+        impl Layer for TestLayer {
+            type GlobalHooksInfo = StubGlobalHooks;
+            type InstanceInfo = StubInstanceInfo;
+            type DeviceInfo = StubDeviceInfo;
+            type InstanceInfoContainer = StubInstanceInfo;
+            type DeviceInfoContainer = StubDeviceInfo;
+
+            fn global_instance() -> &'static Global<Self> {
+                &GLOBAL
+            }
+
+            fn manifest() -> LayerManifest {
+                LayerManifest::test_default()
+            }
+
+            fn get_global_hooks_info(&self) -> &Self::GlobalHooksInfo {
+                &self.0
+            }
+
+            fn create_instance_info(
+                &self,
+                _: &vk::InstanceCreateInfo,
+                _: Option<&vk::AllocationCallbacks>,
+                _: Arc<ash::Instance>,
+                _next_get_instance_proc_addr: vk::PFN_vkGetInstanceProcAddr,
+            ) -> Self::InstanceInfoContainer {
+                Default::default()
+            }
+
+            fn create_device_info(
+                &self,
+                _: vk::PhysicalDevice,
+                _: &vk::DeviceCreateInfo,
+                _: Option<&vk::AllocationCallbacks>,
+                _: Arc<ash::Device>,
+                _next_get_device_proc_addr: vk::PFN_vkGetDeviceProcAddr,
+            ) -> Self::DeviceInfoContainer {
+                Default::default()
+            }
+        }
+
+        static GLOBAL: Lazy<Global<TestLayer>> = Lazy::new(Default::default);
+
         #[inline]
         fn check<T: PartialOrd>(last: &mut T) -> impl FnMut(T) -> bool + '_ {
             move |curr| {
@@ -1168,9 +1218,9 @@ mod test {
             }
         }
 
-        let global = Global::<StubLayer>::instance();
-
-        let device_commands = global.get_device_commands();
+        let instance_info = Default::default();
+        let device_commands =
+            Global::<TestLayer>::instance().create_device_commands(&instance_info, None);
         let mut name_iter = device_commands
             .iter()
             .map(|VulkanCommand { name, .. }| *name);
@@ -1178,7 +1228,8 @@ mod test {
 
         assert!(name_iter.all(check(&mut last)));
 
-        let instance_commands = global.get_instance_commands();
+        let instance_commands =
+            Global::<TestLayer>::instance().create_instance_commands(&instance_info);
         let mut name_iter = instance_commands
             .iter()
             .map(|VulkanCommand { name, .. }| *name);

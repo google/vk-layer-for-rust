@@ -41,7 +41,7 @@ fn snake_case_to_upper_camel_case(input: &str) -> String {
     res
 }
 
-pub fn autoinfo_impl(item: &ItemImpl, target_trait: &TokenStream2) -> Result<TokenStream2, Error> {
+pub fn autoinfo(item: &ItemImpl, target_trait: &TokenStream2) -> Result<TokenStream2, Error> {
     let type_name = item.self_ty.as_ref();
     let hooked_commands = item.items.iter().filter_map(|item| {
         let function = if let ImplItem::Fn(function) = item {
@@ -58,6 +58,7 @@ pub fn autoinfo_impl(item: &ItemImpl, target_trait: &TokenStream2) -> Result<Tok
         impl #target_trait for #type_name {
             type HooksType = Self;
             type HooksRefType<'a> = &'a Self;
+
             fn hooked_commands() -> &'static [::vulkan_layer::LayerVulkanCommand] {
                 &[#(#hooked_commands),*]
             }

@@ -20,30 +20,13 @@ use vulkan_layer::{
     auto_deviceinfo_impl, auto_globalhooksinfo_impl, auto_instanceinfo_impl,
     test_utils::LayerManifestExt, DeviceHooks, DeviceInfo, Global, GlobalHooks, GlobalHooksInfo,
     InstanceHooks, InstanceInfo, Layer, LayerManifest, LayerResult, LayerVulkanCommand,
+    StubDeviceInfo, StubGlobalHooks, StubInstanceInfo,
 };
 
 #[automock]
 pub trait GlobalInstanceProvider<T: Layer> {
     fn instance() -> &'static Global<T>;
 }
-
-#[derive(Default)]
-struct MockGlobalHooks;
-
-#[auto_globalhooksinfo_impl]
-impl GlobalHooks for MockGlobalHooks {}
-
-#[derive(Default)]
-struct MockInstanceInfo;
-
-#[auto_instanceinfo_impl]
-impl InstanceHooks for MockInstanceInfo {}
-
-#[derive(Default)]
-struct MockDeviceInfo;
-
-#[auto_deviceinfo_impl]
-impl DeviceHooks for MockDeviceInfo {}
 
 #[derive(Default)]
 struct TestLayer<T, U, V>
@@ -104,7 +87,7 @@ where
 
 #[test]
 fn test_auto_globalhooksinfo_should_intercept_hooked_proc() {
-    type MockLayer = TestLayer<TestGlobalHooks, MockInstanceInfo, MockDeviceInfo>;
+    type MockLayer = TestLayer<TestGlobalHooks, StubInstanceInfo, StubDeviceInfo>;
     static GLOBAL: Lazy<Global<MockLayer>> = Lazy::new(Default::default);
     let ctx = MockGlobalInstanceProvider::instance_context();
     ctx.expect().return_const(&*GLOBAL);
@@ -122,16 +105,13 @@ fn test_auto_globalhooksinfo_should_intercept_hooked_proc() {
             unimplemented!()
         }
     }
-    let hooked_commands = &Global::<MockLayer>::instance()
-        .layer_info
-        .hooked_commands()
-        .collect::<Vec<_>>();
+    let hooked_commands = <MockLayer as Layer>::GlobalHooksInfo::hooked_commands().to_vec();
     assert_eq!(hooked_commands, &[LayerVulkanCommand::CreateInstance]);
 }
 
 #[test]
 fn test_auto_instanceinfo_should_intercept_hooked_proc() {
-    type MockLayer = TestLayer<MockGlobalHooks, TestInstanceInfo, MockDeviceInfo>;
+    type MockLayer = TestLayer<StubGlobalHooks, TestInstanceInfo, StubDeviceInfo>;
     static GLOBAL: Lazy<Global<MockLayer>> = Lazy::new(Default::default);
     let ctx = MockGlobalInstanceProvider::instance_context();
     ctx.expect().return_const(&*GLOBAL);
@@ -147,16 +127,16 @@ fn test_auto_instanceinfo_should_intercept_hooked_proc() {
             unimplemented!()
         }
     }
-    let hooked_commands = &Global::<MockLayer>::instance()
+    let hooked_commands = Global::<MockLayer>::instance()
         .layer_info
-        .hooked_commands()
+        .hooked_instance_commands(&Default::default())
         .collect::<Vec<_>>();
     assert_eq!(hooked_commands, &[LayerVulkanCommand::DestroySurfaceKhr]);
 }
 
 #[test]
 fn test_auto_deviceinfo_should_intercept_hooked_proc() {
-    type MockLayer = TestLayer<MockGlobalHooks, MockInstanceInfo, TestDeviceInfo>;
+    type MockLayer = TestLayer<StubGlobalHooks, StubInstanceInfo, TestDeviceInfo>;
     static GLOBAL: Lazy<Global<MockLayer>> = Lazy::new(Default::default);
     let ctx = MockGlobalInstanceProvider::instance_context();
     ctx.expect().return_const(&*GLOBAL);
@@ -172,9 +152,9 @@ fn test_auto_deviceinfo_should_intercept_hooked_proc() {
             unimplemented!()
         }
     }
-    let hooked_commands = &Global::<MockLayer>::instance()
+    let hooked_commands = Global::<MockLayer>::instance()
         .layer_info
-        .hooked_commands()
+        .hooked_device_commands(&Default::default(), None)
         .collect::<Vec<_>>();
     assert_eq!(hooked_commands, &[LayerVulkanCommand::DestroyImage]);
 }
