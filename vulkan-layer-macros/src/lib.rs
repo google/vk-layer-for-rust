@@ -12,6 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#![warn(missing_docs)]
+
+//! Macros for `vulkan-layer`.
+
 use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
@@ -20,6 +24,50 @@ use syn::{parse_macro_input, ItemImpl, Type};
 mod details;
 mod dummy;
 
+/// Derive the implementation of the `vulkan_layer::GlobalHooksInfo` trait from the implementation
+/// of the `vulkan_layer::GlobalHooks` trait.
+///
+/// This attribute macro should be used over an implementation item of the
+/// `vulkan_layer::GlobalHooks` trait, and will implement the `vulkan_layer::GlobalHooksInfo` trait
+/// for the type:
+/// * `GlobalHooksInfo::hooked_commands` returns a list of the overridden methods that appear in the
+///   implementation item.
+/// * `GlobalHooksInfo::HooksType` and `GlobalHooksInfo::HooksRefType` are defined as `Self` and
+///   `&Self`.
+/// * `GlobalHooksInfo::hooks` returns `self`.
+///
+/// # Examples
+///
+/// ```
+/// use ash::vk;
+/// use vulkan_layer::{
+///     auto_globalhooksinfo_impl, GlobalHooks, GlobalHooksInfo, LayerResult, LayerVulkanCommand,
+///     VkLayerInstanceLink,
+/// };
+///
+/// #[derive(Default)]
+/// struct MyGlobalHooks;
+///
+/// #[auto_globalhooksinfo_impl]
+/// impl GlobalHooks for MyGlobalHooks {
+///     fn create_instance(
+///         &self,
+///         _p_create_info: &vk::InstanceCreateInfo,
+///         _layer_instance_link: &VkLayerInstanceLink,
+///         _p_allocator: Option<&vk::AllocationCallbacks>,
+///         _p_instance: *mut vk::Instance,
+///     ) -> LayerResult<ash::prelude::VkResult<()>> {
+///         LayerResult::Unhandled
+///     }
+/// }
+///
+/// let my_global_hooks: MyGlobalHooks = Default::default();
+/// assert!(std::ptr::eq(&my_global_hooks, my_global_hooks.hooks()));
+/// assert_eq!(
+///     MyGlobalHooks::hooked_commands(),
+///     [LayerVulkanCommand::CreateInstance]
+/// );
+/// ```
 #[proc_macro_attribute]
 pub fn auto_globalhooksinfo_impl(_: TokenStream, item: TokenStream) -> TokenStream {
     let original_item: TokenStream2 = item.clone().into();
@@ -40,6 +88,46 @@ pub fn auto_globalhooksinfo_impl(_: TokenStream, item: TokenStream) -> TokenStre
     .into()
 }
 
+/// Derive the implementation of the `vulkan_layer::InstanceInfo` trait from the implementation of
+/// the `vulkan_layer::InstanceHooks`.
+///
+/// This attribute macro should be used over an implementation item of the
+/// `vulkan_layer::InstanceHooks` trait, and will implement the `vulkan_layer::InstanceInfo` trait
+/// for the type:
+/// * `InstanceInfo::hooked_commands` returns a list of the overridden methods that appear in the
+///   implementation item.
+/// * `InstanceInfo::HooksType` and `InstanceInfo::HooksRefType` are defined as `Self` and `&Self`.
+/// * `InstanceInfo::hooks` retruns `self`.
+///
+/// # Examples
+///
+/// ```
+/// use ash::vk;
+/// use vulkan_layer::{
+///     auto_instanceinfo_impl, InstanceHooks, InstanceInfo, LayerResult, LayerVulkanCommand,
+/// };
+///
+/// #[derive(Default)]
+/// struct MyInstanceHooks;
+///
+/// #[auto_instanceinfo_impl]
+/// impl InstanceHooks for MyInstanceHooks {
+///     fn get_physical_device_features(
+///         &self,
+///         _physical_device: vk::PhysicalDevice,
+///         _p_features: &mut vk::PhysicalDeviceFeatures,
+///     ) -> LayerResult<()> {
+///         LayerResult::Unhandled
+///     }
+/// }
+///
+/// let my_instance_hooks: MyInstanceHooks = Default::default();
+/// assert!(std::ptr::eq(my_instance_hooks.hooks(), &my_instance_hooks));
+/// assert_eq!(
+///     MyInstanceHooks::hooked_commands(),
+///     [LayerVulkanCommand::GetPhysicalDeviceFeatures]
+/// );
+/// ```
 #[proc_macro_attribute]
 pub fn auto_instanceinfo_impl(_: TokenStream, item: TokenStream) -> TokenStream {
     let original_item: TokenStream2 = item.clone().into();
@@ -60,6 +148,46 @@ pub fn auto_instanceinfo_impl(_: TokenStream, item: TokenStream) -> TokenStream 
     .into()
 }
 
+/// Derive the implementation of the `vulkan_layer::DeviceInfo` trait from the implementation of the
+/// `vulkan_layer::DeviceHooks` trait.
+///
+/// This attribute macro should be used over an implementation item of the
+/// `vulkan_layer::DeviceHooks` trait, and will implement the `vulkan_layer::DeviceInfo` trait for
+/// the type:
+/// * `DeviceInfo::hooked_commands` returns a list of the overridden methods that appear in the
+///   implementation item.
+/// * `DeviceInfo::HooksType` and `DeviceInfo::HooksRefType` are defined as `Self` and `&Self`.
+/// * `DeviceInfo::hooks` returns `self`.
+///
+/// # Examples
+///
+/// ```
+/// use ash::vk;
+/// use vulkan_layer::{
+///     auto_deviceinfo_impl, DeviceHooks, DeviceInfo, LayerResult, LayerVulkanCommand,
+/// };
+///
+/// #[derive(Default)]
+/// struct MyDeviceHooks;
+///
+/// #[auto_deviceinfo_impl]
+/// impl DeviceHooks for MyDeviceHooks {
+///     fn create_image(
+///         &self,
+///         _p_create_info: &vk::ImageCreateInfo,
+///         _p_allocator: Option<&vk::AllocationCallbacks>,
+///     ) -> LayerResult<ash::prelude::VkResult<vk::Image>> {
+///         LayerResult::Unhandled
+///     }
+/// }
+///
+/// let my_device_hooks: MyDeviceHooks = Default::default();
+/// assert!(std::ptr::eq(my_device_hooks.hooks(), &my_device_hooks));
+/// assert_eq!(
+///     MyDeviceHooks::hooked_commands(),
+///     [LayerVulkanCommand::CreateImage]
+/// );
+/// ```
 #[proc_macro_attribute]
 pub fn auto_deviceinfo_impl(_: TokenStream, item: TokenStream) -> TokenStream {
     let original_item: TokenStream2 = item.clone().into();
