@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":["__hooked_device_commands","__hooked_global_commands","__hooked_instance_commands","__instance","__manifest","__mock"]};

@@ -1,0 +1,3 @@
+(function() {var implementors = {
+"vulkan_layer":[["impl ExtendsInstanceCreateInfo for <a class=\"struct\" href=\"vulkan_layer/test_utils/struct.VkLayerInstanceCreateInfo.html\" title=\"struct vulkan_layer::test_utils::VkLayerInstanceCreateInfo\">VkLayerInstanceCreateInfo</a>"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

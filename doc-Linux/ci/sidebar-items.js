@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["create_shield_badge","main"],"struct":["Cli","CoverageReport","CoverageReportData","CoverageReportDataTotals","CoverageStats","ShieldBadge"]};

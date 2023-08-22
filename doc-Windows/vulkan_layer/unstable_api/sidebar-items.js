@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Feature"],"struct":["ApiVersion","LazyCollection"],"trait":["CheckEmpty","IsCommandEnabled"]};

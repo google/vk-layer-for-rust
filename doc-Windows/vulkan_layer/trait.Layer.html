@@ -1,0 +1,651 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="The `Layer` trait provides all layer implementation information for the layer framework."><title>Layer in vulkan_layer - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../static.files/rustdoc-47e7ab555ef2818a.css" id="mainThemeStyle"><meta name="rustdoc-vars" data-root-path="../" data-static-root-path="../static.files/" data-current-crate="vulkan_layer" data-themes="" data-resource-suffix="" data-rustdoc-version="1.74.0-nightly (ef85656a1 2023-08-21)" data-channel="nightly" data-search-js="search-6dfdfced5eff6596.js" data-settings-js="settings-de11bff964e9d4e5.js" data-settings-css="settings-8c76f75bfb6bd192.css" data-theme-light-css="light-b2d31d2efc7e9b67.css" data-theme-dark-css="dark-3388a2fb2ef8066b.css" data-theme-ayu-css="ayu-8c3c66a6cf12cb2f.css" ><script src="../static.files/storage-db41da1a38ea3cb8.js"></script><script defer src="sidebar-items.js"></script><script defer src="../static.files/main-0795b7d26be81095.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../static.files/light-b2d31d2efc7e9b67.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../static.files/dark-3388a2fb2ef8066b.css"><link rel="stylesheet" href="../static.files/noscript-cffde32267a19fd6.css"></noscript><link rel="alternate icon" type="image/png" href="../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc trait"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="logo-container" href="../vulkan_layer/index.html"><img class="rust-logo" src="../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><h2></h2></nav><nav class="sidebar"><a class="logo-container" href="../vulkan_layer/index.html"><img class="rust-logo" src="../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><h2 class="location"><a href="#">Layer</a></h2><div class="sidebar-elems"><section><h3><a href="#required-associated-types">Required Associated Types</a></h3><ul class="block"><li><a href="#associatedtype.DeviceInfo">DeviceInfo</a></li><li><a href="#associatedtype.DeviceInfoContainer">DeviceInfoContainer</a></li><li><a href="#associatedtype.GlobalHooksInfo">GlobalHooksInfo</a></li><li><a href="#associatedtype.InstanceInfo">InstanceInfo</a></li><li><a href="#associatedtype.InstanceInfoContainer">InstanceInfoContainer</a></li></ul><h3><a href="#required-methods">Required Methods</a></h3><ul class="block"><li><a href="#tymethod.create_device_info">create_device_info</a></li><li><a href="#tymethod.create_instance_info">create_instance_info</a></li><li><a href="#tymethod.get_global_hooks_info">get_global_hooks_info</a></li><li><a href="#tymethod.global_instance">global_instance</a></li><li><a href="#tymethod.manifest">manifest</a></li></ul><h3><a href="#provided-methods">Provided Methods</a></h3><ul class="block"><li><a href="#method.get_global_hooks">get_global_hooks</a></li><li><a href="#method.hooked_device_commands">hooked_device_commands</a></li><li><a href="#method.hooked_instance_commands">hooked_instance_commands</a></li></ul><h3><a href="#implementors">Implementors</a></h3></section><h2><a href="index.html">In vulkan_layer</a></h2></div></nav><main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1>Trait <a href="index.html">vulkan_layer</a>::<wbr><a class="trait" href="#">Layer</a><button id="copy-path" title="Copy item path to clipboard"><img src="../static.files/clipboard-7571035ce49a181d.svg" width="19" height="18" alt="Copy item path"></button></h1><span class="out-of-band"><a class="src" href="../src/vulkan_layer/layer_trait.rs.html#1117-1731">source</a> · <button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><pre class="rust item-decl"><code>pub trait Layer: <a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Sync.html" title="trait core::marker::Sync">Sync</a> + <a class="trait" href="https://doc.rust-lang.org/nightly/core/default/trait.Default.html" title="trait core::default::Default">Default</a> + 'static {
+    type <a href="#associatedtype.GlobalHooksInfo" class="associatedtype">GlobalHooksInfo</a>: <a class="trait" href="trait.GlobalHooksInfo.html" title="trait vulkan_layer::GlobalHooksInfo">GlobalHooksInfo</a>;
+    type <a href="#associatedtype.InstanceInfo" class="associatedtype">InstanceInfo</a>: <a class="trait" href="trait.InstanceInfo.html" title="trait vulkan_layer::InstanceInfo">InstanceInfo</a>;
+    type <a href="#associatedtype.DeviceInfo" class="associatedtype">DeviceInfo</a>: <a class="trait" href="trait.DeviceInfo.html" title="trait vulkan_layer::DeviceInfo">DeviceInfo</a>;
+    type <a href="#associatedtype.InstanceInfoContainer" class="associatedtype">InstanceInfoContainer</a>: <a class="trait" href="https://doc.rust-lang.org/nightly/core/borrow/trait.Borrow.html" title="trait core::borrow::Borrow">Borrow</a>&lt;Self::<a class="associatedtype" href="trait.Layer.html#associatedtype.InstanceInfo" title="type vulkan_layer::Layer::InstanceInfo">InstanceInfo</a>&gt; + <a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Sync.html" title="trait core::marker::Sync">Sync</a> + <a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Send.html" title="trait core::marker::Send">Send</a>;
+    type <a href="#associatedtype.DeviceInfoContainer" class="associatedtype">DeviceInfoContainer</a>: <a class="trait" href="https://doc.rust-lang.org/nightly/core/borrow/trait.Borrow.html" title="trait core::borrow::Borrow">Borrow</a>&lt;Self::<a class="associatedtype" href="trait.Layer.html#associatedtype.DeviceInfo" title="type vulkan_layer::Layer::DeviceInfo">DeviceInfo</a>&gt; + <a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Sync.html" title="trait core::marker::Sync">Sync</a> + <a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Send.html" title="trait core::marker::Send">Send</a>;
+
+    // Required methods
+    fn <a href="#tymethod.manifest" class="fn">manifest</a>() -&gt; <a class="struct" href="struct.LayerManifest.html" title="struct vulkan_layer::LayerManifest">LayerManifest</a>;
+<span class="item-spacer"></span>    fn <a href="#tymethod.global_instance" class="fn">global_instance</a>() -&gt; &amp;'static <a class="struct" href="struct.Global.html" title="struct vulkan_layer::Global">Global</a>&lt;Self&gt;;
+<span class="item-spacer"></span>    fn <a href="#tymethod.get_global_hooks_info" class="fn">get_global_hooks_info</a>(&amp;self) -&gt; &amp;Self::<a class="associatedtype" href="trait.Layer.html#associatedtype.GlobalHooksInfo" title="type vulkan_layer::Layer::GlobalHooksInfo">GlobalHooksInfo</a>;
+<span class="item-spacer"></span>    fn <a href="#tymethod.create_instance_info" class="fn">create_instance_info</a>(
+        &amp;self,
+        create_info: &amp;InstanceCreateInfo,
+        allocator: <a class="enum" href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;&amp;AllocationCallbacks&gt;,
+        instance: <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/sync/struct.Arc.html" title="struct alloc::sync::Arc">Arc</a>&lt;Instance&gt;,
+        next_get_instance_proc_addr: PFN_vkGetInstanceProcAddr
+    ) -&gt; Self::<a class="associatedtype" href="trait.Layer.html#associatedtype.InstanceInfoContainer" title="type vulkan_layer::Layer::InstanceInfoContainer">InstanceInfoContainer</a>;
+<span class="item-spacer"></span>    fn <a href="#tymethod.create_device_info" class="fn">create_device_info</a>(
+        &amp;self,
+        physical_device: PhysicalDevice,
+        create_info: &amp;DeviceCreateInfo,
+        allocator: <a class="enum" href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;&amp;AllocationCallbacks&gt;,
+        device: <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/sync/struct.Arc.html" title="struct alloc::sync::Arc">Arc</a>&lt;Device&gt;,
+        next_get_device_proc_addr: PFN_vkGetDeviceProcAddr
+    ) -&gt; Self::<a class="associatedtype" href="trait.Layer.html#associatedtype.DeviceInfoContainer" title="type vulkan_layer::Layer::DeviceInfoContainer">DeviceInfoContainer</a>;
+
+    // Provided methods
+    fn <a href="#method.get_global_hooks" class="fn">get_global_hooks</a>(
+        &amp;self
+    ) -&gt; &lt;Self::<a class="associatedtype" href="trait.Layer.html#associatedtype.GlobalHooksInfo" title="type vulkan_layer::Layer::GlobalHooksInfo">GlobalHooksInfo</a> as <a class="trait" href="trait.GlobalHooksInfo.html" title="trait vulkan_layer::GlobalHooksInfo">GlobalHooksInfo</a>&gt;::<a class="associatedtype" href="trait.GlobalHooksInfo.html#associatedtype.HooksRefType" title="type vulkan_layer::GlobalHooksInfo::HooksRefType">HooksRefType</a>&lt;'_&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.hooked_instance_commands" class="fn">hooked_instance_commands</a>(
+        &amp;self,
+        _instance_info: &amp;Self::<a class="associatedtype" href="trait.Layer.html#associatedtype.InstanceInfo" title="type vulkan_layer::Layer::InstanceInfo">InstanceInfo</a>
+    ) -&gt; <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/boxed/struct.Box.html" title="struct alloc::boxed::Box">Box</a>&lt;dyn <a class="trait" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html" title="trait core::iter::traits::iterator::Iterator">Iterator</a>&lt;Item = <a class="enum" href="enum.LayerVulkanCommand.html" title="enum vulkan_layer::LayerVulkanCommand">VulkanCommand</a>&gt;&gt; { ... }
+<span class="item-spacer"></span>    fn <a href="#method.hooked_device_commands" class="fn">hooked_device_commands</a>(
+        &amp;self,
+        _instance_info: &amp;Self::<a class="associatedtype" href="trait.Layer.html#associatedtype.InstanceInfo" title="type vulkan_layer::Layer::InstanceInfo">InstanceInfo</a>,
+        _device_info: <a class="enum" href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;&amp;Self::<a class="associatedtype" href="trait.Layer.html#associatedtype.DeviceInfo" title="type vulkan_layer::Layer::DeviceInfo">DeviceInfo</a>&gt;
+    ) -&gt; <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/boxed/struct.Box.html" title="struct alloc::boxed::Box">Box</a>&lt;dyn <a class="trait" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html" title="trait core::iter::traits::iterator::Iterator">Iterator</a>&lt;Item = <a class="enum" href="enum.LayerVulkanCommand.html" title="enum vulkan_layer::LayerVulkanCommand">VulkanCommand</a>&gt;&gt; { ... }
+}</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>The <a href="trait.Layer.html" title="trait vulkan_layer::Layer"><code>Layer</code></a> trait provides all layer implementation information for the layer framework.</p>
+<p>The type that implements <a href="trait.Layer.html" title="trait vulkan_layer::Layer"><code>Layer</code></a> provides the following functionalities:</p>
+<ul>
+<li>Global initialization for the layer.</li>
+<li>The factory of <a href="struct.LayerManifest.html" title="struct vulkan_layer::LayerManifest"><code>LayerManifest</code></a>, <a href="trait.InstanceInfo.html" title="trait vulkan_layer::InstanceInfo"><code>InstanceInfo</code></a>, and <a href="trait.DeviceInfo.html" title="trait vulkan_layer::DeviceInfo"><code>DeviceInfo</code></a>.</li>
+<li>The container of <a href="trait.GlobalHooksInfo.html" title="trait vulkan_layer::GlobalHooksInfo"><code>GlobalHooksInfo</code></a>.</li>
+<li>Providing the storage of <a href="struct.Global.html" title="struct vulkan_layer::Global"><code>Global</code></a>.</li>
+<li>Overriding the intercepted Vulkan commands at runtime.</li>
+</ul>
+<h2 id="initialization"><a href="#initialization">Initialization</a></h2>
+<p>The layer implementation can rely on <code>Layer::default</code> to perform the global initialization. e.g.
+initialize the logger.</p>
+<p>The layer framework guarantees that <code>Layer::default</code> is only called once when
+<a href="struct.Global.html#method.default" title="associated function vulkan_layer::Global::default"><code>Global::default</code></a> is called, and won’t be called anywhere else. The layer framework doesn’t
+call <a href="struct.Global.html#method.default" title="associated function vulkan_layer::Global::default"><code>Global::default</code></a> to initialize. Instead, <a href="trait.Layer.html#tymethod.global_instance" title="associated function vulkan_layer::Layer::global_instance"><code>Layer::global_instance</code></a> is called instead on
+every Vulkan function entry when the global singleton is needed, and the layer implementation is
+expected to lazily create the static <a href="struct.Global.html" title="struct vulkan_layer::Global"><code>Global</code></a> singleton with <a href="struct.Global.html#method.default" title="associated function vulkan_layer::Global::default"><code>Global::default</code></a> in
+<a href="trait.Layer.html#tymethod.global_instance" title="associated function vulkan_layer::Layer::global_instance"><code>Layer::global_instance</code></a>. Therefore, if the layer implementation can guarantee that
+<a href="struct.Global.html#method.default" title="associated function vulkan_layer::Global::default"><code>Global::default</code></a> is called once during the lifetime of the whole process, it is also
+guaranteed that <code>Layer::default</code> is called once during the lifetime of the whole process. Note
+that it may be difficult to realize such guarantee, because the Vulkan loader my load and unload
+the layer library multiple times, and the application my load and unload the Vulkan loader
+multiple times.</p>
+<p><code>Layer::default</code> must not call into any <a href="struct.Global.html" title="struct vulkan_layer::Global"><code>Global</code></a> methods and any Vulkan commands exported by
+the Vulkan loader to avoid an endless recursion.</p>
+<h2 id="global-clean-up"><a href="#global-clean-up">Global clean up</a></h2>
+<p>It is recommended that the implementor of the <a href="trait.Layer.html" title="trait vulkan_layer::Layer"><code>Layer</code></a> trait should have a no-op drop if all
+<code>VkInstance</code> intercepted by the layer is destroyed. If so, <a href="struct.Global.html" title="struct vulkan_layer::Global"><code>Global</code></a> has a no-op drop when all
+<code>VkInstance</code> is destroyed. If the <a href="trait.Layer.html" title="trait vulkan_layer::Layer"><code>Layer</code></a> implementor is always
+trivially-destructible<sup id="fnref1"><a href="#fn1">1</a></sup>, it’s great.</p>
+<p>It is guaranteed that when <code>Global::drop</code> is called, <code>Layer::drop</code> is called exactly once.
+However, as a dynamic link library that may be loaded and unloaded to/from the process multiple
+times, there is no easy way to guarantee that <code>Global::drop</code> is called on every unload. In
+additoon, in Rust, static items do not call drop at the end of the program<sup id="fnref2"><a href="#fn2">2</a></sup>. We
+can’t expect drop to be called on dynamic link library unload as well. Therefore, we should
+avoid using <code>Layer::drop</code> to do clean-up to avoid resource leak.</p>
+<p>If it is really necessary to store some not trivially-destructible types(note that all Rust
+<a href="https://doc.rust-lang.org/nightly/std/collections/index.html" title="mod std::collections"><code>std::collections</code></a> are not trivially-destructible) in side the type that implements <a href="trait.Layer.html" title="trait vulkan_layer::Layer"><code>Layer</code></a>,
+the following techniques may be helpful.</p>
+<p>One way to test if a type <code>T</code> leaks heap memory is to run Miri tests with <a href="https://doc.rust-lang.org/nightly/core/mem/fn.forget.html" title="fn core::mem::forget"><code>std::mem::forget</code></a>.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="attr">#[derive(Default)]
+</span><span class="kw">struct </span>TriviallyDestructible;
+
+<span class="attr">#[derive(Default)]
+</span><span class="kw">struct </span>NotTriviallyDestructible(Box&lt;u32&gt;);
+
+<span class="comment">// This passes the Miri test, so TriviallyDestructible won&#39;t leak heap memory if drop is not
+// called.
+</span>{
+    <span class="kw">let </span>x: TriviallyDestructible = Default::default();
+    std::mem::forget(x);
+}
+
+<span class="comment">// This fails the Miri test, so NotTriviallyDestructible will leak heap memory if drop is not
+// called.
+</span>{
+    <span class="kw">let </span>x: NotTriviallyDestructible = Default::default();
+    std::mem::forget(x);
+}</code></pre></div>
+<p>The drop of Rust <a href="https://doc.rust-lang.org/nightly/std/collections/index.html" title="mod std::collections"><code>std::collections</code></a> is not no-op even if the collection is empty, so avoid
+using them directly in the type that implements <a href="trait.Layer.html" title="trait vulkan_layer::Layer"><code>Layer</code></a>.</p>
+<p>The drop of <a href="https://doc.rust-lang.org/nightly/alloc/sync/struct.Weak.html" title="struct alloc::sync::Weak"><code>std::sync::Weak</code></a> is not no-op even if all strong references to the underlying
+object don’t exist, so we should avoid using it to construct a type that needs a no-op drop.</p>
+<p>The drop of <a href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html#variant.None" title="variant core::option::Option::None"><code>Option::None</code></a> is no-op even if the underlying <code>T</code> is not trivially destructible,
+and the drop of <a href="https://doc.rust-lang.org/nightly/std/sync/mutex/struct.Mutex.html" title="struct std::sync::mutex::Mutex"><code>Mutex</code></a> is no-op if the drop of the wrapped <code>T</code> is no-op.
+Therefore <code>Mutex&lt;Option&lt;T&gt;&gt;</code> is a good basic block to build a type that needs a no-op drop.</p>
+<h2 id="examples"><a href="#examples">Examples</a></h2>
+<p>A simple layer that prints “Hello from the Rust Vulkan layer!” to <code>stdout</code> on every
+<code>vkCreateDevice</code>.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>ash::{<span class="self">self</span>, vk};
+<span class="kw">use </span>once_cell::sync::Lazy;
+<span class="kw">use </span>std::sync::Arc;
+<span class="kw">use </span>vulkan_layer::{
+    Global, Layer, LayerManifest, StubDeviceInfo, StubGlobalHooks, StubInstanceInfo,
+};
+
+<span class="attr">#[derive(Default)]
+</span><span class="kw">struct </span>MyLayer(StubGlobalHooks);
+
+<span class="kw">impl </span>Layer <span class="kw">for </span>MyLayer {
+    <span class="kw">type </span>GlobalHooksInfo = StubGlobalHooks;
+    <span class="kw">type </span>InstanceInfo = StubInstanceInfo;
+    <span class="kw">type </span>DeviceInfo = StubDeviceInfo;
+    <span class="kw">type </span>InstanceInfoContainer = StubInstanceInfo;
+    <span class="kw">type </span>DeviceInfoContainer = StubDeviceInfo;
+
+    <span class="kw">fn </span>global_instance() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>Global&lt;<span class="self">Self</span>&gt; {
+        <span class="kw">static </span>GLOBAL: Lazy&lt;Global&lt;MyLayer&gt;&gt; = Lazy::new(Default::default);
+        <span class="kw-2">&amp;*</span>GLOBAL
+    }
+
+    <span class="kw">fn </span>manifest() -&gt; LayerManifest {
+        <span class="kw">let </span><span class="kw-2">mut </span>manifest = LayerManifest::default();
+        manifest.name = <span class="string">&quot;VK_LAYER_VENDOR_rust_example&quot;</span>;
+        manifest.spec_version = vk::API_VERSION_1_1;
+        manifest
+    }
+
+    <span class="kw">fn </span>get_global_hooks_info(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="self">Self</span>::GlobalHooksInfo {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0
+    </span>}
+
+    <span class="kw">fn </span>create_instance_info(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        <span class="kw">_</span>: <span class="kw-2">&amp;</span>vk::InstanceCreateInfo,
+        <span class="kw">_</span>: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>vk::AllocationCallbacks&gt;,
+        <span class="kw">_</span>: Arc&lt;ash::Instance&gt;,
+        _next_get_instance_proc_addr: vk::PFN_vkGetInstanceProcAddr,
+    ) -&gt; <span class="self">Self</span>::InstanceInfoContainer {
+        Default::default()
+    }
+
+    <span class="kw">fn </span>create_device_info(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        <span class="kw">_</span>: vk::PhysicalDevice,
+        <span class="kw">_</span>: <span class="kw-2">&amp;</span>vk::DeviceCreateInfo,
+        <span class="kw">_</span>: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>vk::AllocationCallbacks&gt;,
+        <span class="kw">_</span>: Arc&lt;ash::Device&gt;,
+        _next_get_device_proc_addr: vk::PFN_vkGetDeviceProcAddr,
+    ) -&gt; <span class="self">Self</span>::DeviceInfoContainer {
+        <span class="macro">println!</span>(<span class="string">&quot;Hello from the Rust Vulkan layer!&quot;</span>);
+        Default::default()
+    }
+}</code></pre></div>
+<p>A layer that initializes the logging infrastructure with <code>env_logger</code>.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>ash::{<span class="self">self</span>, vk};
+<span class="kw">use </span>log::info;
+<span class="kw">use </span>once_cell::sync::Lazy;
+<span class="kw">use </span>std::sync::Arc;
+<span class="kw">use </span>vulkan_layer::{
+    Global, Layer, LayerManifest, StubDeviceInfo, StubGlobalHooks, StubInstanceInfo,
+};
+
+<span class="kw">struct </span>MyLayer(StubGlobalHooks);
+
+<span class="kw">impl </span>Default <span class="kw">for </span>MyLayer {
+    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+        env_logger::init();
+        <span class="self">Self</span>(Default::default())
+    }
+}
+
+<span class="kw">impl </span>Layer <span class="kw">for </span>MyLayer {
+    <span class="kw">type </span>GlobalHooksInfo = StubGlobalHooks;
+    <span class="kw">type </span>InstanceInfo = StubInstanceInfo;
+    <span class="kw">type </span>DeviceInfo = StubDeviceInfo;
+    <span class="kw">type </span>InstanceInfoContainer = StubInstanceInfo;
+    <span class="kw">type </span>DeviceInfoContainer = StubDeviceInfo;
+
+    <span class="kw">fn </span>global_instance() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>Global&lt;<span class="self">Self</span>&gt; {
+        <span class="kw">static </span>GLOBAL: Lazy&lt;Global&lt;MyLayer&gt;&gt; = Lazy::new(Default::default);
+        <span class="kw-2">&amp;*</span>GLOBAL
+    }
+
+    <span class="kw">fn </span>manifest() -&gt; LayerManifest {
+        <span class="kw">let </span><span class="kw-2">mut </span>manifest = LayerManifest::default();
+        manifest.name = <span class="string">&quot;VK_LAYER_VENDOR_rust_example&quot;</span>;
+        manifest.spec_version = vk::API_VERSION_1_1;
+        manifest
+    }
+
+    <span class="kw">fn </span>get_global_hooks_info(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="self">Self</span>::GlobalHooksInfo {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0
+    </span>}
+
+    <span class="kw">fn </span>create_instance_info(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        <span class="kw">_</span>: <span class="kw-2">&amp;</span>vk::InstanceCreateInfo,
+        <span class="kw">_</span>: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>vk::AllocationCallbacks&gt;,
+        <span class="kw">_</span>: Arc&lt;ash::Instance&gt;,
+        _next_get_instance_proc_addr: vk::PFN_vkGetInstanceProcAddr,
+    ) -&gt; <span class="self">Self</span>::InstanceInfoContainer {
+        Default::default()
+    }
+
+    <span class="kw">fn </span>create_device_info(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        <span class="kw">_</span>: vk::PhysicalDevice,
+        <span class="kw">_</span>: <span class="kw-2">&amp;</span>vk::DeviceCreateInfo,
+        <span class="kw">_</span>: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>vk::AllocationCallbacks&gt;,
+        <span class="kw">_</span>: Arc&lt;ash::Device&gt;,
+        _next_get_device_proc_addr: vk::PFN_vkGetDeviceProcAddr,
+    ) -&gt; <span class="self">Self</span>::DeviceInfoContainer {
+        <span class="macro">info!</span>(<span class="string">&quot;Hello from the Rust Vulkan layer!&quot;</span>);
+        Default::default()
+    }
+}</code></pre></div>
+<div class="footnotes"><hr><ol><li id="fn1"><p>This term is borrowed from
+<a href="https://en.cppreference.com/w/cpp/language/destructor#:~:text=since%20C%2B%2B20)-,Trivial%20destructor,-The%20destructor%20for">C++</a>:
+if the type itself doesn’t have a destructor and the types of all fields are trivially
+destructible, this type is trivially destructible. Rust has <a href="https://doc.rust-lang.org/nightly/core/mem/fn.needs_drop.html" title="fn core::mem::needs_drop"><code>std::mem::needs_drop</code></a>, but this
+function doesn’t have a strong guarantee.&nbsp;<a href="#fnref1">↩</a></p></li><li id="fn2"><p><a href="https://doc.rust-lang.org/reference/items/static-items.html#:~:text=Static%20items%20do%20not%20call%20drop%20at%20the%20end%20of%20the%20program.">https://doc.rust-lang.org/reference/items/static-items.html#:~:text=Static%20items%20do%20not%20call%20drop%20at%20the%20end%20of%20the%20program.</a>&nbsp;<a href="#fnref2">↩</a></p></li></ol></div></div></details><h2 id="required-associated-types" class="small-section-header">Required Associated Types<a href="#required-associated-types" class="anchor">§</a></h2><div class="methods"><details class="toggle" open><summary><section id="associatedtype.GlobalHooksInfo" class="method"><a class="src rightside" href="../src/vulkan_layer/layer_trait.rs.html#1124">source</a><h4 class="code-header">type <a href="#associatedtype.GlobalHooksInfo" class="associatedtype">GlobalHooksInfo</a>: <a class="trait" href="trait.GlobalHooksInfo.html" title="trait vulkan_layer::GlobalHooksInfo">GlobalHooksInfo</a></h4></section></summary><div class="docblock"><p>The type that provides information about interception of
+<a href="https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkGetInstanceProcAddr.html#:~:text=The%20global%20commands%20are%3A%20vkEnumerateInstanceVersion%2C%20vkEnumerateInstanceExtensionProperties%2C%20vkEnumerateInstanceLayerProperties%2C%20and%20vkCreateInstance">global commands</a>.</p>
+<p>If the layer implementation is not interested in intercepting any
+<a href="https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkGetInstanceProcAddr.html#:~:text=The%20global%20commands%20are%3A%20vkEnumerateInstanceVersion%2C%20vkEnumerateInstanceExtensionProperties%2C%20vkEnumerateInstanceLayerProperties%2C%20and%20vkCreateInstance">global commands</a>,
+<a href="struct.StubGlobalHooks.html" title="struct vulkan_layer::StubGlobalHooks"><code>StubGlobalHooks</code></a> can be used.</p>
+</div></details><details class="toggle" open><summary><section id="associatedtype.InstanceInfo" class="method"><a class="src rightside" href="../src/vulkan_layer/layer_trait.rs.html#1135">source</a><h4 class="code-header">type <a href="#associatedtype.InstanceInfo" class="associatedtype">InstanceInfo</a>: <a class="trait" href="trait.InstanceInfo.html" title="trait vulkan_layer::InstanceInfo">InstanceInfo</a></h4></section></summary><div class="docblock"><p>The type that provides information about interception of
+<a href="https://github.com/KhronosGroup/Vulkan-Loader/blob/v1.3.261/docs/LoaderInterfaceArchitecture.md#instance-functions">Vulkan instance functions</a>,
+<a href="https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkGetInstanceProcAddr.html#:~:text=The%20global%20commands%20are%3A%20vkEnumerateInstanceVersion%2C%20vkEnumerateInstanceExtensionProperties%2C%20vkEnumerateInstanceLayerProperties%2C%20and%20vkCreateInstance.">global commands</a>
+not included.</p>
+<p>If the layer implementation is not interested in intercepting any
+<a href="https://github.com/KhronosGroup/Vulkan-Loader/blob/v1.3.261/docs/LoaderInterfaceArchitecture.md#instance-functions">Vulkan instance functions</a>
+(<a href="https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkGetInstanceProcAddr.html#:~:text=The%20global%20commands%20are%3A%20vkEnumerateInstanceVersion%2C%20vkEnumerateInstanceExtensionProperties%2C%20vkEnumerateInstanceLayerProperties%2C%20and%20vkCreateInstance.">global commands</a>
+not included), <a href="struct.StubInstanceInfo.html" title="struct vulkan_layer::StubInstanceInfo"><code>StubInstanceInfo</code></a> can be used.</p>
+</div></details><details class="toggle" open><summary><section id="associatedtype.DeviceInfo" class="method"><a class="src rightside" href="../src/vulkan_layer/layer_trait.rs.html#1143">source</a><h4 class="code-header">type <a href="#associatedtype.DeviceInfo" class="associatedtype">DeviceInfo</a>: <a class="trait" href="trait.DeviceInfo.html" title="trait vulkan_layer::DeviceInfo">DeviceInfo</a></h4></section></summary><div class="docblock"><p>The type that provides information about interception of
+<a href="https://github.com/KhronosGroup/Vulkan-Loader/blob/v1.3.261/docs/LoaderInterfaceArchitecture.md#device-functions">Vulkan device functions</a>.</p>
+<p>If the layer implementation is not interested in intercepting any
+<a href="https://github.com/KhronosGroup/Vulkan-Loader/blob/v1.3.261/docs/LoaderInterfaceArchitecture.md#device-functions">Vulkan device functions</a>,
+<a href="struct.StubDeviceInfo.html" title="struct vulkan_layer::StubDeviceInfo"><code>StubDeviceInfo</code></a> can be used.</p>
+</div></details><details class="toggle" open><summary><section id="associatedtype.InstanceInfoContainer" class="method"><a class="src rightside" href="../src/vulkan_layer/layer_trait.rs.html#1208">source</a><h4 class="code-header">type <a href="#associatedtype.InstanceInfoContainer" class="associatedtype">InstanceInfoContainer</a>: <a class="trait" href="https://doc.rust-lang.org/nightly/core/borrow/trait.Borrow.html" title="trait core::borrow::Borrow">Borrow</a>&lt;Self::<a class="associatedtype" href="trait.Layer.html#associatedtype.InstanceInfo" title="type vulkan_layer::Layer::InstanceInfo">InstanceInfo</a>&gt; + <a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Sync.html" title="trait core::marker::Sync">Sync</a> + <a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Send.html" title="trait core::marker::Send">Send</a></h4></section></summary><div class="docblock"><p>The type that holds a <a href="trait.Layer.html#associatedtype.InstanceInfo" title="associated type vulkan_layer::Layer::InstanceInfo"><code>Layer::InstanceInfo</code></a> type. Usually just <code>Self::InstanceInfo</code>.</p>
+<p>This extra associated type allows the layer to use a smart pointer like <a href="https://doc.rust-lang.org/nightly/alloc/sync/struct.Arc.html" title="struct alloc::sync::Arc"><code>Arc</code></a> or <a href="https://doc.rust-lang.org/nightly/alloc/boxed/struct.Box.html" title="struct alloc::boxed::Box"><code>Box</code></a>
+to hold the <a href="trait.Layer.html#associatedtype.InstanceInfo" title="associated type vulkan_layer::Layer::InstanceInfo"><code>Layer::InstanceInfo</code></a>.</p>
+<h5 id="examples-1"><a href="#examples-1">Examples</a></h5>
+<p>Use <a href="https://doc.rust-lang.org/nightly/alloc/sync/struct.Arc.html" title="struct alloc::sync::Arc"><code>Arc</code></a> to hold the <a href="trait.Layer.html#associatedtype.InstanceInfo" title="associated type vulkan_layer::Layer::InstanceInfo"><code>Layer::InstanceInfo</code></a>.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>ash::vk;
+<span class="kw">use </span>once_cell::sync::Lazy;
+<span class="kw">use </span>std::sync::Arc;
+<span class="kw">use </span>vulkan_layer::{
+    Global, Layer, LayerManifest, StubDeviceInfo, StubGlobalHooks, StubInstanceInfo,
+};
+
+<span class="attr">#[derive(Default)]
+</span><span class="kw">struct </span>MyLayer(StubGlobalHooks);
+
+<span class="kw">impl </span>Layer <span class="kw">for </span>MyLayer {
+    <span class="kw">type </span>InstanceInfo = StubInstanceInfo;
+    <span class="kw">type </span>InstanceInfoContainer = Arc&lt;StubInstanceInfo&gt;;
+
+    <span class="kw">fn </span>create_instance_info(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        <span class="kw">_</span>: <span class="kw-2">&amp;</span>vk::InstanceCreateInfo,
+        <span class="kw">_</span>: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>vk::AllocationCallbacks&gt;,
+        <span class="kw">_</span>: Arc&lt;ash::Instance&gt;,
+        _next_get_instance_proc_addr: vk::PFN_vkGetInstanceProcAddr,
+    ) -&gt; <span class="self">Self</span>::InstanceInfoContainer {
+        Arc::default()
+    }
+
+    <span class="comment">// Unrelated required items are omitted.
+</span>}</code></pre></div>
+</div></details><details class="toggle" open><summary><section id="associatedtype.DeviceInfoContainer" class="method"><a class="src rightside" href="../src/vulkan_layer/layer_trait.rs.html#1273">source</a><h4 class="code-header">type <a href="#associatedtype.DeviceInfoContainer" class="associatedtype">DeviceInfoContainer</a>: <a class="trait" href="https://doc.rust-lang.org/nightly/core/borrow/trait.Borrow.html" title="trait core::borrow::Borrow">Borrow</a>&lt;Self::<a class="associatedtype" href="trait.Layer.html#associatedtype.DeviceInfo" title="type vulkan_layer::Layer::DeviceInfo">DeviceInfo</a>&gt; + <a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Sync.html" title="trait core::marker::Sync">Sync</a> + <a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Send.html" title="trait core::marker::Send">Send</a></h4></section></summary><div class="docblock"><p>The type that holds a <a href="trait.Layer.html#associatedtype.DeviceInfo" title="associated type vulkan_layer::Layer::DeviceInfo"><code>Layer::DeviceInfo</code></a> type. Usually just <code>Self::DeviceInfo</code>.</p>
+<p>This extra associated type allows the layer to use a smart pointer like <a href="https://doc.rust-lang.org/nightly/alloc/sync/struct.Arc.html" title="struct alloc::sync::Arc"><code>Arc</code></a> to hold the
+<a href="trait.Layer.html#associatedtype.DeviceInfo" title="associated type vulkan_layer::Layer::DeviceInfo"><code>Layer::DeviceInfo</code></a>.</p>
+<h5 id="examples-2"><a href="#examples-2">Examples</a></h5>
+<p>Use <a href="https://doc.rust-lang.org/nightly/alloc/sync/struct.Arc.html" title="struct alloc::sync::Arc"><code>Arc</code></a> to hold the <a href="trait.Layer.html#associatedtype.DeviceInfo" title="associated type vulkan_layer::Layer::DeviceInfo"><code>Layer::DeviceInfo</code></a>.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>ash::vk;
+<span class="kw">use </span>once_cell::sync::Lazy;
+<span class="kw">use </span>std::sync::Arc;
+<span class="kw">use </span>vulkan_layer::{
+    Global, Layer, LayerManifest, StubDeviceInfo, StubGlobalHooks, StubInstanceInfo,
+};
+
+<span class="attr">#[derive(Default)]
+</span><span class="kw">struct </span>MyLayer(StubGlobalHooks);
+
+<span class="kw">impl </span>Layer <span class="kw">for </span>MyLayer {
+    <span class="kw">type </span>DeviceInfo = StubDeviceInfo;
+    <span class="kw">type </span>DeviceInfoContainer = Arc&lt;StubDeviceInfo&gt;;
+
+    <span class="kw">fn </span>create_device_info(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        <span class="kw">_</span>: vk::PhysicalDevice,
+        <span class="kw">_</span>: <span class="kw-2">&amp;</span>vk::DeviceCreateInfo,
+        <span class="kw">_</span>: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>vk::AllocationCallbacks&gt;,
+        <span class="kw">_</span>: Arc&lt;ash::Device&gt;,
+        _next_get_device_proc_addr: vk::PFN_vkGetDeviceProcAddr,
+    ) -&gt; <span class="self">Self</span>::DeviceInfoContainer {
+        Arc::default()
+    }
+
+    <span class="comment">// Unrelated required items are omitted.
+</span>}</code></pre></div>
+</div></details></div><h2 id="required-methods" class="small-section-header">Required Methods<a href="#required-methods" class="anchor">§</a></h2><div class="methods"><details class="toggle method-toggle" open><summary><section id="tymethod.manifest" class="method"><a class="src rightside" href="../src/vulkan_layer/layer_trait.rs.html#1290">source</a><h4 class="code-header">fn <a href="#tymethod.manifest" class="fn">manifest</a>() -&gt; <a class="struct" href="struct.LayerManifest.html" title="struct vulkan_layer::LayerManifest">LayerManifest</a></h4></section></summary><div class="docblock"><p>Returns the
+<a href="https://github.com/KhronosGroup/Vulkan-Loader/blob/v1.3.261/docs/LoaderLayerInterface.md#layer-manifest-file-format">layer manifest</a>
+to the layer framework.</p>
+<p>Implementors should always return the same value during the lifetime of the process, and
+must match the manifest json file with the layer. Implementors should avoid calling into any
+<a href="struct.Global.html" title="struct vulkan_layer::Global"><code>Global</code></a> methods because this function can be called to implement Vulkan introspection
+queries before any <code>VkInstance</code> is created.</p>
+<p>The layer framework will use this value to:</p>
+<ul>
+<li>Implement <a href="https://github.com/KhronosGroup/Vulkan-Loader/blob/v1.3.261/docs/LoaderLayerInterface.md#requirements-of-well-behaved-layers:~:text=Parent-,Introspection%20Query,-%22api_version%22">Vulkan introspection queries</a>,
+including <code>vkEnumerateInstanceLayerProperties</code>, <code>vkEnumerateDeviceLayerProperties</code>,
+<code>vkEnumerateInstanceExtensionProperties</code> and <code>vkEnumerateDeviceExtensionProperties</code>.</li>
+<li>Remove the layer device extensions from <code>VkDeviceCreateInfo::ppEnabledExtensionNames</code> in
+<code>vkCreateDevice</code> if present.</li>
+</ul>
+</div></details><details class="toggle method-toggle" open><summary><section id="tymethod.global_instance" class="method"><a class="src rightside" href="../src/vulkan_layer/layer_trait.rs.html#1361">source</a><h4 class="code-header">fn <a href="#tymethod.global_instance" class="fn">global_instance</a>() -&gt; &amp;'static <a class="struct" href="struct.Global.html" title="struct vulkan_layer::Global">Global</a>&lt;Self&gt;</h4></section></summary><div class="docblock"><p>Provide the reference to the global singleton of <a href="struct.Global.html" title="struct vulkan_layer::Global"><code>Global</code></a>.</p>
+<p>Implementors must always return the reference pointing to the same <a href="struct.Global.html" title="struct vulkan_layer::Global"><code>Global</code></a> object.
+Implementors can use <a href="https://doc.rust-lang.org/nightly/std/sync/lazy_lock/struct.LazyLock.html" title="struct std::sync::lazy_lock::LazyLock"><code>LazyLock</code></a>, <a href="https://doc.rust-lang.org/nightly/std/sync/once_lock/struct.OnceLock.html" title="struct std::sync::once_lock::OnceLock"><code>OnceLock</code></a>,
+or <code>Lazy</code> from the <code>once_cell</code> crate to implement. Implementors should use
+<a href="struct.Global.html#method.default" title="associated function vulkan_layer::Global::default"><code>Global::default</code></a> to create the <a href="struct.Global.html" title="struct vulkan_layer::Global"><code>Global</code></a> object. More information on initialization can
+be found <a href="trait.Layer.html#initialization" title="trait vulkan_layer::Layer">here</a>.</p>
+<h5 id="examples-3"><a href="#examples-3">Examples</a></h5>
+<p>Use <code>Lazy</code> provided by the <code>once_cell</code> crate to implement.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>ash::{<span class="self">self</span>, vk};
+<span class="kw">use </span>once_cell::sync::Lazy;
+<span class="kw">use </span>std::sync::Arc;
+<span class="kw">use </span>vulkan_layer::{
+    Global, Layer, LayerManifest, StubDeviceInfo, StubGlobalHooks, StubInstanceInfo,
+};
+
+<span class="attr">#[derive(Default)]
+</span><span class="kw">struct </span>MyLayer(StubGlobalHooks);
+
+<span class="kw">impl </span>Layer <span class="kw">for </span>MyLayer {
+    <span class="kw">fn </span>global_instance() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>Global&lt;<span class="self">Self</span>&gt; {
+        <span class="kw">static </span>GLOBAL: Lazy&lt;Global&lt;MyLayer&gt;&gt; = Lazy::new(Default::default);
+        <span class="kw-2">&amp;*</span>GLOBAL
+    }
+
+    <span class="comment">// Unrelated required items are omitted.
+</span>}</code></pre></div>
+</div></details><details class="toggle method-toggle" open><summary><section id="tymethod.get_global_hooks_info" class="method"><a class="src rightside" href="../src/vulkan_layer/layer_trait.rs.html#1364">source</a><h4 class="code-header">fn <a href="#tymethod.get_global_hooks_info" class="fn">get_global_hooks_info</a>(&amp;self) -&gt; &amp;Self::<a class="associatedtype" href="trait.Layer.html#associatedtype.GlobalHooksInfo" title="type vulkan_layer::Layer::GlobalHooksInfo">GlobalHooksInfo</a></h4></section></summary><div class="docblock"><p>Returns a reference of the underlying <a href="trait.GlobalHooksInfo.html" title="trait vulkan_layer::GlobalHooksInfo"><code>GlobalHooksInfo</code></a> object.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="tymethod.create_instance_info" class="method"><a class="src rightside" href="../src/vulkan_layer/layer_trait.rs.html#1394-1400">source</a><h4 class="code-header">fn <a href="#tymethod.create_instance_info" class="fn">create_instance_info</a>(
+    &amp;self,
+    create_info: &amp;InstanceCreateInfo,
+    allocator: <a class="enum" href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;&amp;AllocationCallbacks&gt;,
+    instance: <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/sync/struct.Arc.html" title="struct alloc::sync::Arc">Arc</a>&lt;Instance&gt;,
+    next_get_instance_proc_addr: PFN_vkGetInstanceProcAddr
+) -&gt; Self::<a class="associatedtype" href="trait.Layer.html#associatedtype.InstanceInfoContainer" title="type vulkan_layer::Layer::InstanceInfoContainer">InstanceInfoContainer</a></h4></section></summary><div class="docblock"><p>The factory method for the <a href="trait.InstanceInfo.html" title="trait vulkan_layer::InstanceInfo"><code>InstanceInfo</code></a> type.</p>
+<p>This function is called by the layer framework in <code>vkCreateInstance</code>, after the
+<code>vkCreateInstance</code> of the next layer returns with success.</p>
+<h5 id="arguments"><a href="#arguments">Arguments</a></h5>
+<ul>
+<li><code>create_info</code> is a pointer to a VkInstanceCreateInfo structure controlling creation of the
+instance. The <a href="type.VkLayerInstanceLink.html" title="type vulkan_layer::VkLayerInstanceLink"><code>VkLayerInstanceLink</code></a> linked list in the <code>pNext</code> chain is already advanced
+by the layer framework. This is the original <code>VkInstanceCreateInfo</code> passed in by the
+application or the previous layer(except the advanced <a href="type.VkLayerInstanceLink.html" title="type vulkan_layer::VkLayerInstanceLink"><code>VkLayerInstanceLink</code></a> linked
+list), even if the layer implementation passes a different <code>VkInstanceCreateInfo</code> to the
+next layer in <a href="trait.GlobalHooks.html#method.create_instance" title="method vulkan_layer::GlobalHooks::create_instance"><code>GlobalHooks::create_instance</code></a>.</li>
+<li><code>allocator</code> controls host memory allocation as described in the <a href="https://registry.khronos.org/vulkan/specs/1.3-extensions/html/vkspec.html#memory-allocation">Memory Allocation</a>
+chapter of the Vulkan spec.</li>
+<li><code>instance</code> contains the loaded instance dispatch table of the next layer. The layer
+implementation can just clone this <a href="https://doc.rust-lang.org/nightly/alloc/sync/struct.Arc.html" title="struct alloc::sync::Arc"><code>Arc</code></a> if it is needed to keep the instance dispatch
+table.</li>
+<li><code>next_get_instance_proc_addr</code> is the <code>vkGetInstanceProcAddr</code> function pointer of the next
+layer obtained from the <a href="type.VkLayerInstanceLink.html" title="type vulkan_layer::VkLayerInstanceLink"><code>VkLayerInstanceLink</code></a> linked list.</li>
+</ul>
+</div></details><details class="toggle method-toggle" open><summary><section id="tymethod.create_device_info" class="method"><a class="src rightside" href="../src/vulkan_layer/layer_trait.rs.html#1425-1432">source</a><h4 class="code-header">fn <a href="#tymethod.create_device_info" class="fn">create_device_info</a>(
+    &amp;self,
+    physical_device: PhysicalDevice,
+    create_info: &amp;DeviceCreateInfo,
+    allocator: <a class="enum" href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;&amp;AllocationCallbacks&gt;,
+    device: <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/sync/struct.Arc.html" title="struct alloc::sync::Arc">Arc</a>&lt;Device&gt;,
+    next_get_device_proc_addr: PFN_vkGetDeviceProcAddr
+) -&gt; Self::<a class="associatedtype" href="trait.Layer.html#associatedtype.DeviceInfoContainer" title="type vulkan_layer::Layer::DeviceInfoContainer">DeviceInfoContainer</a></h4></section></summary><div class="docblock"><p>The factory method for the <a href="trait.DeviceInfo.html" title="trait vulkan_layer::DeviceInfo"><code>DeviceInfo</code></a> type.</p>
+<p>This function is called by the layer framework in <code>vkCreateDevice</code>, after the
+<code>vkCreateDevice</code> of the next layer returns with success.</p>
+<h5 id="arguments-1"><a href="#arguments-1">Arguments</a></h5>
+<ul>
+<li><code>physical_device</code> is one of the device handles returned from a call to
+<code>vkEnumeratePhysicalDevices</code> that is passed to <code>vkCreateDevice</code> by the application or the
+previous layer.</li>
+<li><code>create_info</code> is a pointer to a <code>VkDeviceCreateInfo</code> structure containing information
+about how to create the device. The <a href="test_utils/type.VkLayerDeviceLink.html" title="type vulkan_layer::test_utils::VkLayerDeviceLink"><code>VkLayerDeviceLink</code></a> linked
+list in the <code>pNext</code> chain is already advanced by the layer framework. This is the original
+<code>VkDeviceCreateInfo</code> passed in by the application or the previous layer(except the
+advanced <a href="test_utils/type.VkLayerDeviceLink.html" title="type vulkan_layer::test_utils::VkLayerDeviceLink"><code>VkLayerDeviceLink</code></a> linked list), even if the layer
+implementation passes a different <code>VkDeviceCreateInfo</code> to the next layer in
+<a href="trait.InstanceHooks.html#method.create_device" title="method vulkan_layer::InstanceHooks::create_device"><code>InstanceHooks::create_device</code></a>.</li>
+<li><code>allocator</code> controls host memory allocation as described in the <a href="https://registry.khronos.org/vulkan/specs/1.3-extensions/html/vkspec.html#memory-allocation">Memory Allocation</a>
+chapter of the Vulkan spec.</li>
+<li><code>device</code> contains the loaded device dispatch table of the next layer. The layer
+implementation can just clone this <a href="https://doc.rust-lang.org/nightly/alloc/sync/struct.Arc.html" title="struct alloc::sync::Arc"><code>Arc</code></a> if it is needed to keep the device dispatch
+table.</li>
+<li><code>next_get_device_proc_addr</code> is the <code>vkGetDeviceProcAddr</code> function pointer of the next
+layer obtained from the <a href="test_utils/type.VkLayerDeviceLink.html" title="type vulkan_layer::test_utils::VkLayerDeviceLink"><code>VkLayerDeviceLink</code></a> linked list.</li>
+</ul>
+</div></details></div><h2 id="provided-methods" class="small-section-header">Provided Methods<a href="#provided-methods" class="anchor">§</a></h2><div class="methods"><details class="toggle method-toggle" open><summary><section id="method.get_global_hooks" class="method"><a class="src rightside" href="../src/vulkan_layer/layer_trait.rs.html#1370-1372">source</a><h4 class="code-header">fn <a href="#method.get_global_hooks" class="fn">get_global_hooks</a>(
+    &amp;self
+) -&gt; &lt;Self::<a class="associatedtype" href="trait.Layer.html#associatedtype.GlobalHooksInfo" title="type vulkan_layer::Layer::GlobalHooksInfo">GlobalHooksInfo</a> as <a class="trait" href="trait.GlobalHooksInfo.html" title="trait vulkan_layer::GlobalHooksInfo">GlobalHooksInfo</a>&gt;::<a class="associatedtype" href="trait.GlobalHooksInfo.html#associatedtype.HooksRefType" title="type vulkan_layer::GlobalHooksInfo::HooksRefType">HooksRefType</a>&lt;'_&gt;</h4></section></summary><div class="docblock"><p>Returns a reference of the underlying <a href="trait.GlobalHooks.html" title="trait vulkan_layer::GlobalHooks"><code>GlobalHooks</code></a> object.</p>
+<p>The layer framework relies on this function to obtain <a href="trait.GlobalHooks.html" title="trait vulkan_layer::GlobalHooks"><code>GlobalHooks</code></a>, and implementors
+should avoid overriding this method.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.hooked_instance_commands" class="method"><a class="src rightside" href="../src/vulkan_layer/layer_trait.rs.html#1567-1572">source</a><h4 class="code-header">fn <a href="#method.hooked_instance_commands" class="fn">hooked_instance_commands</a>(
+    &amp;self,
+    _instance_info: &amp;Self::<a class="associatedtype" href="trait.Layer.html#associatedtype.InstanceInfo" title="type vulkan_layer::Layer::InstanceInfo">InstanceInfo</a>
+) -&gt; <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/boxed/struct.Box.html" title="struct alloc::boxed::Box">Box</a>&lt;dyn <a class="trait" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html" title="trait core::iter::traits::iterator::Iterator">Iterator</a>&lt;Item = <a class="enum" href="enum.LayerVulkanCommand.html" title="enum vulkan_layer::LayerVulkanCommand">VulkanCommand</a>&gt;&gt;</h4></section></summary><div class="docblock"><p>Returns an iterator of
+<a href="https://github.com/KhronosGroup/Vulkan-Loader/blob/v1.3.261/docs/LoaderInterfaceArchitecture.md#instance-functions">Vulkan instance functions</a>
+(<a href="https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkGetInstanceProcAddr.html#:~:text=The%20global%20commands%20are%3A%20vkEnumerateInstanceVersion%2C%20vkEnumerateInstanceExtensionProperties%2C%20vkEnumerateInstanceLayerProperties%2C%20and%20vkCreateInstance.">global commands</a>
+not included) that the layer implementation needs to intercept.</p>
+<p>This function allows the layer implementation to decide the commands to intercept
+dynamically after the <code>VkInstance</code> is created. By default it just returns all commands
+returned by <a href="trait.InstanceInfo.html#tymethod.hooked_commands" title="associated function vulkan_layer::InstanceInfo::hooked_commands"><code>InstanceInfo::hooked_commands</code></a>.</p>
+<h5 id="arguments-2"><a href="#arguments-2">Arguments</a></h5>
+<ul>
+<li><code>_instance_info</code> is the relevant instance.</li>
+</ul>
+<h5 id="examples-4"><a href="#examples-4">Examples</a></h5>
+<p>A layer that intercepts <code>vkDestroySurfaceKHR</code> only if the <code>VK_KHR_win32_surface</code> extension
+is enabled.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>ash::vk;
+<span class="kw">use </span>once_cell::sync::Lazy;
+<span class="kw">use </span>std::{ffi::CStr, sync::Arc};
+<span class="kw">use </span>vulkan_layer::{
+    Global, InstanceHooks, InstanceInfo, Layer, LayerManifest, LayerResult,
+    LayerVulkanCommand <span class="kw">as </span>VulkanCommand, StubDeviceInfo, StubGlobalHooks,
+};
+
+<span class="kw">struct </span>MyLayerInstanceInfo {
+    is_win32_surface_enabled: bool,
+}
+
+<span class="kw">impl </span>InstanceHooks <span class="kw">for </span>MyLayerInstanceInfo {
+    <span class="kw">fn </span>destroy_surface_khr(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        _surface: vk::SurfaceKHR,
+        _p_allocator: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>vk::AllocationCallbacks&gt;,
+    ) -&gt; LayerResult&lt;()&gt; {
+        LayerResult::Unhandled
+    }
+}
+
+<span class="kw">impl </span>InstanceInfo <span class="kw">for </span>MyLayerInstanceInfo {
+    <span class="kw">type </span>HooksType = <span class="self">Self</span>;
+    <span class="kw">type </span>HooksRefType&lt;<span class="lifetime">&#39;a</span>&gt; = <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="self">Self</span>;
+
+    <span class="kw">fn </span>hooked_commands() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>[VulkanCommand] {
+        <span class="kw-2">&amp;</span>[VulkanCommand::DestroySurfaceKhr]
+    }
+
+    <span class="kw">fn </span>hooks(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="self">Self</span>::HooksRefType&lt;<span class="lifetime">&#39;_</span>&gt; {
+        <span class="self">self
+    </span>}
+}
+
+<span class="attr">#[derive(Default)]
+</span><span class="kw">struct </span>MyLayer(StubGlobalHooks);
+
+<span class="kw">impl </span>Layer <span class="kw">for </span>MyLayer {
+    <span class="comment">// ...
+    </span><span class="kw">type </span>InstanceInfo = MyLayerInstanceInfo;
+    <span class="kw">type </span>InstanceInfoContainer = MyLayerInstanceInfo;
+
+    <span class="kw">fn </span>create_instance_info(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        create_info: <span class="kw-2">&amp;</span>vk::InstanceCreateInfo,
+        <span class="kw">_</span>: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>vk::AllocationCallbacks&gt;,
+        <span class="kw">_</span>: Arc&lt;ash::Instance&gt;,
+        _next_get_instance_proc_addr: vk::PFN_vkGetInstanceProcAddr,
+    ) -&gt; <span class="self">Self</span>::InstanceInfoContainer {
+        <span class="kw">let </span>enabled_extensions = <span class="kw">if </span>create_info.enabled_extension_count &gt; <span class="number">0 </span>{
+            <span class="kw">unsafe </span>{
+                std::slice::from_raw_parts(
+                    create_info.pp_enabled_extension_names,
+                    create_info.enabled_extension_count <span class="kw">as </span>usize,
+                )
+            }
+        } <span class="kw">else </span>{
+            <span class="kw-2">&amp;</span>[]
+        };
+        <span class="kw">let </span>is_win32_surface_enabled = enabled_extensions
+            .iter()
+            .find(|extension_name| {
+                (<span class="kw">unsafe </span>{ CStr::from_ptr(<span class="kw-2">**</span>extension_name) })
+                    == ash::extensions::khr::Win32Surface::name()
+            })
+            .is_some();
+        MyLayerInstanceInfo {
+            is_win32_surface_enabled,
+        }
+    }
+
+    <span class="kw">fn </span>hooked_instance_commands(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        instance_info: <span class="kw-2">&amp;</span><span class="self">Self</span>::InstanceInfo,
+    ) -&gt; Box&lt;<span class="kw">dyn </span>Iterator&lt;Item = VulkanCommand&gt;&gt; {
+        <span class="kw">let </span>should_hook_destroy_surface = instance_info.is_win32_surface_enabled;
+        Box::new(
+            <span class="self">Self</span>::InstanceInfo::hooked_commands()
+                .iter()
+                .cloned()
+                .filter(<span class="kw">move </span>|command| <span class="kw">match </span>command {
+                    VulkanCommand::DestroySurfaceKhr =&gt; should_hook_destroy_surface,
+                    <span class="kw">_ </span>=&gt; <span class="bool-val">true</span>,
+                }),
+        )
+    }
+}</code></pre></div>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.hooked_device_commands" class="method"><a class="src rightside" href="../src/vulkan_layer/layer_trait.rs.html#1724-1730">source</a><h4 class="code-header">fn <a href="#method.hooked_device_commands" class="fn">hooked_device_commands</a>(
+    &amp;self,
+    _instance_info: &amp;Self::<a class="associatedtype" href="trait.Layer.html#associatedtype.InstanceInfo" title="type vulkan_layer::Layer::InstanceInfo">InstanceInfo</a>,
+    _device_info: <a class="enum" href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;&amp;Self::<a class="associatedtype" href="trait.Layer.html#associatedtype.DeviceInfo" title="type vulkan_layer::Layer::DeviceInfo">DeviceInfo</a>&gt;
+) -&gt; <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/boxed/struct.Box.html" title="struct alloc::boxed::Box">Box</a>&lt;dyn <a class="trait" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html" title="trait core::iter::traits::iterator::Iterator">Iterator</a>&lt;Item = <a class="enum" href="enum.LayerVulkanCommand.html" title="enum vulkan_layer::LayerVulkanCommand">VulkanCommand</a>&gt;&gt;</h4></section></summary><div class="docblock"><p>Returns an iterator of
+<a href="https://github.com/KhronosGroup/Vulkan-Loader/blob/v1.3.261/docs/LoaderInterfaceArchitecture.md#device-functions">Vulkan device functions</a>
+that the layer implementation needs to intercept.</p>
+<p>This function allows the layer implementation to decide the commands to intercept
+dynamically after the <code>VkInstance</code> or <code>VkDevice</code> is created. By default it just returns all
+commands returned by <a href="trait.DeviceInfo.html#tymethod.hooked_commands" title="associated function vulkan_layer::DeviceInfo::hooked_commands"><code>DeviceInfo::hooked_commands</code></a>.</p>
+<p>Arguments</p>
+<ul>
+<li><code>_instance_info</code> is the relevant instance.</li>
+<li><code>_device_info</code> is an optional relevant device. If <code>_device_info</code> is <a href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html#variant.None" title="variant core::option::Option::None"><code>None</code></a>, the layer
+framework is querying all possible intercepted
+<a href="https://github.com/KhronosGroup/Vulkan-Loader/blob/v1.3.261/docs/LoaderInterfaceArchitecture.md#device-functions">device functions</a>
+to implement <code>vkGetInstanceProcAddr</code> with the <code>pName</code> parameter referring to a
+<a href="https://github.com/KhronosGroup/Vulkan-Loader/blob/v1.3.261/docs/LoaderInterfaceArchitecture.md#device-functions">device functions</a>,
+i.e. implementations must guarantee that the returned commands with a <a href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html#variant.None" title="variant core::option::Option::None"><code>None</code></a>
+<code>_device_info</code> is the superset of all possible <code>_device_info</code>. Otherwise, the application
+that just uses the function pointers returned by <code>vkGetInstanceProcAddr</code> may skip the
+current layer.</li>
+</ul>
+<h5 id="examples-5"><a href="#examples-5">Examples</a></h5>
+<p>A layer that intercepts the <code>vkCreateImage</code> only if the ASTC LDR feature is enabled.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>ash::{<span class="self">self</span>, prelude::VkResult, vk};
+<span class="kw">use </span>once_cell::sync::Lazy;
+<span class="kw">use </span>std::sync::Arc;
+<span class="kw">use </span>vulkan_layer::{
+    DeviceHooks, DeviceInfo, Global, Layer, LayerManifest, LayerResult,
+    LayerVulkanCommand <span class="kw">as </span>VulkanCommand, StubGlobalHooks, StubInstanceInfo,
+    VulkanBaseInStructChain,
+};
+
+<span class="kw">struct </span>MyLayerDeviceInfo {
+    is_astc_enabled: bool,
+}
+
+<span class="kw">impl </span>DeviceHooks <span class="kw">for </span>MyLayerDeviceInfo {
+    <span class="kw">fn </span>create_image(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        create_info: <span class="kw-2">&amp;</span>vk::ImageCreateInfo,
+        _p_allocator: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>vk::AllocationCallbacks&gt;,
+    ) -&gt; LayerResult&lt;VkResult&lt;vk::Image&gt;&gt; {
+        <span class="kw">if </span>create_info.format == vk::Format::ASTC_4X4_UNORM_BLOCK {
+            <span class="macro">println!</span>(<span class="string">&quot;ASTC 4x4 UNORM image created.&quot;</span>);
+        }
+        LayerResult::Unhandled
+    }
+}
+
+<span class="kw">impl </span>DeviceInfo <span class="kw">for </span>MyLayerDeviceInfo {
+    <span class="kw">type </span>HooksType = <span class="self">Self</span>;
+    <span class="kw">type </span>HooksRefType&lt;<span class="lifetime">&#39;a</span>&gt; = <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="self">Self</span>;
+
+    <span class="kw">fn </span>hooked_commands() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>[VulkanCommand] {
+        <span class="kw-2">&amp;</span>[VulkanCommand::CreateImage]
+    }
+
+    <span class="kw">fn </span>hooks(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="self">Self</span>::HooksRefType&lt;<span class="lifetime">&#39;_</span>&gt; {
+        <span class="self">self
+    </span>}
+}
+
+<span class="attr">#[derive(Default)]
+</span><span class="kw">struct </span>MyLayer(StubGlobalHooks);
+
+<span class="kw">impl </span>Layer <span class="kw">for </span>MyLayer {
+    <span class="comment">// ...
+    </span><span class="kw">type </span>DeviceInfo = MyLayerDeviceInfo;
+    <span class="kw">type </span>DeviceInfoContainer = MyLayerDeviceInfo;
+    <span class="kw">fn </span>create_device_info(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        <span class="kw">_</span>: vk::PhysicalDevice,
+        create_info: <span class="kw-2">&amp;</span>vk::DeviceCreateInfo,
+        <span class="kw">_</span>: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>vk::AllocationCallbacks&gt;,
+        <span class="kw">_</span>: Arc&lt;ash::Device&gt;,
+        _next_get_device_proc_addr: vk::PFN_vkGetDeviceProcAddr,
+    ) -&gt; <span class="self">Self</span>::DeviceInfoContainer {
+        <span class="kw">let </span><span class="kw-2">mut </span>p_next_chain: VulkanBaseInStructChain =
+            <span class="kw">unsafe </span>{ (create_info.p_next <span class="kw">as </span><span class="kw-2">*const </span>vk::BaseInStructure).as_ref() }.into();
+        <span class="kw">let </span>is_astc_enabled = p_next_chain
+            .find_map(|p_next| {
+                <span class="kw">let </span>p_next = p_next <span class="kw">as </span><span class="kw-2">*const </span>vk::BaseInStructure;
+                <span class="kw">unsafe </span>{
+                    <span class="macro">ash::match_in_struct!</span>(<span class="kw">match </span>p_next {
+                        features2 @ vk::PhysicalDeviceFeatures2 =&gt; {
+                            <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>features2.features)
+                        }
+                        <span class="kw">_ </span>=&gt; {
+                            <span class="prelude-val">None
+                        </span>}
+                    })
+                }
+            })
+            .or_else(|| <span class="kw">unsafe </span>{ create_info.p_enabled_features.as_ref() })
+            .map(|features| features.texture_compression_astc_ldr == vk::TRUE)
+            .unwrap_or(<span class="bool-val">false</span>);
+        MyLayerDeviceInfo { is_astc_enabled }
+    }
+
+    <span class="kw">fn </span>hooked_device_commands(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        _instance_info: <span class="kw-2">&amp;</span><span class="self">Self</span>::InstanceInfo,
+        device_info: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="self">Self</span>::DeviceInfo&gt;,
+    ) -&gt; Box&lt;<span class="kw">dyn </span>Iterator&lt;Item = VulkanCommand&gt;&gt; {
+        <span class="kw">let </span>should_hook_create_image = device_info
+            .map(|device_info| device_info.is_astc_enabled)
+            <span class="comment">// Always hook the vkCreateImage function in the function pointers returned by
+            // vkGetInstanceProcAddr: we don&#39;t know if the to-be-created VkDevice will be
+            // created with the ASTC feature enabled.
+            </span>.unwrap_or(<span class="bool-val">true</span>);
+        Box::new(
+            <span class="self">Self</span>::DeviceInfo::hooked_commands()
+                .iter()
+                .cloned()
+                .filter(<span class="kw">move </span>|command| <span class="kw">match </span>command {
+                    VulkanCommand::CreateImage =&gt; should_hook_create_image,
+                    <span class="kw">_ </span>=&gt; <span class="bool-val">true</span>,
+                }),
+        )
+    }
+}</code></pre></div>
+</div></details></div><h2 id="implementors" class="small-section-header">Implementors<a href="#implementors" class="anchor">§</a></h2><div id="implementors-list"><details class="toggle implementors-toggle"><summary><section id="impl-Layer-for-TestLayer%3CT%3E" class="impl"><a class="src rightside" href="../src/vulkan_layer/test_utils.rs.html#334-391">source</a><a href="#impl-Layer-for-TestLayer%3CT%3E" class="anchor">§</a><h3 class="code-header">impl&lt;T: <a class="trait" href="test_utils/trait.TestLayerTag.html" title="trait vulkan_layer::test_utils::TestLayerTag">TestLayerTag</a>&gt; <a class="trait" href="trait.Layer.html" title="trait vulkan_layer::Layer">Layer</a> for <a class="struct" href="test_utils/struct.TestLayer.html" title="struct vulkan_layer::test_utils::TestLayer">TestLayer</a>&lt;T&gt;</h3><span class="item-info"><div class="stab portability">Available on <strong>crate feature <code>_test</code></strong> only.</div></span></section></summary><div class="impl-items"><section id="associatedtype.GlobalHooksInfo-1" class="associatedtype trait-impl"><a href="#associatedtype.GlobalHooksInfo-1" class="anchor">§</a><h4 class="code-header">type <a href="#associatedtype.GlobalHooksInfo" class="associatedtype">GlobalHooksInfo</a> = <a class="struct" href="test_utils/struct.MockGlobalHooksInfo.html" title="struct vulkan_layer::test_utils::MockGlobalHooksInfo">MockGlobalHooksInfo</a>&lt;<a class="struct" href="test_utils/struct.MockTestLayer.html" title="struct vulkan_layer::test_utils::MockTestLayer">MockTestLayer</a>&lt;T&gt;&gt;</h4></section><section id="associatedtype.InstanceInfo-1" class="associatedtype trait-impl"><a href="#associatedtype.InstanceInfo-1" class="anchor">§</a><h4 class="code-header">type <a href="#associatedtype.InstanceInfo" class="associatedtype">InstanceInfo</a> = <a class="struct" href="test_utils/struct.MockInstanceInfo.html" title="struct vulkan_layer::test_utils::MockInstanceInfo">MockInstanceInfo</a>&lt;<a class="struct" href="test_utils/struct.MockTestLayer.html" title="struct vulkan_layer::test_utils::MockTestLayer">MockTestLayer</a>&lt;T&gt;&gt;</h4></section><section id="associatedtype.DeviceInfo-1" class="associatedtype trait-impl"><a href="#associatedtype.DeviceInfo-1" class="anchor">§</a><h4 class="code-header">type <a href="#associatedtype.DeviceInfo" class="associatedtype">DeviceInfo</a> = <a class="struct" href="test_utils/struct.MockDeviceInfo.html" title="struct vulkan_layer::test_utils::MockDeviceInfo">MockDeviceInfo</a>&lt;<a class="struct" href="test_utils/struct.MockTestLayer.html" title="struct vulkan_layer::test_utils::MockTestLayer">MockTestLayer</a>&lt;T&gt;&gt;</h4></section><section id="associatedtype.InstanceInfoContainer-1" class="associatedtype trait-impl"><a href="#associatedtype.InstanceInfoContainer-1" class="anchor">§</a><h4 class="code-header">type <a href="#associatedtype.InstanceInfoContainer" class="associatedtype">InstanceInfoContainer</a> = <a class="struct" href="test_utils/struct.ArcDel.html" title="struct vulkan_layer::test_utils::ArcDel">ArcDel</a>&lt;&lt;<a class="struct" href="test_utils/struct.TestLayer.html" title="struct vulkan_layer::test_utils::TestLayer">TestLayer</a>&lt;T&gt; as <a class="trait" href="trait.Layer.html" title="trait vulkan_layer::Layer">Layer</a>&gt;::<a class="associatedtype" href="trait.Layer.html#associatedtype.InstanceInfo" title="type vulkan_layer::Layer::InstanceInfo">InstanceInfo</a>&gt;</h4></section><section id="associatedtype.DeviceInfoContainer-1" class="associatedtype trait-impl"><a href="#associatedtype.DeviceInfoContainer-1" class="anchor">§</a><h4 class="code-header">type <a href="#associatedtype.DeviceInfoContainer" class="associatedtype">DeviceInfoContainer</a> = <a class="struct" href="test_utils/struct.ArcDel.html" title="struct vulkan_layer::test_utils::ArcDel">ArcDel</a>&lt;&lt;<a class="struct" href="test_utils/struct.TestLayer.html" title="struct vulkan_layer::test_utils::TestLayer">TestLayer</a>&lt;T&gt; as <a class="trait" href="trait.Layer.html" title="trait vulkan_layer::Layer">Layer</a>&gt;::<a class="associatedtype" href="trait.Layer.html#associatedtype.DeviceInfo" title="type vulkan_layer::Layer::DeviceInfo">DeviceInfo</a>&gt;</h4></section></div></details></div><script src="../implementors/vulkan_layer/layer_trait/trait.Layer.js" async></script></section></div></main></body></html>

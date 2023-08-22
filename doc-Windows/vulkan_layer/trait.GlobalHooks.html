@@ -1,0 +1,118 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="A trait for the layer implementation to provide the implementation of the intercepted global commands."><title>GlobalHooks in vulkan_layer - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../static.files/rustdoc-47e7ab555ef2818a.css" id="mainThemeStyle"><meta name="rustdoc-vars" data-root-path="../" data-static-root-path="../static.files/" data-current-crate="vulkan_layer" data-themes="" data-resource-suffix="" data-rustdoc-version="1.74.0-nightly (ef85656a1 2023-08-21)" data-channel="nightly" data-search-js="search-6dfdfced5eff6596.js" data-settings-js="settings-de11bff964e9d4e5.js" data-settings-css="settings-8c76f75bfb6bd192.css" data-theme-light-css="light-b2d31d2efc7e9b67.css" data-theme-dark-css="dark-3388a2fb2ef8066b.css" data-theme-ayu-css="ayu-8c3c66a6cf12cb2f.css" ><script src="../static.files/storage-db41da1a38ea3cb8.js"></script><script defer src="sidebar-items.js"></script><script defer src="../static.files/main-0795b7d26be81095.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../static.files/light-b2d31d2efc7e9b67.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../static.files/dark-3388a2fb2ef8066b.css"><link rel="stylesheet" href="../static.files/noscript-cffde32267a19fd6.css"></noscript><link rel="alternate icon" type="image/png" href="../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc trait"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="logo-container" href="../vulkan_layer/index.html"><img class="rust-logo" src="../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><h2></h2></nav><nav class="sidebar"><a class="logo-container" href="../vulkan_layer/index.html"><img class="rust-logo" src="../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><h2 class="location"><a href="#">GlobalHooks</a></h2><div class="sidebar-elems"><section><h3><a href="#provided-methods">Provided Methods</a></h3><ul class="block"><li><a href="#method.create_instance">create_instance</a></li></ul><h3><a href="#implementors">Implementors</a></h3></section><h2><a href="index.html">In vulkan_layer</a></h2></div></nav><main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1>Trait <a href="index.html">vulkan_layer</a>::<wbr><a class="trait" href="#">GlobalHooks</a><button id="copy-path" title="Copy item path to clipboard"><img src="../static.files/clipboard-7571035ce49a181d.svg" width="19" height="18" alt="Copy item path"></button></h1><span class="out-of-band"><a class="src" href="../src/vulkan_layer/layer_trait.rs.html#564-670">source</a> · <button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><pre class="rust item-decl"><code>pub trait GlobalHooks: <a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Send.html" title="trait core::marker::Send">Send</a> + <a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Sync.html" title="trait core::marker::Sync">Sync</a> {
+    // Provided method
+    fn <a href="#method.create_instance" class="fn">create_instance</a>(
+        &amp;self,
+        _p_create_info: &amp;InstanceCreateInfo,
+        _layer_instance_link: &amp;<a class="type" href="type.VkLayerInstanceLink.html" title="type vulkan_layer::VkLayerInstanceLink">VkLayerInstanceLink</a>,
+        _p_allocator: <a class="enum" href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;&amp;AllocationCallbacks&gt;,
+        _p_instance: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.pointer.html">*mut </a>Instance
+    ) -&gt; <a class="enum" href="enum.LayerResult.html" title="enum vulkan_layer::LayerResult">LayerResult</a>&lt;VkResult&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.unit.html">()</a>&gt;&gt; { ... }
+}</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>A trait for the layer implementation to provide the implementation of the intercepted
+<a href="https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkGetInstanceProcAddr.html#:~:text=The%20global%20commands%20are%3A%20vkEnumerateInstanceVersion%2C%20vkEnumerateInstanceExtensionProperties%2C%20vkEnumerateInstanceLayerProperties%2C%20and%20vkCreateInstance.">global commands</a>.</p>
+<p>The global commands are copied here for convenience:</p>
+<ul>
+<li><code>vkEnumerateInstanceVersion</code></li>
+<li><code>vkEnumerateInstanceExtensionProperties</code></li>
+<li><code>vkEnumerateInstanceLayerProperties</code></li>
+<li><code>vkCreateInstance</code></li>
+</ul>
+<p>Currently, it is only supported to intercept the <code>vkCreateInstance</code> function.</p>
+</div></details><h2 id="provided-methods" class="small-section-header">Provided Methods<a href="#provided-methods" class="anchor">§</a></h2><div class="methods"><details class="toggle method-toggle" open><summary><section id="method.create_instance" class="method"><a class="src rightside" href="../src/vulkan_layer/layer_trait.rs.html#661-669">source</a><h4 class="code-header">fn <a href="#method.create_instance" class="fn">create_instance</a>(
+    &amp;self,
+    _p_create_info: &amp;InstanceCreateInfo,
+    _layer_instance_link: &amp;<a class="type" href="type.VkLayerInstanceLink.html" title="type vulkan_layer::VkLayerInstanceLink">VkLayerInstanceLink</a>,
+    _p_allocator: <a class="enum" href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;&amp;AllocationCallbacks&gt;,
+    _p_instance: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.pointer.html">*mut </a>Instance
+) -&gt; <a class="enum" href="enum.LayerResult.html" title="enum vulkan_layer::LayerResult">LayerResult</a>&lt;VkResult&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.unit.html">()</a>&gt;&gt;</h4></section></summary><div class="docblock"><p>The logic to intercept the <code>vkCreateInstance</code> function.</p>
+<p>The implementations should return <a href="enum.LayerResult.html#variant.Unhandled" title="variant vulkan_layer::LayerResult::Unhandled"><code>LayerResult::Unhandled</code></a> if the layer implementation
+wants the layer framework to handle the task to call into the next layer, otherwise should
+return <a href="enum.LayerResult.html#variant.Handled" title="variant vulkan_layer::LayerResult::Handled"><code>LayerResult::Handled</code></a>.</p>
+<p>This function is usually intercepted if the layer needs to modify the <code>VkInstanceCreateInfo</code>
+passed to the next layer. Otherwise, <a href="trait.Layer.html#tymethod.create_instance_info" title="method vulkan_layer::Layer::create_instance_info"><code>Layer::create_instance_info</code></a> is almost always
+better. This function is called before <a href="trait.Layer.html#tymethod.create_instance_info" title="method vulkan_layer::Layer::create_instance_info"><code>Layer::create_instance_info</code></a> to create the
+<code>VkInstance</code>.</p>
+<h5 id="arguments"><a href="#arguments">Arguments</a></h5>
+<ul>
+<li><code>_p_create_info</code> is a pointer to a VkInstanceCreateInfo structure controlling creation of
+the instance. The <code>VkLayerInstanceLink</code> linked list in the <code>pNext</code> chain is already
+advanced by the layer framework.</li>
+<li><code>_layer_instance_link</code> is the <code>VkLayerInstanceLink</code> linked list node pointing to the next
+layer.</li>
+<li><code>_p_allocator</code> controls host memory allocation as described in the Memory Allocation
+chapter of the Vulkan spec.</li>
+<li><code>_p_instance</code> points a VkInstance handle in which the resulting instance is returned.
+If the layer implementation wants to handle the call to the next layer, according to
+<a href="https://github.com/KhronosGroup/Vulkan-Loader/blob/main/docs/LoaderLayerInterface.md#example-code-for-createinstance:~:text=LLP_LAYER_21,N/A">the <code>LLP_LAYER_21</code> requirement</a>,
+implementations must guarantee that the original pointer should be passed to the lower
+layers.</li>
+</ul>
+<h5 id="examples"><a href="#examples">Examples</a></h5>
+<p>A layer that always enables the <code>VK_KHR_surface</code> extension.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>ash::vk;
+<span class="kw">use </span>std::{ffi::CStr, ptr::null};
+<span class="kw">use </span>vulkan_layer::{GlobalHooks, LayerResult, VkLayerInstanceLink};
+
+<span class="kw">struct </span>MyGlobalHooks;
+
+<span class="kw">impl </span>GlobalHooks <span class="kw">for </span>MyGlobalHooks {
+    <span class="kw">fn </span>create_instance(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        p_create_info: <span class="kw-2">&amp;</span>vk::InstanceCreateInfo,
+        layer_instance_link: <span class="kw-2">&amp;</span>VkLayerInstanceLink,
+        p_allocator: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>vk::AllocationCallbacks&gt;,
+        p_instance: <span class="kw-2">*mut </span>vk::Instance,
+    ) -&gt; LayerResult&lt;ash::prelude::VkResult&lt;()&gt;&gt; {
+        <span class="comment">// Clone the input enabled extension names as a Vec.
+        </span><span class="kw">let </span><span class="kw-2">mut </span>enabled_extensions = <span class="kw">if </span>p_create_info.enabled_extension_count == <span class="number">0 </span>{
+            <span class="macro">vec!</span>[]
+        } <span class="kw">else </span>{
+            <span class="kw">unsafe </span>{
+                std::slice::from_raw_parts(
+                    p_create_info.pp_enabled_extension_names,
+                    p_create_info.enabled_extension_count <span class="kw">as </span>usize,
+                )
+            }
+            .to_vec()
+        };
+        <span class="comment">// Push the VK_KHR_surface extension name only if it doesn&#39;t exist.
+        </span><span class="kw">if </span>enabled_extensions
+            .iter()
+            .find(|extension_name| {
+                (<span class="kw">unsafe </span>{ CStr::from_ptr(<span class="kw-2">**</span>extension_name) })
+                    == ash::extensions::khr::Win32Surface::name()
+            })
+            .is_none()
+        {
+            enabled_extensions.push(ash::extensions::khr::Win32Surface::name().as_ptr());
+        }
+        <span class="comment">// Create a new VkInstanceCreateInfo with the new extensions. The passed in
+        // VkInstanceCreateInfo is const, so we have to create another VkInstanceCreateInfo
+        // to mutate the field we need to avoid possible undefined behavior in Rust.
+        </span><span class="kw">let </span><span class="kw-2">mut </span>create_info = p_create_info.clone();
+        create_info.enabled_extension_count = enabled_extensions.len() <span class="kw">as </span>u32;
+        create_info.pp_enabled_extension_names = enabled_extensions.as_ptr();
+        <span class="comment">// Convert p_allocator to a raw pointer that can be directly passed to
+        // vkCreateInstance.
+        </span><span class="kw">let </span>p_allocator = p_allocator
+            .map(|allocator| allocator <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>)
+            .unwrap_or_else(null);
+        <span class="comment">// Find the vkCreateInstance entry of the next layer.
+        </span><span class="kw">let </span>create_instance = <span class="kw">unsafe </span>{
+            (layer_instance_link.pfnNextGetInstanceProcAddr)(
+                vk::Instance::null(),
+                <span class="string">b&quot;vkCreateInstance\0&quot;</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span>i8,
+            )
+        };
+        <span class="kw">let </span>create_instance: vk::PFN_vkCreateInstance = <span class="kw">match </span>create_instance {
+            <span class="prelude-val">Some</span>(fp) =&gt; <span class="kw">unsafe </span>{ std::mem::transmute(fp) },
+            <span class="prelude-val">None </span>=&gt; <span class="kw">return </span>LayerResult::Handled(<span class="prelude-val">Err</span>(vk::Result::ERROR_INITIALIZATION_FAILED)),
+        };
+        <span class="comment">// Call into the vkCreateInstance of the next layer with the original p_instance
+        // pointer.
+        </span>LayerResult::Handled(
+            <span class="kw">unsafe </span>{ create_instance(<span class="kw-2">&amp;</span>create_info, p_allocator, p_instance) }.result(),
+        )
+    }
+}</code></pre></div>
+</div></details></div><h2 id="implementors" class="small-section-header">Implementors<a href="#implementors" class="anchor">§</a></h2><div id="implementors-list"><section id="impl-GlobalHooks-for-StubGlobalHooks" class="impl"><a class="src rightside" href="../src/vulkan_layer/lib.rs.html#1533">source</a><a href="#impl-GlobalHooks-for-StubGlobalHooks" class="anchor">§</a><h3 class="code-header">impl <a class="trait" href="trait.GlobalHooks.html" title="trait vulkan_layer::GlobalHooks">GlobalHooks</a> for <a class="struct" href="struct.StubGlobalHooks.html" title="struct vulkan_layer::StubGlobalHooks">StubGlobalHooks</a></h3></section></div><script src="../implementors/vulkan_layer/layer_trait/trait.GlobalHooks.js" async></script></section></div></main></body></html>

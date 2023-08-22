@@ -1,0 +1,1 @@
+window.ALL_CRATES = ["ci","codegen","vulkan_layer","vulkan_layer_macros","xtask"];

@@ -1,0 +1,187 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="A trait for the layer implementation to provide metadata of `DeviceHooks` for the layer framework."><title>DeviceInfo in vulkan_layer - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../static.files/rustdoc-47e7ab555ef2818a.css" id="mainThemeStyle"><meta name="rustdoc-vars" data-root-path="../" data-static-root-path="../static.files/" data-current-crate="vulkan_layer" data-themes="" data-resource-suffix="" data-rustdoc-version="1.74.0-nightly (ef85656a1 2023-08-21)" data-channel="nightly" data-search-js="search-6dfdfced5eff6596.js" data-settings-js="settings-de11bff964e9d4e5.js" data-settings-css="settings-8c76f75bfb6bd192.css" data-theme-light-css="light-b2d31d2efc7e9b67.css" data-theme-dark-css="dark-3388a2fb2ef8066b.css" data-theme-ayu-css="ayu-8c3c66a6cf12cb2f.css" ><script src="../static.files/storage-db41da1a38ea3cb8.js"></script><script defer src="sidebar-items.js"></script><script defer src="../static.files/main-0795b7d26be81095.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../static.files/light-b2d31d2efc7e9b67.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../static.files/dark-3388a2fb2ef8066b.css"><link rel="stylesheet" href="../static.files/noscript-cffde32267a19fd6.css"></noscript><link rel="alternate icon" type="image/png" href="../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc trait"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="logo-container" href="../vulkan_layer/index.html"><img class="rust-logo" src="../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><h2></h2></nav><nav class="sidebar"><a class="logo-container" href="../vulkan_layer/index.html"><img class="rust-logo" src="../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><h2 class="location"><a href="#">DeviceInfo</a></h2><div class="sidebar-elems"><section><h3><a href="#required-associated-types">Required Associated Types</a></h3><ul class="block"><li><a href="#associatedtype.HooksRefType">HooksRefType</a></li><li><a href="#associatedtype.HooksType">HooksType</a></li></ul><h3><a href="#required-methods">Required Methods</a></h3><ul class="block"><li><a href="#tymethod.hooked_commands">hooked_commands</a></li><li><a href="#tymethod.hooks">hooks</a></li></ul><h3><a href="#implementors">Implementors</a></h3></section><h2><a href="index.html">In vulkan_layer</a></h2></div></nav><main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1>Trait <a href="index.html">vulkan_layer</a>::<wbr><a class="trait" href="#">DeviceInfo</a><button id="copy-path" title="Copy item path to clipboard"><img src="../static.files/clipboard-7571035ce49a181d.svg" width="19" height="18" alt="Copy item path"></button></h1><span class="out-of-band"><a class="src" href="../src/vulkan_layer/layer_trait.rs.html#102-303">source</a> · <button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><pre class="rust item-decl"><code>pub trait DeviceInfo: <a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Send.html" title="trait core::marker::Send">Send</a> + <a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Sync.html" title="trait core::marker::Sync">Sync</a> {
+    type <a href="#associatedtype.HooksType" class="associatedtype">HooksType</a>: <a class="trait" href="trait.DeviceHooks.html" title="trait vulkan_layer::DeviceHooks">DeviceHooks</a>;
+    type <a href="#associatedtype.HooksRefType" class="associatedtype">HooksRefType</a>&lt;'a&gt;: <a class="trait" href="https://doc.rust-lang.org/nightly/core/ops/deref/trait.Deref.html" title="trait core::ops::deref::Deref">Deref</a>&lt;Target = Self::<a class="associatedtype" href="trait.DeviceInfo.html#associatedtype.HooksType" title="type vulkan_layer::DeviceInfo::HooksType">HooksType</a>&gt; + 'a
+       <span class="where">where Self: 'a</span>;
+
+    // Required methods
+    fn <a href="#tymethod.hooked_commands" class="fn">hooked_commands</a>() -&gt; &amp;'static [<a class="enum" href="enum.LayerVulkanCommand.html" title="enum vulkan_layer::LayerVulkanCommand">VulkanCommand</a>];
+<span class="item-spacer"></span>    fn <a href="#tymethod.hooks" class="fn">hooks</a>(&amp;self) -&gt; Self::<a class="associatedtype" href="trait.DeviceInfo.html#associatedtype.HooksRefType" title="type vulkan_layer::DeviceInfo::HooksRefType">HooksRefType</a>&lt;'_&gt;;
+}</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>A trait for the layer implementation to provide metadata of <a href="trait.DeviceHooks.html" title="trait vulkan_layer::DeviceHooks"><code>DeviceHooks</code></a> for the layer
+framework.</p>
+<p>This trait serves as the container of the <a href="trait.DeviceHooks.html" title="trait vulkan_layer::DeviceHooks"><code>DeviceHooks</code></a> type and provides the list of
+intercepted
+<a href="https://github.com/KhronosGroup/Vulkan-Loader/blob/v1.3.261/docs/LoaderInterfaceArchitecture.md#device-functions">Vulkan device functions</a>
+for the layer framework. This trait and <a href="trait.DeviceHooks.html" title="trait vulkan_layer::DeviceHooks"><code>DeviceHooks</code></a> can be implemented by the same type.</p>
+<p>This trait can also be automatically implemented with the help of the
+<a href="attr.auto_deviceinfo_impl.html" title="attr vulkan_layer::auto_deviceinfo_impl"><code>auto_deviceinfo_impl</code></a> attribute macro.</p>
+<h2 id="examples"><a href="#examples">Examples</a></h2>
+<p>A layer that needs to intercept the <code>vkCreateImage</code> function.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">struct </span>MyLayerDeviceInfo;
+
+<span class="kw">impl </span>DeviceHooks <span class="kw">for </span>MyLayerDeviceInfo {
+    <span class="kw">fn </span>create_image(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        _p_create_info: <span class="kw-2">&amp;</span>vk::ImageCreateInfo,
+        _p_allocator: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>vk::AllocationCallbacks&gt;,
+    ) -&gt; LayerResult&lt;VkResult&lt;vk::Image&gt;&gt; {
+        LayerResult::Unhandled
+    }
+}
+
+<span class="kw">impl </span>DeviceInfo <span class="kw">for </span>MyLayerDeviceInfo {
+    <span class="kw">type </span>HooksType = <span class="self">Self</span>;
+    <span class="kw">type </span>HooksRefType&lt;<span class="lifetime">&#39;a</span>&gt; = <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="self">Self</span>;
+
+    <span class="kw">fn </span>hooked_commands() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>[VulkanCommand] {
+        <span class="kw-2">&amp;</span>[VulkanCommand::CreateImage]
+    }
+
+    <span class="kw">fn </span>hooks(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="self">Self</span>::HooksRefType&lt;<span class="lifetime">&#39;_</span>&gt; {
+        <span class="self">self
+    </span>}
+}</code></pre></div>
+</div></details><h2 id="required-associated-types" class="small-section-header">Required Associated Types<a href="#required-associated-types" class="anchor">§</a></h2><div class="methods"><details class="toggle" open><summary><section id="associatedtype.HooksType" class="method"><a class="src rightside" href="../src/vulkan_layer/layer_trait.rs.html#108">source</a><h4 class="code-header">type <a href="#associatedtype.HooksType" class="associatedtype">HooksType</a>: <a class="trait" href="trait.DeviceHooks.html" title="trait vulkan_layer::DeviceHooks">DeviceHooks</a></h4></section></summary><div class="docblock"><p>The underlying <a href="trait.DeviceHooks.html" title="trait vulkan_layer::DeviceHooks"><code>DeviceHooks</code></a> type that implements the core logic to intercept
+<a href="https://github.com/KhronosGroup/Vulkan-Loader/blob/v1.3.261/docs/LoaderInterfaceArchitecture.md#device-functions">Vulkan device functions</a>.</p>
+<p>If a type implements both this trait and the <a href="trait.DeviceHooks.html" title="trait vulkan_layer::DeviceHooks"><code>DeviceHooks</code></a> trait simultaneously,
+<a href="trait.DeviceInfo.html#associatedtype.HooksType" title="associated type vulkan_layer::DeviceInfo::HooksType"><code>DeviceInfo::HooksType</code></a> can be set to <code>Self</code>.</p>
+</div></details><details class="toggle" open><summary><section id="associatedtype.HooksRefType" class="method"><a class="src rightside" href="../src/vulkan_layer/layer_trait.rs.html#144-146">source</a><h4 class="code-header">type <a href="#associatedtype.HooksRefType" class="associatedtype">HooksRefType</a>&lt;'a&gt;: <a class="trait" href="https://doc.rust-lang.org/nightly/core/ops/deref/trait.Deref.html" title="trait core::ops::deref::Deref">Deref</a>&lt;Target = Self::<a class="associatedtype" href="trait.DeviceInfo.html#associatedtype.HooksType" title="type vulkan_layer::DeviceInfo::HooksType">HooksType</a>&gt; + 'a
+<span class="where">where
+    Self: 'a</span></h4></section></summary><div class="docblock"><p>A type that can be dereferencing to <a href="trait.DeviceInfo.html#associatedtype.HooksType" title="associated type vulkan_layer::DeviceInfo::HooksType"><code>DeviceInfo::HooksType</code></a>. Usually just
+<code>&amp;DeviceInfo::HooksType</code>.</p>
+<p>This extra associated type allows the layer implemention to use a smart pointer like
+<a href="https://doc.rust-lang.org/nightly/alloc/sync/struct.Arc.html" title="struct alloc::sync::Arc"><code>Arc</code></a> or <a href="https://doc.rust-lang.org/nightly/std/sync/mutex/struct.MutexGuard.html" title="struct std::sync::mutex::MutexGuard"><code>MutexGuard</code></a> to hold the reference.</p>
+<h5 id="examples-1"><a href="#examples-1">Examples</a></h5>
+<p>A layer implementation that returns a <a href="https://doc.rust-lang.org/nightly/alloc/sync/struct.Arc.html" title="struct alloc::sync::Arc"><code>Arc</code></a>.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">struct </span>MyLayerDeviceInfo(Arc&lt;MyLayerDeviceHooks&gt;);
+
+<span class="kw">impl </span>DeviceInfo <span class="kw">for </span>MyLayerDeviceInfo {
+    <span class="kw">type </span>HooksType = MyLayerDeviceHooks;
+    <span class="kw">type </span>HooksRefType&lt;<span class="lifetime">&#39;a</span>&gt; = Arc&lt;MyLayerDeviceHooks&gt;;
+
+    <span class="comment">// Other required methods omitted.
+
+    </span><span class="kw">fn </span>hooks(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="self">Self</span>::HooksRefType&lt;<span class="lifetime">&#39;_</span>&gt; {
+        Arc::clone(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>)
+    }
+}</code></pre></div>
+</div></details></div><h2 id="required-methods" class="small-section-header">Required Methods<a href="#required-methods" class="anchor">§</a></h2><div class="methods"><details class="toggle method-toggle" open><summary><section id="tymethod.hooked_commands" class="method"><a class="src rightside" href="../src/vulkan_layer/layer_trait.rs.html#296">source</a><h4 class="code-header">fn <a href="#tymethod.hooked_commands" class="fn">hooked_commands</a>() -&gt; &amp;'static [<a class="enum" href="enum.LayerVulkanCommand.html" title="enum vulkan_layer::LayerVulkanCommand">VulkanCommand</a>]</h4></section></summary><div class="docblock"><p>Returns a slice of
+<a href="https://github.com/KhronosGroup/Vulkan-Loader/blob/v1.3.261/docs/LoaderInterfaceArchitecture.md#device-functions">Vulkan device functions</a>
+that the layer implementation needs to intercept.</p>
+<p>This function should normally return the methods implemented by the associated
+<a href="trait.DeviceHooks.html" title="trait vulkan_layer::DeviceHooks"><code>DeviceHooks</code></a> type. If the layer implementation needs to decide the functions to intercept
+dynamically at runtime, use the <a href="trait.Layer.html#method.hooked_device_commands" title="method vulkan_layer::Layer::hooked_device_commands"><code>Layer::hooked_device_commands</code></a> method to override the
+list of intercepted device functions.</p>
+<p>Avoid returning commands other than
+<a href="https://github.com/KhronosGroup/Vulkan-Loader/blob/v1.3.261/docs/LoaderInterfaceArchitecture.md#device-functions">Vulkan device functions</a>.
+Otherwise, those commands may or may not be intercepted.</p>
+<p>For Vulkan commands that have multiple names, e.g. <code>vkCreateSamplerYcbcrConversion</code> and
+<code>vkCreateSamplerYcbcrConversionKHR</code>, only the shortest name should be
+used(<a href="enum.LayerVulkanCommand.html#variant.CreateSamplerYcbcrConversion" title="variant vulkan_layer::LayerVulkanCommand::CreateSamplerYcbcrConversion"><code>VulkanCommand::CreateSamplerYcbcrConversion</code></a> in this example). The layer framwork
+automatically wires both entries to the layer implementation.</p>
+<h5 id="examples-2"><a href="#examples-2">Examples</a></h5>
+<p>A layer that intercepts the <code>vkCreateImage</code> only if the ASTC LDR feature is enabled.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>ash::{<span class="self">self</span>, prelude::VkResult, vk};
+<span class="kw">use </span>once_cell::sync::Lazy;
+<span class="kw">use </span>std::sync::Arc;
+<span class="kw">use </span>vulkan_layer::{
+    DeviceHooks, DeviceInfo, Global, Layer, LayerManifest, LayerResult,
+    LayerVulkanCommand <span class="kw">as </span>VulkanCommand, StubGlobalHooks, StubInstanceInfo,
+    VulkanBaseInStructChain,
+};
+
+<span class="kw">struct </span>MyLayerDeviceInfo {
+    is_astc_enabled: bool,
+}
+
+<span class="kw">impl </span>DeviceHooks <span class="kw">for </span>MyLayerDeviceInfo {
+    <span class="kw">fn </span>create_image(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        create_info: <span class="kw-2">&amp;</span>vk::ImageCreateInfo,
+        _p_allocator: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>vk::AllocationCallbacks&gt;,
+    ) -&gt; LayerResult&lt;VkResult&lt;vk::Image&gt;&gt; {
+        <span class="kw">if </span>create_info.format == vk::Format::ASTC_4X4_UNORM_BLOCK {
+            <span class="macro">println!</span>(<span class="string">&quot;ASTC 4x4 UNORM image created.&quot;</span>);
+        }
+        LayerResult::Unhandled
+    }
+}
+
+<span class="kw">impl </span>DeviceInfo <span class="kw">for </span>MyLayerDeviceInfo {
+    <span class="kw">type </span>HooksType = <span class="self">Self</span>;
+    <span class="kw">type </span>HooksRefType&lt;<span class="lifetime">&#39;a</span>&gt; = <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="self">Self</span>;
+
+    <span class="kw">fn </span>hooked_commands() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>[VulkanCommand] {
+        <span class="kw-2">&amp;</span>[VulkanCommand::CreateImage]
+    }
+
+    <span class="kw">fn </span>hooks(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="self">Self</span>::HooksRefType&lt;<span class="lifetime">&#39;_</span>&gt; {
+        <span class="self">self
+    </span>}
+}
+
+<span class="attr">#[derive(Default)]
+</span><span class="kw">struct </span>MyLayer(StubGlobalHooks);
+
+<span class="kw">impl </span>Layer <span class="kw">for </span>MyLayer {
+    <span class="comment">// ...
+    </span><span class="kw">type </span>DeviceInfo = MyLayerDeviceInfo;
+    <span class="kw">type </span>DeviceInfoContainer = MyLayerDeviceInfo;
+    <span class="kw">fn </span>create_device_info(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        <span class="kw">_</span>: vk::PhysicalDevice,
+        create_info: <span class="kw-2">&amp;</span>vk::DeviceCreateInfo,
+        <span class="kw">_</span>: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>vk::AllocationCallbacks&gt;,
+        <span class="kw">_</span>: Arc&lt;ash::Device&gt;,
+        _next_get_device_proc_addr: vk::PFN_vkGetDeviceProcAddr,
+    ) -&gt; <span class="self">Self</span>::DeviceInfoContainer {
+        <span class="kw">let </span><span class="kw-2">mut </span>p_next_chain: VulkanBaseInStructChain =
+            <span class="kw">unsafe </span>{ (create_info.p_next <span class="kw">as </span><span class="kw-2">*const </span>vk::BaseInStructure).as_ref() }.into();
+        <span class="kw">let </span>is_astc_enabled = p_next_chain
+            .find_map(|p_next| {
+                <span class="kw">let </span>p_next = p_next <span class="kw">as </span><span class="kw-2">*const </span>vk::BaseInStructure;
+                <span class="kw">unsafe </span>{
+                    <span class="macro">ash::match_in_struct!</span>(<span class="kw">match </span>p_next {
+                        features2 @ vk::PhysicalDeviceFeatures2 =&gt; {
+                            <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>features2.features)
+                        }
+                        <span class="kw">_ </span>=&gt; {
+                            <span class="prelude-val">None
+                        </span>}
+                    })
+                }
+            })
+            .or_else(|| <span class="kw">unsafe </span>{ create_info.p_enabled_features.as_ref() })
+            .map(|features| features.texture_compression_astc_ldr == vk::TRUE)
+            .unwrap_or(<span class="bool-val">false</span>);
+        MyLayerDeviceInfo { is_astc_enabled }
+    }
+
+    <span class="kw">fn </span>hooked_device_commands(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        _instance_info: <span class="kw-2">&amp;</span><span class="self">Self</span>::InstanceInfo,
+        device_info: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="self">Self</span>::DeviceInfo&gt;,
+    ) -&gt; Box&lt;<span class="kw">dyn </span>Iterator&lt;Item = VulkanCommand&gt;&gt; {
+        <span class="kw">let </span>should_hook_create_image = device_info
+            .map(|device_info| device_info.is_astc_enabled)
+            <span class="comment">// Always hook the vkCreateImage function in the function pointers returned by
+            // vkGetInstanceProcAddr: we don&#39;t know if the to-be-created VkDevice will be
+            // created with the ASTC feature enabled.
+            </span>.unwrap_or(<span class="bool-val">true</span>);
+        Box::new(
+            <span class="self">Self</span>::DeviceInfo::hooked_commands()
+                .iter()
+                .cloned()
+                .filter(<span class="kw">move </span>|command| <span class="kw">match </span>command {
+                    VulkanCommand::CreateImage =&gt; should_hook_create_image,
+                    <span class="kw">_ </span>=&gt; <span class="bool-val">true</span>,
+                }),
+        )
+    }
+}</code></pre></div>
+</div></details><details class="toggle method-toggle" open><summary><section id="tymethod.hooks" class="method"><a class="src rightside" href="../src/vulkan_layer/layer_trait.rs.html#302">source</a><h4 class="code-header">fn <a href="#tymethod.hooks" class="fn">hooks</a>(&amp;self) -&gt; Self::<a class="associatedtype" href="trait.DeviceInfo.html#associatedtype.HooksRefType" title="type vulkan_layer::DeviceInfo::HooksRefType">HooksRefType</a>&lt;'_&gt;</h4></section></summary><div class="docblock"><p>Returns the reference of the <a href="trait.DeviceInfo.html#associatedtype.HooksType" title="associated type vulkan_layer::DeviceInfo::HooksType"><code>DeviceInfo::HooksType</code></a>.</p>
+<p>The layer framework uses the returned value to call into the layer implementation of
+intercepted commands.</p>
+</div></details></div><h2 id="implementors" class="small-section-header">Implementors<a href="#implementors" class="anchor">§</a></h2><div id="implementors-list"><details class="toggle implementors-toggle"><summary><section id="impl-DeviceInfo-for-StubDeviceInfo" class="impl"><a class="src rightside" href="../src/vulkan_layer/lib.rs.html#1547">source</a><a href="#impl-DeviceInfo-for-StubDeviceInfo" class="anchor">§</a><h3 class="code-header">impl <a class="trait" href="trait.DeviceInfo.html" title="trait vulkan_layer::DeviceInfo">DeviceInfo</a> for <a class="struct" href="struct.StubDeviceInfo.html" title="struct vulkan_layer::StubDeviceInfo">StubDeviceInfo</a></h3></section></summary><div class="impl-items"><section id="associatedtype.HooksType-1" class="associatedtype trait-impl"><a href="#associatedtype.HooksType-1" class="anchor">§</a><h4 class="code-header">type <a href="#associatedtype.HooksType" class="associatedtype">HooksType</a> = <a class="struct" href="struct.StubDeviceInfo.html" title="struct vulkan_layer::StubDeviceInfo">StubDeviceInfo</a></h4></section><section id="associatedtype.HooksRefType-1" class="associatedtype trait-impl"><a href="#associatedtype.HooksRefType-1" class="anchor">§</a><h4 class="code-header">type <a href="#associatedtype.HooksRefType" class="associatedtype">HooksRefType</a>&lt;'a&gt; = &amp;'a <a class="struct" href="struct.StubDeviceInfo.html" title="struct vulkan_layer::StubDeviceInfo">StubDeviceInfo</a></h4></section></div></details><details class="toggle implementors-toggle"><summary><section id="impl-DeviceInfo-for-MockDeviceInfo%3CT%3E" class="impl"><a class="src rightside" href="../src/vulkan_layer/test_utils.rs.html#264-275">source</a><a href="#impl-DeviceInfo-for-MockDeviceInfo%3CT%3E" class="anchor">§</a><h3 class="code-header">impl&lt;T: <a class="trait" href="test_utils/trait.TestLayerMock.html" title="trait vulkan_layer::test_utils::TestLayerMock">TestLayerMock</a>&gt; <a class="trait" href="trait.DeviceInfo.html" title="trait vulkan_layer::DeviceInfo">DeviceInfo</a> for <a class="struct" href="test_utils/struct.MockDeviceInfo.html" title="struct vulkan_layer::test_utils::MockDeviceInfo">MockDeviceInfo</a>&lt;T&gt;</h3><span class="item-info"><div class="stab portability">Available on <strong>crate feature <code>_test</code></strong> only.</div></span></section></summary><div class="impl-items"><section id="associatedtype.HooksType-2" class="associatedtype trait-impl"><a href="#associatedtype.HooksType-2" class="anchor">§</a><h4 class="code-header">type <a href="#associatedtype.HooksType" class="associatedtype">HooksType</a> = MockDeviceHooks</h4></section><section id="associatedtype.HooksRefType-2" class="associatedtype trait-impl"><a href="#associatedtype.HooksRefType-2" class="anchor">§</a><h4 class="code-header">type <a href="#associatedtype.HooksRefType" class="associatedtype">HooksRefType</a>&lt;'a&gt; = <a class="struct" href="https://doc.rust-lang.org/nightly/std/sync/mutex/struct.MutexGuard.html" title="struct std::sync::mutex::MutexGuard">MutexGuard</a>&lt;'a, MockDeviceHooks&gt;</h4></section></div></details></div><script src="../implementors/vulkan_layer/layer_trait/trait.DeviceInfo.js" async></script></section></div></main></body></html>

@@ -1,0 +1,326 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="This crate provides a convenient framework to develop Vulkan layers in Rust on top of the ash crate. If you are not familiar how to write a Vulkan layer, this C++ tutorial by Baldur Karlsson is a good reference to start with."><title>vulkan_layer - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../static.files/rustdoc-47e7ab555ef2818a.css" id="mainThemeStyle"><meta name="rustdoc-vars" data-root-path="../" data-static-root-path="../static.files/" data-current-crate="vulkan_layer" data-themes="" data-resource-suffix="" data-rustdoc-version="1.74.0-nightly (ef85656a1 2023-08-21)" data-channel="nightly" data-search-js="search-6dfdfced5eff6596.js" data-settings-js="settings-de11bff964e9d4e5.js" data-settings-css="settings-8c76f75bfb6bd192.css" data-theme-light-css="light-b2d31d2efc7e9b67.css" data-theme-dark-css="dark-3388a2fb2ef8066b.css" data-theme-ayu-css="ayu-8c3c66a6cf12cb2f.css" ><script src="../static.files/storage-db41da1a38ea3cb8.js"></script><script defer src="../crates.js"></script><script defer src="../static.files/main-0795b7d26be81095.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../static.files/light-b2d31d2efc7e9b67.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../static.files/dark-3388a2fb2ef8066b.css"><link rel="stylesheet" href="../static.files/noscript-cffde32267a19fd6.css"></noscript><link rel="alternate icon" type="image/png" href="../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc mod crate"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="logo-container" href="../vulkan_layer/index.html"><img class="rust-logo" src="../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><h2></h2></nav><nav class="sidebar"><a class="logo-container" href="../vulkan_layer/index.html"><img class="rust-logo" src="../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><h2 class="location"><a href="#">Crate vulkan_layer</a></h2><div class="sidebar-elems"><ul class="block"><li class="version">Version 0.1.0</li><li><a id="all-types" href="all.html">All Items</a></li></ul><section><ul class="block"><li><a href="#modules">Modules</a></li><li><a href="#macros">Macros</a></li><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li><li><a href="#traits">Traits</a></li><li><a href="#functions">Functions</a></li><li><a href="#types">Type Definitions</a></li><li><a href="#attributes">Attribute Macros</a></li></ul></section></div></nav><main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1>Crate <a class="mod" href="#">vulkan_layer</a><button id="copy-path" title="Copy item path to clipboard"><img src="../static.files/clipboard-7571035ce49a181d.svg" width="19" height="18" alt="Copy item path"></button></h1><span class="out-of-band"><a class="src" href="../src/vulkan_layer/lib.rs.html#15-1706">source</a> · <button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>This crate provides a convenient framework to develop
+<a href="https://github.com/KhronosGroup/Vulkan-Loader/blob/main/docs/LoaderLayerInterface.md">Vulkan layers</a>
+in Rust on top of the <a href="https://crates.io/crates/ash">ash</a> crate. If you are not familiar how to
+write a Vulkan layer, <a href="https://renderdoc.org/vulkan-layer-guide.html">this C++ tutorial</a> by
+Baldur Karlsson is a good reference to start with.</p>
+<p>Key features provided by this crate includes:</p>
+<ul>
+<li>
+<p>Support the look-up map fashion of implementing a Vulkan layer.</p>
+<p>The look-up maps for <code>VkDevice</code> and <code>VkInstance</code> are handled by this crate.</p>
+</li>
+<li>
+<p>Implement <code>vkGet*ProcAddr</code> automatically.</p>
+<p>This is a non-trivial work to comply with the spec, because of extensions and the
+required/supported Vulkan API level. See the
+<a href="https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkGetInstanceProcAddr.html">spec</a>
+of <code>vkGetInstanceProc</code> for details.</p>
+</li>
+<li>
+<p>Handle dispatch tables, <code>vkCreateInstance</code> and <code>vkCreateDevice</code>.</p>
+<p>This mainly includes using the <code>vkGet*ProcAddr</code> function pointer correctly, and advancing the
+<code>VkLayer*CreateInfo::u::pLayerInfo</code> link list. One common mistake in layer implementation
+in <code>vkCreateDevice</code> is to call <code>getInstanceProcAddr(VK_NULL_HANDLE, &quot;vkCreateDevice&quot;)</code> to
+obtain the function pointer to <code>vkCreateDevice</code>. According to
+<a href="https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkGetInstanceProcAddr.html#_description">the spec</a>,
+<code>getInstanceProcAddr</code> should return <code>NULL</code>. This framework helps you avoid bugs like this.</p>
+</li>
+</ul>
+<p>Note that object wrapping is not supported by this crate, and we don’t plan such support,
+because object wrapping requires us to intercept ALL Vulkan commands related to one handle type,
+so it can’t handle unknown commands. In addition, object wrapping is more complicated because it
+is required to call loader callback on every dispatchable handle creation and destruction.</p>
+<h2 id="overview"><a href="#overview">Overview</a></h2>
+<p>The primary types in this crate are the <a href="trait.Layer.html" title="trait vulkan_layer::Layer"><code>Layer</code></a> trait and the <a href="struct.Global.html" title="struct vulkan_layer::Global"><code>Global</code></a> struct. The user
+implements the <a href="trait.Layer.html" title="trait vulkan_layer::Layer"><code>Layer</code></a> trait for a type <code>T</code>, and the <a href="struct.Global.html" title="struct vulkan_layer::Global"><code>Global&lt;T&gt;</code></a> will include all necessary
+functions needed to export from this dynamic link library. With the help of the
+<a href="macro.declare_introspection_queries.html" title="macro vulkan_layer::declare_introspection_queries"><code>declare_introspection_queries</code></a> macro, the user can export those functions in oneline.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>ash::{<span class="self">self</span>, vk};
+<span class="kw">use </span>once_cell::sync::Lazy;
+<span class="kw">use </span>std::sync::Arc;
+<span class="kw">use </span>vulkan_layer::{
+    declare_introspection_queries, Global, Layer, LayerManifest, StubDeviceInfo,
+    StubGlobalHooks, StubInstanceInfo,
+};
+
+<span class="comment">// Define the layer type.
+</span><span class="attr">#[derive(Default)]
+</span><span class="kw">struct </span>MyLayer(StubGlobalHooks);
+
+<span class="comment">// Implement the Layer trait.
+</span><span class="kw">impl </span>Layer <span class="kw">for </span>MyLayer {
+    <span class="kw">type </span>GlobalHooksInfo = StubGlobalHooks;
+    <span class="kw">type </span>InstanceInfo = StubInstanceInfo;
+    <span class="kw">type </span>DeviceInfo = StubDeviceInfo;
+    <span class="kw">type </span>InstanceInfoContainer = StubInstanceInfo;
+    <span class="kw">type </span>DeviceInfoContainer = StubDeviceInfo;
+
+    <span class="kw">fn </span>global_instance() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>Global&lt;<span class="self">Self</span>&gt; {
+        <span class="kw">static </span>GLOBAL: Lazy&lt;Global&lt;MyLayer&gt;&gt; = Lazy::new(Default::default);
+        <span class="kw-2">&amp;*</span>GLOBAL
+    }
+
+    <span class="kw">fn </span>manifest() -&gt; LayerManifest {
+        Default::default()
+    }
+
+    <span class="kw">fn </span>get_global_hooks_info(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="self">Self</span>::GlobalHooksInfo {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0
+    </span>}
+
+    <span class="kw">fn </span>create_instance_info(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        <span class="kw">_</span>: <span class="kw-2">&amp;</span>vk::InstanceCreateInfo,
+        <span class="kw">_</span>: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>vk::AllocationCallbacks&gt;,
+        <span class="kw">_</span>: Arc&lt;ash::Instance&gt;,
+        _next_get_instance_proc_addr: vk::PFN_vkGetInstanceProcAddr,
+    ) -&gt; <span class="self">Self</span>::InstanceInfoContainer {
+        Default::default()
+    }
+
+    <span class="kw">fn </span>create_device_info(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        <span class="kw">_</span>: vk::PhysicalDevice,
+        <span class="kw">_</span>: <span class="kw-2">&amp;</span>vk::DeviceCreateInfo,
+        <span class="kw">_</span>: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>vk::AllocationCallbacks&gt;,
+        <span class="kw">_</span>: Arc&lt;ash::Device&gt;,
+        _next_get_device_proc_addr: vk::PFN_vkGetDeviceProcAddr,
+    ) -&gt; <span class="self">Self</span>::DeviceInfoContainer {
+        Default::default()
+    }
+}
+
+<span class="comment">// Define the global type from the layer type.
+</span><span class="kw">type </span>MyGlobal = Global&lt;MyLayer&gt;;
+<span class="comment">// Export C functions.
+</span><span class="macro">declare_introspection_queries!</span>(MyGlobal);</code></pre></div>
+<p>The user can provide their own types that implement different traits to intercept different
+commands and custom the layer behavior:</p>
+<ul>
+<li><a href="trait.GlobalHooks.html" title="trait vulkan_layer::GlobalHooks"><code>GlobalHooks</code></a>, <a href="trait.InstanceHooks.html" title="trait vulkan_layer::InstanceHooks"><code>InstanceHooks</code></a>, <a href="trait.DeviceHooks.html" title="trait vulkan_layer::DeviceHooks"><code>DeviceHooks</code></a>: Implements the interception to different
+Vulkan commands based on the dispatch types.</li>
+<li><a href="trait.GlobalHooksInfo.html" title="trait vulkan_layer::GlobalHooksInfo"><code>GlobalHooksInfo</code></a>, <a href="trait.InstanceInfo.html" title="trait vulkan_layer::InstanceInfo"><code>InstanceInfo</code></a>, <a href="trait.DeviceInfo.html" title="trait vulkan_layer::DeviceInfo"><code>DeviceInfo</code></a>: Container of <a href="trait.GlobalHooks.html" title="trait vulkan_layer::GlobalHooks"><code>GlobalHooks</code></a>,
+<a href="trait.InstanceHooks.html" title="trait vulkan_layer::InstanceHooks"><code>InstanceHooks</code></a>, <a href="trait.DeviceHooks.html" title="trait vulkan_layer::DeviceHooks"><code>DeviceHooks</code></a>. Provide the list of commands to intercept for the
+framework. Can be automatically implemented through the <a href="attr.auto_deviceinfo_impl.html" title="attr vulkan_layer::auto_deviceinfo_impl"><code>auto_deviceinfo_impl</code></a>,
+<a href="attr.auto_globalhooksinfo_impl.html" title="attr vulkan_layer::auto_globalhooksinfo_impl"><code>auto_globalhooksinfo_impl</code></a>, <a href="attr.auto_instanceinfo_impl.html" title="attr vulkan_layer::auto_instanceinfo_impl"><code>auto_instanceinfo_impl</code></a> macros from the <a href="trait.GlobalHooks.html" title="trait vulkan_layer::GlobalHooks"><code>GlobalHooks</code></a>,
+<a href="trait.InstanceHooks.html" title="trait vulkan_layer::InstanceHooks"><code>InstanceHooks</code></a>, <a href="trait.DeviceHooks.html" title="trait vulkan_layer::DeviceHooks"><code>DeviceHooks</code></a> implementation respectively.</li>
+<li><a href="trait.Layer.html" title="trait vulkan_layer::Layer"><code>Layer</code></a>: Provide the metadata of a layer through <a href="struct.LayerManifest.html" title="struct vulkan_layer::LayerManifest"><code>LayerManifest</code></a>, e.g. the name, version,
+exported extensions of the layer. Provide the storage for the <a href="struct.Global.html" title="struct vulkan_layer::Global"><code>Global</code></a> object. Container of
+<a href="trait.GlobalHooksInfo.html" title="trait vulkan_layer::GlobalHooksInfo"><code>GlobalHooksInfo</code></a> type. The factory type of the <a href="trait.InstanceInfo.html" title="trait vulkan_layer::InstanceInfo"><code>InstanceInfo</code></a>, <a href="trait.DeviceInfo.html" title="trait vulkan_layer::DeviceInfo"><code>DeviceInfo</code></a> types.</li>
+</ul>
+<h2 id="usage"><a href="#usage">Usage</a></h2>
+<p>First, create a Rust lib crate.</p>
+<div class="example-wrap"><pre class="language-bash"><code>$ mkdir vulkan-layer-rust-example
+$ cd vulkan-layer-rust-example
+$ cargo init --lib
+     Created library package
+</code></pre></div>
+<p>Second, modify the crate type to <code>cdylib</code> and set the panic behavior to abort in <code>Cargo.toml</code>.</p>
+<div class="example-wrap"><pre class="language-toml"><code>[lib]
+crate-type = [&quot;cdylib&quot;]
+
+[profile.dev]
+panic = &quot;abort&quot;
+
+[profile.release]
+panic = &quot;abort&quot;
+</code></pre></div>
+<p>We need to set panic to abort to avoid unwinding from Rust to the caller(most likely C/C++),
+because unwinding into other language from Rust is
+<a href="https://doc.rust-lang.org/beta/nomicon/unwinding.html">undefined behavior</a>.</p>
+<p>If you want to try the layer on Android, also modify the crate name to
+<code>VkLayer_vendor_rust_example</code>, because Android requires that the layer shared object library
+follow a specific name convention.</p>
+<div class="example-wrap"><pre class="language-toml"><code>[package]
+name = &quot;VkLayer_vendor_rust_example&quot;
+</code></pre></div>
+<p>Third, set up the dependency in <code>Cargo.toml</code>. In my case, I checkout the project repository in
+the same directory where the <code>vulkan-layer-rust-example</code> folder lives.</p>
+<div class="example-wrap"><pre class="language-toml"><code>[dependencies]
+vulkan-layer = { path = &quot;../vk-layer-for-rust/vulkan-layer&quot; }
+</code></pre></div>
+<p>Other dependencies.</p>
+<div class="example-wrap"><pre class="language-bash"><code>cargo add ash once_cell
+</code></pre></div>
+<p>Fourth, implement the layer trait in <code>lib.rs</code>.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>ash::{<span class="self">self</span>, vk};
+<span class="kw">use </span>once_cell::sync::Lazy;
+<span class="kw">use </span>std::sync::Arc;
+<span class="kw">use </span>vulkan_layer::{
+    declare_introspection_queries, Global, Layer, LayerManifest, StubDeviceInfo,
+    StubGlobalHooks, StubInstanceInfo,
+};
+
+<span class="attr">#[derive(Default)]
+</span><span class="kw">struct </span>MyLayer(StubGlobalHooks);
+
+<span class="kw">impl </span>Layer <span class="kw">for </span>MyLayer {
+    <span class="kw">type </span>GlobalHooksInfo = StubGlobalHooks;
+    <span class="kw">type </span>InstanceInfo = StubInstanceInfo;
+    <span class="kw">type </span>DeviceInfo = StubDeviceInfo;
+    <span class="kw">type </span>InstanceInfoContainer = StubInstanceInfo;
+    <span class="kw">type </span>DeviceInfoContainer = StubDeviceInfo;
+
+    <span class="kw">fn </span>global_instance() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>Global&lt;<span class="self">Self</span>&gt; {
+        <span class="kw">static </span>GLOBAL: Lazy&lt;Global&lt;MyLayer&gt;&gt; = Lazy::new(Default::default);
+        <span class="kw-2">&amp;*</span>GLOBAL
+    }
+
+    <span class="kw">fn </span>manifest() -&gt; LayerManifest {
+        <span class="kw">let </span><span class="kw-2">mut </span>manifest = LayerManifest::default();
+        manifest.name = <span class="string">&quot;VK_LAYER_VENDOR_rust_example&quot;</span>;
+        manifest.spec_version = vk::API_VERSION_1_1;
+        manifest.description = <span class="string">&quot;Rust test layer&quot;</span>;
+        manifest
+    }
+
+    <span class="kw">fn </span>get_global_hooks_info(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="self">Self</span>::GlobalHooksInfo {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0
+    </span>}
+
+    <span class="kw">fn </span>create_instance_info(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        <span class="kw">_</span>: <span class="kw-2">&amp;</span>vk::InstanceCreateInfo,
+        <span class="kw">_</span>: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>vk::AllocationCallbacks&gt;,
+        <span class="kw">_</span>: Arc&lt;ash::Instance&gt;,
+        _next_get_instance_proc_addr: vk::PFN_vkGetInstanceProcAddr,
+    ) -&gt; <span class="self">Self</span>::InstanceInfoContainer {
+        Default::default()
+    }
+
+    <span class="kw">fn </span>create_device_info(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        <span class="kw">_</span>: vk::PhysicalDevice,
+        <span class="kw">_</span>: <span class="kw-2">&amp;</span>vk::DeviceCreateInfo,
+        <span class="kw">_</span>: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>vk::AllocationCallbacks&gt;,
+        <span class="kw">_</span>: Arc&lt;ash::Device&gt;,
+        _next_get_device_proc_addr: vk::PFN_vkGetDeviceProcAddr,
+    ) -&gt; <span class="self">Self</span>::DeviceInfoContainer {
+        <span class="macro">println!</span>(<span class="string">&quot;Hello from the Rust Vulkan layer!&quot;</span>);
+        Default::default()
+    }
+}</code></pre></div>
+<p>Fifth, export functions through the <a href="macro.declare_introspection_queries.html" title="macro vulkan_layer::declare_introspection_queries"><code>declare_introspection_queries</code></a> macro</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="macro">declare_introspection_queries!</span>(Global::&lt;MyLayer&gt;);</code></pre></div>
+<p>Sixth, build and check the exported symbol of the build artifacts, and we should see Vulkan
+introspection APIs are exported.</p>
+<p>On Windows, use
+<a href="https://learn.microsoft.com/en-us/cpp/build/reference/dumpbin-reference?view=msvc-170"><code>dumpbin</code></a></p>
+<div class="example-wrap"><pre class="language-cmd"><code>$ dumpbin /exports .\target\debug\VkLayer_vendor_rust_example.dll
+Microsoft (R) COFF/PE Dumper Version 14.36.32537.0
+Copyright (C) Microsoft Corporation.  All rights reserved.
+
+
+Dump of file .\target\debug\VkLayer_vendor_rust_example.dll
+
+File Type: DLL
+
+  Section contains the following exports for VkLayer_vendor_rust_example.dll
+
+    00000000 characteristics
+    FFFFFFFF time date stamp
+        0.00 version
+           1 ordinal base
+           6 number of functions
+           6 number of names
+
+    ordinal hint RVA      name
+
+          1    0 000F1840 vkEnumerateDeviceExtensionProperties = vkEnumerateDeviceExtensionProperties
+          2    1 000F1820 vkEnumerateDeviceLayerProperties = vkEnumerateDeviceLayerProperties
+          3    2 000F1800 vkEnumerateInstanceExtensionProperties = vkEnumerateInstanceExtensionProperties
+          4    3 000F17E0 vkEnumerateInstanceLayerProperties = vkEnumerateInstanceLayerProperties
+          5    4 000F1890 vkGetDeviceProcAddr = vkGetDeviceProcAddr
+          6    5 000F1870 vkGetInstanceProcAddr = vkGetInstanceProcAddr
+
+  Summary
+
+        1000 .data
+       11000 .pdata
+       37000 .rdata
+        2000 .reloc
+      171000 .text
+</code></pre></div>
+<p>On Linux, use <a href="https://linux.die.net/man/1/objdump"><code>objdump</code></a>.</p>
+<div class="example-wrap"><pre class="language-bat"><code>$ objdump -TC target/debug/libVkLayer_vendor_rust_example.so
+
+target/debug/libVkLayer_vendor_rust_example.so:     file format elf64-x86-64
+
+DYNAMIC SYMBOL TABLE:
+(omit some irrelevant symbols...)
+00000000000fad20 g    DF .text  0000000000000022  Base        vkEnumerateDeviceExtensionProperties
+00000000000face0 g    DF .text  000000000000001c  Base        vkEnumerateInstanceExtensionProperties
+00000000000fad50 g    DF .text  0000000000000018  Base        vkGetInstanceProcAddr
+00000000000facc0 g    DF .text  0000000000000018  Base        vkEnumerateInstanceLayerProperties
+00000000000fad00 g    DF .text  000000000000001c  Base        vkEnumerateDeviceLayerProperties
+00000000000fad70 g    DF .text  0000000000000018  Base        vkGetDeviceProcAddr
+</code></pre></div>
+<p>Seventh, create the layer manifest file named <code>rust_example_layer.json</code> right beside the built
+artifact. If targeting Android, the json manifest file is not needed.</p>
+<p>For Windows,</p>
+<div class="example-wrap"><pre class="language-json"><code>{
+    &quot;file_format_version&quot; : &quot;1.2.1&quot;,
+    &quot;layer&quot;: {
+        &quot;name&quot;: &quot;VK_LAYER_VENDOR_rust_example&quot;,
+        &quot;type&quot;: &quot;INSTANCE&quot;,
+        &quot;library_path&quot;: &quot;.\\VkLayer_vendor_rust_example.dll&quot;,
+        &quot;library_arch&quot; : &quot;64&quot;,
+        &quot;api_version&quot; : &quot;1.1.0&quot;,
+        &quot;implementation_version&quot; : &quot;0&quot;,
+        &quot;description&quot; : &quot;Rust test layer&quot;
+    }
+}
+</code></pre></div>
+<p>For Linux,</p>
+<div class="example-wrap"><pre class="language-json"><code>{
+    &quot;file_format_version&quot; : &quot;1.2.1&quot;,
+    &quot;layer&quot;: {
+        &quot;name&quot;: &quot;VK_LAYER_VENDOR_rust_example&quot;,
+        &quot;type&quot;: &quot;INSTANCE&quot;,
+        &quot;library_path&quot;: &quot;./libVkLayer_vendor_rust_example.so&quot;,
+        &quot;library_arch&quot; : &quot;64&quot;,
+        &quot;api_version&quot; : &quot;1.1.0&quot;,
+        &quot;implementation_version&quot; : &quot;0&quot;,
+        &quot;description&quot; : &quot;Rust test layer&quot;
+    }
+}
+</code></pre></div>
+<p>This json file will define an explicit layer named <code>VK_LAYER_VENDOR_rust_example</code>.</p>
+<p>Eighth, use <a href="https://github.com/LunarG/VulkanTools/blob/main/vkconfig/README.md"><code>VkConfig</code></a>
+(i.e. Vulkan Configurator) to force enable this explicit layer, and launch the vkcube
+application through <code>VkConfig</code>. In the log view, we should see the
+<code>&quot;Hello from the Rust Vulkan layer!&quot;</code> log line. For Android, follow
+<a href="https://developer.android.com/ndk/guides/graphics/validation-layer">this instruction</a> to enable
+the layer. <a href="https://doc.rust-lang.org/nightly/std/macro.println.html" title="macro std::println"><code>println!</code></a> won’t write to logcat, so one needs to change the layer implementation
+to write to the logcat.</p>
+<h2 id="global-initialization-and-clean-up"><a href="#global-initialization-and-clean-up">Global initialization and clean up</a></h2>
+<p>See <a href="trait.Layer.html#initialization" title="trait vulkan_layer::Layer">the</a> <a href="trait.Layer.html#global-clean-up" title="trait vulkan_layer::Layer">document</a> of <a href="trait.Layer.html" title="trait vulkan_layer::Layer"><code>Layer</code></a> for details.</p>
+<h2 id="extensions"><a href="#extensions">Extensions</a></h2>
+<p>TODO</p>
+<h2 id="synchronization"><a href="#synchronization">Synchronization</a></h2>
+<p>TODO</p>
+<h2 id="safety"><a href="#safety">Safety</a></h2>
+<p>TODO</p>
+<h2 id="api-stability"><a href="#api-stability">API stability</a></h2>
+<p>TODO</p>
+</div></details><h2 id="modules" class="small-section-header"><a href="#modules">Modules</a></h2><ul class="item-table"><li><div class="item-name"><a class="mod" href="test_utils/index.html" title="mod vulkan_layer::test_utils">test_utils</a><span class="stab portability" title="Available on crate feature `_test` only"><code>_test</code></span></div><div class="desc docblock-short">Utilities used in the integration tests of this crate.</div></li><li><div class="item-name"><a class="mod" href="unstable_api/index.html" title="mod vulkan_layer::unstable_api">unstable_api</a><span class="stab portability" title="Available on crate feature `unstable` only"><code>unstable</code></span></div><div class="desc docblock-short">Vulkan layer utilities that are used in the integration tests to implement mock layers. The
+utilities may benefit the layer implementation, but there is no stability guarantee on those
+APIs.</div></li></ul><h2 id="macros" class="small-section-header"><a href="#macros">Macros</a></h2><ul class="item-table"><li><div class="item-name"><a class="macro" href="macro.declare_introspection_queries.html" title="macro vulkan_layer::declare_introspection_queries">declare_introspection_queries</a></div><div class="desc docblock-short">Declare the required introspection queries for Android given an instantiated
+<code>vulkan_layer::Global</code> type.</div></li></ul><h2 id="structs" class="small-section-header"><a href="#structs">Structs</a></h2><ul class="item-table"><li><div class="item-name"><a class="struct" href="struct.ExtensionProperties.html" title="struct vulkan_layer::ExtensionProperties">ExtensionProperties</a></div><div class="desc docblock-short">A wrapper for
+<a href="https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkExtensionProperties.html"><code>VkExtensionProperties</code></a>.
+Structure specifying an extension properties.</div></li><li><div class="item-name"><a class="struct" href="struct.Global.html" title="struct vulkan_layer::Global">Global</a></div><div class="desc docblock-short">A struct that implements all necessarly functions for a layer given a type that implements
+<a href="trait.Layer.html" title="trait vulkan_layer::Layer"><code>Layer</code></a>.</div></li><li><div class="item-name"><a class="struct" href="struct.LayerManifest.html" title="struct vulkan_layer::LayerManifest">LayerManifest</a></div><div class="desc docblock-short">A Rust bindings of the
+<a href="https://github.com/KhronosGroup/Vulkan-Loader/blob/v1.3.261/docs/LoaderLayerInterface.md#layer-manifest-file-format">layer manifest file</a>.</div></li><li><div class="item-name"><a class="struct" href="struct.StubDeviceInfo.html" title="struct vulkan_layer::StubDeviceInfo">StubDeviceInfo</a></div><div class="desc docblock-short">A stub struct that intercept no commands, which implements <a href="trait.DeviceHooks.html" title="trait vulkan_layer::DeviceHooks"><code>DeviceHooks</code></a> and <a href="trait.DeviceInfo.html" title="trait vulkan_layer::DeviceInfo"><code>DeviceInfo</code></a>.</div></li><li><div class="item-name"><a class="struct" href="struct.StubGlobalHooks.html" title="struct vulkan_layer::StubGlobalHooks">StubGlobalHooks</a></div><div class="desc docblock-short">A stub struct that intercept no commands, which implements <a href="trait.GlobalHooks.html" title="trait vulkan_layer::GlobalHooks"><code>GlobalHooks</code></a> and
+<a href="trait.GlobalHooksInfo.html" title="trait vulkan_layer::GlobalHooksInfo"><code>GlobalHooksInfo</code></a>.</div></li><li><div class="item-name"><a class="struct" href="struct.StubInstanceInfo.html" title="struct vulkan_layer::StubInstanceInfo">StubInstanceInfo</a></div><div class="desc docblock-short">A stub struct that intercept no commands, which implements <a href="trait.InstanceHooks.html" title="trait vulkan_layer::InstanceHooks"><code>InstanceHooks</code></a> and
+<a href="trait.InstanceInfo.html" title="trait vulkan_layer::InstanceInfo"><code>InstanceInfo</code></a>.</div></li><li><div class="item-name"><a class="struct" href="struct.VulkanBaseInStructChain.html" title="struct vulkan_layer::VulkanBaseInStructChain">VulkanBaseInStructChain</a></div><div class="desc docblock-short">A chain of
+<a href="https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkBaseInStructure.html"><code>VkBaseInStructure</code></a>.</div></li><li><div class="item-name"><a class="struct" href="struct.VulkanBaseOutStructChain.html" title="struct vulkan_layer::VulkanBaseOutStructChain">VulkanBaseOutStructChain</a></div><div class="desc docblock-short">A chain of
+<a href="https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkBaseOutStructure.html"><code>VkBaseOutStructure</code></a>.</div></li></ul><h2 id="enums" class="small-section-header"><a href="#enums">Enums</a></h2><ul class="item-table"><li><div class="item-name"><a class="enum" href="enum.Extension.html" title="enum vulkan_layer::Extension">Extension</a></div></li><li><div class="item-name"><a class="enum" href="enum.LayerResult.html" title="enum vulkan_layer::LayerResult">LayerResult</a></div><div class="desc docblock-short">The return value of an intercepted Vulkan command by the layer implementation.</div></li><li><div class="item-name"><a class="enum" href="enum.LayerVulkanCommand.html" title="enum vulkan_layer::LayerVulkanCommand">LayerVulkanCommand</a></div></li></ul><h2 id="traits" class="small-section-header"><a href="#traits">Traits</a></h2><ul class="item-table"><li><div class="item-name"><a class="trait" href="trait.DeviceHooks.html" title="trait vulkan_layer::DeviceHooks">DeviceHooks</a></div></li><li><div class="item-name"><a class="trait" href="trait.DeviceInfo.html" title="trait vulkan_layer::DeviceInfo">DeviceInfo</a></div><div class="desc docblock-short">A trait for the layer implementation to provide metadata of <a href="trait.DeviceHooks.html" title="trait vulkan_layer::DeviceHooks"><code>DeviceHooks</code></a> for the layer
+framework.</div></li><li><div class="item-name"><a class="trait" href="trait.GlobalHooks.html" title="trait vulkan_layer::GlobalHooks">GlobalHooks</a></div><div class="desc docblock-short">A trait for the layer implementation to provide the implementation of the intercepted
+<a href="https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkGetInstanceProcAddr.html#:~:text=The%20global%20commands%20are%3A%20vkEnumerateInstanceVersion%2C%20vkEnumerateInstanceExtensionProperties%2C%20vkEnumerateInstanceLayerProperties%2C%20and%20vkCreateInstance.">global commands</a>.</div></li><li><div class="item-name"><a class="trait" href="trait.GlobalHooksInfo.html" title="trait vulkan_layer::GlobalHooksInfo">GlobalHooksInfo</a></div><div class="desc docblock-short">A trait for the layer implementation to provide metadata of <a href="trait.GlobalHooks.html" title="trait vulkan_layer::GlobalHooks"><code>GlobalHooks</code></a> for the layer
+framework.</div></li><li><div class="item-name"><a class="trait" href="trait.InstanceHooks.html" title="trait vulkan_layer::InstanceHooks">InstanceHooks</a></div></li><li><div class="item-name"><a class="trait" href="trait.InstanceInfo.html" title="trait vulkan_layer::InstanceInfo">InstanceInfo</a></div><div class="desc docblock-short">A trait for the layer implementation to provide metadata of <a href="trait.InstanceHooks.html" title="trait vulkan_layer::InstanceHooks"><code>InstanceHooks</code></a> for the layer
+framework.</div></li><li><div class="item-name"><a class="trait" href="trait.Layer.html" title="trait vulkan_layer::Layer">Layer</a></div><div class="desc docblock-short">The <a href="trait.Layer.html" title="trait vulkan_layer::Layer"><code>Layer</code></a> trait provides all layer implementation information for the layer framework.</div></li></ul><h2 id="functions" class="small-section-header"><a href="#functions">Functions</a></h2><ul class="item-table"><li><div class="item-name"><a class="fn" href="fn.fill_vk_out_array.html" title="fn vulkan_layer::fill_vk_out_array">fill_vk_out_array</a><sup title="unsafe function">⚠</sup></div><div class="desc docblock-short">Safety</div></li></ul><h2 id="types" class="small-section-header"><a href="#types">Type Definitions</a></h2><ul class="item-table"><li><div class="item-name"><a class="type" href="type.VkLayerDeviceLink.html" title="type vulkan_layer::VkLayerDeviceLink">VkLayerDeviceLink</a></div><div class="desc docblock-short">A list node that contains the next entity’s <code>vkGetInstanceProcAddr</code> and
+<code>vkGetDeviceProcAddr</code> used by a layer. One possible payload of <a href="test_utils/struct.VkLayerDeviceCreateInfo.html" title="struct vulkan_layer::test_utils::VkLayerDeviceCreateInfo"><code>VkLayerDeviceCreateInfo</code></a></div></li><li><div class="item-name"><a class="type" href="type.VkLayerInstanceLink.html" title="type vulkan_layer::VkLayerInstanceLink">VkLayerInstanceLink</a></div><div class="desc docblock-short">A list node that contains the next entity’s vkGetInstanceProcAddr used by a layer. One
+possible payload of <a href="test_utils/struct.VkLayerInstanceCreateInfo.html" title="struct vulkan_layer::test_utils::VkLayerInstanceCreateInfo"><code>VkLayerInstanceCreateInfo</code></a>.</div></li></ul><h2 id="attributes" class="small-section-header"><a href="#attributes">Attribute Macros</a></h2><ul class="item-table"><li><div class="item-name"><a class="attr" href="attr.auto_deviceinfo_impl.html" title="attr vulkan_layer::auto_deviceinfo_impl">auto_deviceinfo_impl</a></div></li><li><div class="item-name"><a class="attr" href="attr.auto_globalhooksinfo_impl.html" title="attr vulkan_layer::auto_globalhooksinfo_impl">auto_globalhooksinfo_impl</a></div></li><li><div class="item-name"><a class="attr" href="attr.auto_instanceinfo_impl.html" title="attr vulkan_layer::auto_instanceinfo_impl">auto_instanceinfo_impl</a></div></li></ul></section></div></main></body></html>

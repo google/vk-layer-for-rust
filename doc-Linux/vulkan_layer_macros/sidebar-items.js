@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"attr":["auto_deviceinfo_impl","auto_globalhooksinfo_impl","auto_instanceinfo_impl"],"macro":["declare_introspection_queries"]};
