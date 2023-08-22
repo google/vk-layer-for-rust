@@ -3,6 +3,8 @@
 [![postsubmit miri](https://github.com/google/vk-layer-for-rust/actions/workflows/postsubmit-miri.yml/badge.svg?branch=main)](https://github.com/google/vk-layer-for-rust/actions/workflows/postsubmit-miri.yml)
 [![Linux coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fgoogle%2Fvk-layer-for-rust%2Fstatic_resource%2Fcoverage-Linux%2Fcoverage_badge.json)](https://google.github.io/vk-layer-for-rust/coverage-Linux/llvm-cov/html/index.html)
 [![Windows coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fgoogle%2Fvk-layer-for-rust%2Fstatic_resource%2Fcoverage-Windows%2Fcoverage_badge.json)](https://google.github.io/vk-layer-for-rust/coverage-Windows/llvm-cov/html/index.html)
+[![Linux doc](https://img.shields.io/badge/doc-Linux-blue)](https://google.github.io/vk-layer-for-rust/doc-Linux/vulkan_layer/index.html)
+[![Windows doc](https://img.shields.io/badge/doc-Windows-blue)](https://google.github.io/vk-layer-for-rust/doc-Windows/vulkan_layer/index.html)
 
 This project provides a way to use safe Rust to write a [Vulkan layer](https://github.com/KhronosGroup/Vulkan-Loader/blob/121c1f42025a82dca7922a503ca77df51c37b394/docs/LoaderInterfaceArchitecture.md#layers).
 
