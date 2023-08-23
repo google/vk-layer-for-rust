@@ -12,9 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::collections::BTreeSet;
+use std::{collections::BTreeSet, ffi::CStr, fmt::Debug, ptr::NonNull};
 
 use ash::vk;
+use num_traits::Zero;
 
 use crate::global_simple_intercept::{ApiVersion, Extension, Feature};
 
@@ -181,6 +182,177 @@ impl<'a, T: IntoIterator<Item = &'a Feature>> IsCommandEnabled for T {
     }
 }
 
+/// Similar to [`std::slice::from_raw_parts`], but allow null pointer for 0 length slice.
+///
+/// # Safety
+/// Follow the safety requirements for [`std::slice::from_raw_parts`] with one major difference: if
+/// `len` is `0`, `data` can be a null pointer, unlike [`std::slice::from_raw_parts`].
+#[deny(unsafe_op_in_unsafe_fn)]
+pub(crate) unsafe fn slice_from_raw_parts<'a, T>(data: *const T, len: u32) -> &'a [T] {
+    if len == 0 {
+        return &[];
+    }
+    let len = len.try_into().unwrap();
+    // Safety: since `len` isn't 0 at this point, the caller guarantees that the safety requirement
+    // for `std::slice::from_raw_parts` is met.
+    unsafe { std::slice::from_raw_parts(data, len) }
+}
+
+/// Convert from a slice of i8 pointers to an iterator of strings.
+///
+/// Usually used to parse the C style C string array like `VkInstanceInfo::ppEnabledExtensionNames`.
+///
+/// # Safety
+/// Every entry of `cstr_ptrs` must meet the safety requirement of [`std::ffi::CStr::from_ptr`].
+///
+/// # Panic
+/// When iterating the returned iterator, it will panic if the pointer doesn't point to a valid
+/// UTF-8 string.
+#[deny(unsafe_op_in_unsafe_fn)]
+pub(crate) unsafe fn slice_to_owned_strings(
+    cstr_ptrs: &[*const i8],
+) -> impl Iterator<Item = String> + '_ {
+    cstr_ptrs.iter().map(|cstr_ptr| {
+        let cstr = unsafe { CStr::from_ptr(*cstr_ptr) };
+        cstr.to_str()
+            .unwrap_or_else(|e| {
+                panic!(
+                    "Failed to decode the string {}: {}",
+                    cstr.to_string_lossy(),
+                    e
+                )
+            })
+            .to_owned()
+    })
+}
+
+/// Clone the slice to a C style out array with proper `VkResult` return value.
+///
+/// The caller can use this function to handle the output array in Vulkan with slice.
+///
+/// If `p_out` is `NULL`, write the length to `p_out`. If `p_out` is not `NULL`, `p_count` describes
+/// the length of the output array. This function will clone the slice to the output array, and
+/// rewrite the `p_count` to indicate how many elements are written to the out array. If the length
+/// of the slice is larger than the out array, `VK_INCOMPLETE` will be returned. For all other
+/// cases, `VK_SUCCESS` is returned.
+///
+/// # Safety
+/// `p_count` must be a valid pointer to `U`. If `p_count` doesn't reference 0, and `p_out` is not
+/// null, `p_out` must be a valid pointer to `*p_count` number of `T`'s.
+///
+/// # Examples
+///
+/// Obtain the length with a NULL `p_out`.
+///
+/// ```
+/// use ash::vk;
+/// use std::ptr::NonNull;
+/// use vulkan_layer::fill_vk_out_array;
+///
+/// let mut count = 0;
+/// let out_array = &[0, 1, 2, 3];
+/// assert_eq!(
+///     unsafe {
+///         fill_vk_out_array(
+///             out_array,
+///             NonNull::new(&mut count as *mut _).unwrap(),
+///             std::ptr::null_mut(),
+///         )
+///     },
+///     vk::Result::SUCCESS
+/// );
+/// assert_eq!(count as usize, out_array.len());
+/// ```
+///
+/// Short output array results in a `VK_INCOMPLETE`.
+///
+/// ```
+/// use ash::vk;
+/// use std::ptr::NonNull;
+/// use vulkan_layer::fill_vk_out_array;
+///
+/// let mut out_array = [0; 2];
+/// let mut count = out_array.len() as u32;
+/// let out_slice = &[3, 1, 44];
+///
+/// assert_eq!(
+///     unsafe {
+///         fill_vk_out_array(
+///             out_slice,
+///             NonNull::new(&mut count as *mut _).unwrap(),
+///             out_array.as_mut_ptr(),
+///         )
+///     },
+///     vk::Result::INCOMPLETE
+/// );
+/// assert_eq!(count as usize, out_array.len());
+/// assert_eq!(out_array, out_slice[0..out_array.len()]);
+/// ```
+///
+/// Longer output array will only be partly overwritten.
+///
+/// ```
+/// use ash::vk;
+/// use std::ptr::NonNull;
+/// use vulkan_layer::fill_vk_out_array;
+///
+/// let mut out_array = [42; 3];
+/// let mut count = out_array.len() as u32;
+/// let out_slice = &[3, 1];
+///
+/// assert_eq!(
+///     unsafe {
+///         fill_vk_out_array(
+///             out_slice,
+///             NonNull::new(&mut count as *mut _).unwrap(),
+///             out_array.as_mut_ptr(),
+///         )
+///     },
+///     vk::Result::SUCCESS
+/// );
+/// assert_eq!(count as usize, out_slice.len());
+/// assert_eq!(out_array, [3, 1, 42]);
+/// ```
+#[deny(unsafe_op_in_unsafe_fn)]
+pub unsafe fn fill_vk_out_array<T, U>(
+    out: &[T],
+    mut p_count: NonNull<U>,
+    p_out: *mut T,
+) -> vk::Result
+where
+    T: Clone,
+    U: TryFrom<usize> + TryInto<usize> + Zero + Copy,
+    <U as TryFrom<usize>>::Error: Debug,
+    <U as TryInto<usize>>::Error: Debug,
+{
+    let count = unsafe { p_count.as_mut() };
+    let mut p_out = match NonNull::new(p_out) {
+        Some(p_out) => p_out,
+        None => {
+            *count = out.len().try_into().unwrap();
+            return vk::Result::SUCCESS;
+        }
+    };
+    if count.is_zero() {
+        if out.is_empty() {
+            return vk::Result::SUCCESS;
+        } else {
+            return vk::Result::INCOMPLETE;
+        }
+    }
+    let out_slice =
+        unsafe { std::slice::from_raw_parts_mut(p_out.as_mut(), (*count).try_into().unwrap()) };
+    if out_slice.len() < out.len() {
+        *count = out_slice.len().try_into().unwrap();
+        out_slice.clone_from_slice(&out[..out_slice.len()]);
+        vk::Result::INCOMPLETE
+    } else {
+        *count = out.len().try_into().unwrap();
+        out_slice[..out.len()].clone_from_slice(out);
+        vk::Result::SUCCESS
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -243,5 +415,89 @@ mod test {
             &BTreeSet::from([Extension::EXTShaderObject])
         ));
         assert!(!features.is_command_enabled(&ApiVersion::V1_1, &BTreeSet::new()));
+    }
+
+    #[test]
+    fn test_fill_vk_out_array_null_out_ptr() {
+        let data = &[1, 2, 3, 4];
+        let mut count = 0;
+        assert_eq!(
+            unsafe {
+                fill_vk_out_array(
+                    data,
+                    NonNull::new(&mut count as *mut _).unwrap(),
+                    std::ptr::null_mut(),
+                )
+            },
+            vk::Result::SUCCESS
+        );
+        assert_eq!(count as usize, data.len());
+    }
+
+    #[test]
+    fn test_fill_vk_out_array_empty_out_ptr() {
+        let mut count = 0;
+        assert_eq!(
+            unsafe {
+                fill_vk_out_array(
+                    &[1, 2, 3, 4],
+                    NonNull::new(&mut count as *mut _).unwrap(),
+                    NonNull::dangling().as_ptr(),
+                )
+            },
+            vk::Result::INCOMPLETE
+        );
+        assert_eq!(count, 0);
+
+        let data: &[i32] = &[];
+        assert_eq!(
+            unsafe {
+                fill_vk_out_array(
+                    data,
+                    NonNull::new(&mut count as *mut _).unwrap(),
+                    NonNull::dangling().as_ptr(),
+                )
+            },
+            vk::Result::SUCCESS
+        );
+        assert_eq!(count, 0);
+    }
+
+    #[test]
+    fn test_fill_vk_out_array_shorter_out_ptr() {
+        let data = &[1, 2, 3, 4];
+        let mut out_array = [0; 2];
+        let mut count = out_array.len() as u32;
+        assert_eq!(
+            unsafe {
+                fill_vk_out_array(
+                    data,
+                    NonNull::new(&mut count as *mut _).unwrap(),
+                    out_array.as_mut_ptr(),
+                )
+            },
+            vk::Result::INCOMPLETE
+        );
+        assert_eq!(count as usize, out_array.len());
+        assert_eq!(out_array, data[0..out_array.len()]);
+    }
+
+    #[test]
+    fn test_fill_vk_out_array_longer_out_ptr() {
+        let data = &[1, 2];
+        let mut out_array = [10; 4];
+        let mut count = out_array.len() as u32;
+        assert_eq!(
+            unsafe {
+                fill_vk_out_array(
+                    data,
+                    NonNull::new(&mut count as *mut _).unwrap(),
+                    out_array.as_mut_ptr(),
+                )
+            },
+            vk::Result::SUCCESS
+        );
+        assert_eq!(count as usize, data.len());
+        assert_eq!(out_array, [1, 2, 10, 10]);
     }
 }

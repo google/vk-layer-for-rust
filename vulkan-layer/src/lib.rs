@@ -420,12 +420,10 @@
 use ash::vk::{self, Handle};
 use bytemuck::cast_slice;
 use log::{error, warn};
-use num_traits::Zero;
 use std::{
     borrow::Borrow,
     collections::{BTreeMap, BTreeSet},
     ffi::{c_char, c_void, CStr, CString},
-    fmt::Debug,
     ptr::{null, null_mut, NonNull},
     sync::{Arc, Mutex},
 };
@@ -453,90 +451,12 @@ pub use layer_trait::{
     InstanceInfo, Layer, LayerManifest, LayerResult, VulkanCommand as LayerVulkanCommand,
 };
 use unstable_api::{ApiVersion, IsCommandEnabled, LazyCollection};
-pub use vk_utils::{VulkanBaseInStructChain, VulkanBaseOutStructChain};
+pub use vk_utils::{fill_vk_out_array, VulkanBaseInStructChain, VulkanBaseOutStructChain};
+use vk_utils::{slice_from_raw_parts, slice_to_owned_strings};
 pub use vulkan_layer_macros::{
     auto_deviceinfo_impl, auto_globalhooksinfo_impl, auto_instanceinfo_impl,
     declare_introspection_queries,
 };
-
-/// # Safety
-/// Follow the safety requirements for `std::slice::from_raw_parts` with one major difference: if
-/// `len` is `0`, `data` can be a null pointer, unlike `std::slice::from_raw_parts`.
-#[deny(unsafe_op_in_unsafe_fn)]
-unsafe fn slice_from_raw_parts<'a, T>(data: *const T, len: u32) -> &'a [T] {
-    if len == 0 {
-        return &[];
-    }
-    let len = len.try_into().unwrap();
-    // Safety: since `len` isn't 0 at this point, the caller guarantees that the safety requirement
-    // for `std::slice::from_raw_parts` is met.
-    unsafe { std::slice::from_raw_parts(data, len) }
-}
-
-/// # Safety
-/// Every entry of `cstr_ptrs` must meet the safety requirement of `CStr::from_ptr`.
-///
-/// # Panic
-/// When iterating the returned iterator, it will panic if the pointer doesn't point to a valid UTF8
-/// string.
-#[deny(unsafe_op_in_unsafe_fn)]
-unsafe fn slice_to_owned_strings(cstr_ptrs: &[*const i8]) -> impl Iterator<Item = String> + '_ {
-    cstr_ptrs.iter().map(|cstr_ptr| {
-        let cstr = unsafe { CStr::from_ptr(*cstr_ptr) };
-        cstr.to_str()
-            .unwrap_or_else(|e| {
-                panic!(
-                    "Failed to decode the string {}: {}",
-                    cstr.to_string_lossy(),
-                    e
-                )
-            })
-            .to_owned()
-    })
-}
-
-/// # Safety
-/// p_count must be a valid pointer to U. If p_count doesn't reference 0, and p_out is not null,
-/// p_out must be a valid pointer to *p_count number of T's.
-#[deny(unsafe_op_in_unsafe_fn)]
-pub unsafe fn fill_vk_out_array<T, U>(
-    out: &[T],
-    mut p_count: NonNull<U>,
-    p_out: *mut T,
-) -> vk::Result
-where
-    T: Clone,
-    U: TryFrom<usize> + TryInto<usize> + Zero + Copy,
-    <U as TryFrom<usize>>::Error: Debug,
-    <U as TryInto<usize>>::Error: Debug,
-{
-    let count = unsafe { p_count.as_mut() };
-    let mut p_out = match NonNull::new(p_out) {
-        Some(p_out) => p_out,
-        None => {
-            *count = out.len().try_into().unwrap();
-            return vk::Result::SUCCESS;
-        }
-    };
-    if count.is_zero() {
-        if out.is_empty() {
-            return vk::Result::SUCCESS;
-        } else {
-            return vk::Result::INCOMPLETE;
-        }
-    }
-    let out_slice =
-        unsafe { std::slice::from_raw_parts_mut(p_out.as_mut(), (*count).try_into().unwrap()) };
-    if out_slice.len() < out.len() {
-        *count = out_slice.len().try_into().unwrap();
-        out_slice.clone_from_slice(&out[..out_slice.len()]);
-        vk::Result::INCOMPLETE
-    } else {
-        *count = out.len().try_into().unwrap();
-        out_slice[..out.len()].clone_from_slice(out);
-        vk::Result::SUCCESS
-    }
-}
 
 trait DispatchableObject: vk::Handle + Copy {
     type DispatchKey: From<usize>;
