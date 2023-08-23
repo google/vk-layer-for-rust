@@ -1142,6 +1142,12 @@ impl<T: Layer> Global<T> {
     // Introspection queries required by Android, so we need to expose them as public functions so
     // that the user can futher expose them as functions exported by the dynamic link library.
 
+    /// The `vkEnumerateInstanceLayerProperties` entry point provided by the layer framework.
+    ///
+    /// The return value is decided by [`Layer::manifest`]. Only enumerate the layer itself
+    /// according to the
+    /// [layer rule](<https://github.com/KhronosGroup/Vulkan-Loader/blob/v1.3.261/docs/LoaderLayerInterface.md#:~:text=vkEnumerateInstanceLayerProperties%20must%20enumerate%20and%20only%20enumerate%20the%20layer%20itself.>).
+    ///
     /// # Safety
     /// See valid usage of `vkEnumerateInstanceLayerProperties` at
     /// <https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkEnumerateInstanceLayerProperties.html>.
@@ -1166,6 +1172,13 @@ impl<T: Layer> Global<T> {
         }
     }
 
+    /// The `vkEnumerateInstanceExtensionProperties` entry point provided by the layer framework.
+    ///
+    /// Returns an empty list with `VK_SUCCESS` if the layer name matchies; returns
+    /// `VK_ERROR_LAYER_NOT_PRESENT` with all the out pointers untouched, according to the
+    /// [`LLP_LAYER_15`](<https://github.com/KhronosGroup/Vulkan-Loader/blob/v1.3.261/docs/LoaderLayerInterface.md#:~:text=LLP_LAYER_15,Conventions%20and%20Rules>)
+    /// rule.
+    ///
     /// # Safety
     /// See valid usage of `vkEnumerateInstanceExtensionProperties` at
     /// <https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkEnumerateInstanceExtensionProperties.html>.
@@ -1196,6 +1209,15 @@ impl<T: Layer> Global<T> {
         vk::Result::ERROR_LAYER_NOT_PRESENT
     }
 
+    /// The `vkEnumerateDeviceLayerProperties` entry point provided by the layer framework.
+    ///
+    /// The return value is decided by [`Layer::manifest`]. Only enumerate the layer itself
+    /// according to the
+    /// [layer interface version 0 requirement](<https://github.com/KhronosGroup/Vulkan-Loader/blob/v1.3.261/docs/LoaderLayerInterface.md#:~:text=vkEnumerateDeviceLayerProperties%20enumerates%20a,device%20function%20interception.>).
+    /// Note that although this function
+    /// [is deprecated](<https://github.com/KhronosGroup/Vulkan-Loader/blob/v1.3.261/docs/LoaderLayerInterface.md#:~:text=vkEnumerateDeviceLayerProperties%20is%20deprecated,in%20undefined%20behavior.>)
+    /// in the Khronos Vulkan loader, it is still used in the Android Vulkan loader.
+    ///
     /// # Safety
     /// See valid usage of `vkEnumerateDeviceLayerProperties` at
     /// <https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkEnumerateDeviceLayerProperties.html>.
@@ -1226,12 +1248,23 @@ impl<T: Layer> Global<T> {
         }
     }
 
+    /// The `vkEnumerateDeviceExtensionProperties` entry point provided by the layer framework.
+    ///
+    /// The return value is decided by [`Layer::manifest`] where `p_layer_name` is itself; otherwise
+    /// returns `VK_ERROR_LAYER_NOT_PRESENT`. The layer framework won't call into the next layer
+    /// chain under any circumstances. This behavior is defined by the
+    /// [layer interface version 0](<https://github.com/KhronosGroup/Vulkan-Loader/blob/v1.3.261/docs/LoaderLayerInterface.md#:~:text=vkEnumerateDeviceExtensionProperties%20enumerates%20device,function%20never%20fails.>)
+    /// and
+    /// [`LLP_LAYER_16`](<https://github.com/KhronosGroup/Vulkan-Loader/blob/v1.3.261/docs/LoaderLayerInterface.md#:~:text=LLP_LAYER_16,Conventions%20and%20Rules>).
+    ///
     /// # Safety
     /// See valid usage of `vkEnumerateDeviceExtensionProperties` at
     /// <https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkEnumerateDeviceExtensionProperties.html>.
+    /// A NULL `VkPhysicalDevice` can also be used to call this interface, according to the
+    /// [layer interface version 0](<https://github.com/KhronosGroup/Vulkan-Loader/blob/v1.3.261/docs/LoaderLayerInterface.md#:~:text=vkEnumerateDeviceExtensionProperties%20enumerates%20device,function%20never%20fails.>).
     #[deny(unsafe_op_in_unsafe_fn)]
     pub unsafe extern "system" fn enumerate_device_extension_properties(
-        physical_device: vk::PhysicalDevice,
+        _: vk::PhysicalDevice,
         p_layer_name: *const c_char,
         p_property_count: *mut u32,
         p_properties: *mut vk::ExtensionProperties,
@@ -1246,19 +1279,7 @@ impl<T: Layer> Global<T> {
                 .unwrap_or(false)
         };
         if !is_this_layer {
-            let instance_info = Self::instance().get_instance_info(physical_device).unwrap();
-            return unsafe {
-                (instance_info
-                    .dispatch_table
-                    .core
-                    .fp_v1_0()
-                    .enumerate_device_extension_properties)(
-                    physical_device,
-                    p_layer_name,
-                    p_property_count,
-                    p_properties,
-                )
-            };
+            return vk::Result::ERROR_LAYER_NOT_PRESENT;
         }
         let property_count = NonNull::new(p_property_count).expect(concat!(
             "`p_property_count` must be a valid pointer to u32 according to ",
@@ -1278,6 +1299,83 @@ impl<T: Layer> Global<T> {
         unsafe { fill_vk_out_array(&device_extensions, property_count, p_properties) }
     }
 
+    /// The `vkGetInstanceProcAddr` entry point provided by the layer framework.
+    ///
+    /// The layer framework will make use of [`Layer::hooked_instance_commands`] and
+    /// [`Layer::hooked_device_commands`] (with the `device_info` argument being [`None`]) to decide
+    /// whether a local function pointer should be returned or should just passthrough to the next
+    /// layer in the call chain. Note that the layer implementation doesn't have to take care of
+    /// whether the command is enabled/available, and only needs to use the interfaces to express
+    /// the intent. The layer framework should handle most of the logic(e.g. the requirement of
+    /// [`LLP_LAYER_18`](<https://github.com/KhronosGroup/Vulkan-Loader/blob/v1.3.261/docs/LoaderLayerInterface.md#pre-instance-functions:~:text=LLP_LAYER_18,Conventions%20and%20Rules>))
+    /// here unless the layer implementation decides to intercept `vkGetInstanceProcAddr`.
+    ///
+    /// The actual behavior is defined as follow:
+    ///
+    /// 1. If the `instance` parameter is `VK_NULL_HANDLE`, returns the local function pointers of
+    ///    the current layer for all
+    ///    [global commands](https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkGetInstanceProcAddr.html#:~:text=The%20global%20commands%20are%3A%20vkEnumerateInstanceVersion%2C%20vkEnumerateInstanceExtensionProperties%2C%20vkEnumerateInstanceLayerProperties%2C%20and%20vkCreateInstance.)
+    ///    and `vkGetInstanceProcAddr`; `NULL` is returned for other Vulkan commands. One culprit
+    ///    for now is that currently the layer framework always returns `NULL` for
+    ///    `vkEnumerateInstanceVersion`, but that should be Ok, because the layer framework
+    ///    currently doesn't allow to intercept pre-instance functions anyway, so this function
+    ///    should be completely handled by the Vulkan loader.
+    ///
+    /// 1. If instance is not null, the situation is more complicated:
+    ///
+    ///    If the layer implementation intercepts the `vkGetInstanceProcAddr` function(i.e.
+    ///    [`Layer::hooked_instance_commands`] returns `vkGetInstanceProcAddr`), the layer framework
+    ///    just calls [`InstanceHooks::get_instance_proc_addr`] and return the return value.
+    ///
+    ///    Otherwise, the layer framework handles most of the logic according to
+    ///    [`Layer::hooked_instance_commands`] and [`Layer::hooked_device_commands`]:
+    ///
+    ///     1. For dispatchable commands that are introspection queries:
+    ///        `vkEnumerateDeviceExtensionProperties`, `vkEnumerateDeviceLayerProperties`, always
+    ///        returns a local function pointer of the current layer.
+    ///
+    ///     1. For `vkDestroyInstance`, `vkCreateDevice`, `vkDestroyDevice`, always returns a local
+    ///        function pointer. The layer framework needs to intercept those functions to build the
+    ///        dispatch table and perform instance/device specific initialization. Note that
+    ///        `vkCreateInstance` is a
+    ///        [global command](<https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkGetInstanceProcAddr.html#:~:text=The%20global%20commands%20are%3A%20vkEnumerateInstanceVersion%2C%20vkEnumerateInstanceExtensionProperties%2C%20vkEnumerateInstanceLayerProperties%2C%20and%20vkCreateInstance.>),
+    ///        so `NULL` will be returned if the `instance` argument is not `VK_NULL_HANDLE`.
+    ///
+    ///     1. For `vkEnumeratePhysicalDevices`, `vkEnumeratePhysicalDeviceGroups`, always returns a
+    ///        local function pointer. The layer framework needs to intercept those functions to
+    ///        build a map between `VkPhysicalDevice` and `VkInstance` so that the layer framework
+    ///        can find the correspondent `VkInstance` in `vkCreateDevice`.
+    ///
+    ///     1. For other core dispatchable commands and enabled instance extension dispatchable
+    ///        commands, if the layer implementation decides to intercept(according to
+    ///        [`Layer::hooked_instance_commands`] and [`Layer::hooked_device_commands`]), returns a
+    ///        local function pointer, otherwise returns the function pointer from the next layer.
+    ///
+    ///     1. For disabled instance extension dispatchable commands(either because the API version
+    ///        is not high enough or the extension is not enabled), directly call to the next layer
+    ///        regardless of whether the layer implementation wants to intercept the command or not,
+    ///        and rely on the next layer to return `NULL`.
+    ///
+    ///     1. For device extension dispatchable commands directly supported by the layer
+    ///        implementation according to [`LayerManifest::device_extensions`], always returns a
+    ///        local function pointer if the layer implementation intercepts the command. Otherwise,
+    ///        returns the function pointer of the next layer.
+    ///
+    ///     1. For device extension dispatchable commands not directly supported by the layer(i.e.
+    ///        the extension doesn't appear in the [`LayerManifest::device_extensions`] of the
+    ///        current layer):
+    ///
+    ///        * If the next layer returns `NULL`, `NULL` is always returned regardless of whether
+    ///          the layer implementation wants to intercept the command. This indicates that this
+    ///          device extension dispathcable command is not available for the instance.
+    ///
+    ///        * if the next layer returns non-NULL, a local function pointer is returned if the
+    ///          layer implementation wants to intercept the command, otherwise returns the function
+    ///          pointer of the next layer This indicates that this device extension dispathcable
+    ///          command is available for the instance.
+    ///
+    ///     1. Passthrough to the next layer if the command is not recognized.
+    ///
     /// # Safety
     /// See valid usage of `vkGetInstanceProcAddr` at
     /// <https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkGetInstanceProcAddr.html>.
@@ -1374,19 +1472,44 @@ impl<T: Layer> Global<T> {
                 Err(_) => None,
             };
         if let Some(device_command) = device_command {
-            // If the next proc addr can't find it, this is an unavailable device command.
-            let next_proc_addr = get_next_proc_addr()?;
+            let next_proc_addr = get_next_proc_addr();
             if !device_command.hooked {
-                return Some(next_proc_addr);
+                return next_proc_addr;
             }
-            return device_command.proc;
+            let layer_device_extensions: BTreeSet<Extension> = T::manifest()
+                .device_extensions
+                .iter()
+                .map(|ExtensionProperties { name, .. }| name.clone())
+                .collect();
+            // If the layer supports the command or the next proc addr can find it, this is an
+            // available device command.
+            let command_available = device_command
+                .features
+                .is_command_enabled(&instance_info.api_version, &layer_device_extensions)
+                || next_proc_addr.is_some();
+            if command_available {
+                return device_command.proc;
+            } else {
+                return next_proc_addr;
+            }
         }
         // We don't recognize this command.
         get_next_proc_addr()
     }
 
+    /// The `vkGetDeviceProcAddr` entry point provided by the layer framework.
+    ///
+    /// The layer framework will make use of [`Layer::hooked_device_commands`] to decide whether a
+    /// local function pointer should be returned or should passthrough to the next layer in the
+    /// call chain. Note that the layer implementation doesn't have to take care of whether the
+    /// command is enabled(either included in the requested core version or enabled extension), and
+    /// only needs to use the [`Layer::hooked_device_commands`] interface to express the intent. The
+    /// layer framework should handle most of the logic(e.g. the requirement of
+    /// [`LLP_LAYER_18`](<https://github.com/KhronosGroup/Vulkan-Loader/blob/v1.3.261/docs/LoaderLayerInterface.md#pre-instance-functions:~:text=LLP_LAYER_18,Conventions%20and%20Rules>))
+    /// here unless the layer implementation decides to intercept `vkGetDeviceProcAddr`.
+    ///
     /// # Safety
-    /// See valid usage of `vkGetInstanceProcAddr` at
+    /// See valid usage of `vkGetDeviceProcAddr` at
     /// <https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkGetDeviceProcAddr.html>.
     #[deny(unsafe_op_in_unsafe_fn)]
     pub unsafe extern "system" fn get_device_proc_addr(
