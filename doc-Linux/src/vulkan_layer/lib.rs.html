@@ -1704,6 +1704,49 @@
 <a href="#1704" id="1704">1704</a>
 <a href="#1705" id="1705">1705</a>
 <a href="#1706" id="1706">1706</a>
+<a href="#1707" id="1707">1707</a>
+<a href="#1708" id="1708">1708</a>
+<a href="#1709" id="1709">1709</a>
+<a href="#1710" id="1710">1710</a>
+<a href="#1711" id="1711">1711</a>
+<a href="#1712" id="1712">1712</a>
+<a href="#1713" id="1713">1713</a>
+<a href="#1714" id="1714">1714</a>
+<a href="#1715" id="1715">1715</a>
+<a href="#1716" id="1716">1716</a>
+<a href="#1717" id="1717">1717</a>
+<a href="#1718" id="1718">1718</a>
+<a href="#1719" id="1719">1719</a>
+<a href="#1720" id="1720">1720</a>
+<a href="#1721" id="1721">1721</a>
+<a href="#1722" id="1722">1722</a>
+<a href="#1723" id="1723">1723</a>
+<a href="#1724" id="1724">1724</a>
+<a href="#1725" id="1725">1725</a>
+<a href="#1726" id="1726">1726</a>
+<a href="#1727" id="1727">1727</a>
+<a href="#1728" id="1728">1728</a>
+<a href="#1729" id="1729">1729</a>
+<a href="#1730" id="1730">1730</a>
+<a href="#1731" id="1731">1731</a>
+<a href="#1732" id="1732">1732</a>
+<a href="#1733" id="1733">1733</a>
+<a href="#1734" id="1734">1734</a>
+<a href="#1735" id="1735">1735</a>
+<a href="#1736" id="1736">1736</a>
+<a href="#1737" id="1737">1737</a>
+<a href="#1738" id="1738">1738</a>
+<a href="#1739" id="1739">1739</a>
+<a href="#1740" id="1740">1740</a>
+<a href="#1741" id="1741">1741</a>
+<a href="#1742" id="1742">1742</a>
+<a href="#1743" id="1743">1743</a>
+<a href="#1744" id="1744">1744</a>
+<a href="#1745" id="1745">1745</a>
+<a href="#1746" id="1746">1746</a>
+<a href="#1747" id="1747">1747</a>
+<a href="#1748" id="1748">1748</a>
+<a href="#1749" id="1749">1749</a>
 </pre></div><pre class="rust"><code><span class="comment">// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
@@ -2126,12 +2169,10 @@
 </span><span class="kw">use </span>ash::vk::{<span class="self">self</span>, Handle};
 <span class="kw">use </span>bytemuck::cast_slice;
 <span class="kw">use </span>log::{error, warn};
-<span class="kw">use </span>num_traits::Zero;
 <span class="kw">use </span>std::{
     borrow::Borrow,
     collections::{BTreeMap, BTreeSet},
     ffi::{c_char, c_void, CStr, CString},
-    fmt::Debug,
     ptr::{null, null_mut, NonNull},
     sync::{Arc, Mutex},
 };
@@ -2159,90 +2200,12 @@
     InstanceInfo, Layer, LayerManifest, LayerResult, VulkanCommand <span class="kw">as </span>LayerVulkanCommand,
 };
 <span class="kw">use </span>unstable_api::{ApiVersion, IsCommandEnabled, LazyCollection};
-<span class="kw">pub use </span>vk_utils::{VulkanBaseInStructChain, VulkanBaseOutStructChain};
+<span class="kw">pub use </span>vk_utils::{fill_vk_out_array, VulkanBaseInStructChain, VulkanBaseOutStructChain};
+<span class="kw">use </span>vk_utils::{slice_from_raw_parts, slice_to_owned_strings};
 <span class="kw">pub use </span>vulkan_layer_macros::{
     auto_deviceinfo_impl, auto_globalhooksinfo_impl, auto_instanceinfo_impl,
     declare_introspection_queries,
 };
-
-<span class="doccomment">/// # Safety
-/// Follow the safety requirements for `std::slice::from_raw_parts` with one major difference: if
-/// `len` is `0`, `data` can be a null pointer, unlike `std::slice::from_raw_parts`.
-</span><span class="attr">#[deny(unsafe_op_in_unsafe_fn)]
-</span><span class="kw">unsafe fn </span>slice_from_raw_parts&lt;<span class="lifetime">&#39;a</span>, T&gt;(data: <span class="kw-2">*const </span>T, len: u32) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>[T] {
-    <span class="kw">if </span>len == <span class="number">0 </span>{
-        <span class="kw">return </span><span class="kw-2">&amp;</span>[];
-    }
-    <span class="kw">let </span>len = len.try_into().unwrap();
-    <span class="comment">// Safety: since `len` isn&#39;t 0 at this point, the caller guarantees that the safety requirement
-    // for `std::slice::from_raw_parts` is met.
-    </span><span class="kw">unsafe </span>{ std::slice::from_raw_parts(data, len) }
-}
-
-<span class="doccomment">/// # Safety
-/// Every entry of `cstr_ptrs` must meet the safety requirement of `CStr::from_ptr`.
-///
-/// # Panic
-/// When iterating the returned iterator, it will panic if the pointer doesn&#39;t point to a valid UTF8
-/// string.
-</span><span class="attr">#[deny(unsafe_op_in_unsafe_fn)]
-</span><span class="kw">unsafe fn </span>slice_to_owned_strings(cstr_ptrs: <span class="kw-2">&amp;</span>[<span class="kw-2">*const </span>i8]) -&gt; <span class="kw">impl </span>Iterator&lt;Item = String&gt; + <span class="lifetime">&#39;_ </span>{
-    cstr_ptrs.iter().map(|cstr_ptr| {
-        <span class="kw">let </span>cstr = <span class="kw">unsafe </span>{ CStr::from_ptr(<span class="kw-2">*</span>cstr_ptr) };
-        cstr.to_str()
-            .unwrap_or_else(|e| {
-                <span class="macro">panic!</span>(
-                    <span class="string">&quot;Failed to decode the string {}: {}&quot;</span>,
-                    cstr.to_string_lossy(),
-                    e
-                )
-            })
-            .to_owned()
-    })
-}
-
-<span class="doccomment">/// # Safety
-/// p_count must be a valid pointer to U. If p_count doesn&#39;t reference 0, and p_out is not null,
-/// p_out must be a valid pointer to *p_count number of T&#39;s.
-</span><span class="attr">#[deny(unsafe_op_in_unsafe_fn)]
-</span><span class="kw">pub unsafe fn </span>fill_vk_out_array&lt;T, U&gt;(
-    out: <span class="kw-2">&amp;</span>[T],
-    <span class="kw-2">mut </span>p_count: NonNull&lt;U&gt;,
-    p_out: <span class="kw-2">*mut </span>T,
-) -&gt; vk::Result
-<span class="kw">where
-    </span>T: Clone,
-    U: TryFrom&lt;usize&gt; + TryInto&lt;usize&gt; + Zero + Copy,
-    &lt;U <span class="kw">as </span>TryFrom&lt;usize&gt;&gt;::Error: Debug,
-    &lt;U <span class="kw">as </span>TryInto&lt;usize&gt;&gt;::Error: Debug,
-{
-    <span class="kw">let </span>count = <span class="kw">unsafe </span>{ p_count.as_mut() };
-    <span class="kw">let </span><span class="kw-2">mut </span>p_out = <span class="kw">match </span>NonNull::new(p_out) {
-        <span class="prelude-val">Some</span>(p_out) =&gt; p_out,
-        <span class="prelude-val">None </span>=&gt; {
-            <span class="kw-2">*</span>count = out.len().try_into().unwrap();
-            <span class="kw">return </span>vk::Result::SUCCESS;
-        }
-    };
-    <span class="kw">if </span>count.is_zero() {
-        <span class="kw">if </span>out.is_empty() {
-            <span class="kw">return </span>vk::Result::SUCCESS;
-        } <span class="kw">else </span>{
-            <span class="kw">return </span>vk::Result::INCOMPLETE;
-        }
-    }
-    <span class="kw">let </span>out_slice =
-        <span class="kw">unsafe </span>{ std::slice::from_raw_parts_mut(p_out.as_mut(), (<span class="kw-2">*</span>count).try_into().unwrap()) };
-    <span class="kw">if </span>out_slice.len() &lt; out.len() {
-        <span class="kw-2">*</span>count = out_slice.len().try_into().unwrap();
-        out_slice.clone_from_slice(<span class="kw-2">&amp;</span>out[..out_slice.len()]);
-        vk::Result::INCOMPLETE
-    } <span class="kw">else </span>{
-        <span class="kw-2">*</span>count = out.len().try_into().unwrap();
-        out_slice[..out.len()].clone_from_slice(out);
-        vk::Result::SUCCESS
-    }
-}
 
 <span class="kw">trait </span>DispatchableObject: vk::Handle + Copy {
     <span class="kw">type </span>DispatchKey: From&lt;usize&gt;;
@@ -2928,7 +2891,13 @@
     <span class="comment">// Introspection queries required by Android, so we need to expose them as public functions so
     // that the user can futher expose them as functions exported by the dynamic link library.
 
-    </span><span class="doccomment">/// # Safety
+    </span><span class="doccomment">/// The `vkEnumerateInstanceLayerProperties` entry point provided by the layer framework.
+    ///
+    /// The return value is decided by [`Layer::manifest`]. Only enumerate the layer itself
+    /// according to the
+    /// [layer rule](&lt;https://github.com/KhronosGroup/Vulkan-Loader/blob/v1.3.261/docs/LoaderLayerInterface.md#:~:text=vkEnumerateInstanceLayerProperties%20must%20enumerate%20and%20only%20enumerate%20the%20layer%20itself.&gt;).
+    ///
+    /// # Safety
     /// See valid usage of `vkEnumerateInstanceLayerProperties` at
     /// &lt;https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkEnumerateInstanceLayerProperties.html&gt;.
     </span><span class="attr">#[deny(unsafe_op_in_unsafe_fn)]
@@ -2952,7 +2921,14 @@
         }
     }
 
-    <span class="doccomment">/// # Safety
+    <span class="doccomment">/// The `vkEnumerateInstanceExtensionProperties` entry point provided by the layer framework.
+    ///
+    /// Returns an empty list with `VK_SUCCESS` if the layer name matchies; returns
+    /// `VK_ERROR_LAYER_NOT_PRESENT` with all the out pointers untouched, according to the
+    /// [`LLP_LAYER_15`](&lt;https://github.com/KhronosGroup/Vulkan-Loader/blob/v1.3.261/docs/LoaderLayerInterface.md#:~:text=LLP_LAYER_15,Conventions%20and%20Rules&gt;)
+    /// rule.
+    ///
+    /// # Safety
     /// See valid usage of `vkEnumerateInstanceExtensionProperties` at
     /// &lt;https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkEnumerateInstanceExtensionProperties.html&gt;.
     </span><span class="attr">#[deny(unsafe_op_in_unsafe_fn)]
@@ -2982,7 +2958,16 @@
         vk::Result::ERROR_LAYER_NOT_PRESENT
     }
 
-    <span class="doccomment">/// # Safety
+    <span class="doccomment">/// The `vkEnumerateDeviceLayerProperties` entry point provided by the layer framework.
+    ///
+    /// The return value is decided by [`Layer::manifest`]. Only enumerate the layer itself
+    /// according to the
+    /// [layer interface version 0 requirement](&lt;https://github.com/KhronosGroup/Vulkan-Loader/blob/v1.3.261/docs/LoaderLayerInterface.md#:~:text=vkEnumerateDeviceLayerProperties%20enumerates%20a,device%20function%20interception.&gt;).
+    /// Note that although this function
+    /// [is deprecated](&lt;https://github.com/KhronosGroup/Vulkan-Loader/blob/v1.3.261/docs/LoaderLayerInterface.md#:~:text=vkEnumerateDeviceLayerProperties%20is%20deprecated,in%20undefined%20behavior.&gt;)
+    /// in the Khronos Vulkan loader, it is still used in the Android Vulkan loader.
+    ///
+    /// # Safety
     /// See valid usage of `vkEnumerateDeviceLayerProperties` at
     /// &lt;https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkEnumerateDeviceLayerProperties.html&gt;.
     </span><span class="attr">#[deny(unsafe_op_in_unsafe_fn)]
@@ -3012,12 +2997,23 @@
         }
     }
 
-    <span class="doccomment">/// # Safety
+    <span class="doccomment">/// The `vkEnumerateDeviceExtensionProperties` entry point provided by the layer framework.
+    ///
+    /// The return value is decided by [`Layer::manifest`] where `p_layer_name` is itself; otherwise
+    /// returns `VK_ERROR_LAYER_NOT_PRESENT`. The layer framework won&#39;t call into the next layer
+    /// chain under any circumstances. This behavior is defined by the
+    /// [layer interface version 0](&lt;https://github.com/KhronosGroup/Vulkan-Loader/blob/v1.3.261/docs/LoaderLayerInterface.md#:~:text=vkEnumerateDeviceExtensionProperties%20enumerates%20device,function%20never%20fails.&gt;)
+    /// and
+    /// [`LLP_LAYER_16`](&lt;https://github.com/KhronosGroup/Vulkan-Loader/blob/v1.3.261/docs/LoaderLayerInterface.md#:~:text=LLP_LAYER_16,Conventions%20and%20Rules&gt;).
+    ///
+    /// # Safety
     /// See valid usage of `vkEnumerateDeviceExtensionProperties` at
     /// &lt;https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkEnumerateDeviceExtensionProperties.html&gt;.
+    /// A NULL `VkPhysicalDevice` can also be used to call this interface, according to the
+    /// [layer interface version 0](&lt;https://github.com/KhronosGroup/Vulkan-Loader/blob/v1.3.261/docs/LoaderLayerInterface.md#:~:text=vkEnumerateDeviceExtensionProperties%20enumerates%20device,function%20never%20fails.&gt;).
     </span><span class="attr">#[deny(unsafe_op_in_unsafe_fn)]
     </span><span class="kw">pub unsafe extern </span><span class="string">&quot;system&quot; </span><span class="kw">fn </span>enumerate_device_extension_properties(
-        physical_device: vk::PhysicalDevice,
+        <span class="kw">_</span>: vk::PhysicalDevice,
         p_layer_name: <span class="kw-2">*const </span>c_char,
         p_property_count: <span class="kw-2">*mut </span>u32,
         p_properties: <span class="kw-2">*mut </span>vk::ExtensionProperties,
@@ -3032,19 +3028,7 @@
                 .unwrap_or(<span class="bool-val">false</span>)
         };
         <span class="kw">if </span>!is_this_layer {
-            <span class="kw">let </span>instance_info = <span class="self">Self</span>::instance().get_instance_info(physical_device).unwrap();
-            <span class="kw">return unsafe </span>{
-                (instance_info
-                    .dispatch_table
-                    .core
-                    .fp_v1_0()
-                    .enumerate_device_extension_properties)(
-                    physical_device,
-                    p_layer_name,
-                    p_property_count,
-                    p_properties,
-                )
-            };
+            <span class="kw">return </span>vk::Result::ERROR_LAYER_NOT_PRESENT;
         }
         <span class="kw">let </span>property_count = NonNull::new(p_property_count).expect(<span class="macro">concat!</span>(
             <span class="string">&quot;`p_property_count` must be a valid pointer to u32 according to &quot;</span>,
@@ -3064,7 +3048,84 @@
         <span class="kw">unsafe </span>{ fill_vk_out_array(<span class="kw-2">&amp;</span>device_extensions, property_count, p_properties) }
     }
 
-    <span class="doccomment">/// # Safety
+    <span class="doccomment">/// The `vkGetInstanceProcAddr` entry point provided by the layer framework.
+    ///
+    /// The layer framework will make use of [`Layer::hooked_instance_commands`] and
+    /// [`Layer::hooked_device_commands`] (with the `device_info` argument being [`None`]) to decide
+    /// whether a local function pointer should be returned or should just passthrough to the next
+    /// layer in the call chain. Note that the layer implementation doesn&#39;t have to take care of
+    /// whether the command is enabled/available, and only needs to use the interfaces to express
+    /// the intent. The layer framework should handle most of the logic(e.g. the requirement of
+    /// [`LLP_LAYER_18`](&lt;https://github.com/KhronosGroup/Vulkan-Loader/blob/v1.3.261/docs/LoaderLayerInterface.md#pre-instance-functions:~:text=LLP_LAYER_18,Conventions%20and%20Rules&gt;))
+    /// here unless the layer implementation decides to intercept `vkGetInstanceProcAddr`.
+    ///
+    /// The actual behavior is defined as follow:
+    ///
+    /// 1. If the `instance` parameter is `VK_NULL_HANDLE`, returns the local function pointers of
+    ///    the current layer for all
+    ///    [global commands](https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkGetInstanceProcAddr.html#:~:text=The%20global%20commands%20are%3A%20vkEnumerateInstanceVersion%2C%20vkEnumerateInstanceExtensionProperties%2C%20vkEnumerateInstanceLayerProperties%2C%20and%20vkCreateInstance.)
+    ///    and `vkGetInstanceProcAddr`; `NULL` is returned for other Vulkan commands. One culprit
+    ///    for now is that currently the layer framework always returns `NULL` for
+    ///    `vkEnumerateInstanceVersion`, but that should be Ok, because the layer framework
+    ///    currently doesn&#39;t allow to intercept pre-instance functions anyway, so this function
+    ///    should be completely handled by the Vulkan loader.
+    ///
+    /// 1. If instance is not null, the situation is more complicated:
+    ///
+    ///    If the layer implementation intercepts the `vkGetInstanceProcAddr` function(i.e.
+    ///    [`Layer::hooked_instance_commands`] returns `vkGetInstanceProcAddr`), the layer framework
+    ///    just calls [`InstanceHooks::get_instance_proc_addr`] and return the return value.
+    ///
+    ///    Otherwise, the layer framework handles most of the logic according to
+    ///    [`Layer::hooked_instance_commands`] and [`Layer::hooked_device_commands`]:
+    ///
+    ///     1. For dispatchable commands that are introspection queries:
+    ///        `vkEnumerateDeviceExtensionProperties`, `vkEnumerateDeviceLayerProperties`, always
+    ///        returns a local function pointer of the current layer.
+    ///
+    ///     1. For `vkDestroyInstance`, `vkCreateDevice`, `vkDestroyDevice`, always returns a local
+    ///        function pointer. The layer framework needs to intercept those functions to build the
+    ///        dispatch table and perform instance/device specific initialization. Note that
+    ///        `vkCreateInstance` is a
+    ///        [global command](&lt;https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkGetInstanceProcAddr.html#:~:text=The%20global%20commands%20are%3A%20vkEnumerateInstanceVersion%2C%20vkEnumerateInstanceExtensionProperties%2C%20vkEnumerateInstanceLayerProperties%2C%20and%20vkCreateInstance.&gt;),
+    ///        so `NULL` will be returned if the `instance` argument is not `VK_NULL_HANDLE`.
+    ///
+    ///     1. For `vkEnumeratePhysicalDevices`, `vkEnumeratePhysicalDeviceGroups`, always returns a
+    ///        local function pointer. The layer framework needs to intercept those functions to
+    ///        build a map between `VkPhysicalDevice` and `VkInstance` so that the layer framework
+    ///        can find the correspondent `VkInstance` in `vkCreateDevice`.
+    ///
+    ///     1. For other core dispatchable commands and enabled instance extension dispatchable
+    ///        commands, if the layer implementation decides to intercept(according to
+    ///        [`Layer::hooked_instance_commands`] and [`Layer::hooked_device_commands`]), returns a
+    ///        local function pointer, otherwise returns the function pointer from the next layer.
+    ///
+    ///     1. For disabled instance extension dispatchable commands(either because the API version
+    ///        is not high enough or the extension is not enabled), directly call to the next layer
+    ///        regardless of whether the layer implementation wants to intercept the command or not,
+    ///        and rely on the next layer to return `NULL`.
+    ///
+    ///     1. For device extension dispatchable commands directly supported by the layer
+    ///        implementation according to [`LayerManifest::device_extensions`], always returns a
+    ///        local function pointer if the layer implementation intercepts the command. Otherwise,
+    ///        returns the function pointer of the next layer.
+    ///
+    ///     1. For device extension dispatchable commands not directly supported by the layer(i.e.
+    ///        the extension doesn&#39;t appear in the [`LayerManifest::device_extensions`] of the
+    ///        current layer):
+    ///
+    ///        * If the next layer returns `NULL`, `NULL` is always returned regardless of whether
+    ///          the layer implementation wants to intercept the command. This indicates that this
+    ///          device extension dispathcable command is not available for the instance.
+    ///
+    ///        * if the next layer returns non-NULL, a local function pointer is returned if the
+    ///          layer implementation wants to intercept the command, otherwise returns the function
+    ///          pointer of the next layer This indicates that this device extension dispathcable
+    ///          command is available for the instance.
+    ///
+    ///     1. Passthrough to the next layer if the command is not recognized.
+    ///
+    /// # Safety
     /// See valid usage of `vkGetInstanceProcAddr` at
     /// &lt;https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkGetInstanceProcAddr.html&gt;.
     </span><span class="attr">#[deny(unsafe_op_in_unsafe_fn)]
@@ -3160,19 +3221,44 @@
                 <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">None</span>,
             };
         <span class="kw">if let </span><span class="prelude-val">Some</span>(device_command) = device_command {
-            <span class="comment">// If the next proc addr can&#39;t find it, this is an unavailable device command.
-            </span><span class="kw">let </span>next_proc_addr = get_next_proc_addr()<span class="question-mark">?</span>;
+            <span class="kw">let </span>next_proc_addr = get_next_proc_addr();
             <span class="kw">if </span>!device_command.hooked {
-                <span class="kw">return </span><span class="prelude-val">Some</span>(next_proc_addr);
+                <span class="kw">return </span>next_proc_addr;
             }
-            <span class="kw">return </span>device_command.proc;
+            <span class="kw">let </span>layer_device_extensions: BTreeSet&lt;Extension&gt; = T::manifest()
+                .device_extensions
+                .iter()
+                .map(|ExtensionProperties { name, .. }| name.clone())
+                .collect();
+            <span class="comment">// If the layer supports the command or the next proc addr can find it, this is an
+            // available device command.
+            </span><span class="kw">let </span>command_available = device_command
+                .features
+                .is_command_enabled(<span class="kw-2">&amp;</span>instance_info.api_version, <span class="kw-2">&amp;</span>layer_device_extensions)
+                || next_proc_addr.is_some();
+            <span class="kw">if </span>command_available {
+                <span class="kw">return </span>device_command.proc;
+            } <span class="kw">else </span>{
+                <span class="kw">return </span>next_proc_addr;
+            }
         }
         <span class="comment">// We don&#39;t recognize this command.
         </span>get_next_proc_addr()
     }
 
-    <span class="doccomment">/// # Safety
-    /// See valid usage of `vkGetInstanceProcAddr` at
+    <span class="doccomment">/// The `vkGetDeviceProcAddr` entry point provided by the layer framework.
+    ///
+    /// The layer framework will make use of [`Layer::hooked_device_commands`] to decide whether a
+    /// local function pointer should be returned or should passthrough to the next layer in the
+    /// call chain. Note that the layer implementation doesn&#39;t have to take care of whether the
+    /// command is enabled(either included in the requested core version or enabled extension), and
+    /// only needs to use the [`Layer::hooked_device_commands`] interface to express the intent. The
+    /// layer framework should handle most of the logic(e.g. the requirement of
+    /// [`LLP_LAYER_18`](&lt;https://github.com/KhronosGroup/Vulkan-Loader/blob/v1.3.261/docs/LoaderLayerInterface.md#pre-instance-functions:~:text=LLP_LAYER_18,Conventions%20and%20Rules&gt;))
+    /// here unless the layer implementation decides to intercept `vkGetDeviceProcAddr`.
+    ///
+    /// # Safety
+    /// See valid usage of `vkGetDeviceProcAddr` at
     /// &lt;https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkGetDeviceProcAddr.html&gt;.
     </span><span class="attr">#[deny(unsafe_op_in_unsafe_fn)]
     </span><span class="kw">pub unsafe extern </span><span class="string">&quot;system&quot; </span><span class="kw">fn </span>get_device_proc_addr(
