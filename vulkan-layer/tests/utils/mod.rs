@@ -88,6 +88,8 @@ trait ToVulkanHandle: Sized {
 }
 
 pub trait FromVulkanHandle<T: vk::Handle>: Sized {
+    /// Map a raw Vulkan handle to `T`.
+    ///
     /// # Safety
     /// The raw Vulkan handle must be created from the Self type.
     #[deny(unsafe_op_in_unsafe_fn)]
@@ -826,6 +828,8 @@ pub struct InstanceContext<T: Layers> {
 }
 
 pub trait ArcDelInstanceContextExt<T: Layers>: Sized {
+    /// A utility function to call `vkCreateDevice` with reasonable defaults.
+    ///
     /// # Safety
     /// <https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkCreateDevice.html>
     unsafe fn create_device(
@@ -1020,6 +1024,8 @@ impl<T: Layer, U: Layer> Layers for (T, U) {
 }
 
 pub trait InstanceCreateInfoExt {
+    /// Make it easy to directly call `vkCreateInstance` given `T`.
+    ///
     /// # Safety
     /// <https://www.khronos.org/registry/vulkan/specs/1.3-extensions/man/html/vkCreateInstance.html>
     unsafe fn create_instance<T: Layers>(self, p_instance: *mut vk::Instance) -> vk::Result;

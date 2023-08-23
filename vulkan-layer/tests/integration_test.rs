@@ -702,6 +702,12 @@ mod get_instance_proc_addr {
             };
             assert!(destroy_swapchain.is_none());
         }
+
+        #[test]
+        #[ignore]
+        fn test_should_return_fp_with_device_command_supported_by_the_layer_extension_only() {
+            todo!()
+        }
     }
 
     #[test]
@@ -1491,7 +1497,7 @@ mod enumerate_device_extensions {
     // TODO: test if the loader will add the implicit layer extension in e2e test.
 
     #[test]
-    fn test_should_call_into_the_next_chain_if_layer_name_doesnt_match() {
+    fn test_should_not_call_into_the_next_chain_if_layer_name_doesnt_match() {
         static TEST_GLOBAL: TestGlobal = TestGlobal::builder()
             .set_layer_mock_builder(|| {
                 let mut mock = MockTestLayer::default();
@@ -1517,20 +1523,15 @@ mod enumerate_device_extensions {
             .unwrap()
             .first()
             .unwrap();
+        let in_property_count = 10;
         let properties = {
-            let mut property_count = MaybeUninit::uninit();
-            let res = unsafe {
-                (instance.fp_v1_0().enumerate_device_extension_properties)(
-                    physical_device,
-                    null(),
-                    property_count.as_mut_ptr(),
-                    null_mut(),
-                )
-            };
-            assert_eq!(res, vk::Result::SUCCESS);
-            let mut property_count = unsafe { property_count.assume_init() };
+            let mut property_count = in_property_count;
             let mut properties = Vec::<vk::ExtensionProperties>::new();
-            properties.resize_with(property_count.try_into().unwrap(), Default::default);
+            properties.resize_with(property_count.try_into().unwrap(), || {
+                vk::ExtensionProperties::builder()
+                    .extension_name([0; vk::MAX_EXTENSION_NAME_SIZE])
+                    .build()
+            });
             let res = unsafe {
                 (instance.fp_v1_0().enumerate_device_extension_properties)(
                     physical_device,
@@ -1539,25 +1540,14 @@ mod enumerate_device_extensions {
                     properties.as_mut_ptr(),
                 )
             };
-            assert_eq!(res, vk::Result::SUCCESS);
-            properties.into_boxed_slice()
+            assert_ne!(res, vk::Result::SUCCESS);
+            properties[0..(property_count as usize)]
+                .to_vec()
+                .into_boxed_slice()
         };
-        assert_eq!(available_device_extensions.len(), properties.len());
-        for (expected_extension_name, property) in
-            zip(available_device_extensions.iter(), properties.iter())
-        {
-            let expected_name: &str = expected_extension_name.clone().into();
-            let actual_name = unsafe {
-                std::slice::from_raw_parts(
-                    property.extension_name.as_ptr() as *const u8,
-                    property.extension_name.len(),
-                )
-            };
-            let actual_name = CStr::from_bytes_until_nul(actual_name)
-                .unwrap()
-                .to_str()
-                .unwrap();
-            assert_eq!(expected_name, actual_name);
+        assert_eq!(in_property_count as usize, properties.len());
+        for property in properties.iter() {
+            assert_eq!(property.extension_name, [0; vk::MAX_EXTENSION_NAME_SIZE]);
         }
     }
 
@@ -2202,4 +2192,10 @@ fn global_should_only_call_layer_ctor_once_even_if_multiple_instance_device_crea
 #[ignore]
 fn global_should_only_call_layer_ctor_once_even_if_multiple_calls_to_global_commands() {
     todo!()
+}
+
+#[test]
+#[ignore]
+fn global_enumerate_device_extension_properties_should_never_call_into_the_next_chain() {
+    todo!("Use NULL physical device, and 2 layers with non-null physical device")
 }
