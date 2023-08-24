@@ -1325,7 +1325,8 @@ impl<T: Layer> Global<T> {
     ///
     ///    If the layer implementation intercepts the `vkGetInstanceProcAddr` function(i.e.
     ///    [`Layer::hooked_instance_commands`] returns `vkGetInstanceProcAddr`), the layer framework
-    ///    just calls [`InstanceHooks::get_instance_proc_addr`] and return the return value.
+    ///    just calls [`InstanceHooks::get_instance_proc_addr`] and return the return value if
+    ///    [`LayerResult::Handled`] is returned.
     ///
     ///    Otherwise, the layer framework handles most of the logic according to
     ///    [`Layer::hooked_instance_commands`] and [`Layer::hooked_device_commands`]:

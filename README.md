@@ -57,15 +57,13 @@ TODO
 
 ## TODO
 
-- [x] Allow interception of `vkGet*ProcAddr` will fix this issue. Handle the case where the underlying driver returns a null pointer to function. Currently we still return a valid function pointer, however the Android loader may test the returned function pointer to decide if such function is supported.
 - [x] Set up `Android.bp` to build in an Android tree.
   - [ ] Upgrade ash in aosp, and remove vulkano, so that we can build from aosp/master.
 - [x] Auto-generate the binding from [`vk_layer.h`](https://github.com/KhronosGroup/Vulkan-Headers/blob/9e61870ecbd32514113b467e0a0c46f60ed222c7/include/vulkan/vk_layer.h).
-- [x] Auto-generate the `global_simple_intercept.rs` from `vk.xml`.
-- [x] Auto-generate the `layer_trait.rs` file from `vk.xml`.
-- [x] Use a attribute macro to track which function is implemented in the `LayerTrait`, and don't inject all other functions for performance.
-- [ ] Make global instance trivially destructible after all instances are destroyed. We can't rely on the destructor of DLL to perform clean up. We need to require the user to declare the global static, and declare one for each layer. User's `Layer` global instance will also be created before the first `vkCreateInstance` is returned and will be destroyed after the last `vkDestroyInstance` is called.
-- [ ] Use procedure macro to generate the export functions in `lib.rs` file for the layer user.
+- [x] Auto-generate the `Layer` trait and the interception code from `vk.xml`.
+- [x] Use an attribute macro to track which function is implemented in the `Layer` trait, and don't inject all other functions for performance.
+- [x] Make global instance trivially destructible after all instances are destroyed, so the layer is robust against the situation where the dynamic library is loaded and unloaded for several times.
+- [x] Use procedure macro to generate the export functions in `lib.rs` file for the layer user.
 - [ ] Use the xtask workflow to generate the layer json file.
 - [ ] Support the latest layer interface version. Currently 2 is the latest version. e.g. correctly handle the `vk_layerGetPhysicalDeviceProcAddr` case.
 - [ ] Allow intercepting [pre-instance functions](https://github.com/KhronosGroup/Vulkan-Loader/blob/0c63db1aeda6916690b863688fa6cdf2ac1f790b/docs/LoaderLayerInterface.md#pre-instance-functions).
