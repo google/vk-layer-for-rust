@@ -2109,13 +2109,12 @@ fn enumerate_instance_layer_properties_should_return_correct_properties() {
     assert_eq!(property_count, 1);
     let property = unsafe { property.assume_init() };
 
-    let property_layer_name = unsafe { CStr::from_ptr(property.layer_name.as_ptr() as *const i8) }
+    let property_layer_name = unsafe { CStr::from_ptr(property.layer_name.as_ptr()) }
         .to_str()
         .unwrap();
-    let property_description =
-        unsafe { CStr::from_ptr(property.description.as_ptr() as *const i8) }
-            .to_str()
-            .unwrap();
+    let property_description = unsafe { CStr::from_ptr(property.description.as_ptr()) }
+        .to_str()
+        .unwrap();
     assert_eq!(property_layer_name, LAYER_MANIFEST.name);
     assert_eq!(property.spec_version, LAYER_MANIFEST.spec_version);
     assert_eq!(

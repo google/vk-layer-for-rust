@@ -119,11 +119,46 @@ impl Default for InstanceDispatchTable {
     }
 }
 
+// All dispatchable object must begin with this type.
+#[repr(C)]
+struct DispatchableObjectBase<T> {
+    // Pointer to dispatch_table, this is the ABI guaranteed by the Vulkan loader.
+    _dispatch_table: *const c_void,
+    dispatch_table: Pin<Arc<T>>,
+}
+
+impl<T> DispatchableObjectBase<T> {
+    fn new(dispatch_table: T) -> Self {
+        let dispatch_table = Arc::pin(dispatch_table);
+        Self {
+            _dispatch_table: dispatch_table.as_ref().get_ref() as *const _ as *const c_void,
+            dispatch_table,
+        }
+    }
+}
+
+impl<T> Clone for DispatchableObjectBase<T> {
+    fn clone(&self) -> Self {
+        Self {
+            _dispatch_table: self._dispatch_table,
+            dispatch_table: self.dispatch_table.clone(),
+        }
+    }
+}
+
+impl<T: Default> Default for DispatchableObjectBase<T> {
+    fn default() -> Self {
+        Self::new(Default::default())
+    }
+}
+
+unsafe impl<T: Send> Send for DispatchableObjectBase<T> {}
+unsafe impl<T: Sync> Sync for DispatchableObjectBase<T> {}
+
 #[repr(C)]
 pub struct InstanceData {
     // Pointer to dispatch_table, this is the ABI guaranteed by the Vulkan loader.
-    _dispatch_table: *const c_void,
-    dispatch_table: Pin<Box<InstanceDispatchTable>>,
+    base: DispatchableObjectBase<InstanceDispatchTable>,
     version: ApiVersion,
     supported_device_version: Mutex<ApiVersion>,
     enabled_extensions: BTreeSet<Extension>,
@@ -139,6 +174,7 @@ impl InstanceData {
 
     pub fn add_instance_command(&self, command_name: &str, proc: vk::PFN_vkVoidFunction) {
         assert!(self
+            .base
             .dispatch_table
             .commands
             .lock()
@@ -166,10 +202,11 @@ impl ToVulkanHandle for InstanceData {
 #[repr(C)]
 struct PhysicalDeviceData {
     // Should be the same as the owner VkInstance.
-    _dispatch_table: *const c_void,
+    base: DispatchableObjectBase<InstanceDispatchTable>,
     owner_instance: Weak<InstanceData>,
     queue_family_properties: Vec<vk::QueueFamilyProperties>,
 }
+
 impl ToVulkanHandle for PhysicalDeviceData {
     type Handle = vk::PhysicalDevice;
 }
@@ -185,8 +222,7 @@ impl Default for DeviceDispatchTable {
 #[repr(C)]
 pub struct DeviceData {
     // A pointer to dispatch_table.
-    _dispatch_table: *const c_void,
-    dispatch_table: Pin<Box<DeviceDispatchTable>>,
+    base: DispatchableObjectBase<DeviceDispatchTable>,
     owner_physical_device: Weak<PhysicalDeviceData>,
     api_version: ApiVersion,
     pub enabled_extensions: BTreeSet<Extension>,
@@ -232,7 +268,6 @@ static VULKAN_COMMANDS: Lazy<BTreeMap<VulkanCommandName, VulkanCommand>> = Lazy:
                                 extension.as_str().try_into().ok()
                             })
                             .collect::<_>();
-                        let dispatch_table = Box::into_pin(Box::<InstanceDispatchTable>::default());
                         let version = application_info
                             .map(|application_info| {
                                 let mut api_version = application_info.api_version;
@@ -243,17 +278,15 @@ static VULKAN_COMMANDS: Lazy<BTreeMap<VulkanCommandName, VulkanCommand>> = Lazy:
                             })
                             .unwrap_or(ApiVersion::V1_0);
                         let instance_data: Arc<InstanceData> = Arc::new_cyclic(|instance_data| {
-                            let _dispatch_table =
-                                dispatch_table.as_ref().get_ref() as *const _ as *const c_void;
+                            let base = DispatchableObjectBase::<InstanceDispatchTable>::default();
                             InstanceData {
-                                _dispatch_table,
-                                dispatch_table,
+                                base: base.clone(),
                                 version,
                                 supported_device_version: Mutex::new(version),
                                 enabled_extensions,
                                 physical_devices: Box::new([Del::new(
                                     Arc::new(PhysicalDeviceData {
-                                        _dispatch_table,
+                                        base,
                                         owner_instance: instance_data.clone(),
                                         queue_family_properties: vec![vk::QueueFamilyProperties {
                                             queue_flags: vk::QueueFlags::GRAPHICS
@@ -313,7 +346,6 @@ static VULKAN_COMMANDS: Lazy<BTreeMap<VulkanCommandName, VulkanCommand>> = Lazy:
                     ) -> vk::Result {
                         // TODO: assert that the ICD shouldn't receive a non-zero-length
                         // VkLayerDeviceLink
-                        let dispatch_table = Box::into_pin(Box::<DeviceDispatchTable>::default());
                         let physical_device =
                             unsafe { PhysicalDeviceData::from_handle(physical_device) };
                         let instance_data = physical_device.owner_instance.upgrade().unwrap();
@@ -362,9 +394,7 @@ static VULKAN_COMMANDS: Lazy<BTreeMap<VulkanCommandName, VulkanCommand>> = Lazy:
                             }
                         }
                         let device_data = Arc::new(DeviceData {
-                            _dispatch_table: dispatch_table.as_ref().get_ref() as *const _
-                                as *const c_void,
-                            dispatch_table,
+                            base: Default::default(),
                             owner_physical_device: Arc::downgrade(&physical_device),
                             api_version: instance_data
                                 .version
@@ -770,7 +800,7 @@ unsafe extern "system" fn get_instance_proc_addr(
         unsafe { InstanceData::from_handle(instance) }
     };
 
-    let commands = instance_data.dispatch_table.commands.lock().unwrap();
+    let commands = instance_data.base.dispatch_table.commands.lock().unwrap();
     let command = commands.get(&name)?;
 
     match command.dispatch_kind {
@@ -1091,7 +1121,7 @@ mod tests {
         let ptr = MaybeUninit::<DeviceData>::uninit();
         let ptr = ptr.as_ptr();
         assert_eq!(
-            unsafe { std::ptr::addr_of!((*ptr)._dispatch_table) } as usize - ptr as usize,
+            unsafe { std::ptr::addr_of!((*ptr).base._dispatch_table) } as usize - ptr as usize,
             0
         );
     }
@@ -1101,7 +1131,7 @@ mod tests {
         let ptr = MaybeUninit::<PhysicalDeviceData>::uninit();
         let ptr = ptr.as_ptr();
         assert_eq!(
-            unsafe { std::ptr::addr_of!((*ptr)._dispatch_table) } as usize - ptr as usize,
+            unsafe { std::ptr::addr_of!((*ptr).base._dispatch_table) } as usize - ptr as usize,
             0
         );
     }
@@ -1111,7 +1141,7 @@ mod tests {
         let ptr = MaybeUninit::<InstanceData>::uninit();
         let ptr = ptr.as_ptr();
         assert_eq!(
-            unsafe { std::ptr::addr_of!((*ptr)._dispatch_table) } as usize - ptr as usize,
+            unsafe { std::ptr::addr_of!((*ptr).base._dispatch_table) } as usize - ptr as usize,
             0
         );
     }
