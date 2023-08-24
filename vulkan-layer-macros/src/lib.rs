@@ -255,7 +255,7 @@ pub fn auto_deviceinfo_impl(_: TokenStream, item: TokenStream) -> TokenStream {
 /// #         Default::default()
 /// #     }
 /// #
-/// #     fn get_global_hooks_info(&self) -> &Self::GlobalHooksInfo {
+/// #     fn global_hooks_info(&self) -> &Self::GlobalHooksInfo {
 /// #         &self.0
 /// #     }
 /// #

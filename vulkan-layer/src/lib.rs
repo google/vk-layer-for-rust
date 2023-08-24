@@ -85,7 +85,7 @@
 //!         Default::default()
 //!     }
 //!
-//!     fn get_global_hooks_info(&self) -> &Self::GlobalHooksInfo {
+//!     fn global_hooks_info(&self) -> &Self::GlobalHooksInfo {
 //!         &self.0
 //!     }
 //!
@@ -206,7 +206,7 @@
 //!         manifest
 //!     }
 //!
-//!     fn get_global_hooks_info(&self) -> &Self::GlobalHooksInfo {
+//!     fn global_hooks_info(&self) -> &Self::GlobalHooksInfo {
 //!         &self.0
 //!     }
 //!
@@ -267,7 +267,7 @@
 //! #         manifest
 //! #     }
 //! #
-//! #     fn get_global_hooks_info(&self) -> &Self::GlobalHooksInfo {
+//! #     fn global_hooks_info(&self) -> &Self::GlobalHooksInfo {
 //! #         &self.0
 //! #     }
 //! #
@@ -683,7 +683,7 @@ impl<T: Layer> Global<T> {
             .iter()
             .any(|command| *command == LayerVulkanCommand::CreateInstance);
         let layer_result = if hooked {
-            global.layer_info.get_global_hooks().create_instance(
+            global.layer_info.global_hooks().create_instance(
                 unsafe { create_info.as_ref() }.unwrap(),
                 layer_info,
                 unsafe { allocator.as_ref() },
@@ -1642,7 +1642,7 @@ mod test {
                 LayerManifest::test_default()
             }
 
-            fn get_global_hooks_info(&self) -> &Self::GlobalHooksInfo {
+            fn global_hooks_info(&self) -> &Self::GlobalHooksInfo {
                 &self.0
             }
 

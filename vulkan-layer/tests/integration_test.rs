@@ -222,7 +222,7 @@ mod get_instance_proc_addr {
                         let global: Global<TestLayer> = Default::default();
                         global
                             .layer_info
-                            .get_global_hooks()
+                            .global_hooks()
                             .expect_create_instance()
                             .once()
                             .return_const(LayerResult::Unhandled);
@@ -815,7 +815,7 @@ mod create_destroy_instance {
             let layer1_info = &TestLayer::<Tag<0>>::global_instance().layer_info;
             let layer2_info = &TestLayer::<Tag<1>>::global_instance().layer_info;
             {
-                let mut layer1_global_hooks = layer1_info.get_global_hooks();
+                let mut layer1_global_hooks = layer1_info.global_hooks();
                 layer1_global_hooks
                     .expect_create_instance()
                     .withf_st(match_create_instance(
@@ -826,7 +826,7 @@ mod create_destroy_instance {
                     .return_const(LayerResult::Unhandled);
             }
             {
-                let mut layer2_global_hooks = layer2_info.get_global_hooks();
+                let mut layer2_global_hooks = layer2_info.global_hooks();
                 layer2_global_hooks
                     .expect_create_instance()
                     .withf_st(match_create_instance(None, &icd_layer_link))
@@ -837,8 +837,8 @@ mod create_destroy_instance {
             let instance = vk::InstanceCreateInfo::builder()
                 .default_instance::<(TestLayer<Tag<0>>, TestLayer<Tag<1>>)>();
             {
-                layer1_info.get_global_hooks().checkpoint();
-                layer2_info.get_global_hooks().checkpoint();
+                layer1_info.global_hooks().checkpoint();
+                layer2_info.global_hooks().checkpoint();
             }
             drop(instance);
         }
@@ -920,7 +920,7 @@ mod create_destroy_instance {
         let mut instance = MaybeUninit::<vk::Instance>::uninit();
         TestLayer::<Tag<1>>::global_instance()
             .layer_info
-            .get_global_hooks()
+            .global_hooks()
             .expect_create_instance()
             .once()
             .withf_st({
@@ -2154,7 +2154,7 @@ fn global_should_be_trivially_destructible() {
             LayerManifest::test_default()
         }
 
-        fn get_global_hooks_info(&self) -> &Self::GlobalHooksInfo {
+        fn global_hooks_info(&self) -> &Self::GlobalHooksInfo {
             &self.0
         }
 
