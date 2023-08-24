@@ -226,7 +226,7 @@ pub trait DeviceInfo: Send + Sync {
     /// #         Default::default()
     /// #     }
     /// #
-    /// #     fn get_global_hooks_info(&self) -> &Self::GlobalHooksInfo {
+    /// #     fn global_hooks_info(&self) -> &Self::GlobalHooksInfo {
     /// #         &self.0
     /// #     }
     /// #
@@ -481,7 +481,7 @@ pub trait InstanceInfo: Send + Sync {
     /// #         Default::default()
     /// #     }
     /// #
-    /// #     fn get_global_hooks_info(&self) -> &Self::GlobalHooksInfo {
+    /// #     fn global_hooks_info(&self) -> &Self::GlobalHooksInfo {
     /// #         &self.0
     /// #     }
     ///
@@ -1013,7 +1013,7 @@ pub struct LayerManifest {
 ///         manifest
 ///     }
 ///
-///     fn get_global_hooks_info(&self) -> &Self::GlobalHooksInfo {
+///     fn global_hooks_info(&self) -> &Self::GlobalHooksInfo {
 ///         &self.0
 ///     }
 ///
@@ -1079,7 +1079,7 @@ pub struct LayerManifest {
 ///         manifest
 ///     }
 ///
-///     fn get_global_hooks_info(&self) -> &Self::GlobalHooksInfo {
+///     fn global_hooks_info(&self) -> &Self::GlobalHooksInfo {
 ///         &self.0
 ///     }
 ///
@@ -1189,7 +1189,7 @@ pub trait Layer: Sync + Default + 'static {
     /// #         Default::default()
     /// #     }
     /// #
-    /// #     fn get_global_hooks_info(&self) -> &Self::GlobalHooksInfo {
+    /// #     fn global_hooks_info(&self) -> &Self::GlobalHooksInfo {
     /// #         &self.0
     /// #     }
     /// #
@@ -1255,7 +1255,7 @@ pub trait Layer: Sync + Default + 'static {
     /// #         Default::default()
     /// #     }
     /// #
-    /// #     fn get_global_hooks_info(&self) -> &Self::GlobalHooksInfo {
+    /// #     fn global_hooks_info(&self) -> &Self::GlobalHooksInfo {
     /// #         &self.0
     /// #     }
     /// #
@@ -1331,7 +1331,7 @@ pub trait Layer: Sync + Default + 'static {
     /// #         manifest
     /// #     }
     /// #
-    /// #     fn get_global_hooks_info(&self) -> &Self::GlobalHooksInfo {
+    /// #     fn global_hooks_info(&self) -> &Self::GlobalHooksInfo {
     /// #         &self.0
     /// #     }
     /// #
@@ -1361,14 +1361,14 @@ pub trait Layer: Sync + Default + 'static {
     fn global_instance() -> &'static Global<Self>;
 
     /// Returns a reference of the underlying [`GlobalHooksInfo`] object.
-    fn get_global_hooks_info(&self) -> &Self::GlobalHooksInfo;
+    fn global_hooks_info(&self) -> &Self::GlobalHooksInfo;
 
     /// Returns a reference of the underlying [`GlobalHooks`] object.
     ///
     /// The layer framework relies on this function to obtain [`GlobalHooks`], and implementors
     /// should avoid overriding this method.
-    fn get_global_hooks(&self) -> <Self::GlobalHooksInfo as GlobalHooksInfo>::HooksRefType<'_> {
-        self.get_global_hooks_info().hooks()
+    fn global_hooks(&self) -> <Self::GlobalHooksInfo as GlobalHooksInfo>::HooksRefType<'_> {
+        self.global_hooks_info().hooks()
     }
 
     /// The factory method for the [`InstanceInfo`] type.
@@ -1503,7 +1503,7 @@ pub trait Layer: Sync + Default + 'static {
     /// #         Default::default()
     /// #     }
     /// #
-    /// #     fn get_global_hooks_info(&self) -> &Self::GlobalHooksInfo {
+    /// #     fn global_hooks_info(&self) -> &Self::GlobalHooksInfo {
     /// #         &self.0
     /// #     }
     ///
@@ -1654,7 +1654,7 @@ pub trait Layer: Sync + Default + 'static {
     /// #         Default::default()
     /// #     }
     /// #
-    /// #     fn get_global_hooks_info(&self) -> &Self::GlobalHooksInfo {
+    /// #     fn global_hooks_info(&self) -> &Self::GlobalHooksInfo {
     /// #         &self.0
     /// #     }
     /// #

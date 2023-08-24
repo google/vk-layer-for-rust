@@ -346,7 +346,7 @@ impl<T: TestLayerTag> Layer for TestLayer<T> {
         MockTestLayer::<T>::mock().manifest()
     }
 
-    fn get_global_hooks_info(&self) -> &Self::GlobalHooksInfo {
+    fn global_hooks_info(&self) -> &Self::GlobalHooksInfo {
         &self.global_hooks_info
     }
 

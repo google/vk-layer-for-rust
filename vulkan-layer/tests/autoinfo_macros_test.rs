@@ -59,7 +59,7 @@ where
         LayerManifest::test_default()
     }
 
-    fn get_global_hooks_info(&self) -> &Self::GlobalHooksInfo {
+    fn global_hooks_info(&self) -> &Self::GlobalHooksInfo {
         &self.global_hooks
     }
 
