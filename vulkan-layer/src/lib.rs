@@ -1250,10 +1250,11 @@ impl<T: Layer> Global<T> {
 
     /// The `vkEnumerateDeviceExtensionProperties` entry point provided by the layer framework.
     ///
-    /// The return value is decided by [`Layer::manifest`] where `p_layer_name` is itself; otherwise
-    /// returns `VK_ERROR_LAYER_NOT_PRESENT`. The layer framework won't call into the next layer
-    /// chain under any circumstances. This behavior is defined by the
-    /// [layer interface version 0](<https://github.com/KhronosGroup/Vulkan-Loader/blob/v1.3.261/docs/LoaderLayerInterface.md#:~:text=vkEnumerateDeviceExtensionProperties%20enumerates%20device,function%20never%20fails.>)
+    /// The return value is decided by [`Layer::manifest`] where `p_layer_name` is itself. If the
+    /// `p_layer_name` doesn't match, the behavior depends on whether the `physical_device` argument
+    /// is `VK_NULL_HANDLE` or not: if `physical_device` argument is `VK_NULL_HANDLE`,
+    /// `VK_ERROR_LAYER_NOT_PRESENT` is returned; if `physical_device` is not `VK_NULL_HANDLE`, the
+    /// layer framework calls into the next layer of the call chain. This behavior is defined by the [layer interface version 0](<https://github.com/KhronosGroup/Vulkan-Loader/blob/v1.3.261/docs/LoaderLayerInterface.md#:~:text=vkEnumerateDeviceExtensionProperties%20enumerates%20device,function%20never%20fails.>)
     /// and
     /// [`LLP_LAYER_16`](<https://github.com/KhronosGroup/Vulkan-Loader/blob/v1.3.261/docs/LoaderLayerInterface.md#:~:text=LLP_LAYER_16,Conventions%20and%20Rules>).
     ///
@@ -1264,7 +1265,7 @@ impl<T: Layer> Global<T> {
     /// [layer interface version 0](<https://github.com/KhronosGroup/Vulkan-Loader/blob/v1.3.261/docs/LoaderLayerInterface.md#:~:text=vkEnumerateDeviceExtensionProperties%20enumerates%20device,function%20never%20fails.>).
     #[deny(unsafe_op_in_unsafe_fn)]
     pub unsafe extern "system" fn enumerate_device_extension_properties(
-        _: vk::PhysicalDevice,
+        physical_device: vk::PhysicalDevice,
         p_layer_name: *const c_char,
         p_property_count: *mut u32,
         p_properties: *mut vk::ExtensionProperties,
@@ -1279,7 +1280,28 @@ impl<T: Layer> Global<T> {
                 .unwrap_or(false)
         };
         if !is_this_layer {
-            return vk::Result::ERROR_LAYER_NOT_PRESENT;
+            if physical_device == vk::PhysicalDevice::null() {
+                return vk::Result::ERROR_LAYER_NOT_PRESENT;
+            }
+            let global = Self::instance();
+            let physical_device_info = global
+                .get_physical_info(physical_device)
+                .expect("physical device must be a valid VkPhysicalDevice.");
+            let instance_info = global
+                .get_instance_info(physical_device_info.owner_instance)
+                .expect("The owner instance of this physical device must be registered.");
+            return unsafe {
+                (instance_info
+                    .dispatch_table
+                    .core
+                    .fp_v1_0()
+                    .enumerate_device_extension_properties)(
+                    physical_device,
+                    p_layer_name,
+                    p_property_count,
+                    p_properties,
+                )
+            };
         }
         let property_count = NonNull::new(p_property_count).expect(concat!(
             "`p_property_count` must be a valid pointer to u32 according to ",

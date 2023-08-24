@@ -1497,7 +1497,7 @@ mod enumerate_device_extensions {
     // TODO: test if the loader will add the implicit layer extension in e2e test.
 
     #[test]
-    fn test_should_not_call_into_the_next_chain_if_layer_name_doesnt_match() {
+    fn test_should_call_into_the_next_chain_if_layer_name_doesnt_match() {
         static TEST_GLOBAL: TestGlobal = TestGlobal::builder()
             .set_layer_mock_builder(|| {
                 let mut mock = MockTestLayer::default();
@@ -1523,32 +1523,60 @@ mod enumerate_device_extensions {
             .unwrap()
             .first()
             .unwrap();
-        let in_property_count = 10;
-        let properties = {
-            let mut property_count = in_property_count;
-            let mut properties = Vec::<vk::ExtensionProperties>::new();
-            properties.resize_with(property_count.try_into().unwrap(), || {
-                vk::ExtensionProperties::builder()
-                    .extension_name([0; vk::MAX_EXTENSION_NAME_SIZE])
-                    .build()
-            });
-            let res = unsafe {
-                (instance.fp_v1_0().enumerate_device_extension_properties)(
-                    physical_device,
-                    null(),
-                    &mut property_count,
-                    properties.as_mut_ptr(),
-                )
-            };
-            assert_ne!(res, vk::Result::SUCCESS);
-            properties[0..(property_count as usize)]
-                .to_vec()
-                .into_boxed_slice()
+        let properties = unsafe { instance.enumerate_device_extension_properties(physical_device) }
+            .unwrap()
+            .into_boxed_slice();
+        let property_names = properties
+            .iter()
+            .map(|vk::ExtensionProperties { extension_name, .. }| {
+                unsafe { CStr::from_ptr(extension_name.as_ptr()) }
+                    .to_str()
+                    .unwrap()
+                    .try_into()
+                    .unwrap()
+            })
+            .collect::<Vec<Extension>>();
+        assert_eq!(property_names, available_device_extensions);
+    }
+
+    #[test]
+    fn test_should_not_crash_with_unmatched_layer_name_and_null_physical_device() {
+        static TEST_GLOBAL: TestGlobal = TestGlobal::builder()
+            .set_layer_mock_builder(|| {
+                let mut mock = MockTestLayer::default();
+                mock.expect_manifest().return_const({
+                    let mut layer_manifest = LayerManifest::test_default();
+                    layer_manifest.device_extensions = &[ExtensionProperties {
+                        name: Extension::KHRExternalMemory,
+                        spec_version: 1,
+                    }];
+                    layer_manifest
+                });
+                mock.set_default_expections();
+                mock
+            })
+            .build();
+        let _ctx = TEST_GLOBAL.create_context();
+
+        let ctx = vk::InstanceCreateInfo::builder().default_instance::<(TestLayer,)>();
+        let InstanceContext { instance, .. } = ctx.as_ref();
+        let mut property_count = 0;
+        let _ = unsafe {
+            (instance.fp_v1_0().enumerate_device_extension_properties)(
+                vk::PhysicalDevice::null(),
+                null(),
+                &mut property_count,
+                null_mut(),
+            )
         };
-        assert_eq!(in_property_count as usize, properties.len());
-        for property in properties.iter() {
-            assert_eq!(property.extension_name, [0; vk::MAX_EXTENSION_NAME_SIZE]);
-        }
+        let _ = unsafe {
+            (instance.fp_v1_0().enumerate_device_extension_properties)(
+                vk::PhysicalDevice::null(),
+                b"VK_LAYER_VENDOR_test_112434\0".as_ptr() as *const _,
+                &mut property_count,
+                null_mut(),
+            )
+        };
     }
 
     #[test]
