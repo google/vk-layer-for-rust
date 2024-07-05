@@ -357,6 +357,7 @@ pub enum Extension {
     EXTMutableDescriptorType,
     ARMShaderCoreBuiltins,
     EXTPipelineLibraryGroupHandles,
+    EXTDynamicRenderingUnusedAttachments,
     QCOMMultiviewPerViewRenderAreas,
     EXTAttachmentFeedbackLoopDynamicState,
     KHRAccelerationStructure,
@@ -739,6 +740,9 @@ impl TryFrom<&str> for Extension {
             "VK_EXT_pipeline_library_group_handles" => {
                 Ok(Extension::EXTPipelineLibraryGroupHandles)
             }
+            "VK_EXT_dynamic_rendering_unused_attachments" => {
+                Ok(Extension::EXTDynamicRenderingUnusedAttachments)
+            }
             "VK_QCOM_multiview_per_view_render_areas" => {
                 Ok(Extension::QCOMMultiviewPerViewRenderAreas)
             }
@@ -1102,6 +1106,9 @@ impl From<Extension> for &'static str {
             Extension::EXTMutableDescriptorType => "VK_EXT_mutable_descriptor_type",
             Extension::ARMShaderCoreBuiltins => "VK_ARM_shader_core_builtins",
             Extension::EXTPipelineLibraryGroupHandles => "VK_EXT_pipeline_library_group_handles",
+            Extension::EXTDynamicRenderingUnusedAttachments => {
+                "VK_EXT_dynamic_rendering_unused_attachments"
+            }
             Extension::QCOMMultiviewPerViewRenderAreas => "VK_QCOM_multiview_per_view_render_areas",
             Extension::EXTAttachmentFeedbackLoopDynamicState => {
                 "VK_EXT_attachment_feedback_loop_dynamic_state"
