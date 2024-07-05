@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `vulkan-layer\src\layer_trait.rs`."><title>layer_trait.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-47e7ab555ef2818a.css" id="mainThemeStyle"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="vulkan_layer" data-themes="" data-resource-suffix="" data-rustdoc-version="1.74.0-nightly (59a829484 2023-08-30)" data-channel="nightly" data-search-js="search-6dfdfced5eff6596.js" data-settings-js="settings-de11bff964e9d4e5.js" data-settings-css="settings-8c76f75bfb6bd192.css" data-theme-light-css="light-f194925aa375ae96.css" data-theme-dark-css="dark-1dd4d1ce031e15de.css" data-theme-ayu-css="ayu-49e58d069f567085.css" ><script src="../../static.files/storage-db41da1a38ea3cb8.js"></script><script defer src="../../static.files/src-script-3280b574d94e47b4.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-ef3a2de404864b0b.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../static.files/light-f194925aa375ae96.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../static.files/dark-1dd4d1ce031e15de.css"><link rel="stylesheet" href="../../static.files/noscript-cffde32267a19fd6.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../vulkan_layer/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `vulkan-layer\src\layer_trait.rs`."><title>layer_trait.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="vulkan_layer" data-themes="" data-resource-suffix="" data-rustdoc-version="1.81.0-nightly (cc8da78a0 2024-07-04)" data-channel="nightly" data-search-js="search-0fe7219eb170c82e.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -1731,14 +1731,14 @@
 <a href="#1731" id="1731">1731</a>
 </pre></div><pre class="rust"><code><span class="comment">// Copyright 2023 Google LLC
 //
-// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+// Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //     http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+// distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
@@ -1757,13 +1757,13 @@
 ///
 /// The layer framework uses the value of this type to decide whether to call into the next call
 /// chain after calling into the layer implementation. For an intercepted Vulkan command, if the
-/// layer implementation returns [`LayerResult::Handled`], the layer framework won&#39;t call into the
+/// layer implementation returns [`LayerResult::Handled`], the layer framework won't call into the
 /// next layer call chain. Otherwise, if [`LayerResult::Unhandled`] is returned, the layer framework
 /// will call into the next layer call chain with the original parameters.
 </span><span class="attr">#[must_use]
 #[derive(Clone)]
 </span><span class="kw">pub enum </span>LayerResult&lt;T&gt; {
-    <span class="doccomment">/// The layer implementation has handled this Vulkan command, so the layer framework shouldn&#39;t
+    <span class="doccomment">/// The layer implementation has handled this Vulkan command, so the layer framework shouldn't
     /// try to call into the next call chain.
     ///
     /// This can be useful if the layer implementation wants to modify the parameters passed to the
@@ -1771,10 +1771,10 @@
     /// Vulkan command. This is useful when the layer wants to emulate an unsupported extension.
     /// `T` is usually `ash::prelude::VkResult&lt;U&gt;`.
     </span>Handled(T),
-    <span class="doccomment">/// The layer implementation doesn&#39;t handle this Vulkan command, so the layer framework should
+    <span class="doccomment">/// The layer implementation doesn't handle this Vulkan command, so the layer framework should
     /// call into the next call chain with the original parameters.
     ///
-    /// If the layer implementation doesn&#39;t want to bother calling into the next call chain, and
+    /// If the layer implementation doesn't want to bother calling into the next call chain, and
     /// wants the layer framework to do the job, this variant can be used. Note that if the layer
     /// implementation needs to inform the layer framework that there is an error and needs to
     /// return early, [`LayerResult::Handled`] should be used.
@@ -1783,7 +1783,7 @@
 
 <span class="attr">#[derive(Error, Debug)]
 </span><span class="kw">pub enum </span>TryFromVulkanCommandError {
-    <span class="attr">#[error(<span class="string">&quot;unknown command `{0}`&quot;</span>)]
+    <span class="attr">#[error(<span class="string">"unknown command `{0}`"</span>)]
     </span>UnknownCommand(String),
 }
 
@@ -1819,13 +1819,13 @@
 ///
 /// impl DeviceInfo for MyLayerDeviceInfo {
 ///     type HooksType = Self;
-///     type HooksRefType&lt;&#39;a&gt; = &amp;&#39;a Self;
+///     type HooksRefType&lt;'a&gt; = &amp;'a Self;
 ///
-///     fn hooked_commands() -&gt; &amp;&#39;static [VulkanCommand] {
+///     fn hooked_commands() -&gt; &amp;'static [VulkanCommand] {
 ///         &amp;[VulkanCommand::CreateImage]
 ///     }
 ///
-///     fn hooks(&amp;self) -&gt; Self::HooksRefType&lt;&#39;_&gt; {
+///     fn hooks(&amp;self) -&gt; Self::HooksRefType&lt;'_&gt; {
 ///         self
 ///     }
 /// }
@@ -1859,22 +1859,22 @@
     ///
     /// impl DeviceInfo for MyLayerDeviceInfo {
     ///     type HooksType = MyLayerDeviceHooks;
-    ///     type HooksRefType&lt;&#39;a&gt; = Arc&lt;MyLayerDeviceHooks&gt;;
+    ///     type HooksRefType&lt;'a&gt; = Arc&lt;MyLayerDeviceHooks&gt;;
     /// #
-    /// #     fn hooked_commands() -&gt; &amp;&#39;static [VulkanCommand] {
+    /// #     fn hooked_commands() -&gt; &amp;'static [VulkanCommand] {
     /// #         &amp;[]
     /// #     }
     ///
     ///     // Other required methods omitted.
     ///
-    ///     fn hooks(&amp;self) -&gt; Self::HooksRefType&lt;&#39;_&gt; {
+    ///     fn hooks(&amp;self) -&gt; Self::HooksRefType&lt;'_&gt; {
     ///         Arc::clone(&amp;self.0)
     ///     }
     /// }
     /// ```
-    </span><span class="kw">type </span>HooksRefType&lt;<span class="lifetime">&#39;a</span>&gt;: Deref&lt;Target = <span class="self">Self</span>::HooksType&gt; + <span class="lifetime">&#39;a
+    </span><span class="kw">type </span>HooksRefType&lt;<span class="lifetime">'a</span>&gt;: Deref&lt;Target = <span class="self">Self</span>::HooksType&gt; + <span class="lifetime">'a
     </span><span class="kw">where
-        </span><span class="self">Self</span>: <span class="lifetime">&#39;a</span>;
+        </span><span class="self">Self</span>: <span class="lifetime">'a</span>;
 
     <span class="doccomment">/// Returns a slice of
     /// [Vulkan device functions](https://github.com/KhronosGroup/Vulkan-Loader/blob/v1.3.261/docs/LoaderInterfaceArchitecture.md#device-functions)
@@ -1918,7 +1918,7 @@
     ///         _p_allocator: Option&lt;&amp;vk::AllocationCallbacks&gt;,
     ///     ) -&gt; LayerResult&lt;VkResult&lt;vk::Image&gt;&gt; {
     ///         if create_info.format == vk::Format::ASTC_4X4_UNORM_BLOCK {
-    ///             println!(&quot;ASTC 4x4 UNORM image created.&quot;);
+    ///             println!("ASTC 4x4 UNORM image created.");
     ///         }
     ///         LayerResult::Unhandled
     ///     }
@@ -1926,13 +1926,13 @@
     ///
     /// impl DeviceInfo for MyLayerDeviceInfo {
     ///     type HooksType = Self;
-    ///     type HooksRefType&lt;&#39;a&gt; = &amp;&#39;a Self;
+    ///     type HooksRefType&lt;'a&gt; = &amp;'a Self;
     ///
-    ///     fn hooked_commands() -&gt; &amp;&#39;static [VulkanCommand] {
+    ///     fn hooked_commands() -&gt; &amp;'static [VulkanCommand] {
     ///         &amp;[VulkanCommand::CreateImage]
     ///     }
     ///
-    ///     fn hooks(&amp;self) -&gt; Self::HooksRefType&lt;&#39;_&gt; {
+    ///     fn hooks(&amp;self) -&gt; Self::HooksRefType&lt;'_&gt; {
     ///         self
     ///     }
     /// }
@@ -1948,7 +1948,7 @@
     /// #     type InstanceInfoContainer = StubInstanceInfo;
     ///     type DeviceInfoContainer = MyLayerDeviceInfo;
     /// #
-    /// #     fn global_instance() -&gt; &amp;&#39;static Global&lt;Self&gt; {
+    /// #     fn global_instance() -&gt; &amp;'static Global&lt;Self&gt; {
     /// #         static GLOBAL: Lazy&lt;Global&lt;MyLayer&gt;&gt; = Lazy::new(Default::default);
     /// #         &amp;GLOBAL
     /// #     }
@@ -2009,7 +2009,7 @@
     ///         let should_hook_create_image = device_info
     ///             .map(|device_info| device_info.is_astc_enabled)
     ///             // Always hook the vkCreateImage function in the function pointers returned by
-    ///             // vkGetInstanceProcAddr: we don&#39;t know if the to-be-created VkDevice will be
+    ///             // vkGetInstanceProcAddr: we don't know if the to-be-created VkDevice will be
     ///             // created with the ASTC feature enabled.
     ///             .unwrap_or(true);
     ///         Box::new(
@@ -2024,13 +2024,13 @@
     ///     }
     /// }
     /// ```
-    </span><span class="kw">fn </span>hooked_commands() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>[VulkanCommand];
+    </span><span class="kw">fn </span>hooked_commands() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">'static </span>[VulkanCommand];
 
     <span class="doccomment">/// Returns the reference of the [`DeviceInfo::HooksType`].
     ///
     /// The layer framework uses the returned value to call into the layer implementation of
     /// intercepted commands.
-    </span><span class="kw">fn </span>hooks(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="self">Self</span>::HooksRefType&lt;<span class="lifetime">&#39;_</span>&gt;;
+    </span><span class="kw">fn </span>hooks(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="self">Self</span>::HooksRefType&lt;<span class="lifetime">'_</span>&gt;;
 }
 
 <span class="doccomment">/// A trait for the layer implementation to provide metadata of [`InstanceHooks`] for the layer
@@ -2072,13 +2072,13 @@
 ///
 /// impl InstanceInfo for MyLayerInstanceHooks {
 ///     type HooksType = Self;
-///     type HooksRefType&lt;&#39;a&gt; = &amp;&#39;a Self;
+///     type HooksRefType&lt;'a&gt; = &amp;'a Self;
 ///
-///     fn hooked_commands() -&gt; &amp;&#39;static [VulkanCommand] {
+///     fn hooked_commands() -&gt; &amp;'static [VulkanCommand] {
 ///         &amp;[VulkanCommand::CreateWin32SurfaceKhr]
 ///     }
 ///
-///     fn hooks(&amp;self) -&gt; Self::HooksRefType&lt;&#39;_&gt; {
+///     fn hooks(&amp;self) -&gt; Self::HooksRefType&lt;'_&gt; {
 ///         self
 ///     }
 /// }
@@ -2114,22 +2114,22 @@
     ///
     /// impl InstanceInfo for MyLayerInstanceInfo {
     ///     type HooksType = MyLayerInstanceHooks;
-    ///     type HooksRefType&lt;&#39;a&gt; = Arc&lt;MyLayerInstanceHooks&gt;;
+    ///     type HooksRefType&lt;'a&gt; = Arc&lt;MyLayerInstanceHooks&gt;;
     /// #
-    /// #     fn hooked_commands() -&gt; &amp;&#39;static [VulkanCommand] {
+    /// #     fn hooked_commands() -&gt; &amp;'static [VulkanCommand] {
     /// #         &amp;[]
     /// #     }
     ///
     ///     // Other required methods omitted.
     ///
-    ///     fn hooks(&amp;self) -&gt; Self::HooksRefType&lt;&#39;_&gt; {
+    ///     fn hooks(&amp;self) -&gt; Self::HooksRefType&lt;'_&gt; {
     ///         Arc::clone(&amp;self.0)
     ///     }
     /// }
     /// ```
-    </span><span class="kw">type </span>HooksRefType&lt;<span class="lifetime">&#39;a</span>&gt;: Deref&lt;Target = <span class="self">Self</span>::HooksType&gt; + <span class="lifetime">&#39;a
+    </span><span class="kw">type </span>HooksRefType&lt;<span class="lifetime">'a</span>&gt;: Deref&lt;Target = <span class="self">Self</span>::HooksType&gt; + <span class="lifetime">'a
     </span><span class="kw">where
-        </span><span class="self">Self</span>: <span class="lifetime">&#39;a</span>;
+        </span><span class="self">Self</span>: <span class="lifetime">'a</span>;
 
     <span class="doccomment">/// Returns a slice of
     /// [Vulkan instance functions](https://github.com/KhronosGroup/Vulkan-Loader/blob/v1.3.261/docs/LoaderInterfaceArchitecture.md#instance-functions)
@@ -2181,13 +2181,13 @@
     ///
     /// impl InstanceInfo for MyLayerInstanceInfo {
     ///     type HooksType = Self;
-    ///     type HooksRefType&lt;&#39;a&gt; = &amp;&#39;a Self;
+    ///     type HooksRefType&lt;'a&gt; = &amp;'a Self;
     ///
-    ///     fn hooked_commands() -&gt; &amp;&#39;static [VulkanCommand] {
+    ///     fn hooked_commands() -&gt; &amp;'static [VulkanCommand] {
     ///         &amp;[VulkanCommand::DestroySurfaceKhr]
     ///     }
     ///
-    ///     fn hooks(&amp;self) -&gt; Self::HooksRefType&lt;&#39;_&gt; {
+    ///     fn hooks(&amp;self) -&gt; Self::HooksRefType&lt;'_&gt; {
     ///         self
     ///     }
     /// }
@@ -2203,7 +2203,7 @@
     ///     type InstanceInfoContainer = MyLayerInstanceInfo;
     /// #     type DeviceInfoContainer = StubDeviceInfo;
     /// #
-    /// #     fn global_instance() -&gt; &amp;&#39;static Global&lt;Self&gt; {
+    /// #     fn global_instance() -&gt; &amp;'static Global&lt;Self&gt; {
     /// #         static GLOBAL: Lazy&lt;Global&lt;MyLayer&gt;&gt; = Lazy::new(Default::default);
     /// #         &amp;GLOBAL
     /// #     }
@@ -2273,13 +2273,13 @@
     /// #     }
     /// }
     /// ```
-    </span><span class="kw">fn </span>hooked_commands() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>[VulkanCommand];
+    </span><span class="kw">fn </span>hooked_commands() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">'static </span>[VulkanCommand];
 
     <span class="doccomment">/// Returns the reference of the [`InstanceInfo::HooksType`].
     ///
     /// The layer framework uses the returned value to call into the layer implementation of
     /// intercepted commands.
-    </span><span class="kw">fn </span>hooks(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="self">Self</span>::HooksRefType&lt;<span class="lifetime">&#39;_</span>&gt;;
+    </span><span class="kw">fn </span>hooks(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="self">Self</span>::HooksRefType&lt;<span class="lifetime">'_</span>&gt;;
 }
 
 <span class="doccomment">/// A trait for the layer implementation to provide the implementation of the intercepted
@@ -2348,7 +2348,7 @@
     ///             }
     ///             .to_vec()
     ///         };
-    ///         // Push the VK_KHR_surface extension name only if it doesn&#39;t exist.
+    ///         // Push the VK_KHR_surface extension name only if it doesn't exist.
     ///         if enabled_extensions
     ///             .iter()
     ///             .find(|extension_name| {
@@ -2374,7 +2374,7 @@
     ///         let create_instance = unsafe {
     ///             (layer_instance_link.pfnNextGetInstanceProcAddr)(
     ///                 vk::Instance::null(),
-    ///                 b&quot;vkCreateInstance\0&quot;.as_ptr() as *const i8,
+    ///                 b"vkCreateInstance\0".as_ptr() as *const i8,
     ///             )
     ///         };
     ///         let create_instance: vk::PFN_vkCreateInstance = match create_instance {
@@ -2438,13 +2438,13 @@
 ///
 /// impl GlobalHooksInfo for MyLayerGlobalHooks {
 ///     type HooksType = Self;
-///     type HooksRefType&lt;&#39;a&gt; = &amp;&#39;a Self;
+///     type HooksRefType&lt;'a&gt; = &amp;'a Self;
 ///
-///     fn hooked_commands() -&gt; &amp;&#39;static [VulkanCommand] {
+///     fn hooked_commands() -&gt; &amp;'static [VulkanCommand] {
 ///         &amp;[VulkanCommand::CreateInstance]
 ///     }
 ///
-///     fn hooks(&amp;self) -&gt; Self::HooksRefType&lt;&#39;_&gt; {
+///     fn hooks(&amp;self) -&gt; Self::HooksRefType&lt;'_&gt; {
 ///         self
 ///     }
 /// }
@@ -2478,22 +2478,22 @@
     ///
     /// impl GlobalHooksInfo for MyLayerGlobalHooksInfo {
     ///     type HooksType = MyLayerGlobalHooks;
-    ///     type HooksRefType&lt;&#39;a&gt; = Arc&lt;MyLayerGlobalHooks&gt;;
+    ///     type HooksRefType&lt;'a&gt; = Arc&lt;MyLayerGlobalHooks&gt;;
     /// #
-    /// #     fn hooked_commands() -&gt; &amp;&#39;static [VulkanCommand] {
+    /// #     fn hooked_commands() -&gt; &amp;'static [VulkanCommand] {
     /// #         &amp;[]
     /// #     }
     ///
     ///     // Other required methods omitted.
     ///
-    ///     fn hooks(&amp;self) -&gt; Self::HooksRefType&lt;&#39;_&gt; {
+    ///     fn hooks(&amp;self) -&gt; Self::HooksRefType&lt;'_&gt; {
     ///         Arc::clone(&amp;self.0)
     ///     }
     /// }
     /// ```
-    </span><span class="kw">type </span>HooksRefType&lt;<span class="lifetime">&#39;a</span>&gt;: Deref&lt;Target = <span class="self">Self</span>::HooksType&gt; + <span class="lifetime">&#39;a
+    </span><span class="kw">type </span>HooksRefType&lt;<span class="lifetime">'a</span>&gt;: Deref&lt;Target = <span class="self">Self</span>::HooksType&gt; + <span class="lifetime">'a
     </span><span class="kw">where
-        </span><span class="self">Self</span>: <span class="lifetime">&#39;a</span>;
+        </span><span class="self">Self</span>: <span class="lifetime">'a</span>;
 
     <span class="doccomment">/// Returns a slice of
     /// [global commands](https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkGetInstanceProcAddr.html#:~:text=The%20global%20commands%20are%3A%20vkEnumerateInstanceVersion%2C%20vkEnumerateInstanceExtensionProperties%2C%20vkEnumerateInstanceLayerProperties%2C%20and%20vkCreateInstance.)
@@ -2512,13 +2512,13 @@
     ///   obtain the global singleton.
     /// * Any Vulkan APIs exposed by the Vulkan loader: These functions will almost certainly
     ///   trigger the layer initialization logic.
-    </span><span class="kw">fn </span>hooked_commands() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>[VulkanCommand];
+    </span><span class="kw">fn </span>hooked_commands() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">'static </span>[VulkanCommand];
 
     <span class="doccomment">/// Returns the reference of the [`GlobalHooksInfo::HooksType`].
     ///
     /// The layer framework uses the returned value to call into the layer implementation of
     /// intercepted commands.
-    </span><span class="kw">fn </span>hooks(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="self">Self</span>::HooksRefType&lt;<span class="lifetime">&#39;_</span>&gt;;
+    </span><span class="kw">fn </span>hooks(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="self">Self</span>::HooksRefType&lt;<span class="lifetime">'_</span>&gt;;
 }
 
 <span class="doccomment">/// A wrapper for
@@ -2581,7 +2581,7 @@
 /// # use ash::vk;
 /// # use vulkan_layer::LayerManifest;
 /// let mut manifest = LayerManifest::default();
-/// manifest.name = &quot;VK_LAYER_VENDOR_rust_example&quot;;
+/// manifest.name = "VK_LAYER_VENDOR_rust_example";
 /// manifest.spec_version = vk::API_VERSION_1_1;
 /// ```
 </span><span class="comment">// TODO: add the capability to serialize to json.
@@ -2594,9 +2594,9 @@
     /// [layer name convention](https://github.com/KhronosGroup/Vulkan-Loader/blob/v1.3.261/docs/LoaderLayerInterface.md#layer-conventions-and-rules)
     /// according to
     /// [`LLP_LAYER_3`](&lt;https://github.com/KhronosGroup/Vulkan-Loader/blob/v1.3.261/docs/LoaderLayerInterface.md#requirements-of-well-behaved-layers:~:text=Conventions%20and%20Rules-,LLP_LAYER_3,-Any%20new%20layer&gt;).
-    </span><span class="kw">pub </span>name: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
+    </span><span class="kw">pub </span>name: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str,
 
-    <span class="doccomment">/// The `VkLayerProperties::specVersion` field. The `&quot;api_version&quot;` JSON node.
+    <span class="doccomment">/// The `VkLayerProperties::specVersion` field. The `"api_version"` JSON node.
     ///
     /// The major.minor.patch version number of the Vulkan API that the layer supports encoded as
     /// described in
@@ -2616,9 +2616,9 @@
     <span class="doccomment">/// A high-level description of the layer and its intended use which provides additional
     /// details that can be used by the application to identify the layer.
     ///
-    /// The description shouldn&#39;t be longer than `VK_MAX_DESCRIPTION_SIZE` bytes after encoded as a
+    /// The description shouldn't be longer than `VK_MAX_DESCRIPTION_SIZE` bytes after encoded as a
     /// null-terminated UTF-8 string. Otherwise, the layer framework will panic at runtime.
-    </span><span class="kw">pub </span>description: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
+    </span><span class="kw">pub </span>description: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str,
 
     <span class="doccomment">/// Contains the list of device extension names supported by this layer.
     ///
@@ -2626,7 +2626,7 @@
     /// layer; otherwise the array should be empty. In `vkCreateDevice`, the layer framework
     /// removes the extensions mentioned here from the
     /// `VkDeviceCreateInfo::ppEnabledExtensionNames` list.
-    </span><span class="kw">pub </span>device_extensions: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>[ExtensionProperties],
+    </span><span class="kw">pub </span>device_extensions: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>[ExtensionProperties],
 }
 
 <span class="doccomment">/// The [`Layer`] trait provides all layer implementation information for the layer framework.
@@ -2644,7 +2644,7 @@
 /// initialize the logger.
 ///
 /// The layer framework guarantees that `Layer::default` is only called once when
-/// [`Global::default`] is called, and won&#39;t be called anywhere else. The layer framework doesn&#39;t
+/// [`Global::default`] is called, and won't be called anywhere else. The layer framework doesn't
 /// call [`Global::default`] to initialize. Instead, [`Layer::global_instance`] is called instead on
 /// every Vulkan function entry when the global singleton is needed, and the layer implementation is
 /// expected to lazily create the static [`Global`] singleton with [`Global::default`] in
@@ -2663,13 +2663,13 @@
 /// It is recommended that the implementor of the [`Layer`] trait should have a no-op drop if all
 /// `VkInstance` intercepted by the layer is destroyed. If so, [`Global`] has a no-op drop when all
 /// `VkInstance` is destroyed. If the [`Layer`] implementor is always
-/// trivially-destructible[^trivial_dtor], it&#39;s great.
+/// trivially-destructible[^trivial_dtor], it's great.
 ///
 /// It is guaranteed that when `Global::drop` is called, `Layer::drop` is called exactly once.
 /// However, as a dynamic link library that may be loaded and unloaded to/from the process multiple
 /// times, there is no easy way to guarantee that `Global::drop` is called on every unload. In
 /// additoon, in Rust, static items do not call drop at the end of the program[^static_drop]. We
-/// can&#39;t expect drop to be called on dynamic link library unload as well. Therefore, we should
+/// can't expect drop to be called on dynamic link library unload as well. Therefore, we should
 /// avoid using `Layer::drop` to do clean-up to avoid resource leak.
 ///
 /// If it is really necessary to store some not trivially-destructible types(note that all Rust
@@ -2685,7 +2685,7 @@
 /// #[derive(Default)]
 /// struct NotTriviallyDestructible(Box&lt;u32&gt;);
 ///
-/// // This passes the Miri test, so TriviallyDestructible won&#39;t leak heap memory if drop is not
+/// // This passes the Miri test, so TriviallyDestructible won't leak heap memory if drop is not
 /// // called.
 /// {
 ///     let x: TriviallyDestructible = Default::default();
@@ -2704,7 +2704,7 @@
 /// using them directly in the type that implements [`Layer`].
 ///
 /// The drop of [`std::sync::Weak`] is not no-op even if all strong references to the underlying
-/// object don&#39;t exist, so we should avoid using it to construct a type that needs a no-op drop.
+/// object don't exist, so we should avoid using it to construct a type that needs a no-op drop.
 ///
 /// The drop of [`Option::None`] is no-op even if the underlying `T` is not trivially destructible,
 /// and the drop of [`Mutex`][std::sync::Mutex] is no-op if the drop of the wrapped `T` is no-op.
@@ -2712,7 +2712,7 @@
 ///
 /// # Examples
 ///
-/// A simple layer that prints &quot;Hello from the Rust Vulkan layer!&quot; to `stdout` on every
+/// A simple layer that prints "Hello from the Rust Vulkan layer!" to `stdout` on every
 /// `vkCreateDevice`.
 /// ```
 /// use ash::{self, vk};
@@ -2732,14 +2732,14 @@
 ///     type InstanceInfoContainer = StubInstanceInfo;
 ///     type DeviceInfoContainer = StubDeviceInfo;
 ///
-///     fn global_instance() -&gt; &amp;&#39;static Global&lt;Self&gt; {
+///     fn global_instance() -&gt; &amp;'static Global&lt;Self&gt; {
 ///         static GLOBAL: Lazy&lt;Global&lt;MyLayer&gt;&gt; = Lazy::new(Default::default);
 ///         &amp;*GLOBAL
 ///     }
 ///
 ///     fn manifest() -&gt; LayerManifest {
 ///         let mut manifest = LayerManifest::default();
-///         manifest.name = &quot;VK_LAYER_VENDOR_rust_example&quot;;
+///         manifest.name = "VK_LAYER_VENDOR_rust_example";
 ///         manifest.spec_version = vk::API_VERSION_1_1;
 ///         manifest
 ///     }
@@ -2766,7 +2766,7 @@
 ///         _: Arc&lt;ash::Device&gt;,
 ///         _next_get_device_proc_addr: vk::PFN_vkGetDeviceProcAddr,
 ///     ) -&gt; Self::DeviceInfoContainer {
-///         println!(&quot;Hello from the Rust Vulkan layer!&quot;);
+///         println!("Hello from the Rust Vulkan layer!");
 ///         Default::default()
 ///     }
 /// }
@@ -2798,14 +2798,14 @@
 ///     type InstanceInfoContainer = StubInstanceInfo;
 ///     type DeviceInfoContainer = StubDeviceInfo;
 ///
-///     fn global_instance() -&gt; &amp;&#39;static Global&lt;Self&gt; {
+///     fn global_instance() -&gt; &amp;'static Global&lt;Self&gt; {
 ///         static GLOBAL: Lazy&lt;Global&lt;MyLayer&gt;&gt; = Lazy::new(Default::default);
 ///         &amp;*GLOBAL
 ///     }
 ///
 ///     fn manifest() -&gt; LayerManifest {
 ///         let mut manifest = LayerManifest::default();
-///         manifest.name = &quot;VK_LAYER_VENDOR_rust_example&quot;;
+///         manifest.name = "VK_LAYER_VENDOR_rust_example";
 ///         manifest.spec_version = vk::API_VERSION_1_1;
 ///         manifest
 ///     }
@@ -2832,7 +2832,7 @@
 ///         _: Arc&lt;ash::Device&gt;,
 ///         _next_get_device_proc_addr: vk::PFN_vkGetDeviceProcAddr,
 ///     ) -&gt; Self::DeviceInfoContainer {
-///         info!(&quot;Hello from the Rust Vulkan layer!&quot;);
+///         info!("Hello from the Rust Vulkan layer!");
 ///         Default::default()
 ///     }
 /// }
@@ -2840,12 +2840,12 @@
 ///
 /// [^trivial_dtor]: This term is borrowed from
 /// [C++](&lt;https://en.cppreference.com/w/cpp/language/destructor#:~:text=since%20C%2B%2B20)-,Trivial%20destructor,-The%20destructor%20for&gt;):
-/// if the type itself doesn&#39;t have a destructor and the types of all fields are trivially
+/// if the type itself doesn't have a destructor and the types of all fields are trivially
 /// destructible, this type is trivially destructible. Rust has [`std::mem::needs_drop`], but this
-/// function doesn&#39;t have a strong guarantee.
+/// function doesn't have a strong guarantee.
 ///
 /// [^static_drop]: &lt;https://doc.rust-lang.org/reference/items/static-items.html#:~:text=Static%20items%20do%20not%20call%20drop%20at%20the%20end%20of%20the%20program.&gt;
-</span><span class="kw">pub trait </span>Layer: Sync + Default + <span class="lifetime">&#39;static </span>{
+</span><span class="kw">pub trait </span>Layer: Sync + Default + <span class="lifetime">'static </span>{
     <span class="doccomment">/// The type that provides information about interception of
     /// [global commands](&lt;https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkGetInstanceProcAddr.html#:~:text=The%20global%20commands%20are%3A%20vkEnumerateInstanceVersion%2C%20vkEnumerateInstanceExtensionProperties%2C%20vkEnumerateInstanceLayerProperties%2C%20and%20vkCreateInstance&gt;).
     ///
@@ -2911,7 +2911,7 @@
     /// #     type DeviceInfo = StubDeviceInfo;
     /// #     type DeviceInfoContainer = StubDeviceInfo;
     /// #
-    /// #     fn global_instance() -&gt; &amp;&#39;static Global&lt;Self&gt; {
+    /// #     fn global_instance() -&gt; &amp;'static Global&lt;Self&gt; {
     /// #         static GLOBAL: Lazy&lt;Global&lt;MyLayer&gt;&gt; = Lazy::new(Default::default);
     /// #         &amp;GLOBAL
     /// #     }
@@ -2977,7 +2977,7 @@
     /// #     type InstanceInfo = StubInstanceInfo;
     /// #     type InstanceInfoContainer = StubInstanceInfo;
     /// #
-    /// #     fn global_instance() -&gt; &amp;&#39;static Global&lt;Self&gt; {
+    /// #     fn global_instance() -&gt; &amp;'static Global&lt;Self&gt; {
     /// #         static GLOBAL: Lazy&lt;Global&lt;MyLayer&gt;&gt; = Lazy::new(Default::default);
     /// #         &amp;GLOBAL
     /// #     }
@@ -3043,7 +3043,7 @@
     /// struct MyLayer(StubGlobalHooks);
     ///
     /// impl Layer for MyLayer {
-    ///     fn global_instance() -&gt; &amp;&#39;static Global&lt;Self&gt; {
+    ///     fn global_instance() -&gt; &amp;'static Global&lt;Self&gt; {
     ///         static GLOBAL: Lazy&lt;Global&lt;MyLayer&gt;&gt; = Lazy::new(Default::default);
     ///         &amp;*GLOBAL
     ///     }
@@ -3057,7 +3057,7 @@
     /// #
     /// #     fn manifest() -&gt; LayerManifest {
     /// #         let mut manifest = LayerManifest::default();
-    /// #         manifest.name = &quot;VK_LAYER_VENDOR_rust_example&quot;;
+    /// #         manifest.name = "VK_LAYER_VENDOR_rust_example";
     /// #         manifest.spec_version = vk::API_VERSION_1_1;
     /// #         manifest
     /// #     }
@@ -3084,12 +3084,12 @@
     /// #         _: Arc&lt;ash::Device&gt;,
     /// #         _next_get_device_proc_addr: vk::PFN_vkGetDeviceProcAddr,
     /// #     ) -&gt; Self::DeviceInfoContainer {
-    /// #         println!(&quot;Hello from the Rust Vulkan layer!&quot;);
+    /// #         println!("Hello from the Rust Vulkan layer!");
     /// #         Default::default()
     /// #     }
     /// }
     /// ```
-    </span><span class="kw">fn </span>global_instance() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>Global&lt;<span class="self">Self</span>&gt;;
+    </span><span class="kw">fn </span>global_instance() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">'static </span>Global&lt;<span class="self">Self</span>&gt;;
 
     <span class="doccomment">/// Returns a reference of the underlying [`GlobalHooksInfo`] object.
     </span><span class="kw">fn </span>global_hooks_info(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="self">Self</span>::GlobalHooksInfo;
@@ -3098,7 +3098,7 @@
     ///
     /// The layer framework relies on this function to obtain [`GlobalHooks`], and implementors
     /// should avoid overriding this method.
-    </span><span class="kw">fn </span>global_hooks(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; &lt;<span class="self">Self</span>::GlobalHooksInfo <span class="kw">as </span>GlobalHooksInfo&gt;::HooksRefType&lt;<span class="lifetime">&#39;_</span>&gt; {
+    </span><span class="kw">fn </span>global_hooks(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; &lt;<span class="self">Self</span>::GlobalHooksInfo <span class="kw">as </span>GlobalHooksInfo&gt;::HooksRefType&lt;<span class="lifetime">'_</span>&gt; {
         <span class="self">self</span>.global_hooks_info().hooks()
     }
 
@@ -3203,13 +3203,13 @@
     ///
     /// impl InstanceInfo for MyLayerInstanceInfo {
     ///     type HooksType = Self;
-    ///     type HooksRefType&lt;&#39;a&gt; = &amp;&#39;a Self;
+    ///     type HooksRefType&lt;'a&gt; = &amp;'a Self;
     ///
-    ///     fn hooked_commands() -&gt; &amp;&#39;static [VulkanCommand] {
+    ///     fn hooked_commands() -&gt; &amp;'static [VulkanCommand] {
     ///         &amp;[VulkanCommand::DestroySurfaceKhr]
     ///     }
     ///
-    ///     fn hooks(&amp;self) -&gt; Self::HooksRefType&lt;&#39;_&gt; {
+    ///     fn hooks(&amp;self) -&gt; Self::HooksRefType&lt;'_&gt; {
     ///         self
     ///     }
     /// }
@@ -3225,7 +3225,7 @@
     ///     type InstanceInfoContainer = MyLayerInstanceInfo;
     /// #     type DeviceInfoContainer = StubDeviceInfo;
     /// #
-    /// #     fn global_instance() -&gt; &amp;&#39;static Global&lt;Self&gt; {
+    /// #     fn global_instance() -&gt; &amp;'static Global&lt;Self&gt; {
     /// #         static GLOBAL: Lazy&lt;Global&lt;MyLayer&gt;&gt; = Lazy::new(Default::default);
     /// #         &amp;GLOBAL
     /// #     }
@@ -3346,7 +3346,7 @@
     ///         _p_allocator: Option&lt;&amp;vk::AllocationCallbacks&gt;,
     ///     ) -&gt; LayerResult&lt;VkResult&lt;vk::Image&gt;&gt; {
     ///         if create_info.format == vk::Format::ASTC_4X4_UNORM_BLOCK {
-    ///             println!(&quot;ASTC 4x4 UNORM image created.&quot;);
+    ///             println!("ASTC 4x4 UNORM image created.");
     ///         }
     ///         LayerResult::Unhandled
     ///     }
@@ -3354,13 +3354,13 @@
     ///
     /// impl DeviceInfo for MyLayerDeviceInfo {
     ///     type HooksType = Self;
-    ///     type HooksRefType&lt;&#39;a&gt; = &amp;&#39;a Self;
+    ///     type HooksRefType&lt;'a&gt; = &amp;'a Self;
     ///
-    ///     fn hooked_commands() -&gt; &amp;&#39;static [VulkanCommand] {
+    ///     fn hooked_commands() -&gt; &amp;'static [VulkanCommand] {
     ///         &amp;[VulkanCommand::CreateImage]
     ///     }
     ///
-    ///     fn hooks(&amp;self) -&gt; Self::HooksRefType&lt;&#39;_&gt; {
+    ///     fn hooks(&amp;self) -&gt; Self::HooksRefType&lt;'_&gt; {
     ///         self
     ///     }
     /// }
@@ -3376,7 +3376,7 @@
     /// #     type InstanceInfoContainer = StubInstanceInfo;
     ///     type DeviceInfoContainer = MyLayerDeviceInfo;
     /// #
-    /// #     fn global_instance() -&gt; &amp;&#39;static Global&lt;Self&gt; {
+    /// #     fn global_instance() -&gt; &amp;'static Global&lt;Self&gt; {
     /// #         static GLOBAL: Lazy&lt;Global&lt;MyLayer&gt;&gt; = Lazy::new(Default::default);
     /// #         &amp;GLOBAL
     /// #     }
@@ -3437,7 +3437,7 @@
     ///         let should_hook_create_image = device_info
     ///             .map(|device_info| device_info.is_astc_enabled)
     ///             // Always hook the vkCreateImage function in the function pointers returned by
-    ///             // vkGetInstanceProcAddr: we don&#39;t know if the to-be-created VkDevice will be
+    ///             // vkGetInstanceProcAddr: we don't know if the to-be-created VkDevice will be
     ///             // created with the ASTC feature enabled.
     ///             .unwrap_or(true);
     ///         Box::new(

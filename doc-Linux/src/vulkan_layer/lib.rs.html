@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `vulkan-layer/src/lib.rs`."><title>lib.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-47e7ab555ef2818a.css" id="mainThemeStyle"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="vulkan_layer" data-themes="" data-resource-suffix="" data-rustdoc-version="1.74.0-nightly (59a829484 2023-08-30)" data-channel="nightly" data-search-js="search-6dfdfced5eff6596.js" data-settings-js="settings-de11bff964e9d4e5.js" data-settings-css="settings-8c76f75bfb6bd192.css" data-theme-light-css="light-f194925aa375ae96.css" data-theme-dark-css="dark-1dd4d1ce031e15de.css" data-theme-ayu-css="ayu-49e58d069f567085.css" ><script src="../../static.files/storage-db41da1a38ea3cb8.js"></script><script defer src="../../static.files/src-script-3280b574d94e47b4.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-ef3a2de404864b0b.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../static.files/light-f194925aa375ae96.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../static.files/dark-1dd4d1ce031e15de.css"><link rel="stylesheet" href="../../static.files/noscript-cffde32267a19fd6.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../vulkan_layer/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `vulkan-layer/src/lib.rs`."><title>lib.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="vulkan_layer" data-themes="" data-resource-suffix="" data-rustdoc-version="1.81.0-nightly (cc8da78a0 2024-07-04)" data-channel="nightly" data-search-js="search-0fe7219eb170c82e.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -1772,14 +1772,14 @@
 <a href="#1772" id="1772">1772</a>
 </pre></div><pre class="rust"><code><span class="comment">// Copyright 2023 Google LLC
 //
-// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+// Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //     http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+// distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
@@ -1810,14 +1810,14 @@
 //!
 //!   This mainly includes using the `vkGet*ProcAddr` function pointer correctly, and advancing the
 //!   `VkLayer*CreateInfo::u::pLayerInfo` link list. One common mistake in layer implementation
-//!   in `vkCreateDevice` is to call `getInstanceProcAddr(VK_NULL_HANDLE, &quot;vkCreateDevice&quot;)` to
+//!   in `vkCreateDevice` is to call `getInstanceProcAddr(VK_NULL_HANDLE, "vkCreateDevice")` to
 //!   obtain the function pointer to `vkCreateDevice`. According to
 //!   [the spec](https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkGetInstanceProcAddr.html#_description),
 //!   `getInstanceProcAddr` should return `NULL`. This framework helps you avoid bugs like this.
 //!
-//! Note that object wrapping is not supported by this crate, and we don&#39;t plan such support,
+//! Note that object wrapping is not supported by this crate, and we don't plan such support,
 //! because object wrapping requires us to intercept ALL Vulkan commands related to one handle type,
-//! so it can&#39;t handle unknown commands. In addition, object wrapping is more complicated because it
+//! so it can't handle unknown commands. In addition, object wrapping is more complicated because it
 //! is required to call loader callback on every dispatchable handle creation and destruction.
 //!
 //! # Overview
@@ -1848,7 +1848,7 @@
 //!     type InstanceInfoContainer = StubInstanceInfo;
 //!     type DeviceInfoContainer = StubDeviceInfo;
 //!
-//!     fn global_instance() -&gt; &amp;&#39;static Global&lt;Self&gt; {
+//!     fn global_instance() -&gt; &amp;'static Global&lt;Self&gt; {
 //!         static GLOBAL: Lazy&lt;Global&lt;MyLayer&gt;&gt; = Lazy::new(Default::default);
 //!         &amp;*GLOBAL
 //!     }
@@ -1914,13 +1914,13 @@
 //! Second, modify the crate type to `cdylib` and set the panic behavior to abort in `Cargo.toml`.
 //! ```toml
 //! [lib]
-//! crate-type = [&quot;cdylib&quot;]
+//! crate-type = ["cdylib"]
 //!
 //! [profile.dev]
-//! panic = &quot;abort&quot;
+//! panic = "abort"
 //!
 //! [profile.release]
-//! panic = &quot;abort&quot;
+//! panic = "abort"
 //! ```
 //! We need to set panic to abort to avoid unwinding from Rust to the caller(most likely C/C++),
 //! because unwinding into other language from Rust is
@@ -1931,14 +1931,14 @@
 //! follow a specific name convention.
 //! ```toml
 //! [package]
-//! name = &quot;VkLayer_vendor_rust_example&quot;
+//! name = "VkLayer_vendor_rust_example"
 //! ```
 //!
 //! Third, set up the dependency in `Cargo.toml`. In my case, I checkout the project repository in
 //! the same directory where the `vulkan-layer-rust-example` folder lives.
 //! ```toml
 //! [dependencies]
-//! vulkan-layer = { path = &quot;../vk-layer-for-rust/vulkan-layer&quot; }
+//! vulkan-layer = { path = "../vk-layer-for-rust/vulkan-layer" }
 //! ```
 //! Other dependencies.
 //! ```bash
@@ -1965,16 +1965,16 @@
 //!     type InstanceInfoContainer = StubInstanceInfo;
 //!     type DeviceInfoContainer = StubDeviceInfo;
 //!
-//!     fn global_instance() -&gt; &amp;&#39;static Global&lt;Self&gt; {
+//!     fn global_instance() -&gt; &amp;'static Global&lt;Self&gt; {
 //!         static GLOBAL: Lazy&lt;Global&lt;MyLayer&gt;&gt; = Lazy::new(Default::default);
 //!         &amp;*GLOBAL
 //!     }
 //!
 //!     fn manifest() -&gt; LayerManifest {
 //!         let mut manifest = LayerManifest::default();
-//!         manifest.name = &quot;VK_LAYER_VENDOR_rust_example&quot;;
+//!         manifest.name = "VK_LAYER_VENDOR_rust_example";
 //!         manifest.spec_version = vk::API_VERSION_1_1;
-//!         manifest.description = &quot;Rust test layer&quot;;
+//!         manifest.description = "Rust test layer";
 //!         manifest
 //!     }
 //!
@@ -2000,7 +2000,7 @@
 //!         _: Arc&lt;ash::Device&gt;,
 //!         _next_get_device_proc_addr: vk::PFN_vkGetDeviceProcAddr,
 //!     ) -&gt; Self::DeviceInfoContainer {
-//!         println!(&quot;Hello from the Rust Vulkan layer!&quot;);
+//!         println!("Hello from the Rust Vulkan layer!");
 //!         Default::default()
 //!     }
 //! }
@@ -2026,16 +2026,16 @@
 //! #     type InstanceInfoContainer = StubInstanceInfo;
 //! #     type DeviceInfoContainer = StubDeviceInfo;
 //! #
-//! #     fn global_instance() -&gt; &amp;&#39;static Global&lt;Self&gt; {
+//! #     fn global_instance() -&gt; &amp;'static Global&lt;Self&gt; {
 //! #         static GLOBAL: Lazy&lt;Global&lt;MyLayer&gt;&gt; = Lazy::new(Default::default);
 //! #         &amp;*GLOBAL
 //! #     }
 //! #
 //! #     fn manifest() -&gt; LayerManifest {
 //! #         let mut manifest = LayerManifest::default();
-//! #         manifest.name = &quot;VK_LAYER_VENDOR_rust_example&quot;;
+//! #         manifest.name = "VK_LAYER_VENDOR_rust_example";
 //! #         manifest.spec_version = vk::API_VERSION_1_1;
-//! #         manifest.description = &quot;Rust test layer&quot;;
+//! #         manifest.description = "Rust test layer";
 //! #         manifest
 //! #     }
 //! #
@@ -2061,7 +2061,7 @@
 //! #         _: Arc&lt;ash::Device&gt;,
 //! #         _next_get_device_proc_addr: vk::PFN_vkGetDeviceProcAddr,
 //! #     ) -&gt; Self::DeviceInfoContainer {
-//! #         println!(&quot;Hello from the Rust Vulkan layer!&quot;);
+//! #         println!("Hello from the Rust Vulkan layer!");
 //! #         Default::default()
 //! #     }
 //! # }
@@ -2131,15 +2131,15 @@
 //! For Windows,
 //! ```json
 //! {
-//!     &quot;file_format_version&quot; : &quot;1.2.1&quot;,
-//!     &quot;layer&quot;: {
-//!         &quot;name&quot;: &quot;VK_LAYER_VENDOR_rust_example&quot;,
-//!         &quot;type&quot;: &quot;INSTANCE&quot;,
-//!         &quot;library_path&quot;: &quot;.\\VkLayer_vendor_rust_example.dll&quot;,
-//!         &quot;library_arch&quot; : &quot;64&quot;,
-//!         &quot;api_version&quot; : &quot;1.1.0&quot;,
-//!         &quot;implementation_version&quot; : &quot;0&quot;,
-//!         &quot;description&quot; : &quot;Rust test layer&quot;
+//!     "file_format_version" : "1.2.1",
+//!     "layer": {
+//!         "name": "VK_LAYER_VENDOR_rust_example",
+//!         "type": "INSTANCE",
+//!         "library_path": ".\\VkLayer_vendor_rust_example.dll",
+//!         "library_arch" : "64",
+//!         "api_version" : "1.1.0",
+//!         "implementation_version" : "0",
+//!         "description" : "Rust test layer"
 //!     }
 //! }
 //! ```
@@ -2147,15 +2147,15 @@
 //! For Linux,
 //! ```json
 //! {
-//!     &quot;file_format_version&quot; : &quot;1.2.1&quot;,
-//!     &quot;layer&quot;: {
-//!         &quot;name&quot;: &quot;VK_LAYER_VENDOR_rust_example&quot;,
-//!         &quot;type&quot;: &quot;INSTANCE&quot;,
-//!         &quot;library_path&quot;: &quot;./libVkLayer_vendor_rust_example.so&quot;,
-//!         &quot;library_arch&quot; : &quot;64&quot;,
-//!         &quot;api_version&quot; : &quot;1.1.0&quot;,
-//!         &quot;implementation_version&quot; : &quot;0&quot;,
-//!         &quot;description&quot; : &quot;Rust test layer&quot;
+//!     "file_format_version" : "1.2.1",
+//!     "layer": {
+//!         "name": "VK_LAYER_VENDOR_rust_example",
+//!         "type": "INSTANCE",
+//!         "library_path": "./libVkLayer_vendor_rust_example.so",
+//!         "library_arch" : "64",
+//!         "api_version" : "1.1.0",
+//!         "implementation_version" : "0",
+//!         "description" : "Rust test layer"
 //!     }
 //! }
 //! ```
@@ -2164,9 +2164,9 @@
 //! Eighth, use [`VkConfig`](https://github.com/LunarG/VulkanTools/blob/main/vkconfig/README.md)
 //! (i.e. Vulkan Configurator) to force enable this explicit layer, and launch the vkcube
 //! application through `VkConfig`. In the log view, we should see the
-//! `&quot;Hello from the Rust Vulkan layer!&quot;` log line. For Android, follow
+//! `"Hello from the Rust Vulkan layer!"` log line. For Android, follow
 //! [this instruction](https://developer.android.com/ndk/guides/graphics/validation-layer) to enable
-//! the layer. [`println!`] won&#39;t write to logcat, so one needs to change the layer implementation
+//! the layer. [`println!`] won't write to logcat, so one needs to change the layer implementation
 //! to write to the logcat.
 //!
 //! # Global initialization and clean up
@@ -2205,12 +2205,12 @@
 <span class="kw">mod </span>global_simple_intercept;
 <span class="kw">mod </span>layer_trait;
 <span class="kw">mod </span>lazy_collection;
-<span class="attr">#[cfg(any(feature = <span class="string">&quot;_test&quot;</span>, test))]
+<span class="attr">#[cfg(any(feature = <span class="string">"_test"</span>, test))]
 </span><span class="kw">pub mod </span>test_utils;
 
-<span class="attr">#[cfg(feature = <span class="string">&quot;unstable&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"unstable"</span>)]
 </span><span class="kw">pub mod </span>unstable_api;
-<span class="attr">#[cfg(not(feature = <span class="string">&quot;unstable&quot;</span>))]
+<span class="attr">#[cfg(not(feature = <span class="string">"unstable"</span>))]
 </span><span class="kw">mod </span>unstable_api;
 <span class="kw">mod </span>vk_utils;
 
@@ -2268,8 +2268,6 @@
         <span class="self">Self</span>(value)
     }
 }
-
-<span class="kw">trait </span>DeviceDispatchableObject: vk::Handle {}
 
 <span class="kw">impl </span>DispatchableObject <span class="kw">for </span>vk::Device {
     <span class="kw">type </span>DispatchKey = DeviceDispatchKey;
@@ -2329,7 +2327,7 @@
         Mutex&lt;LazyCollection&lt;BTreeMap&lt;vk::PhysicalDevice, Arc&lt;PhysicalDeviceInfoWrapper&gt;&gt;&gt;&gt;,
     device_map: Mutex&lt;LazyCollection&lt;BTreeMap&lt;DeviceDispatchKey, Arc&lt;DeviceInfoWrapper&lt;T&gt;&gt;&gt;&gt;&gt;,
     <span class="doccomment">/// Access to the underlying `T`.
-    </span><span class="comment">// layer_info can&#39;t be lazily constructed when the first VkInstance is created, because we want
+    </span><span class="comment">// layer_info can't be lazily constructed when the first VkInstance is created, because we want
     // to guarantee that T::default is only called once during the lifetime of Global, so that the
     // client can put global state in T, and can perform global initialization(e.g. the global
     // logger) in T::default. If the client needs Global to be trivially destructible, the client
@@ -2339,7 +2337,7 @@
 }
 
 <span class="kw">impl</span>&lt;T: Layer&gt; Global&lt;T&gt; {
-    <span class="kw">fn </span>instance() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span><span class="self">Self </span>{
+    <span class="kw">fn </span>instance() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">'static </span><span class="self">Self </span>{
         T::global_instance()
     }
 
@@ -2368,7 +2366,7 @@
                 <span class="kw">continue</span>;
             }
             <span class="kw">let </span>instance_info = <span class="self">self</span>.get_instance_info(instance).unwrap_or_else(|| {
-                <span class="macro">panic!</span>(<span class="string">&quot;Unknown VkInstance handle: {:#018x}&quot;</span>, instance.as_raw())
+                <span class="macro">panic!</span>(<span class="string">"Unknown VkInstance handle: {:#018x}"</span>, instance.as_raw())
             });
             <span class="kw">let </span>properties = <span class="kw">unsafe </span>{
                 instance_info
@@ -2410,7 +2408,7 @@
             .map(Arc::clone)
     }
 
-    <span class="kw">extern </span><span class="string">&quot;system&quot; </span><span class="kw">fn </span>create_instance(
+    <span class="kw">extern </span><span class="string">"system" </span><span class="kw">fn </span>create_instance(
         create_info: <span class="kw-2">*const </span>vk::InstanceCreateInfo,
         allocator: <span class="kw-2">*const </span>vk::AllocationCallbacks,
         p_instance: <span class="kw-2">*mut </span>vk::Instance,
@@ -2440,7 +2438,7 @@
         <span class="kw">let </span>layer_create_info = <span class="kw">match </span>layer_create_info {
             <span class="prelude-val">Some</span>(layer_create_info) =&gt; layer_create_info,
             <span class="prelude-val">None </span>=&gt; {
-                <span class="macro">error!</span>(<span class="string">&quot;failed to find the VkLayerInstanceCreateInfo struct in the chain.&quot;</span>);
+                <span class="macro">error!</span>(<span class="string">"failed to find the VkLayerInstanceCreateInfo struct in the chain."</span>);
                 <span class="kw">return </span>vk::Result::ERROR_INITIALIZATION_FAILED;
             }
         };
@@ -2509,7 +2507,7 @@
                 <span class="prelude-val">Ok</span>(extension) =&gt; <span class="prelude-val">Some</span>(extension),
                 <span class="prelude-val">Err</span>(e) =&gt; {
                     <span class="macro">warn!</span>(
-                        <span class="string">&quot;Failed to recognize the extension {}: {}&quot;</span>,
+                        <span class="string">"Failed to recognize the extension {}: {}"</span>,
                         extension_name, e
                     );
                     <span class="prelude-val">None
@@ -2543,7 +2541,7 @@
             <span class="kw">let </span><span class="kw-2">mut </span>instance_map = instance_map.get_mut_or_default();
             <span class="kw">if </span>instance_map.contains_key(<span class="kw-2">&amp;</span>key) {
                 <span class="macro">error!</span>(
-                    <span class="string">&quot;duplicate instances: instance {:?} already exists&quot;</span>,
+                    <span class="string">"duplicate instances: instance {:?} already exists"</span>,
                     instance
                 );
                 <span class="kw">return </span>vk::Result::ERROR_INITIALIZATION_FAILED;
@@ -2568,7 +2566,7 @@
         vk::Result::SUCCESS
     }
 
-    <span class="kw">extern </span><span class="string">&quot;system&quot; </span><span class="kw">fn </span>destroy_instance(
+    <span class="kw">extern </span><span class="string">"system" </span><span class="kw">fn </span>destroy_instance(
         instance: vk::Instance,
         allocator: <span class="kw-2">*const </span>vk::AllocationCallbacks,
     ) {
@@ -2587,7 +2585,7 @@
         <span class="kw">let </span>instance_info = <span class="kw">match </span>Arc::try_unwrap(instance_info) {
             <span class="prelude-val">Ok</span>(instance_info) =&gt; instance_info,
             <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="macro">panic!</span>(
-                <span class="string">&quot;This should be the sole instance dispatch table reference for instance {:?}.&quot;</span>,
+                <span class="string">"This should be the sole instance dispatch table reference for instance {:?}."</span>,
                 instance
             ),
         };
@@ -2602,7 +2600,7 @@
         };
     }
 
-    <span class="kw">extern </span><span class="string">&quot;system&quot; </span><span class="kw">fn </span>enumerate_physical_devices(
+    <span class="kw">extern </span><span class="string">"system" </span><span class="kw">fn </span>enumerate_physical_devices(
         instance: vk::Instance,
         p_physical_device_count: <span class="kw-2">*mut </span>u32,
         p_physical_devices: <span class="kw-2">*mut </span>vk::PhysicalDevice,
@@ -2610,7 +2608,7 @@
         <span class="kw">let </span>global = <span class="self">Self</span>::instance();
         <span class="kw">let </span>ash_instance = <span class="kw-2">&amp;</span>global
             .get_instance_info(instance)
-            .expect(<span class="string">&quot;Must be a valid VkInstance&quot;</span>)
+            .expect(<span class="string">"Must be a valid VkInstance"</span>)
             .dispatch_table
             .core;
         <span class="kw">let </span>res = <span class="kw">unsafe </span>{
@@ -2631,7 +2629,7 @@
         res
     }
 
-    <span class="kw">extern </span><span class="string">&quot;system&quot; </span><span class="kw">fn </span>enumerate_physical_device_groups(
+    <span class="kw">extern </span><span class="string">"system" </span><span class="kw">fn </span>enumerate_physical_device_groups(
         instance: vk::Instance,
         p_physical_device_group_count: <span class="kw-2">*mut </span>u32,
         p_physical_device_group_properties: <span class="kw-2">*mut </span>vk::PhysicalDeviceGroupProperties,
@@ -2639,7 +2637,7 @@
         <span class="kw">let </span>global = <span class="self">Self</span>::instance();
         <span class="kw">let </span>ash_instance = <span class="kw-2">&amp;</span>global
             .get_instance_info(instance)
-            .expect(<span class="string">&quot;Must be a valid VkInstance&quot;</span>)
+            .expect(<span class="string">"Must be a valid VkInstance"</span>)
             .dispatch_table
             .core;
         <span class="kw">let </span>res = <span class="kw">unsafe </span>{
@@ -2674,7 +2672,7 @@
         res
     }
 
-    <span class="kw">extern </span><span class="string">&quot;system&quot; </span><span class="kw">fn </span>create_device(
+    <span class="kw">extern </span><span class="string">"system" </span><span class="kw">fn </span>create_device(
         physical_device: vk::PhysicalDevice,
         create_info: <span class="kw-2">*const </span>vk::DeviceCreateInfo,
         p_allocator: <span class="kw-2">*const </span>vk::AllocationCallbacks,
@@ -2704,7 +2702,7 @@
         <span class="kw">let </span>layer_create_info = <span class="kw">match </span>layer_create_info {
             <span class="prelude-val">Some</span>(layer_create_info) =&gt; layer_create_info,
             <span class="prelude-val">None </span>=&gt; {
-                <span class="macro">error!</span>(<span class="string">&quot;failed to find the VkLayerDeviceCreateInfo struct in the chain.&quot;</span>);
+                <span class="macro">error!</span>(<span class="string">"failed to find the VkLayerDeviceCreateInfo struct in the chain."</span>);
                 <span class="kw">return </span>vk::Result::ERROR_INITIALIZATION_FAILED;
             }
         };
@@ -2718,12 +2716,12 @@
         <span class="kw">let </span>global = <span class="self">Self</span>::instance();
         <span class="kw">let </span>physical_device_info = global
             .get_physical_info(physical_device)
-            .expect(<span class="string">&quot;physical device must be a valid VkPhysicalDevice.&quot;</span>);
+            .expect(<span class="string">"physical device must be a valid VkPhysicalDevice."</span>);
         <span class="kw">let </span>instance_info = global
             .get_instance_info(physical_device_info.owner_instance)
-            .expect(<span class="string">&quot;The owner instance of this physical device must be registered.&quot;</span>);
+            .expect(<span class="string">"The owner instance of this physical device must be registered."</span>);
 
-        <span class="kw">let </span>create_device_name = CString::new(<span class="string">&quot;vkCreateDevice&quot;</span>).unwrap();
+        <span class="kw">let </span>create_device_name = CString::new(<span class="string">"vkCreateDevice"</span>).unwrap();
         <span class="kw">let </span>next_create_device = <span class="kw">unsafe </span>{
             get_instance_proc_addr(
                 instance_info.dispatch_table.core.handle(),
@@ -2766,7 +2764,7 @@
                     .filter_map(|extension_name| {
                         <span class="kw">let </span>extension_name_cstring = CString::new(extension_name.clone())
                             .unwrap_or_else(|e| {
-                                <span class="macro">panic!</span>(<span class="string">&quot;Failed to create CString from {}: {}&quot;</span>, extension_name, e)
+                                <span class="macro">panic!</span>(<span class="string">"Failed to create CString from {}: {}"</span>, extension_name, e)
                             });
                         <span class="kw">let </span>extension: Extension = <span class="kw">match </span>extension_name.as_str().try_into() {
                             <span class="prelude-val">Ok</span>(extension) =&gt; extension,
@@ -2806,7 +2804,7 @@
         <span class="kw">let </span>ash_instance = Arc::clone(<span class="kw-2">&amp;</span>instance_info.dispatch_table.core);
         <span class="kw">let </span>ash_device = <span class="kw">unsafe </span>{
             <span class="comment">// ash will also try to load instance-level dispatchable commands with
-            // vkGetDeviceProcAddr. Although that won&#39;t end up with undefined behavior, and we
+            // vkGetDeviceProcAddr. Although that won't end up with undefined behavior, and we
             // should always expect NULL returned according to the spec, we may see Android vulkan
             // loader complaining about internal vkGetDeviceProcAddr called for &lt;function name&gt;,
             // which should be benign.
@@ -2845,7 +2843,7 @@
             <span class="kw">let </span><span class="kw-2">mut </span>device_map = device_map.get_mut_or_default();
             <span class="macro">assert!</span>(
                 !device_map.contains_key(<span class="kw-2">&amp;</span>device.get_dispatch_key()),
-                <span class="string">&quot;duplicate VkDevice: {:?}&quot;</span>,
+                <span class="string">"duplicate VkDevice: {:?}"</span>,
                 device
             );
             device_map.insert(
@@ -2863,7 +2861,7 @@
         vk::Result::SUCCESS
     }
 
-    <span class="kw">extern </span><span class="string">&quot;system&quot; </span><span class="kw">fn </span>destroy_device(
+    <span class="kw">extern </span><span class="string">"system" </span><span class="kw">fn </span>destroy_device(
         device: vk::Device,
         p_allocator: <span class="kw-2">*const </span>vk::AllocationCallbacks,
     ) {
@@ -2878,10 +2876,10 @@
                 .unwrap()
                 .get_mut_or_default()
                 .remove(<span class="kw-2">&amp;</span>device.get_dispatch_key())
-                .expect(<span class="string">&quot;device must be registered&quot;</span>),
+                .expect(<span class="string">"device must be registered"</span>),
         ) {
             <span class="prelude-val">Ok</span>(device_info) =&gt; device_info,
-            <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="macro">panic!</span>(<span class="string">&quot;This should be the sole owner of the device {:?}&quot;</span>, device),
+            <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="macro">panic!</span>(<span class="string">"This should be the sole owner of the device {:?}"</span>, device),
         };
         <span class="kw">let </span>allocation_callback = <span class="kw">unsafe </span>{ p_allocator.as_ref() };
         <span class="kw">unsafe </span>{
@@ -2924,7 +2922,7 @@
     /// See valid usage of `vkEnumerateInstanceLayerProperties` at
     /// &lt;https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkEnumerateInstanceLayerProperties.html&gt;.
     </span><span class="attr">#[deny(unsafe_op_in_unsafe_fn)]
-    </span><span class="kw">pub unsafe extern </span><span class="string">&quot;system&quot; </span><span class="kw">fn </span>enumerate_instance_layer_properties(
+    </span><span class="kw">pub unsafe extern </span><span class="string">"system" </span><span class="kw">fn </span>enumerate_instance_layer_properties(
         property_count: <span class="kw-2">*mut </span>u32,
         properties: <span class="kw-2">*mut </span>vk::LayerProperties,
     ) -&gt; vk::Result {
@@ -2955,7 +2953,7 @@
     /// See valid usage of `vkEnumerateInstanceExtensionProperties` at
     /// &lt;https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkEnumerateInstanceExtensionProperties.html&gt;.
     </span><span class="attr">#[deny(unsafe_op_in_unsafe_fn)]
-    </span><span class="kw">pub unsafe extern </span><span class="string">&quot;system&quot; </span><span class="kw">fn </span>enumerate_instance_extension_properties(
+    </span><span class="kw">pub unsafe extern </span><span class="string">"system" </span><span class="kw">fn </span>enumerate_instance_extension_properties(
         layer_name: <span class="kw-2">*const </span>c_char,
         property_count: <span class="kw-2">*mut </span>u32,
         <span class="kw">_</span>: <span class="kw-2">*mut </span>vk::ExtensionProperties,
@@ -2964,14 +2962,14 @@
             <span class="kw">let </span>layer_name = <span class="kw">unsafe </span>{ CStr::from_ptr(layer_name) }
                 .to_str()
                 .expect(<span class="macro">concat!</span>(
-                    <span class="string">&quot;According to \
-                     VUID-vkEnumerateInstanceExtensionProperties-pLayerName-parameter, &quot;</span>,
-                    <span class="string">&quot;if p_layer_name is not NULL, p_layer_name must be a null-terminated UTF-8 \
-                     string.&quot;
+                    <span class="string">"According to \
+                     VUID-vkEnumerateInstanceExtensionProperties-pLayerName-parameter, "</span>,
+                    <span class="string">"if p_layer_name is not NULL, p_layer_name must be a null-terminated UTF-8 \
+                     string."
                 </span>));
             <span class="kw">if </span>layer_name == T::manifest().name {
                 <span class="comment">// Safe, because the caller guarantees that if the passed in `property_count` is not
-                // null, it&#39;s a valid pointer to u32.
+                // null, it's a valid pointer to u32.
                 </span><span class="kw">if let </span><span class="prelude-val">Some</span>(property_count) = <span class="kw">unsafe </span>{ property_count.as_mut() } {
                     <span class="kw-2">*</span>property_count = <span class="number">0</span>;
                 }
@@ -2994,7 +2992,7 @@
     /// See valid usage of `vkEnumerateDeviceLayerProperties` at
     /// &lt;https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkEnumerateDeviceLayerProperties.html&gt;.
     </span><span class="attr">#[deny(unsafe_op_in_unsafe_fn)]
-    </span><span class="kw">pub unsafe extern </span><span class="string">&quot;system&quot; </span><span class="kw">fn </span>enumerate_device_layer_properties(
+    </span><span class="kw">pub unsafe extern </span><span class="string">"system" </span><span class="kw">fn </span>enumerate_device_layer_properties(
         <span class="kw">_</span>: vk::PhysicalDevice,
         p_property_count: <span class="kw-2">*mut </span>u32,
         p_properties: <span class="kw-2">*mut </span>vk::LayerProperties,
@@ -3012,8 +3010,8 @@
             fill_vk_out_array(
                 <span class="kw-2">&amp;</span>ret_properties,
                 NonNull::new(p_property_count).expect(<span class="macro">concat!</span>(
-                    <span class="string">&quot;p_property_count must be a valid pointer to u32 according to &quot;</span>,
-                    <span class="string">&quot;VUID-vkEnumerateDeviceLayerProperties-pPropertyCount-parameter&quot;
+                    <span class="string">"p_property_count must be a valid pointer to u32 according to "</span>,
+                    <span class="string">"VUID-vkEnumerateDeviceLayerProperties-pPropertyCount-parameter"
                 </span>)),
                 p_properties,
             )
@@ -3023,7 +3021,7 @@
     <span class="doccomment">/// The `vkEnumerateDeviceExtensionProperties` entry point provided by the layer framework.
     ///
     /// The return value is decided by [`Layer::manifest`] where `p_layer_name` is itself. If the
-    /// `p_layer_name` doesn&#39;t match, the behavior depends on whether the `physical_device` argument
+    /// `p_layer_name` doesn't match, the behavior depends on whether the `physical_device` argument
     /// is `VK_NULL_HANDLE` or not: if `physical_device` argument is `VK_NULL_HANDLE`,
     /// `VK_ERROR_LAYER_NOT_PRESENT` is returned; if `physical_device` is not `VK_NULL_HANDLE`, the
     /// layer framework calls into the next layer of the call chain. This behavior is defined by the [layer interface version 0](&lt;https://github.com/KhronosGroup/Vulkan-Loader/blob/v1.3.261/docs/LoaderLayerInterface.md#:~:text=vkEnumerateDeviceExtensionProperties%20enumerates%20device,function%20never%20fails.&gt;)
@@ -3036,7 +3034,7 @@
     /// A NULL `VkPhysicalDevice` can also be used to call this interface, according to the
     /// [layer interface version 0](&lt;https://github.com/KhronosGroup/Vulkan-Loader/blob/v1.3.261/docs/LoaderLayerInterface.md#:~:text=vkEnumerateDeviceExtensionProperties%20enumerates%20device,function%20never%20fails.&gt;).
     </span><span class="attr">#[deny(unsafe_op_in_unsafe_fn)]
-    </span><span class="kw">pub unsafe extern </span><span class="string">&quot;system&quot; </span><span class="kw">fn </span>enumerate_device_extension_properties(
+    </span><span class="kw">pub unsafe extern </span><span class="string">"system" </span><span class="kw">fn </span>enumerate_device_extension_properties(
         physical_device: vk::PhysicalDevice,
         p_layer_name: <span class="kw-2">*const </span>c_char,
         p_property_count: <span class="kw-2">*mut </span>u32,
@@ -3058,10 +3056,10 @@
             <span class="kw">let </span>global = <span class="self">Self</span>::instance();
             <span class="kw">let </span>physical_device_info = global
                 .get_physical_info(physical_device)
-                .expect(<span class="string">&quot;physical device must be a valid VkPhysicalDevice.&quot;</span>);
+                .expect(<span class="string">"physical device must be a valid VkPhysicalDevice."</span>);
             <span class="kw">let </span>instance_info = global
                 .get_instance_info(physical_device_info.owner_instance)
-                .expect(<span class="string">&quot;The owner instance of this physical device must be registered.&quot;</span>);
+                .expect(<span class="string">"The owner instance of this physical device must be registered."</span>);
             <span class="kw">return unsafe </span>{
                 (instance_info
                     .dispatch_table
@@ -3076,12 +3074,12 @@
             };
         }
         <span class="kw">let </span>property_count = NonNull::new(p_property_count).expect(<span class="macro">concat!</span>(
-            <span class="string">&quot;`p_property_count` must be a valid pointer to u32 according to &quot;</span>,
-            <span class="string">&quot;VUID-vkEnumerateDeviceExtensionProperties-pPropertyCount-parameter.&quot;
+            <span class="string">"`p_property_count` must be a valid pointer to u32 according to "</span>,
+            <span class="string">"VUID-vkEnumerateDeviceExtensionProperties-pPropertyCount-parameter."
         </span>));
         <span class="comment">// Safe because the caller guarantees `p_property_count` is a valid pointer to u32 according
         // to VUID-vkEnumerateDeviceExtensionProperties-pPropertyCount-parameter, and if
-        // `p_property_count` doesn&#39;t point to 0, p_properties is either NULL or a valid pointer to
+        // `p_property_count` doesn't point to 0, p_properties is either NULL or a valid pointer to
         // an array of `p_property_count` `vk::ExtensionProperties` structures according to
         // VUID-vkEnumerateDeviceExtensionProperties-pProperties-parameter.
         </span><span class="kw">let </span>device_extensions = layer_manifest
@@ -3098,7 +3096,7 @@
     /// The layer framework will make use of [`Layer::hooked_instance_commands`] and
     /// [`Layer::hooked_device_commands`] (with the `device_info` argument being [`None`]) to decide
     /// whether a local function pointer should be returned or should just passthrough to the next
-    /// layer in the call chain. Note that the layer implementation doesn&#39;t have to take care of
+    /// layer in the call chain. Note that the layer implementation doesn't have to take care of
     /// whether the command is enabled/available, and only needs to use the interfaces to express
     /// the intent. The layer framework should handle most of the logic(e.g. the requirement of
     /// [`LLP_LAYER_18`](&lt;https://github.com/KhronosGroup/Vulkan-Loader/blob/v1.3.261/docs/LoaderLayerInterface.md#pre-instance-functions:~:text=LLP_LAYER_18,Conventions%20and%20Rules&gt;))
@@ -3112,7 +3110,7 @@
     ///    and `vkGetInstanceProcAddr`; `NULL` is returned for other Vulkan commands. One culprit
     ///    for now is that currently the layer framework always returns `NULL` for
     ///    `vkEnumerateInstanceVersion`, but that should be Ok, because the layer framework
-    ///    currently doesn&#39;t allow to intercept pre-instance functions anyway, so this function
+    ///    currently doesn't allow to intercept pre-instance functions anyway, so this function
     ///    should be completely handled by the Vulkan loader.
     ///
     /// 1. If instance is not null, the situation is more complicated:
@@ -3157,7 +3155,7 @@
     ///        returns the function pointer of the next layer.
     ///
     ///     1. For device extension dispatchable commands not directly supported by the layer(i.e.
-    ///        the extension doesn&#39;t appear in the [`LayerManifest::device_extensions`] of the
+    ///        the extension doesn't appear in the [`LayerManifest::device_extensions`] of the
     ///        current layer):
     ///
     ///        * If the next layer returns `NULL`, `NULL` is always returned regardless of whether
@@ -3175,7 +3173,7 @@
     /// See valid usage of `vkGetInstanceProcAddr` at
     /// &lt;https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkGetInstanceProcAddr.html&gt;.
     </span><span class="attr">#[deny(unsafe_op_in_unsafe_fn)]
-    </span><span class="kw">pub unsafe extern </span><span class="string">&quot;system&quot; </span><span class="kw">fn </span>get_instance_proc_addr(
+    </span><span class="kw">pub unsafe extern </span><span class="string">"system" </span><span class="kw">fn </span>get_instance_proc_addr(
         instance: vk::Instance,
         p_name: <span class="kw-2">*const </span>c_char,
     ) -&gt; vk::PFN_vkVoidFunction {
@@ -3185,37 +3183,39 @@
         // VUID-vkGetInstanceProcAddr-pName-parameter.
         </span><span class="kw">let </span>name = <span class="kw">unsafe </span>{ CStr::from_ptr(p_name) };
         <span class="kw">let </span>name = name.to_str().expect(<span class="macro">concat!</span>(
-            <span class="string">&quot;According to VUID-vkGetInstanceProcAddr-pName-parameter, p_name must be a null-&quot;</span>,
-            <span class="string">&quot;terminated UTF-8 string.&quot;
+            <span class="string">"According to VUID-vkGetInstanceProcAddr-pName-parameter, p_name must be a null-"</span>,
+            <span class="string">"terminated UTF-8 string."
         </span>));
         <span class="kw">if </span>instance == vk::Instance::null() {
             <span class="kw">match </span>name {
-                <span class="string">&quot;vkGetInstanceProcAddr&quot; </span>=&gt; {
+                <span class="string">"vkGetInstanceProcAddr" </span>=&gt; {
                     <span class="kw">return unsafe </span>{
-                        std::mem::transmute(
-                            <span class="self">Self</span>::get_instance_proc_addr <span class="kw">as </span>vk::PFN_vkGetInstanceProcAddr,
+                        std::mem::transmute::&lt;vk::PFN_vkGetInstanceProcAddr, vk::PFN_vkVoidFunction&gt;(
+                            <span class="self">Self</span>::get_instance_proc_addr,
                         )
                     }
                 }
-                <span class="string">&quot;vkEnumerateInstanceExtensionProperties&quot; </span>=&gt; {
+                <span class="string">"vkEnumerateInstanceExtensionProperties" </span>=&gt; {
                     <span class="kw">return unsafe </span>{
-                        std::mem::transmute(
-                            <span class="self">Self</span>::enumerate_instance_extension_properties
-                                <span class="kw">as </span>vk::PFN_vkEnumerateInstanceExtensionProperties,
-                        )
+                        std::mem::transmute::&lt;
+                            vk::PFN_vkEnumerateInstanceExtensionProperties,
+                            vk::PFN_vkVoidFunction,
+                        &gt;(<span class="self">Self</span>::enumerate_instance_extension_properties)
                     }
                 }
-                <span class="string">&quot;vkEnumerateInstanceLayerProperties&quot; </span>=&gt; {
+                <span class="string">"vkEnumerateInstanceLayerProperties" </span>=&gt; {
                     <span class="kw">return unsafe </span>{
-                        std::mem::transmute(
-                            <span class="self">Self</span>::enumerate_instance_layer_properties
-                                <span class="kw">as </span>vk::PFN_vkEnumerateInstanceLayerProperties,
-                        )
+                        std::mem::transmute::&lt;
+                            vk::PFN_vkEnumerateInstanceLayerProperties,
+                            vk::PFN_vkVoidFunction,
+                        &gt;(<span class="self">Self</span>::enumerate_instance_layer_properties)
                     }
                 }
-                <span class="string">&quot;vkCreateInstance&quot; </span>=&gt; {
+                <span class="string">"vkCreateInstance" </span>=&gt; {
                     <span class="kw">return unsafe </span>{
-                        std::mem::transmute(<span class="self">Self</span>::create_instance <span class="kw">as </span>vk::PFN_vkCreateInstance)
+                        std::mem::transmute::&lt;vk::PFN_vkCreateInstance, vk::PFN_vkVoidFunction&gt;(
+                            <span class="self">Self</span>::create_instance,
+                        )
                     }
                 }
                 <span class="kw">_ </span>=&gt; {}
@@ -3288,7 +3288,7 @@
                 <span class="kw">return </span>next_proc_addr;
             }
         }
-        <span class="comment">// We don&#39;t recognize this command.
+        <span class="comment">// We don't recognize this command.
         </span>get_next_proc_addr()
     }
 
@@ -3296,7 +3296,7 @@
     ///
     /// The layer framework will make use of [`Layer::hooked_device_commands`] to decide whether a
     /// local function pointer should be returned or should passthrough to the next layer in the
-    /// call chain. Note that the layer implementation doesn&#39;t have to take care of whether the
+    /// call chain. Note that the layer implementation doesn't have to take care of whether the
     /// command is enabled(either included in the requested core version or enabled extension), and
     /// only needs to use the [`Layer::hooked_device_commands`] interface to express the intent. The
     /// layer framework should handle most of the logic(e.g. the requirement of
@@ -3307,12 +3307,12 @@
     /// See valid usage of `vkGetDeviceProcAddr` at
     /// &lt;https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkGetDeviceProcAddr.html&gt;.
     </span><span class="attr">#[deny(unsafe_op_in_unsafe_fn)]
-    </span><span class="kw">pub unsafe extern </span><span class="string">&quot;system&quot; </span><span class="kw">fn </span>get_device_proc_addr(
+    </span><span class="kw">pub unsafe extern </span><span class="string">"system" </span><span class="kw">fn </span>get_device_proc_addr(
         device: vk::Device,
         p_name: <span class="kw-2">*const </span>c_char,
     ) -&gt; vk::PFN_vkVoidFunction {
         <span class="kw">let </span>name = <span class="kw">unsafe </span>{ CStr::from_ptr(p_name) };
-        <span class="kw">let </span>name = name.to_str().expect(<span class="string">&quot;name should be a valid UTF-8 string.&quot;</span>);
+        <span class="kw">let </span>name = name.to_str().expect(<span class="string">"name should be a valid UTF-8 string."</span>);
         <span class="kw">let </span>global = <span class="self">Self</span>::instance();
         <span class="kw">let </span>device_info = global.get_device_info(device)<span class="question-mark">?</span>;
         <span class="kw">if let </span>LayerResult::Handled(res) = device_info
@@ -3406,7 +3406,7 @@
             <span class="kw">type </span>InstanceInfoContainer = StubInstanceInfo;
             <span class="kw">type </span>DeviceInfoContainer = StubDeviceInfo;
 
-            <span class="kw">fn </span>global_instance() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>Global&lt;<span class="self">Self</span>&gt; {
+            <span class="kw">fn </span>global_instance() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">'static </span>Global&lt;<span class="self">Self</span>&gt; {
                 <span class="kw-2">&amp;</span>GLOBAL
             }
 
@@ -3443,7 +3443,7 @@
         <span class="kw">static </span>GLOBAL: Lazy&lt;Global&lt;TestLayer&gt;&gt; = Lazy::new(Default::default);
 
         <span class="attr">#[inline]
-        </span><span class="kw">fn </span>check&lt;T: PartialOrd&gt;(last: <span class="kw-2">&amp;mut </span>T) -&gt; <span class="kw">impl </span>FnMut(T) -&gt; bool + <span class="lifetime">&#39;_ </span>{
+        </span><span class="kw">fn </span>check&lt;T: PartialOrd&gt;(last: <span class="kw-2">&amp;mut </span>T) -&gt; <span class="kw">impl </span>FnMut(T) -&gt; bool + <span class="lifetime">'_ </span>{
             <span class="kw">move </span>|curr| {
                 <span class="kw">if let </span><span class="prelude-val">Some</span>(Ordering::Greater) | <span class="prelude-val">None </span>= (<span class="kw-2">*</span>last).partial_cmp(<span class="kw-2">&amp;</span>curr) {
                     <span class="kw">return </span><span class="bool-val">false</span>;

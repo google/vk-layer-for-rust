@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `vulkan-layer/src/test_utils.rs`."><title>test_utils.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-47e7ab555ef2818a.css" id="mainThemeStyle"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="vulkan_layer" data-themes="" data-resource-suffix="" data-rustdoc-version="1.74.0-nightly (59a829484 2023-08-30)" data-channel="nightly" data-search-js="search-6dfdfced5eff6596.js" data-settings-js="settings-de11bff964e9d4e5.js" data-settings-css="settings-8c76f75bfb6bd192.css" data-theme-light-css="light-f194925aa375ae96.css" data-theme-dark-css="dark-1dd4d1ce031e15de.css" data-theme-ayu-css="ayu-49e58d069f567085.css" ><script src="../../static.files/storage-db41da1a38ea3cb8.js"></script><script defer src="../../static.files/src-script-3280b574d94e47b4.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-ef3a2de404864b0b.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../static.files/light-f194925aa375ae96.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../static.files/dark-1dd4d1ce031e15de.css"><link rel="stylesheet" href="../../static.files/noscript-cffde32267a19fd6.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../vulkan_layer/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `vulkan-layer/src/test_utils.rs`."><title>test_utils.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="vulkan_layer" data-themes="" data-resource-suffix="" data-rustdoc-version="1.81.0-nightly (cc8da78a0 2024-07-04)" data-channel="nightly" data-search-js="search-0fe7219eb170c82e.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -517,14 +517,14 @@
 <a href="#517" id="517">517</a>
 </pre></div><pre class="rust"><code><span class="comment">// Copyright 2023 Google LLC
 //
-// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+// Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //     http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+// distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
@@ -533,7 +533,7 @@
 //!
 //! The Vulkan layer essentially provides a bunch of function pointers to the loader. To mock
 //! multiple layers in the same process, it is required to use different types so different
-//! function pointers will be generated. To avoid extremely long compile time, we shouldn&#39;t create
+//! function pointers will be generated. To avoid extremely long compile time, we shouldn't create
 //! a new layer type for every test case. Instead we run test cases in different processes, and
 //! share the same layer type as possible. If a test case needs multiple layers at the same time,
 //! multiple layer types should be used.
@@ -573,7 +573,7 @@
 
 <span class="kw">type </span>Deleter&lt;T&gt; = Box&lt;<span class="kw">dyn </span>FnOnce(<span class="kw-2">&amp;mut </span>T) + Send + Sync&gt;;
 
-<span class="doccomment">/// A wrapper for T but with a user defined deleter. &#39;Del&#39; stands for &#39;deleter&#39;.
+<span class="doccomment">/// A wrapper for T but with a user defined deleter. 'Del' stands for 'deleter'.
 ///
 /// The deleter will be called on drop. Used to mock the [`Drop`] trait.
 </span><span class="kw">pub struct </span>Del&lt;T&gt; {
@@ -583,7 +583,7 @@
 
 <span class="kw">impl</span>&lt;T&gt; Del&lt;T&gt; {
     <span class="doccomment">/// Constructs a new [`Del&lt;T&gt;`] with a custom deleter.
-    </span><span class="kw">pub fn </span>new(data: T, deleter: <span class="kw">impl </span>FnOnce(<span class="kw-2">&amp;mut </span>T) + Send + Sync + <span class="lifetime">&#39;static</span>) -&gt; <span class="self">Self </span>{
+    </span><span class="kw">pub fn </span>new(data: T, deleter: <span class="kw">impl </span>FnOnce(<span class="kw-2">&amp;mut </span>T) + Send + Sync + <span class="lifetime">'static</span>) -&gt; <span class="self">Self </span>{
         Del {
             data,
             deleter: <span class="prelude-val">Some</span>(Box::new(deleter)),
@@ -616,7 +616,7 @@
 
 <span class="kw">impl</span>&lt;T&gt; ArcDel&lt;T&gt; {
     <span class="doccomment">/// Constructs a new [`ArcDel&lt;T&gt;`] with a custom deleter.
-    </span><span class="kw">pub fn </span>new(data: T, deleter: <span class="kw">impl </span>FnOnce(<span class="kw-2">&amp;mut </span>T) + Send + Sync + <span class="lifetime">&#39;static</span>) -&gt; <span class="self">Self </span>{
+    </span><span class="kw">pub fn </span>new(data: T, deleter: <span class="kw">impl </span>FnOnce(<span class="kw-2">&amp;mut </span>T) + Send + Sync + <span class="lifetime">'static</span>) -&gt; <span class="self">Self </span>{
         ArcDel(Arc::new(Del::new(data, deleter)))
     }
 }
@@ -658,7 +658,7 @@
     }
 }
 
-<span class="macro">mock! </span>{
+<span class="macro">mock!</span> {
     <span class="kw">pub </span>Drop {}
     <span class="kw">impl </span>Drop <span class="kw">for </span>Drop {
         <span class="kw">fn </span>drop(<span class="kw-2">&amp;mut </span><span class="self">self</span>);
@@ -666,21 +666,21 @@
 }
 
 <span class="doccomment">/// A set of interfaces that the integration tests are interested to mock.
-</span><span class="kw">pub trait </span>TestLayerMock: <span class="lifetime">&#39;static </span>{
+</span><span class="kw">pub trait </span>TestLayerMock: <span class="lifetime">'static </span>{
     <span class="doccomment">/// The associated type that implements the [`Layer`] trait. Should be a specialized
     /// [`TestLayer`].
     </span><span class="kw">type </span>TestLayerType: Layer;
 
     <span class="doccomment">/// Used to mock [`Layer::global_instance`].
-    </span><span class="kw">fn </span>instance() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>Global&lt;<span class="self">Self</span>::TestLayerType&gt;;
+    </span><span class="kw">fn </span>instance() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">'static </span>Global&lt;<span class="self">Self</span>::TestLayerType&gt;;
 
     <span class="doccomment">/// Used to obtain the singleton of this object.
     ///
     /// This interface is used to obtain the mock object in the static methods like
-    /// [`DeviceInfo::hooked_commands`]. The mock object can&#39;t be part of [`Global`], because we
+    /// [`DeviceInfo::hooked_commands`]. The mock object can't be part of [`Global`], because we
     /// want to allow the mocked interfaces to be called during or before
     /// the initialization of [`Global`].
-    </span><span class="kw">fn </span>mock() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span><span class="self">Self</span>;
+    </span><span class="kw">fn </span>mock() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">'static </span><span class="self">Self</span>;
 
     <span class="doccomment">/// Used to mock [`Layer::manifest`].
     </span><span class="kw">fn </span>manifest(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; LayerManifest;
@@ -708,12 +708,12 @@
 
 <span class="kw">impl</span>&lt;T: TestLayerMock&gt; GlobalHooksInfo <span class="kw">for </span>MockGlobalHooksInfo&lt;T&gt; {
     <span class="kw">type </span>HooksType = MockGlobalHooks;
-    <span class="kw">type </span>HooksRefType&lt;<span class="lifetime">&#39;a</span>&gt; = MutexGuard&lt;<span class="lifetime">&#39;a</span>, MockGlobalHooks&gt;;
-    <span class="kw">fn </span>hooked_commands() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>[LayerVulkanCommand] {
+    <span class="kw">type </span>HooksRefType&lt;<span class="lifetime">'a</span>&gt; = MutexGuard&lt;<span class="lifetime">'a</span>, MockGlobalHooks&gt;;
+    <span class="kw">fn </span>hooked_commands() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">'static </span>[LayerVulkanCommand] {
         T::mock().hooked_global_commands()
     }
 
-    <span class="kw">fn </span>hooks(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="self">Self</span>::HooksRefType&lt;<span class="lifetime">&#39;_</span>&gt; {
+    <span class="kw">fn </span>hooks(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="self">Self</span>::HooksRefType&lt;<span class="lifetime">'_</span>&gt; {
         <span class="self">self</span>.mock_hooks.lock().unwrap()
     }
 }
@@ -734,7 +734,7 @@
     <span class="doccomment">/// Mock the drop behavior.
     ///
     /// The expections can be set through the `f` argument. If this method is never called, the
-    /// struct will be dropped as if the drop is not mocked, i.e. won&#39;t check how drop is called.
+    /// struct will be dropped as if the drop is not mocked, i.e. won't check how drop is called.
     </span><span class="kw">pub fn </span>with_mock_drop(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw">impl </span>FnOnce(<span class="kw-2">&amp;mut </span>MockDrop)) {
         <span class="kw">let </span><span class="kw-2">mut </span>mock_drop = <span class="self">self</span>.mock_drop.lock().unwrap();
         <span class="kw">let </span>mock_drop = mock_drop.get_or_insert_with(Default::default);
@@ -744,12 +744,12 @@
 
 <span class="kw">impl</span>&lt;T: TestLayerMock&gt; InstanceInfo <span class="kw">for </span>MockInstanceInfo&lt;T&gt; {
     <span class="kw">type </span>HooksType = MockInstanceHooks;
-    <span class="kw">type </span>HooksRefType&lt;<span class="lifetime">&#39;a</span>&gt; = MutexGuard&lt;<span class="lifetime">&#39;a</span>, MockInstanceHooks&gt;;
-    <span class="kw">fn </span>hooked_commands() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>[LayerVulkanCommand] {
+    <span class="kw">type </span>HooksRefType&lt;<span class="lifetime">'a</span>&gt; = MutexGuard&lt;<span class="lifetime">'a</span>, MockInstanceHooks&gt;;
+    <span class="kw">fn </span>hooked_commands() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">'static </span>[LayerVulkanCommand] {
         T::mock().hooked_instance_commands()
     }
 
-    <span class="kw">fn </span>hooks(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="self">Self</span>::HooksRefType&lt;<span class="lifetime">&#39;_</span>&gt; {
+    <span class="kw">fn </span>hooks(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="self">Self</span>::HooksRefType&lt;<span class="lifetime">'_</span>&gt; {
         <span class="self">self</span>.mock_hooks.lock().unwrap()
     }
 }
@@ -770,7 +770,7 @@
     <span class="doccomment">/// Mock the drop behavior.
     ///
     /// The expections can be set through the `f` argument. If this method is never called, the
-    /// struct will be dropped as if the drop is not mocked, i.e. won&#39;t check how drop is called.
+    /// struct will be dropped as if the drop is not mocked, i.e. won't check how drop is called.
     </span><span class="kw">pub fn </span>with_mock_drop(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw">impl </span>FnOnce(<span class="kw-2">&amp;mut </span>MockDrop)) {
         <span class="kw">let </span><span class="kw-2">mut </span>mock_drop = <span class="self">self</span>.mock_drop.lock().unwrap();
         <span class="kw">let </span>mock_drop = mock_drop.get_or_insert_with(Default::default);
@@ -780,13 +780,13 @@
 
 <span class="kw">impl</span>&lt;T: TestLayerMock&gt; DeviceInfo <span class="kw">for </span>MockDeviceInfo&lt;T&gt; {
     <span class="kw">type </span>HooksType = MockDeviceHooks;
-    <span class="kw">type </span>HooksRefType&lt;<span class="lifetime">&#39;a</span>&gt; = MutexGuard&lt;<span class="lifetime">&#39;a</span>, MockDeviceHooks&gt;;
+    <span class="kw">type </span>HooksRefType&lt;<span class="lifetime">'a</span>&gt; = MutexGuard&lt;<span class="lifetime">'a</span>, MockDeviceHooks&gt;;
 
-    <span class="kw">fn </span>hooked_commands() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>[LayerVulkanCommand] {
+    <span class="kw">fn </span>hooked_commands() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">'static </span>[LayerVulkanCommand] {
         T::mock().hooked_device_commands()
     }
 
-    <span class="kw">fn </span>hooks(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="self">Self</span>::HooksRefType&lt;<span class="lifetime">&#39;_</span>&gt; {
+    <span class="kw">fn </span>hooks(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="self">Self</span>::HooksRefType&lt;<span class="lifetime">'_</span>&gt; {
         <span class="self">self</span>.mock_hooks.lock().unwrap()
     }
 }
@@ -796,7 +796,7 @@
 </span><span class="kw">pub struct </span>Tag&lt;<span class="kw">const </span>I: usize&gt;;
 
 <span class="doccomment">/// A trait used to include all possible [`Tag&lt;I&gt;`].
-</span><span class="kw">pub trait </span>TestLayerTag: Sync + Send + <span class="lifetime">&#39;static </span>{}
+</span><span class="kw">pub trait </span>TestLayerTag: Sync + Send + <span class="lifetime">'static </span>{}
 
 <span class="kw">impl</span>&lt;<span class="kw">const </span>I: usize&gt; TestLayerTag <span class="kw">for </span>Tag&lt;I&gt; {}
 
@@ -855,7 +855,7 @@
     <span class="kw">type </span>InstanceInfoContainer = ArcDel&lt;<span class="self">Self</span>::InstanceInfo&gt;;
     <span class="kw">type </span>DeviceInfoContainer = ArcDel&lt;<span class="self">Self</span>::DeviceInfo&gt;;
 
-    <span class="kw">fn </span>global_instance() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>Global&lt;<span class="self">Self</span>&gt; {
+    <span class="kw">fn </span>global_instance() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">'static </span>Global&lt;<span class="self">Self</span>&gt; {
         MockTestLayer::&lt;T&gt;::instance()
     }
 
@@ -907,14 +907,14 @@
     }
 }
 
-<span class="macro">mock! </span>{
+<span class="macro">mock!</span> {
     <span class="kw">pub </span>TestLayer&lt;T: TestLayerTag = Tag&lt;<span class="number">0</span>&gt;&gt; {}
 
     <span class="kw">impl</span>&lt;T: TestLayerTag&gt; TestLayerMock <span class="kw">for </span>TestLayer&lt;T&gt; {
         <span class="kw">type </span>TestLayerType = TestLayer&lt;T&gt;;
 
-        <span class="kw">fn </span>instance() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>Global&lt;TestLayer&lt;T&gt;&gt;;
-        <span class="kw">fn </span>mock() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span><span class="self">Self</span>;
+        <span class="kw">fn </span>instance() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">'static </span>Global&lt;TestLayer&lt;T&gt;&gt;;
+        <span class="kw">fn </span>mock() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">'static </span><span class="self">Self</span>;
 
         <span class="kw">fn </span>manifest(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; LayerManifest;
         <span class="kw">fn </span>hooked_global_commands(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>[LayerVulkanCommand];
@@ -1008,7 +1008,7 @@
     }
 
     <span class="doccomment">/// Create a context for expectations for the static object.
-    </span><span class="kw">pub fn </span>create_context(<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span><span class="self">self</span>) -&gt; Box&lt;<span class="kw">dyn </span>Any&gt; {
+    </span><span class="kw">pub fn </span>create_context(<span class="kw-2">&amp;</span><span class="lifetime">'static </span><span class="self">self</span>) -&gt; Box&lt;<span class="kw">dyn </span>Any&gt; {
         <span class="kw">let </span>layer_mock_ctx = MockTestLayer::mock_context();
         layer_mock_ctx.expect().return_const(<span class="kw-2">&amp;*</span><span class="self">self</span>.layer_mock);
         <span class="kw">let </span>layer_global_ctx = MockTestLayer::instance_context();
@@ -1026,7 +1026,7 @@
 <span class="kw">impl </span>LayerManifestExt <span class="kw">for </span>LayerManifest {
     <span class="kw">fn </span>test_default() -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
-            name: <span class="string">&quot;VK_LAYER_GOOGLE_test&quot;</span>,
+            name: <span class="string">"VK_LAYER_GOOGLE_test"</span>,
             spec_version: vk::API_VERSION_1_1,
             ..Default::default()
         }

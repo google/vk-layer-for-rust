@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `vulkan-layer\src\bindings\vk_layer\generated.rs`."><title>generated.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../..\../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../..\../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../..\../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../..\../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../..\../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../..\../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../..\../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../..\../static.files/rustdoc-47e7ab555ef2818a.css" id="mainThemeStyle"><meta name="rustdoc-vars" data-root-path="../../..\../" data-static-root-path="../../..\../static.files/" data-current-crate="vulkan_layer" data-themes="" data-resource-suffix="" data-rustdoc-version="1.74.0-nightly (59a829484 2023-08-30)" data-channel="nightly" data-search-js="search-6dfdfced5eff6596.js" data-settings-js="settings-de11bff964e9d4e5.js" data-settings-css="settings-8c76f75bfb6bd192.css" data-theme-light-css="light-f194925aa375ae96.css" data-theme-dark-css="dark-1dd4d1ce031e15de.css" data-theme-ayu-css="ayu-49e58d069f567085.css" ><script src="../../..\../static.files/storage-db41da1a38ea3cb8.js"></script><script defer src="../../..\../static.files/src-script-3280b574d94e47b4.js"></script><script defer src="../../..\../src-files.js"></script><script defer src="../../..\../static.files/main-ef3a2de404864b0b.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../..\../static.files/light-f194925aa375ae96.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../..\../static.files/dark-1dd4d1ce031e15de.css"><link rel="stylesheet" href="../../..\../static.files/noscript-cffde32267a19fd6.css"></noscript><link rel="alternate icon" type="image/png" href="../../..\../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../..\../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../..\../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../..\../vulkan_layer/index.html"><img class="rust-logo" src="../../..\../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../..\../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../..\../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../..\../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `vulkan-layer\src\bindings\vk_layer\generated.rs`."><title>generated.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../..\../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../..\../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../..\../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../..\../" data-static-root-path="../../..\../static.files/" data-current-crate="vulkan_layer" data-themes="" data-resource-suffix="" data-rustdoc-version="1.81.0-nightly (cc8da78a0 2024-07-04)" data-channel="nightly" data-search-js="search-0fe7219eb170c82e.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../..\../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../..\../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../..\../src-files.js"></script><script defer src="../../..\../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../..\../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../..\../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../..\../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -404,16 +404,16 @@
 <a href="#404" id="404">404</a>
 <a href="#405" id="405">405</a>
 <a href="#406" id="406">406</a>
-</pre></div><pre class="rust"><code><span class="comment">// Copyright 2023 Google LLC
+</pre></div><pre class="rust"><code><span class="comment">// Copyright 2024 Google LLC
 //
-// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+// Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //     http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+// distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
@@ -432,7 +432,7 @@
 <span class="comment">/* automatically generated by rust-bindgen 0.65.1 */
 
 </span><span class="kw">pub type </span>PFN_GetPhysicalDeviceProcAddr = ::std::option::Option&lt;
-    <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>(
+    <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn</span>(
         instance: VkInstance,
         pName: <span class="kw-2">*const </span>::std::os::raw::c_char,
     ) -&gt; PFN_vkVoidFunction,
@@ -454,20 +454,20 @@
     <span class="macro">assert_eq!</span>(
         ::std::mem::size_of::&lt;VkNegotiateLayerInterface&gt;(),
         <span class="number">48usize</span>,
-        <span class="macro">concat!</span>(<span class="string">&quot;Size of: &quot;</span>, <span class="macro">stringify!</span>(VkNegotiateLayerInterface))
+        <span class="macro">concat!</span>(<span class="string">"Size of: "</span>, <span class="macro">stringify!</span>(VkNegotiateLayerInterface))
     );
     <span class="macro">assert_eq!</span>(
         ::std::mem::align_of::&lt;VkNegotiateLayerInterface&gt;(),
         <span class="number">8usize</span>,
-        <span class="macro">concat!</span>(<span class="string">&quot;Alignment of &quot;</span>, <span class="macro">stringify!</span>(VkNegotiateLayerInterface))
+        <span class="macro">concat!</span>(<span class="string">"Alignment of "</span>, <span class="macro">stringify!</span>(VkNegotiateLayerInterface))
     );
     <span class="macro">assert_eq!</span>(
         <span class="kw">unsafe </span>{ <span class="macro">::std::ptr::addr_of!</span>((<span class="kw-2">*</span>ptr).sType) <span class="kw">as </span>usize - ptr <span class="kw">as </span>usize },
         <span class="number">0usize</span>,
         <span class="macro">concat!</span>(
-            <span class="string">&quot;Offset of field: &quot;</span>,
+            <span class="string">"Offset of field: "</span>,
             <span class="macro">stringify!</span>(VkNegotiateLayerInterface),
-            <span class="string">&quot;::&quot;</span>,
+            <span class="string">"::"</span>,
             <span class="macro">stringify!</span>(sType)
         )
     );
@@ -475,9 +475,9 @@
         <span class="kw">unsafe </span>{ <span class="macro">::std::ptr::addr_of!</span>((<span class="kw-2">*</span>ptr).pNext) <span class="kw">as </span>usize - ptr <span class="kw">as </span>usize },
         <span class="number">8usize</span>,
         <span class="macro">concat!</span>(
-            <span class="string">&quot;Offset of field: &quot;</span>,
+            <span class="string">"Offset of field: "</span>,
             <span class="macro">stringify!</span>(VkNegotiateLayerInterface),
-            <span class="string">&quot;::&quot;</span>,
+            <span class="string">"::"</span>,
             <span class="macro">stringify!</span>(pNext)
         )
     );
@@ -485,9 +485,9 @@
         <span class="kw">unsafe </span>{ <span class="macro">::std::ptr::addr_of!</span>((<span class="kw-2">*</span>ptr).loaderLayerInterfaceVersion) <span class="kw">as </span>usize - ptr <span class="kw">as </span>usize },
         <span class="number">16usize</span>,
         <span class="macro">concat!</span>(
-            <span class="string">&quot;Offset of field: &quot;</span>,
+            <span class="string">"Offset of field: "</span>,
             <span class="macro">stringify!</span>(VkNegotiateLayerInterface),
-            <span class="string">&quot;::&quot;</span>,
+            <span class="string">"::"</span>,
             <span class="macro">stringify!</span>(loaderLayerInterfaceVersion)
         )
     );
@@ -495,9 +495,9 @@
         <span class="kw">unsafe </span>{ <span class="macro">::std::ptr::addr_of!</span>((<span class="kw-2">*</span>ptr).pfnGetInstanceProcAddr) <span class="kw">as </span>usize - ptr <span class="kw">as </span>usize },
         <span class="number">24usize</span>,
         <span class="macro">concat!</span>(
-            <span class="string">&quot;Offset of field: &quot;</span>,
+            <span class="string">"Offset of field: "</span>,
             <span class="macro">stringify!</span>(VkNegotiateLayerInterface),
-            <span class="string">&quot;::&quot;</span>,
+            <span class="string">"::"</span>,
             <span class="macro">stringify!</span>(pfnGetInstanceProcAddr)
         )
     );
@@ -505,9 +505,9 @@
         <span class="kw">unsafe </span>{ <span class="macro">::std::ptr::addr_of!</span>((<span class="kw-2">*</span>ptr).pfnGetDeviceProcAddr) <span class="kw">as </span>usize - ptr <span class="kw">as </span>usize },
         <span class="number">32usize</span>,
         <span class="macro">concat!</span>(
-            <span class="string">&quot;Offset of field: &quot;</span>,
+            <span class="string">"Offset of field: "</span>,
             <span class="macro">stringify!</span>(VkNegotiateLayerInterface),
-            <span class="string">&quot;::&quot;</span>,
+            <span class="string">"::"</span>,
             <span class="macro">stringify!</span>(pfnGetDeviceProcAddr)
         )
     );
@@ -517,9 +517,9 @@
         },
         <span class="number">40usize</span>,
         <span class="macro">concat!</span>(
-            <span class="string">&quot;Offset of field: &quot;</span>,
+            <span class="string">"Offset of field: "</span>,
             <span class="macro">stringify!</span>(VkNegotiateLayerInterface),
-            <span class="string">&quot;::&quot;</span>,
+            <span class="string">"::"</span>,
             <span class="macro">stringify!</span>(pfnGetPhysicalDeviceProcAddr)
         )
     );
@@ -546,20 +546,20 @@
     <span class="macro">assert_eq!</span>(
         ::std::mem::size_of::&lt;VkLayerInstanceLink_&gt;(),
         <span class="number">24usize</span>,
-        <span class="macro">concat!</span>(<span class="string">&quot;Size of: &quot;</span>, <span class="macro">stringify!</span>(VkLayerInstanceLink_))
+        <span class="macro">concat!</span>(<span class="string">"Size of: "</span>, <span class="macro">stringify!</span>(VkLayerInstanceLink_))
     );
     <span class="macro">assert_eq!</span>(
         ::std::mem::align_of::&lt;VkLayerInstanceLink_&gt;(),
         <span class="number">8usize</span>,
-        <span class="macro">concat!</span>(<span class="string">&quot;Alignment of &quot;</span>, <span class="macro">stringify!</span>(VkLayerInstanceLink_))
+        <span class="macro">concat!</span>(<span class="string">"Alignment of "</span>, <span class="macro">stringify!</span>(VkLayerInstanceLink_))
     );
     <span class="macro">assert_eq!</span>(
         <span class="kw">unsafe </span>{ <span class="macro">::std::ptr::addr_of!</span>((<span class="kw-2">*</span>ptr).pNext) <span class="kw">as </span>usize - ptr <span class="kw">as </span>usize },
         <span class="number">0usize</span>,
         <span class="macro">concat!</span>(
-            <span class="string">&quot;Offset of field: &quot;</span>,
+            <span class="string">"Offset of field: "</span>,
             <span class="macro">stringify!</span>(VkLayerInstanceLink_),
-            <span class="string">&quot;::&quot;</span>,
+            <span class="string">"::"</span>,
             <span class="macro">stringify!</span>(pNext)
         )
     );
@@ -567,9 +567,9 @@
         <span class="kw">unsafe </span>{ <span class="macro">::std::ptr::addr_of!</span>((<span class="kw-2">*</span>ptr).pfnNextGetInstanceProcAddr) <span class="kw">as </span>usize - ptr <span class="kw">as </span>usize },
         <span class="number">8usize</span>,
         <span class="macro">concat!</span>(
-            <span class="string">&quot;Offset of field: &quot;</span>,
+            <span class="string">"Offset of field: "</span>,
             <span class="macro">stringify!</span>(VkLayerInstanceLink_),
-            <span class="string">&quot;::&quot;</span>,
+            <span class="string">"::"</span>,
             <span class="macro">stringify!</span>(pfnNextGetInstanceProcAddr)
         )
     );
@@ -579,9 +579,9 @@
         },
         <span class="number">16usize</span>,
         <span class="macro">concat!</span>(
-            <span class="string">&quot;Offset of field: &quot;</span>,
+            <span class="string">"Offset of field: "</span>,
             <span class="macro">stringify!</span>(VkLayerInstanceLink_),
-            <span class="string">&quot;::&quot;</span>,
+            <span class="string">"::"</span>,
             <span class="macro">stringify!</span>(pfnNextGetPhysicalDeviceProcAddr)
         )
     );
@@ -597,13 +597,13 @@
 }
 <span class="kw">pub type </span>VkLayerInstanceLink = VkLayerInstanceLink_;
 <span class="kw">pub type </span>PFN_vkSetInstanceLoaderData = ::std::option::Option&lt;
-    <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>(instance: VkInstance, object: <span class="kw-2">*mut </span>::std::os::raw::c_void) -&gt; VkResult,
+    <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn</span>(instance: VkInstance, object: <span class="kw-2">*mut </span>::std::os::raw::c_void) -&gt; VkResult,
 &gt;;
 <span class="kw">pub type </span>PFN_vkSetDeviceLoaderData = ::std::option::Option&lt;
-    <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>(device: VkDevice, object: <span class="kw-2">*mut </span>::std::os::raw::c_void) -&gt; VkResult,
+    <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn</span>(device: VkDevice, object: <span class="kw-2">*mut </span>::std::os::raw::c_void) -&gt; VkResult,
 &gt;;
 <span class="kw">pub type </span>PFN_vkLayerCreateDevice = ::std::option::Option&lt;
-    <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>(
+    <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn</span>(
         instance: VkInstance,
         physicalDevice: VkPhysicalDevice,
         pCreateInfo: <span class="kw-2">*const </span>VkDeviceCreateInfo,
@@ -614,7 +614,7 @@
     ) -&gt; VkResult,
 &gt;;
 <span class="kw">pub type </span>PFN_vkLayerDestroyDevice = ::std::option::Option&lt;
-    <span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn</span>(
+    <span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn</span>(
         physicalDevice: VkDevice,
         pAllocator: <span class="kw-2">*const </span>VkAllocationCallbacks,
         destroyFunction: PFN_vkDestroyDevice,
@@ -633,20 +633,20 @@
     <span class="macro">assert_eq!</span>(
         ::std::mem::size_of::&lt;VkLayerDeviceLink_&gt;(),
         <span class="number">24usize</span>,
-        <span class="macro">concat!</span>(<span class="string">&quot;Size of: &quot;</span>, <span class="macro">stringify!</span>(VkLayerDeviceLink_))
+        <span class="macro">concat!</span>(<span class="string">"Size of: "</span>, <span class="macro">stringify!</span>(VkLayerDeviceLink_))
     );
     <span class="macro">assert_eq!</span>(
         ::std::mem::align_of::&lt;VkLayerDeviceLink_&gt;(),
         <span class="number">8usize</span>,
-        <span class="macro">concat!</span>(<span class="string">&quot;Alignment of &quot;</span>, <span class="macro">stringify!</span>(VkLayerDeviceLink_))
+        <span class="macro">concat!</span>(<span class="string">"Alignment of "</span>, <span class="macro">stringify!</span>(VkLayerDeviceLink_))
     );
     <span class="macro">assert_eq!</span>(
         <span class="kw">unsafe </span>{ <span class="macro">::std::ptr::addr_of!</span>((<span class="kw-2">*</span>ptr).pNext) <span class="kw">as </span>usize - ptr <span class="kw">as </span>usize },
         <span class="number">0usize</span>,
         <span class="macro">concat!</span>(
-            <span class="string">&quot;Offset of field: &quot;</span>,
+            <span class="string">"Offset of field: "</span>,
             <span class="macro">stringify!</span>(VkLayerDeviceLink_),
-            <span class="string">&quot;::&quot;</span>,
+            <span class="string">"::"</span>,
             <span class="macro">stringify!</span>(pNext)
         )
     );
@@ -654,9 +654,9 @@
         <span class="kw">unsafe </span>{ <span class="macro">::std::ptr::addr_of!</span>((<span class="kw-2">*</span>ptr).pfnNextGetInstanceProcAddr) <span class="kw">as </span>usize - ptr <span class="kw">as </span>usize },
         <span class="number">8usize</span>,
         <span class="macro">concat!</span>(
-            <span class="string">&quot;Offset of field: &quot;</span>,
+            <span class="string">"Offset of field: "</span>,
             <span class="macro">stringify!</span>(VkLayerDeviceLink_),
-            <span class="string">&quot;::&quot;</span>,
+            <span class="string">"::"</span>,
             <span class="macro">stringify!</span>(pfnNextGetInstanceProcAddr)
         )
     );
@@ -664,9 +664,9 @@
         <span class="kw">unsafe </span>{ <span class="macro">::std::ptr::addr_of!</span>((<span class="kw-2">*</span>ptr).pfnNextGetDeviceProcAddr) <span class="kw">as </span>usize - ptr <span class="kw">as </span>usize },
         <span class="number">16usize</span>,
         <span class="macro">concat!</span>(
-            <span class="string">&quot;Offset of field: &quot;</span>,
+            <span class="string">"Offset of field: "</span>,
             <span class="macro">stringify!</span>(VkLayerDeviceLink_),
-            <span class="string">&quot;::&quot;</span>,
+            <span class="string">"::"</span>,
             <span class="macro">stringify!</span>(pfnNextGetDeviceProcAddr)
         )
     );
@@ -703,7 +703,7 @@
         ::std::mem::size_of::&lt;VkLayerDeviceCreateInfo__bindgen_ty_1&gt;(),
         <span class="number">8usize</span>,
         <span class="macro">concat!</span>(
-            <span class="string">&quot;Size of: &quot;</span>,
+            <span class="string">"Size of: "</span>,
             <span class="macro">stringify!</span>(VkLayerDeviceCreateInfo__bindgen_ty_1)
         )
     );
@@ -711,7 +711,7 @@
         ::std::mem::align_of::&lt;VkLayerDeviceCreateInfo__bindgen_ty_1&gt;(),
         <span class="number">8usize</span>,
         <span class="macro">concat!</span>(
-            <span class="string">&quot;Alignment of &quot;</span>,
+            <span class="string">"Alignment of "</span>,
             <span class="macro">stringify!</span>(VkLayerDeviceCreateInfo__bindgen_ty_1)
         )
     );
@@ -719,9 +719,9 @@
         <span class="kw">unsafe </span>{ <span class="macro">::std::ptr::addr_of!</span>((<span class="kw-2">*</span>ptr).pLayerInfo) <span class="kw">as </span>usize - ptr <span class="kw">as </span>usize },
         <span class="number">0usize</span>,
         <span class="macro">concat!</span>(
-            <span class="string">&quot;Offset of field: &quot;</span>,
+            <span class="string">"Offset of field: "</span>,
             <span class="macro">stringify!</span>(VkLayerDeviceCreateInfo__bindgen_ty_1),
-            <span class="string">&quot;::&quot;</span>,
+            <span class="string">"::"</span>,
             <span class="macro">stringify!</span>(pLayerInfo)
         )
     );
@@ -729,9 +729,9 @@
         <span class="kw">unsafe </span>{ <span class="macro">::std::ptr::addr_of!</span>((<span class="kw-2">*</span>ptr).pfnSetDeviceLoaderData) <span class="kw">as </span>usize - ptr <span class="kw">as </span>usize },
         <span class="number">0usize</span>,
         <span class="macro">concat!</span>(
-            <span class="string">&quot;Offset of field: &quot;</span>,
+            <span class="string">"Offset of field: "</span>,
             <span class="macro">stringify!</span>(VkLayerDeviceCreateInfo__bindgen_ty_1),
-            <span class="string">&quot;::&quot;</span>,
+            <span class="string">"::"</span>,
             <span class="macro">stringify!</span>(pfnSetDeviceLoaderData)
         )
     );
@@ -753,20 +753,20 @@
     <span class="macro">assert_eq!</span>(
         ::std::mem::size_of::&lt;VkLayerDeviceCreateInfo&gt;(),
         <span class="number">32usize</span>,
-        <span class="macro">concat!</span>(<span class="string">&quot;Size of: &quot;</span>, <span class="macro">stringify!</span>(VkLayerDeviceCreateInfo))
+        <span class="macro">concat!</span>(<span class="string">"Size of: "</span>, <span class="macro">stringify!</span>(VkLayerDeviceCreateInfo))
     );
     <span class="macro">assert_eq!</span>(
         ::std::mem::align_of::&lt;VkLayerDeviceCreateInfo&gt;(),
         <span class="number">8usize</span>,
-        <span class="macro">concat!</span>(<span class="string">&quot;Alignment of &quot;</span>, <span class="macro">stringify!</span>(VkLayerDeviceCreateInfo))
+        <span class="macro">concat!</span>(<span class="string">"Alignment of "</span>, <span class="macro">stringify!</span>(VkLayerDeviceCreateInfo))
     );
     <span class="macro">assert_eq!</span>(
         <span class="kw">unsafe </span>{ <span class="macro">::std::ptr::addr_of!</span>((<span class="kw-2">*</span>ptr).sType) <span class="kw">as </span>usize - ptr <span class="kw">as </span>usize },
         <span class="number">0usize</span>,
         <span class="macro">concat!</span>(
-            <span class="string">&quot;Offset of field: &quot;</span>,
+            <span class="string">"Offset of field: "</span>,
             <span class="macro">stringify!</span>(VkLayerDeviceCreateInfo),
-            <span class="string">&quot;::&quot;</span>,
+            <span class="string">"::"</span>,
             <span class="macro">stringify!</span>(sType)
         )
     );
@@ -774,9 +774,9 @@
         <span class="kw">unsafe </span>{ <span class="macro">::std::ptr::addr_of!</span>((<span class="kw-2">*</span>ptr).pNext) <span class="kw">as </span>usize - ptr <span class="kw">as </span>usize },
         <span class="number">8usize</span>,
         <span class="macro">concat!</span>(
-            <span class="string">&quot;Offset of field: &quot;</span>,
+            <span class="string">"Offset of field: "</span>,
             <span class="macro">stringify!</span>(VkLayerDeviceCreateInfo),
-            <span class="string">&quot;::&quot;</span>,
+            <span class="string">"::"</span>,
             <span class="macro">stringify!</span>(pNext)
         )
     );
@@ -784,9 +784,9 @@
         <span class="kw">unsafe </span>{ <span class="macro">::std::ptr::addr_of!</span>((<span class="kw-2">*</span>ptr).function) <span class="kw">as </span>usize - ptr <span class="kw">as </span>usize },
         <span class="number">16usize</span>,
         <span class="macro">concat!</span>(
-            <span class="string">&quot;Offset of field: &quot;</span>,
+            <span class="string">"Offset of field: "</span>,
             <span class="macro">stringify!</span>(VkLayerDeviceCreateInfo),
-            <span class="string">&quot;::&quot;</span>,
+            <span class="string">"::"</span>,
             <span class="macro">stringify!</span>(function)
         )
     );
@@ -794,9 +794,9 @@
         <span class="kw">unsafe </span>{ <span class="macro">::std::ptr::addr_of!</span>((<span class="kw-2">*</span>ptr).u) <span class="kw">as </span>usize - ptr <span class="kw">as </span>usize },
         <span class="number">24usize</span>,
         <span class="macro">concat!</span>(
-            <span class="string">&quot;Offset of field: &quot;</span>,
+            <span class="string">"Offset of field: "</span>,
             <span class="macro">stringify!</span>(VkLayerDeviceCreateInfo),
-            <span class="string">&quot;::&quot;</span>,
+            <span class="string">"::"</span>,
             <span class="macro">stringify!</span>(u)
         )
     );

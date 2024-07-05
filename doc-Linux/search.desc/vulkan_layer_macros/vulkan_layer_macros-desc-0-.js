@@ -1,0 +1,1 @@
+searchState.loadedDescShard("vulkan_layer_macros", 0, "Macros for <code>vulkan-layer</code>.\nDerive the implementation of the <code>vulkan_layer::DeviceInfo</code> …\nDerive the implementation of the …\nDerive the implementation of the <code>vulkan_layer::InstanceInfo</code>…\nDeclare the required introspection queries for Android …")

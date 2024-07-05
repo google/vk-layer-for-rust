@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `vulkan-layer/src/layer_trait/generated.rs`."><title>generated.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-47e7ab555ef2818a.css" id="mainThemeStyle"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="vulkan_layer" data-themes="" data-resource-suffix="" data-rustdoc-version="1.74.0-nightly (59a829484 2023-08-30)" data-channel="nightly" data-search-js="search-6dfdfced5eff6596.js" data-settings-js="settings-de11bff964e9d4e5.js" data-settings-css="settings-8c76f75bfb6bd192.css" data-theme-light-css="light-f194925aa375ae96.css" data-theme-dark-css="dark-1dd4d1ce031e15de.css" data-theme-ayu-css="ayu-49e58d069f567085.css" ><script src="../../../static.files/storage-db41da1a38ea3cb8.js"></script><script defer src="../../../static.files/src-script-3280b574d94e47b4.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-ef3a2de404864b0b.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../../static.files/light-f194925aa375ae96.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../../static.files/dark-1dd4d1ce031e15de.css"><link rel="stylesheet" href="../../../static.files/noscript-cffde32267a19fd6.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../vulkan_layer/index.html"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `vulkan-layer/src/layer_trait/generated.rs`."><title>generated.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="vulkan_layer" data-themes="" data-resource-suffix="" data-rustdoc-version="1.81.0-nightly (cc8da78a0 2024-07-04)" data-channel="nightly" data-search-js="search-0fe7219eb170c82e.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -5363,16 +5363,16 @@
 <a href="#5363" id="5363">5363</a>
 <a href="#5364" id="5364">5364</a>
 <a href="#5365" id="5365">5365</a>
-</pre></div><pre class="rust"><code><span class="comment">// Copyright 2023 Google LLC
+</pre></div><pre class="rust"><code><span class="comment">// Copyright 2024 Google LLC
 //
-// Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+// Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //     http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+// distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
@@ -5388,19 +5388,19 @@
 <span class="kw">use </span><span class="kw">crate</span>::VkLayerDeviceLink;
 
 <span class="comment">// Unhandled commands:
-// * vkMapMemory2KHR: The ash Rust binding doesn&#39;t have proper bindings yet.
-// * vkUnmapMemory2KHR: The ash Rust binding doesn&#39;t have proper bindings yet.
-// * vkCmdSetDiscardRectangleEnableEXT: The ash Rust binding doesn&#39;t have proper bindings yet.
-// * vkCmdSetDiscardRectangleModeEXT: The ash Rust binding doesn&#39;t have proper bindings yet.
-// * vkCmdSetExclusiveScissorEnableNV: The ash Rust binding doesn&#39;t have proper bindings yet.
+// * vkMapMemory2KHR: The ash Rust binding doesn't have proper bindings yet.
+// * vkUnmapMemory2KHR: The ash Rust binding doesn't have proper bindings yet.
+// * vkCmdSetDiscardRectangleEnableEXT: The ash Rust binding doesn't have proper bindings yet.
+// * vkCmdSetDiscardRectangleModeEXT: The ash Rust binding doesn't have proper bindings yet.
+// * vkCmdSetExclusiveScissorEnableNV: The ash Rust binding doesn't have proper bindings yet.
 // * vkGetDeviceFaultInfoEXT: The length info and the data pointer are nested in structs.
-// * vkCmdDrawClusterHUAWEI: The ash Rust binding doesn&#39;t have proper bindings yet.
-// * vkCmdDrawClusterIndirectHUAWEI: The ash Rust binding doesn&#39;t have proper bindings yet.
-// * vkCreateShadersEXT: The ash Rust binding doesn&#39;t have proper bindings yet.
-// * vkDestroyShaderEXT: The ash Rust binding doesn&#39;t have proper bindings yet.
-// * vkGetShaderBinaryDataEXT: The ash Rust binding doesn&#39;t have proper bindings yet.
-// * vkCmdBindShadersEXT: The ash Rust binding doesn&#39;t have proper bindings yet.
-// * vkCmdSetAttachmentFeedbackLoopEnableEXT: The ash Rust binding doesn&#39;t have proper bindings yet.
+// * vkCmdDrawClusterHUAWEI: The ash Rust binding doesn't have proper bindings yet.
+// * vkCmdDrawClusterIndirectHUAWEI: The ash Rust binding doesn't have proper bindings yet.
+// * vkCreateShadersEXT: The ash Rust binding doesn't have proper bindings yet.
+// * vkDestroyShaderEXT: The ash Rust binding doesn't have proper bindings yet.
+// * vkGetShaderBinaryDataEXT: The ash Rust binding doesn't have proper bindings yet.
+// * vkCmdBindShadersEXT: The ash Rust binding doesn't have proper bindings yet.
+// * vkCmdSetAttachmentFeedbackLoopEnableEXT: The ash Rust binding doesn't have proper bindings yet.
 // * vkCmdBuildAccelerationStructuresKHR: Dynamic multi-dimensional array bindings are not supported
 //   yet.
 // * vkCmdBuildAccelerationStructuresIndirectKHR: Dynamic multi-dimensional array bindings are not
@@ -5950,822 +5950,822 @@
 
     <span class="kw">fn </span>try_from(value: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="self">Self</span>::Error&gt; {
         <span class="kw">match </span>value {
-            <span class="string">&quot;vkCreateInstance&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateInstance),
-            <span class="string">&quot;vkGetPhysicalDeviceFeatures&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetPhysicalDeviceFeatures),
-            <span class="string">&quot;vkGetPhysicalDeviceFormatProperties&quot; </span>=&gt; {
+            <span class="string">"vkCreateInstance" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateInstance),
+            <span class="string">"vkGetPhysicalDeviceFeatures" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetPhysicalDeviceFeatures),
+            <span class="string">"vkGetPhysicalDeviceFormatProperties" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetPhysicalDeviceFormatProperties)
             }
-            <span class="string">&quot;vkGetPhysicalDeviceImageFormatProperties&quot; </span>=&gt; {
+            <span class="string">"vkGetPhysicalDeviceImageFormatProperties" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetPhysicalDeviceImageFormatProperties)
             }
-            <span class="string">&quot;vkGetPhysicalDeviceProperties&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetPhysicalDeviceProperties),
-            <span class="string">&quot;vkGetPhysicalDeviceQueueFamilyProperties&quot; </span>=&gt; {
+            <span class="string">"vkGetPhysicalDeviceProperties" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetPhysicalDeviceProperties),
+            <span class="string">"vkGetPhysicalDeviceQueueFamilyProperties" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetPhysicalDeviceQueueFamilyProperties)
             }
-            <span class="string">&quot;vkGetPhysicalDeviceMemoryProperties&quot; </span>=&gt; {
+            <span class="string">"vkGetPhysicalDeviceMemoryProperties" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetPhysicalDeviceMemoryProperties)
             }
-            <span class="string">&quot;vkGetInstanceProcAddr&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetInstanceProcAddr),
-            <span class="string">&quot;vkCreateDevice&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateDevice),
-            <span class="string">&quot;vkGetPhysicalDeviceSparseImageFormatProperties&quot; </span>=&gt; {
+            <span class="string">"vkGetInstanceProcAddr" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetInstanceProcAddr),
+            <span class="string">"vkCreateDevice" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateDevice),
+            <span class="string">"vkGetPhysicalDeviceSparseImageFormatProperties" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetPhysicalDeviceSparseImageFormatProperties)
             }
-            <span class="string">&quot;vkGetPhysicalDeviceFeatures2&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetPhysicalDeviceFeatures2),
-            <span class="string">&quot;vkGetPhysicalDeviceProperties2&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetPhysicalDeviceProperties2),
-            <span class="string">&quot;vkGetPhysicalDeviceFormatProperties2&quot; </span>=&gt; {
+            <span class="string">"vkGetPhysicalDeviceFeatures2" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetPhysicalDeviceFeatures2),
+            <span class="string">"vkGetPhysicalDeviceProperties2" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetPhysicalDeviceProperties2),
+            <span class="string">"vkGetPhysicalDeviceFormatProperties2" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetPhysicalDeviceFormatProperties2)
             }
-            <span class="string">&quot;vkGetPhysicalDeviceImageFormatProperties2&quot; </span>=&gt; {
+            <span class="string">"vkGetPhysicalDeviceImageFormatProperties2" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetPhysicalDeviceImageFormatProperties2)
             }
-            <span class="string">&quot;vkGetPhysicalDeviceQueueFamilyProperties2&quot; </span>=&gt; {
+            <span class="string">"vkGetPhysicalDeviceQueueFamilyProperties2" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetPhysicalDeviceQueueFamilyProperties2)
             }
-            <span class="string">&quot;vkGetPhysicalDeviceMemoryProperties2&quot; </span>=&gt; {
+            <span class="string">"vkGetPhysicalDeviceMemoryProperties2" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetPhysicalDeviceMemoryProperties2)
             }
-            <span class="string">&quot;vkGetPhysicalDeviceSparseImageFormatProperties2&quot; </span>=&gt; {
+            <span class="string">"vkGetPhysicalDeviceSparseImageFormatProperties2" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetPhysicalDeviceSparseImageFormatProperties2)
             }
-            <span class="string">&quot;vkGetPhysicalDeviceExternalBufferProperties&quot; </span>=&gt; {
+            <span class="string">"vkGetPhysicalDeviceExternalBufferProperties" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetPhysicalDeviceExternalBufferProperties)
             }
-            <span class="string">&quot;vkGetPhysicalDeviceExternalFenceProperties&quot; </span>=&gt; {
+            <span class="string">"vkGetPhysicalDeviceExternalFenceProperties" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetPhysicalDeviceExternalFenceProperties)
             }
-            <span class="string">&quot;vkGetPhysicalDeviceExternalSemaphoreProperties&quot; </span>=&gt; {
+            <span class="string">"vkGetPhysicalDeviceExternalSemaphoreProperties" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetPhysicalDeviceExternalSemaphoreProperties)
             }
-            <span class="string">&quot;vkGetPhysicalDeviceToolProperties&quot; </span>=&gt; {
+            <span class="string">"vkGetPhysicalDeviceToolProperties" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetPhysicalDeviceToolProperties)
             }
-            <span class="string">&quot;vkDestroySurfaceKHR&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroySurfaceKhr),
-            <span class="string">&quot;vkGetPhysicalDeviceSurfaceSupportKHR&quot; </span>=&gt; {
+            <span class="string">"vkDestroySurfaceKHR" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroySurfaceKhr),
+            <span class="string">"vkGetPhysicalDeviceSurfaceSupportKHR" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetPhysicalDeviceSurfaceSupportKhr)
             }
-            <span class="string">&quot;vkGetPhysicalDeviceSurfaceCapabilitiesKHR&quot; </span>=&gt; {
+            <span class="string">"vkGetPhysicalDeviceSurfaceCapabilitiesKHR" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetPhysicalDeviceSurfaceCapabilitiesKhr)
             }
-            <span class="string">&quot;vkGetPhysicalDeviceSurfaceFormatsKHR&quot; </span>=&gt; {
+            <span class="string">"vkGetPhysicalDeviceSurfaceFormatsKHR" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetPhysicalDeviceSurfaceFormatsKhr)
             }
-            <span class="string">&quot;vkGetPhysicalDeviceSurfacePresentModesKHR&quot; </span>=&gt; {
+            <span class="string">"vkGetPhysicalDeviceSurfacePresentModesKHR" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetPhysicalDeviceSurfacePresentModesKhr)
             }
-            <span class="string">&quot;vkGetPhysicalDevicePresentRectanglesKHR&quot; </span>=&gt; {
+            <span class="string">"vkGetPhysicalDevicePresentRectanglesKHR" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetPhysicalDevicePresentRectanglesKhr)
             }
-            <span class="string">&quot;vkGetPhysicalDeviceDisplayPropertiesKHR&quot; </span>=&gt; {
+            <span class="string">"vkGetPhysicalDeviceDisplayPropertiesKHR" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetPhysicalDeviceDisplayPropertiesKhr)
             }
-            <span class="string">&quot;vkGetPhysicalDeviceDisplayPlanePropertiesKHR&quot; </span>=&gt; {
+            <span class="string">"vkGetPhysicalDeviceDisplayPlanePropertiesKHR" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetPhysicalDeviceDisplayPlanePropertiesKhr)
             }
-            <span class="string">&quot;vkGetDisplayPlaneSupportedDisplaysKHR&quot; </span>=&gt; {
+            <span class="string">"vkGetDisplayPlaneSupportedDisplaysKHR" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetDisplayPlaneSupportedDisplaysKhr)
             }
-            <span class="string">&quot;vkGetDisplayModePropertiesKHR&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetDisplayModePropertiesKhr),
-            <span class="string">&quot;vkCreateDisplayModeKHR&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateDisplayModeKhr),
-            <span class="string">&quot;vkGetDisplayPlaneCapabilitiesKHR&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetDisplayPlaneCapabilitiesKhr),
-            <span class="string">&quot;vkCreateDisplayPlaneSurfaceKHR&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateDisplayPlaneSurfaceKhr),
-            <span class="string">&quot;vkCreateXlibSurfaceKHR&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateXlibSurfaceKhr),
-            <span class="string">&quot;vkGetPhysicalDeviceXlibPresentationSupportKHR&quot; </span>=&gt; {
+            <span class="string">"vkGetDisplayModePropertiesKHR" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetDisplayModePropertiesKhr),
+            <span class="string">"vkCreateDisplayModeKHR" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateDisplayModeKhr),
+            <span class="string">"vkGetDisplayPlaneCapabilitiesKHR" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetDisplayPlaneCapabilitiesKhr),
+            <span class="string">"vkCreateDisplayPlaneSurfaceKHR" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateDisplayPlaneSurfaceKhr),
+            <span class="string">"vkCreateXlibSurfaceKHR" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateXlibSurfaceKhr),
+            <span class="string">"vkGetPhysicalDeviceXlibPresentationSupportKHR" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetPhysicalDeviceXlibPresentationSupportKhr)
             }
-            <span class="string">&quot;vkCreateXcbSurfaceKHR&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateXcbSurfaceKhr),
-            <span class="string">&quot;vkGetPhysicalDeviceXcbPresentationSupportKHR&quot; </span>=&gt; {
+            <span class="string">"vkCreateXcbSurfaceKHR" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateXcbSurfaceKhr),
+            <span class="string">"vkGetPhysicalDeviceXcbPresentationSupportKHR" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetPhysicalDeviceXcbPresentationSupportKhr)
             }
-            <span class="string">&quot;vkCreateWaylandSurfaceKHR&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateWaylandSurfaceKhr),
-            <span class="string">&quot;vkGetPhysicalDeviceWaylandPresentationSupportKHR&quot; </span>=&gt; {
+            <span class="string">"vkCreateWaylandSurfaceKHR" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateWaylandSurfaceKhr),
+            <span class="string">"vkGetPhysicalDeviceWaylandPresentationSupportKHR" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetPhysicalDeviceWaylandPresentationSupportKhr)
             }
-            <span class="string">&quot;vkCreateAndroidSurfaceKHR&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateAndroidSurfaceKhr),
-            <span class="string">&quot;vkCreateWin32SurfaceKHR&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateWin32SurfaceKhr),
-            <span class="string">&quot;vkGetPhysicalDeviceWin32PresentationSupportKHR&quot; </span>=&gt; {
+            <span class="string">"vkCreateAndroidSurfaceKHR" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateAndroidSurfaceKhr),
+            <span class="string">"vkCreateWin32SurfaceKHR" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateWin32SurfaceKhr),
+            <span class="string">"vkGetPhysicalDeviceWin32PresentationSupportKHR" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetPhysicalDeviceWin32PresentationSupportKhr)
             }
-            <span class="string">&quot;vkGetPhysicalDeviceVideoCapabilitiesKHR&quot; </span>=&gt; {
+            <span class="string">"vkGetPhysicalDeviceVideoCapabilitiesKHR" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetPhysicalDeviceVideoCapabilitiesKhr)
             }
-            <span class="string">&quot;vkGetPhysicalDeviceVideoFormatPropertiesKHR&quot; </span>=&gt; {
+            <span class="string">"vkGetPhysicalDeviceVideoFormatPropertiesKHR" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetPhysicalDeviceVideoFormatPropertiesKhr)
             }
-            <span class="string">&quot;vkEnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHR&quot; </span>=&gt; {
+            <span class="string">"vkEnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHR" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::EnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKhr)
             }
-            <span class="string">&quot;vkGetPhysicalDeviceQueueFamilyPerformanceQueryPassesKHR&quot; </span>=&gt; {
+            <span class="string">"vkGetPhysicalDeviceQueueFamilyPerformanceQueryPassesKHR" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetPhysicalDeviceQueueFamilyPerformanceQueryPassesKhr)
             }
-            <span class="string">&quot;vkGetPhysicalDeviceSurfaceCapabilities2KHR&quot; </span>=&gt; {
+            <span class="string">"vkGetPhysicalDeviceSurfaceCapabilities2KHR" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetPhysicalDeviceSurfaceCapabilities2Khr)
             }
-            <span class="string">&quot;vkGetPhysicalDeviceSurfaceFormats2KHR&quot; </span>=&gt; {
+            <span class="string">"vkGetPhysicalDeviceSurfaceFormats2KHR" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetPhysicalDeviceSurfaceFormats2Khr)
             }
-            <span class="string">&quot;vkGetPhysicalDeviceDisplayProperties2KHR&quot; </span>=&gt; {
+            <span class="string">"vkGetPhysicalDeviceDisplayProperties2KHR" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetPhysicalDeviceDisplayProperties2Khr)
             }
-            <span class="string">&quot;vkGetPhysicalDeviceDisplayPlaneProperties2KHR&quot; </span>=&gt; {
+            <span class="string">"vkGetPhysicalDeviceDisplayPlaneProperties2KHR" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetPhysicalDeviceDisplayPlaneProperties2Khr)
             }
-            <span class="string">&quot;vkGetDisplayModeProperties2KHR&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetDisplayModeProperties2Khr),
-            <span class="string">&quot;vkGetDisplayPlaneCapabilities2KHR&quot; </span>=&gt; {
+            <span class="string">"vkGetDisplayModeProperties2KHR" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetDisplayModeProperties2Khr),
+            <span class="string">"vkGetDisplayPlaneCapabilities2KHR" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetDisplayPlaneCapabilities2Khr)
             }
-            <span class="string">&quot;vkGetPhysicalDeviceFragmentShadingRatesKHR&quot; </span>=&gt; {
+            <span class="string">"vkGetPhysicalDeviceFragmentShadingRatesKHR" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetPhysicalDeviceFragmentShadingRatesKhr)
             }
-            <span class="string">&quot;vkCreateDebugReportCallbackEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateDebugReportCallbackExt),
-            <span class="string">&quot;vkDestroyDebugReportCallbackEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroyDebugReportCallbackExt),
-            <span class="string">&quot;vkDebugReportMessageEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DebugReportMessageExt),
-            <span class="string">&quot;vkCreateStreamDescriptorSurfaceGGP&quot; </span>=&gt; {
+            <span class="string">"vkCreateDebugReportCallbackEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateDebugReportCallbackExt),
+            <span class="string">"vkDestroyDebugReportCallbackEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroyDebugReportCallbackExt),
+            <span class="string">"vkDebugReportMessageEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DebugReportMessageExt),
+            <span class="string">"vkCreateStreamDescriptorSurfaceGGP" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::CreateStreamDescriptorSurfaceGgp)
             }
-            <span class="string">&quot;vkGetPhysicalDeviceExternalImageFormatPropertiesNV&quot; </span>=&gt; {
+            <span class="string">"vkGetPhysicalDeviceExternalImageFormatPropertiesNV" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetPhysicalDeviceExternalImageFormatPropertiesNv)
             }
-            <span class="string">&quot;vkCreateViSurfaceNN&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateViSurfaceNn),
-            <span class="string">&quot;vkReleaseDisplayEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::ReleaseDisplayExt),
-            <span class="string">&quot;vkAcquireXlibDisplayEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::AcquireXlibDisplayExt),
-            <span class="string">&quot;vkGetRandROutputDisplayEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetRandROutputDisplayExt),
-            <span class="string">&quot;vkGetPhysicalDeviceSurfaceCapabilities2EXT&quot; </span>=&gt; {
+            <span class="string">"vkCreateViSurfaceNN" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateViSurfaceNn),
+            <span class="string">"vkReleaseDisplayEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::ReleaseDisplayExt),
+            <span class="string">"vkAcquireXlibDisplayEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::AcquireXlibDisplayExt),
+            <span class="string">"vkGetRandROutputDisplayEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetRandROutputDisplayExt),
+            <span class="string">"vkGetPhysicalDeviceSurfaceCapabilities2EXT" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetPhysicalDeviceSurfaceCapabilities2Ext)
             }
-            <span class="string">&quot;vkCreateIOSSurfaceMVK&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateIosSurfaceMvk),
-            <span class="string">&quot;vkCreateMacOSSurfaceMVK&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateMacOsSurfaceMvk),
-            <span class="string">&quot;vkCreateDebugUtilsMessengerEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateDebugUtilsMessengerExt),
-            <span class="string">&quot;vkDestroyDebugUtilsMessengerEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroyDebugUtilsMessengerExt),
-            <span class="string">&quot;vkSubmitDebugUtilsMessageEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::SubmitDebugUtilsMessageExt),
-            <span class="string">&quot;vkGetPhysicalDeviceMultisamplePropertiesEXT&quot; </span>=&gt; {
+            <span class="string">"vkCreateIOSSurfaceMVK" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateIosSurfaceMvk),
+            <span class="string">"vkCreateMacOSSurfaceMVK" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateMacOsSurfaceMvk),
+            <span class="string">"vkCreateDebugUtilsMessengerEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateDebugUtilsMessengerExt),
+            <span class="string">"vkDestroyDebugUtilsMessengerEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroyDebugUtilsMessengerExt),
+            <span class="string">"vkSubmitDebugUtilsMessageEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::SubmitDebugUtilsMessageExt),
+            <span class="string">"vkGetPhysicalDeviceMultisamplePropertiesEXT" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetPhysicalDeviceMultisamplePropertiesExt)
             }
-            <span class="string">&quot;vkGetPhysicalDeviceCalibrateableTimeDomainsEXT&quot; </span>=&gt; {
+            <span class="string">"vkGetPhysicalDeviceCalibrateableTimeDomainsEXT" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetPhysicalDeviceCalibrateableTimeDomainsExt)
             }
-            <span class="string">&quot;vkCreateImagePipeSurfaceFUCHSIA&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateImagePipeSurfaceFuchsia),
-            <span class="string">&quot;vkCreateMetalSurfaceEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateMetalSurfaceExt),
-            <span class="string">&quot;vkGetPhysicalDeviceCooperativeMatrixPropertiesNV&quot; </span>=&gt; {
+            <span class="string">"vkCreateImagePipeSurfaceFUCHSIA" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateImagePipeSurfaceFuchsia),
+            <span class="string">"vkCreateMetalSurfaceEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateMetalSurfaceExt),
+            <span class="string">"vkGetPhysicalDeviceCooperativeMatrixPropertiesNV" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetPhysicalDeviceCooperativeMatrixPropertiesNv)
             }
-            <span class="string">&quot;vkGetPhysicalDeviceSupportedFramebufferMixedSamplesCombinationsNV&quot; </span>=&gt; {
+            <span class="string">"vkGetPhysicalDeviceSupportedFramebufferMixedSamplesCombinationsNV" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetPhysicalDeviceSupportedFramebufferMixedSamplesCombinationsNv)
             }
-            <span class="string">&quot;vkGetPhysicalDeviceSurfacePresentModes2EXT&quot; </span>=&gt; {
+            <span class="string">"vkGetPhysicalDeviceSurfacePresentModes2EXT" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetPhysicalDeviceSurfacePresentModes2Ext)
             }
-            <span class="string">&quot;vkCreateHeadlessSurfaceEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateHeadlessSurfaceExt),
-            <span class="string">&quot;vkAcquireDrmDisplayEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::AcquireDrmDisplayExt),
-            <span class="string">&quot;vkGetDrmDisplayEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetDrmDisplayExt),
-            <span class="string">&quot;vkAcquireWinrtDisplayNV&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::AcquireWinrtDisplayNv),
-            <span class="string">&quot;vkGetWinrtDisplayNV&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetWinrtDisplayNv),
-            <span class="string">&quot;vkCreateDirectFBSurfaceEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateDirectFbSurfaceExt),
-            <span class="string">&quot;vkGetPhysicalDeviceDirectFBPresentationSupportEXT&quot; </span>=&gt; {
+            <span class="string">"vkCreateHeadlessSurfaceEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateHeadlessSurfaceExt),
+            <span class="string">"vkAcquireDrmDisplayEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::AcquireDrmDisplayExt),
+            <span class="string">"vkGetDrmDisplayEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetDrmDisplayExt),
+            <span class="string">"vkAcquireWinrtDisplayNV" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::AcquireWinrtDisplayNv),
+            <span class="string">"vkGetWinrtDisplayNV" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetWinrtDisplayNv),
+            <span class="string">"vkCreateDirectFBSurfaceEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateDirectFbSurfaceExt),
+            <span class="string">"vkGetPhysicalDeviceDirectFBPresentationSupportEXT" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetPhysicalDeviceDirectFbPresentationSupportExt)
             }
-            <span class="string">&quot;vkCreateScreenSurfaceQNX&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateScreenSurfaceQnx),
-            <span class="string">&quot;vkGetPhysicalDeviceScreenPresentationSupportQNX&quot; </span>=&gt; {
+            <span class="string">"vkCreateScreenSurfaceQNX" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateScreenSurfaceQnx),
+            <span class="string">"vkGetPhysicalDeviceScreenPresentationSupportQNX" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetPhysicalDeviceScreenPresentationSupportQnx)
             }
-            <span class="string">&quot;vkGetPhysicalDeviceOpticalFlowImageFormatsNV&quot; </span>=&gt; {
+            <span class="string">"vkGetPhysicalDeviceOpticalFlowImageFormatsNV" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetPhysicalDeviceOpticalFlowImageFormatsNv)
             }
-            <span class="string">&quot;vkGetDeviceProcAddr&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetDeviceProcAddr),
-            <span class="string">&quot;vkGetDeviceQueue&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetDeviceQueue),
-            <span class="string">&quot;vkQueueSubmit&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::QueueSubmit),
-            <span class="string">&quot;vkQueueWaitIdle&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::QueueWaitIdle),
-            <span class="string">&quot;vkDeviceWaitIdle&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DeviceWaitIdle),
-            <span class="string">&quot;vkAllocateMemory&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::AllocateMemory),
-            <span class="string">&quot;vkFreeMemory&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::FreeMemory),
-            <span class="string">&quot;vkMapMemory&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::MapMemory),
-            <span class="string">&quot;vkUnmapMemory&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::UnmapMemory),
-            <span class="string">&quot;vkFlushMappedMemoryRanges&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::FlushMappedMemoryRanges),
-            <span class="string">&quot;vkInvalidateMappedMemoryRanges&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::InvalidateMappedMemoryRanges),
-            <span class="string">&quot;vkGetDeviceMemoryCommitment&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetDeviceMemoryCommitment),
-            <span class="string">&quot;vkBindBufferMemory&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::BindBufferMemory),
-            <span class="string">&quot;vkBindImageMemory&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::BindImageMemory),
-            <span class="string">&quot;vkGetBufferMemoryRequirements&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetBufferMemoryRequirements),
-            <span class="string">&quot;vkGetImageMemoryRequirements&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetImageMemoryRequirements),
-            <span class="string">&quot;vkGetImageSparseMemoryRequirements&quot; </span>=&gt; {
+            <span class="string">"vkGetDeviceProcAddr" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetDeviceProcAddr),
+            <span class="string">"vkGetDeviceQueue" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetDeviceQueue),
+            <span class="string">"vkQueueSubmit" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::QueueSubmit),
+            <span class="string">"vkQueueWaitIdle" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::QueueWaitIdle),
+            <span class="string">"vkDeviceWaitIdle" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DeviceWaitIdle),
+            <span class="string">"vkAllocateMemory" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::AllocateMemory),
+            <span class="string">"vkFreeMemory" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::FreeMemory),
+            <span class="string">"vkMapMemory" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::MapMemory),
+            <span class="string">"vkUnmapMemory" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::UnmapMemory),
+            <span class="string">"vkFlushMappedMemoryRanges" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::FlushMappedMemoryRanges),
+            <span class="string">"vkInvalidateMappedMemoryRanges" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::InvalidateMappedMemoryRanges),
+            <span class="string">"vkGetDeviceMemoryCommitment" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetDeviceMemoryCommitment),
+            <span class="string">"vkBindBufferMemory" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::BindBufferMemory),
+            <span class="string">"vkBindImageMemory" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::BindImageMemory),
+            <span class="string">"vkGetBufferMemoryRequirements" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetBufferMemoryRequirements),
+            <span class="string">"vkGetImageMemoryRequirements" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetImageMemoryRequirements),
+            <span class="string">"vkGetImageSparseMemoryRequirements" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetImageSparseMemoryRequirements)
             }
-            <span class="string">&quot;vkQueueBindSparse&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::QueueBindSparse),
-            <span class="string">&quot;vkCreateFence&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateFence),
-            <span class="string">&quot;vkDestroyFence&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroyFence),
-            <span class="string">&quot;vkResetFences&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::ResetFences),
-            <span class="string">&quot;vkGetFenceStatus&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetFenceStatus),
-            <span class="string">&quot;vkWaitForFences&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::WaitForFences),
-            <span class="string">&quot;vkCreateSemaphore&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateSemaphore),
-            <span class="string">&quot;vkDestroySemaphore&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroySemaphore),
-            <span class="string">&quot;vkCreateEvent&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateEvent),
-            <span class="string">&quot;vkDestroyEvent&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroyEvent),
-            <span class="string">&quot;vkGetEventStatus&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetEventStatus),
-            <span class="string">&quot;vkSetEvent&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::SetEvent),
-            <span class="string">&quot;vkResetEvent&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::ResetEvent),
-            <span class="string">&quot;vkCreateQueryPool&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateQueryPool),
-            <span class="string">&quot;vkDestroyQueryPool&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroyQueryPool),
-            <span class="string">&quot;vkGetQueryPoolResults&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetQueryPoolResults),
-            <span class="string">&quot;vkCreateBuffer&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateBuffer),
-            <span class="string">&quot;vkDestroyBuffer&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroyBuffer),
-            <span class="string">&quot;vkCreateBufferView&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateBufferView),
-            <span class="string">&quot;vkDestroyBufferView&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroyBufferView),
-            <span class="string">&quot;vkCreateImage&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateImage),
-            <span class="string">&quot;vkDestroyImage&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroyImage),
-            <span class="string">&quot;vkGetImageSubresourceLayout&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetImageSubresourceLayout),
-            <span class="string">&quot;vkCreateImageView&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateImageView),
-            <span class="string">&quot;vkDestroyImageView&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroyImageView),
-            <span class="string">&quot;vkCreateShaderModule&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateShaderModule),
-            <span class="string">&quot;vkDestroyShaderModule&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroyShaderModule),
-            <span class="string">&quot;vkCreatePipelineCache&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreatePipelineCache),
-            <span class="string">&quot;vkDestroyPipelineCache&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroyPipelineCache),
-            <span class="string">&quot;vkGetPipelineCacheData&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetPipelineCacheData),
-            <span class="string">&quot;vkMergePipelineCaches&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::MergePipelineCaches),
-            <span class="string">&quot;vkCreateGraphicsPipelines&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateGraphicsPipelines),
-            <span class="string">&quot;vkCreateComputePipelines&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateComputePipelines),
-            <span class="string">&quot;vkDestroyPipeline&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroyPipeline),
-            <span class="string">&quot;vkCreatePipelineLayout&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreatePipelineLayout),
-            <span class="string">&quot;vkDestroyPipelineLayout&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroyPipelineLayout),
-            <span class="string">&quot;vkCreateSampler&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateSampler),
-            <span class="string">&quot;vkDestroySampler&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroySampler),
-            <span class="string">&quot;vkCreateDescriptorSetLayout&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateDescriptorSetLayout),
-            <span class="string">&quot;vkDestroyDescriptorSetLayout&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroyDescriptorSetLayout),
-            <span class="string">&quot;vkCreateDescriptorPool&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateDescriptorPool),
-            <span class="string">&quot;vkDestroyDescriptorPool&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroyDescriptorPool),
-            <span class="string">&quot;vkResetDescriptorPool&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::ResetDescriptorPool),
-            <span class="string">&quot;vkAllocateDescriptorSets&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::AllocateDescriptorSets),
-            <span class="string">&quot;vkFreeDescriptorSets&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::FreeDescriptorSets),
-            <span class="string">&quot;vkUpdateDescriptorSets&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::UpdateDescriptorSets),
-            <span class="string">&quot;vkCreateFramebuffer&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateFramebuffer),
-            <span class="string">&quot;vkDestroyFramebuffer&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroyFramebuffer),
-            <span class="string">&quot;vkCreateRenderPass&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateRenderPass),
-            <span class="string">&quot;vkDestroyRenderPass&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroyRenderPass),
-            <span class="string">&quot;vkGetRenderAreaGranularity&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetRenderAreaGranularity),
-            <span class="string">&quot;vkCreateCommandPool&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateCommandPool),
-            <span class="string">&quot;vkDestroyCommandPool&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroyCommandPool),
-            <span class="string">&quot;vkResetCommandPool&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::ResetCommandPool),
-            <span class="string">&quot;vkAllocateCommandBuffers&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::AllocateCommandBuffers),
-            <span class="string">&quot;vkFreeCommandBuffers&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::FreeCommandBuffers),
-            <span class="string">&quot;vkBeginCommandBuffer&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::BeginCommandBuffer),
-            <span class="string">&quot;vkEndCommandBuffer&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::EndCommandBuffer),
-            <span class="string">&quot;vkResetCommandBuffer&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::ResetCommandBuffer),
-            <span class="string">&quot;vkCmdBindPipeline&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdBindPipeline),
-            <span class="string">&quot;vkCmdSetViewport&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetViewport),
-            <span class="string">&quot;vkCmdSetScissor&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetScissor),
-            <span class="string">&quot;vkCmdSetLineWidth&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetLineWidth),
-            <span class="string">&quot;vkCmdSetDepthBias&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetDepthBias),
-            <span class="string">&quot;vkCmdSetBlendConstants&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetBlendConstants),
-            <span class="string">&quot;vkCmdSetDepthBounds&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetDepthBounds),
-            <span class="string">&quot;vkCmdSetStencilCompareMask&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetStencilCompareMask),
-            <span class="string">&quot;vkCmdSetStencilWriteMask&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetStencilWriteMask),
-            <span class="string">&quot;vkCmdSetStencilReference&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetStencilReference),
-            <span class="string">&quot;vkCmdBindDescriptorSets&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdBindDescriptorSets),
-            <span class="string">&quot;vkCmdBindIndexBuffer&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdBindIndexBuffer),
-            <span class="string">&quot;vkCmdBindVertexBuffers&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdBindVertexBuffers),
-            <span class="string">&quot;vkCmdDraw&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdDraw),
-            <span class="string">&quot;vkCmdDrawIndexed&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdDrawIndexed),
-            <span class="string">&quot;vkCmdDrawIndirect&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdDrawIndirect),
-            <span class="string">&quot;vkCmdDrawIndexedIndirect&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdDrawIndexedIndirect),
-            <span class="string">&quot;vkCmdDispatch&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdDispatch),
-            <span class="string">&quot;vkCmdDispatchIndirect&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdDispatchIndirect),
-            <span class="string">&quot;vkCmdCopyBuffer&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdCopyBuffer),
-            <span class="string">&quot;vkCmdCopyImage&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdCopyImage),
-            <span class="string">&quot;vkCmdBlitImage&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdBlitImage),
-            <span class="string">&quot;vkCmdCopyBufferToImage&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdCopyBufferToImage),
-            <span class="string">&quot;vkCmdCopyImageToBuffer&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdCopyImageToBuffer),
-            <span class="string">&quot;vkCmdUpdateBuffer&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdUpdateBuffer),
-            <span class="string">&quot;vkCmdFillBuffer&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdFillBuffer),
-            <span class="string">&quot;vkCmdClearColorImage&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdClearColorImage),
-            <span class="string">&quot;vkCmdClearDepthStencilImage&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdClearDepthStencilImage),
-            <span class="string">&quot;vkCmdClearAttachments&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdClearAttachments),
-            <span class="string">&quot;vkCmdResolveImage&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdResolveImage),
-            <span class="string">&quot;vkCmdSetEvent&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetEvent),
-            <span class="string">&quot;vkCmdResetEvent&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdResetEvent),
-            <span class="string">&quot;vkCmdWaitEvents&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdWaitEvents),
-            <span class="string">&quot;vkCmdPipelineBarrier&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdPipelineBarrier),
-            <span class="string">&quot;vkCmdBeginQuery&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdBeginQuery),
-            <span class="string">&quot;vkCmdEndQuery&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdEndQuery),
-            <span class="string">&quot;vkCmdResetQueryPool&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdResetQueryPool),
-            <span class="string">&quot;vkCmdWriteTimestamp&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdWriteTimestamp),
-            <span class="string">&quot;vkCmdCopyQueryPoolResults&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdCopyQueryPoolResults),
-            <span class="string">&quot;vkCmdPushConstants&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdPushConstants),
-            <span class="string">&quot;vkCmdBeginRenderPass&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdBeginRenderPass),
-            <span class="string">&quot;vkCmdNextSubpass&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdNextSubpass),
-            <span class="string">&quot;vkCmdEndRenderPass&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdEndRenderPass),
-            <span class="string">&quot;vkCmdExecuteCommands&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdExecuteCommands),
-            <span class="string">&quot;vkBindBufferMemory2&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::BindBufferMemory2),
-            <span class="string">&quot;vkBindImageMemory2&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::BindImageMemory2),
-            <span class="string">&quot;vkGetDeviceGroupPeerMemoryFeatures&quot; </span>=&gt; {
+            <span class="string">"vkQueueBindSparse" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::QueueBindSparse),
+            <span class="string">"vkCreateFence" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateFence),
+            <span class="string">"vkDestroyFence" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroyFence),
+            <span class="string">"vkResetFences" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::ResetFences),
+            <span class="string">"vkGetFenceStatus" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetFenceStatus),
+            <span class="string">"vkWaitForFences" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::WaitForFences),
+            <span class="string">"vkCreateSemaphore" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateSemaphore),
+            <span class="string">"vkDestroySemaphore" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroySemaphore),
+            <span class="string">"vkCreateEvent" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateEvent),
+            <span class="string">"vkDestroyEvent" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroyEvent),
+            <span class="string">"vkGetEventStatus" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetEventStatus),
+            <span class="string">"vkSetEvent" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::SetEvent),
+            <span class="string">"vkResetEvent" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::ResetEvent),
+            <span class="string">"vkCreateQueryPool" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateQueryPool),
+            <span class="string">"vkDestroyQueryPool" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroyQueryPool),
+            <span class="string">"vkGetQueryPoolResults" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetQueryPoolResults),
+            <span class="string">"vkCreateBuffer" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateBuffer),
+            <span class="string">"vkDestroyBuffer" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroyBuffer),
+            <span class="string">"vkCreateBufferView" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateBufferView),
+            <span class="string">"vkDestroyBufferView" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroyBufferView),
+            <span class="string">"vkCreateImage" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateImage),
+            <span class="string">"vkDestroyImage" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroyImage),
+            <span class="string">"vkGetImageSubresourceLayout" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetImageSubresourceLayout),
+            <span class="string">"vkCreateImageView" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateImageView),
+            <span class="string">"vkDestroyImageView" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroyImageView),
+            <span class="string">"vkCreateShaderModule" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateShaderModule),
+            <span class="string">"vkDestroyShaderModule" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroyShaderModule),
+            <span class="string">"vkCreatePipelineCache" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreatePipelineCache),
+            <span class="string">"vkDestroyPipelineCache" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroyPipelineCache),
+            <span class="string">"vkGetPipelineCacheData" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetPipelineCacheData),
+            <span class="string">"vkMergePipelineCaches" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::MergePipelineCaches),
+            <span class="string">"vkCreateGraphicsPipelines" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateGraphicsPipelines),
+            <span class="string">"vkCreateComputePipelines" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateComputePipelines),
+            <span class="string">"vkDestroyPipeline" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroyPipeline),
+            <span class="string">"vkCreatePipelineLayout" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreatePipelineLayout),
+            <span class="string">"vkDestroyPipelineLayout" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroyPipelineLayout),
+            <span class="string">"vkCreateSampler" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateSampler),
+            <span class="string">"vkDestroySampler" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroySampler),
+            <span class="string">"vkCreateDescriptorSetLayout" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateDescriptorSetLayout),
+            <span class="string">"vkDestroyDescriptorSetLayout" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroyDescriptorSetLayout),
+            <span class="string">"vkCreateDescriptorPool" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateDescriptorPool),
+            <span class="string">"vkDestroyDescriptorPool" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroyDescriptorPool),
+            <span class="string">"vkResetDescriptorPool" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::ResetDescriptorPool),
+            <span class="string">"vkAllocateDescriptorSets" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::AllocateDescriptorSets),
+            <span class="string">"vkFreeDescriptorSets" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::FreeDescriptorSets),
+            <span class="string">"vkUpdateDescriptorSets" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::UpdateDescriptorSets),
+            <span class="string">"vkCreateFramebuffer" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateFramebuffer),
+            <span class="string">"vkDestroyFramebuffer" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroyFramebuffer),
+            <span class="string">"vkCreateRenderPass" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateRenderPass),
+            <span class="string">"vkDestroyRenderPass" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroyRenderPass),
+            <span class="string">"vkGetRenderAreaGranularity" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetRenderAreaGranularity),
+            <span class="string">"vkCreateCommandPool" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateCommandPool),
+            <span class="string">"vkDestroyCommandPool" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroyCommandPool),
+            <span class="string">"vkResetCommandPool" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::ResetCommandPool),
+            <span class="string">"vkAllocateCommandBuffers" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::AllocateCommandBuffers),
+            <span class="string">"vkFreeCommandBuffers" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::FreeCommandBuffers),
+            <span class="string">"vkBeginCommandBuffer" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::BeginCommandBuffer),
+            <span class="string">"vkEndCommandBuffer" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::EndCommandBuffer),
+            <span class="string">"vkResetCommandBuffer" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::ResetCommandBuffer),
+            <span class="string">"vkCmdBindPipeline" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdBindPipeline),
+            <span class="string">"vkCmdSetViewport" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetViewport),
+            <span class="string">"vkCmdSetScissor" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetScissor),
+            <span class="string">"vkCmdSetLineWidth" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetLineWidth),
+            <span class="string">"vkCmdSetDepthBias" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetDepthBias),
+            <span class="string">"vkCmdSetBlendConstants" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetBlendConstants),
+            <span class="string">"vkCmdSetDepthBounds" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetDepthBounds),
+            <span class="string">"vkCmdSetStencilCompareMask" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetStencilCompareMask),
+            <span class="string">"vkCmdSetStencilWriteMask" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetStencilWriteMask),
+            <span class="string">"vkCmdSetStencilReference" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetStencilReference),
+            <span class="string">"vkCmdBindDescriptorSets" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdBindDescriptorSets),
+            <span class="string">"vkCmdBindIndexBuffer" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdBindIndexBuffer),
+            <span class="string">"vkCmdBindVertexBuffers" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdBindVertexBuffers),
+            <span class="string">"vkCmdDraw" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdDraw),
+            <span class="string">"vkCmdDrawIndexed" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdDrawIndexed),
+            <span class="string">"vkCmdDrawIndirect" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdDrawIndirect),
+            <span class="string">"vkCmdDrawIndexedIndirect" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdDrawIndexedIndirect),
+            <span class="string">"vkCmdDispatch" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdDispatch),
+            <span class="string">"vkCmdDispatchIndirect" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdDispatchIndirect),
+            <span class="string">"vkCmdCopyBuffer" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdCopyBuffer),
+            <span class="string">"vkCmdCopyImage" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdCopyImage),
+            <span class="string">"vkCmdBlitImage" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdBlitImage),
+            <span class="string">"vkCmdCopyBufferToImage" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdCopyBufferToImage),
+            <span class="string">"vkCmdCopyImageToBuffer" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdCopyImageToBuffer),
+            <span class="string">"vkCmdUpdateBuffer" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdUpdateBuffer),
+            <span class="string">"vkCmdFillBuffer" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdFillBuffer),
+            <span class="string">"vkCmdClearColorImage" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdClearColorImage),
+            <span class="string">"vkCmdClearDepthStencilImage" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdClearDepthStencilImage),
+            <span class="string">"vkCmdClearAttachments" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdClearAttachments),
+            <span class="string">"vkCmdResolveImage" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdResolveImage),
+            <span class="string">"vkCmdSetEvent" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetEvent),
+            <span class="string">"vkCmdResetEvent" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdResetEvent),
+            <span class="string">"vkCmdWaitEvents" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdWaitEvents),
+            <span class="string">"vkCmdPipelineBarrier" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdPipelineBarrier),
+            <span class="string">"vkCmdBeginQuery" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdBeginQuery),
+            <span class="string">"vkCmdEndQuery" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdEndQuery),
+            <span class="string">"vkCmdResetQueryPool" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdResetQueryPool),
+            <span class="string">"vkCmdWriteTimestamp" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdWriteTimestamp),
+            <span class="string">"vkCmdCopyQueryPoolResults" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdCopyQueryPoolResults),
+            <span class="string">"vkCmdPushConstants" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdPushConstants),
+            <span class="string">"vkCmdBeginRenderPass" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdBeginRenderPass),
+            <span class="string">"vkCmdNextSubpass" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdNextSubpass),
+            <span class="string">"vkCmdEndRenderPass" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdEndRenderPass),
+            <span class="string">"vkCmdExecuteCommands" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdExecuteCommands),
+            <span class="string">"vkBindBufferMemory2" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::BindBufferMemory2),
+            <span class="string">"vkBindImageMemory2" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::BindImageMemory2),
+            <span class="string">"vkGetDeviceGroupPeerMemoryFeatures" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetDeviceGroupPeerMemoryFeatures)
             }
-            <span class="string">&quot;vkCmdSetDeviceMask&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetDeviceMask),
-            <span class="string">&quot;vkCmdDispatchBase&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdDispatchBase),
-            <span class="string">&quot;vkGetImageMemoryRequirements2&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetImageMemoryRequirements2),
-            <span class="string">&quot;vkGetBufferMemoryRequirements2&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetBufferMemoryRequirements2),
-            <span class="string">&quot;vkGetImageSparseMemoryRequirements2&quot; </span>=&gt; {
+            <span class="string">"vkCmdSetDeviceMask" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetDeviceMask),
+            <span class="string">"vkCmdDispatchBase" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdDispatchBase),
+            <span class="string">"vkGetImageMemoryRequirements2" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetImageMemoryRequirements2),
+            <span class="string">"vkGetBufferMemoryRequirements2" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetBufferMemoryRequirements2),
+            <span class="string">"vkGetImageSparseMemoryRequirements2" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetImageSparseMemoryRequirements2)
             }
-            <span class="string">&quot;vkTrimCommandPool&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::TrimCommandPool),
-            <span class="string">&quot;vkGetDeviceQueue2&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetDeviceQueue2),
-            <span class="string">&quot;vkCreateSamplerYcbcrConversion&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateSamplerYcbcrConversion),
-            <span class="string">&quot;vkDestroySamplerYcbcrConversion&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroySamplerYcbcrConversion),
-            <span class="string">&quot;vkCreateDescriptorUpdateTemplate&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateDescriptorUpdateTemplate),
-            <span class="string">&quot;vkDestroyDescriptorUpdateTemplate&quot; </span>=&gt; {
+            <span class="string">"vkTrimCommandPool" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::TrimCommandPool),
+            <span class="string">"vkGetDeviceQueue2" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetDeviceQueue2),
+            <span class="string">"vkCreateSamplerYcbcrConversion" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateSamplerYcbcrConversion),
+            <span class="string">"vkDestroySamplerYcbcrConversion" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroySamplerYcbcrConversion),
+            <span class="string">"vkCreateDescriptorUpdateTemplate" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateDescriptorUpdateTemplate),
+            <span class="string">"vkDestroyDescriptorUpdateTemplate" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::DestroyDescriptorUpdateTemplate)
             }
-            <span class="string">&quot;vkUpdateDescriptorSetWithTemplate&quot; </span>=&gt; {
+            <span class="string">"vkUpdateDescriptorSetWithTemplate" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::UpdateDescriptorSetWithTemplate)
             }
-            <span class="string">&quot;vkGetDescriptorSetLayoutSupport&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetDescriptorSetLayoutSupport),
-            <span class="string">&quot;vkCmdDrawIndirectCount&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdDrawIndirectCount),
-            <span class="string">&quot;vkCmdDrawIndexedIndirectCount&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdDrawIndexedIndirectCount),
-            <span class="string">&quot;vkCreateRenderPass2&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateRenderPass2),
-            <span class="string">&quot;vkCmdBeginRenderPass2&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdBeginRenderPass2),
-            <span class="string">&quot;vkCmdNextSubpass2&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdNextSubpass2),
-            <span class="string">&quot;vkCmdEndRenderPass2&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdEndRenderPass2),
-            <span class="string">&quot;vkResetQueryPool&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::ResetQueryPool),
-            <span class="string">&quot;vkGetSemaphoreCounterValue&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetSemaphoreCounterValue),
-            <span class="string">&quot;vkWaitSemaphores&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::WaitSemaphores),
-            <span class="string">&quot;vkSignalSemaphore&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::SignalSemaphore),
-            <span class="string">&quot;vkGetBufferDeviceAddress&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetBufferDeviceAddress),
-            <span class="string">&quot;vkGetBufferOpaqueCaptureAddress&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetBufferOpaqueCaptureAddress),
-            <span class="string">&quot;vkGetDeviceMemoryOpaqueCaptureAddress&quot; </span>=&gt; {
+            <span class="string">"vkGetDescriptorSetLayoutSupport" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetDescriptorSetLayoutSupport),
+            <span class="string">"vkCmdDrawIndirectCount" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdDrawIndirectCount),
+            <span class="string">"vkCmdDrawIndexedIndirectCount" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdDrawIndexedIndirectCount),
+            <span class="string">"vkCreateRenderPass2" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateRenderPass2),
+            <span class="string">"vkCmdBeginRenderPass2" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdBeginRenderPass2),
+            <span class="string">"vkCmdNextSubpass2" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdNextSubpass2),
+            <span class="string">"vkCmdEndRenderPass2" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdEndRenderPass2),
+            <span class="string">"vkResetQueryPool" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::ResetQueryPool),
+            <span class="string">"vkGetSemaphoreCounterValue" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetSemaphoreCounterValue),
+            <span class="string">"vkWaitSemaphores" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::WaitSemaphores),
+            <span class="string">"vkSignalSemaphore" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::SignalSemaphore),
+            <span class="string">"vkGetBufferDeviceAddress" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetBufferDeviceAddress),
+            <span class="string">"vkGetBufferOpaqueCaptureAddress" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetBufferOpaqueCaptureAddress),
+            <span class="string">"vkGetDeviceMemoryOpaqueCaptureAddress" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetDeviceMemoryOpaqueCaptureAddress)
             }
-            <span class="string">&quot;vkCreatePrivateDataSlot&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreatePrivateDataSlot),
-            <span class="string">&quot;vkDestroyPrivateDataSlot&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroyPrivateDataSlot),
-            <span class="string">&quot;vkSetPrivateData&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::SetPrivateData),
-            <span class="string">&quot;vkGetPrivateData&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetPrivateData),
-            <span class="string">&quot;vkCmdSetEvent2&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetEvent2),
-            <span class="string">&quot;vkCmdResetEvent2&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdResetEvent2),
-            <span class="string">&quot;vkCmdWaitEvents2&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdWaitEvents2),
-            <span class="string">&quot;vkCmdPipelineBarrier2&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdPipelineBarrier2),
-            <span class="string">&quot;vkCmdWriteTimestamp2&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdWriteTimestamp2),
-            <span class="string">&quot;vkQueueSubmit2&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::QueueSubmit2),
-            <span class="string">&quot;vkCmdCopyBuffer2&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdCopyBuffer2),
-            <span class="string">&quot;vkCmdCopyImage2&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdCopyImage2),
-            <span class="string">&quot;vkCmdCopyBufferToImage2&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdCopyBufferToImage2),
-            <span class="string">&quot;vkCmdCopyImageToBuffer2&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdCopyImageToBuffer2),
-            <span class="string">&quot;vkCmdBlitImage2&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdBlitImage2),
-            <span class="string">&quot;vkCmdResolveImage2&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdResolveImage2),
-            <span class="string">&quot;vkCmdBeginRendering&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdBeginRendering),
-            <span class="string">&quot;vkCmdEndRendering&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdEndRendering),
-            <span class="string">&quot;vkCmdSetCullMode&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetCullMode),
-            <span class="string">&quot;vkCmdSetFrontFace&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetFrontFace),
-            <span class="string">&quot;vkCmdSetPrimitiveTopology&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetPrimitiveTopology),
-            <span class="string">&quot;vkCmdSetViewportWithCount&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetViewportWithCount),
-            <span class="string">&quot;vkCmdSetScissorWithCount&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetScissorWithCount),
-            <span class="string">&quot;vkCmdBindVertexBuffers2&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdBindVertexBuffers2),
-            <span class="string">&quot;vkCmdSetDepthTestEnable&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetDepthTestEnable),
-            <span class="string">&quot;vkCmdSetDepthWriteEnable&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetDepthWriteEnable),
-            <span class="string">&quot;vkCmdSetDepthCompareOp&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetDepthCompareOp),
-            <span class="string">&quot;vkCmdSetDepthBoundsTestEnable&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetDepthBoundsTestEnable),
-            <span class="string">&quot;vkCmdSetStencilTestEnable&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetStencilTestEnable),
-            <span class="string">&quot;vkCmdSetStencilOp&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetStencilOp),
-            <span class="string">&quot;vkCmdSetRasterizerDiscardEnable&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetRasterizerDiscardEnable),
-            <span class="string">&quot;vkCmdSetDepthBiasEnable&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetDepthBiasEnable),
-            <span class="string">&quot;vkCmdSetPrimitiveRestartEnable&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetPrimitiveRestartEnable),
-            <span class="string">&quot;vkGetDeviceBufferMemoryRequirements&quot; </span>=&gt; {
+            <span class="string">"vkCreatePrivateDataSlot" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreatePrivateDataSlot),
+            <span class="string">"vkDestroyPrivateDataSlot" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroyPrivateDataSlot),
+            <span class="string">"vkSetPrivateData" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::SetPrivateData),
+            <span class="string">"vkGetPrivateData" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetPrivateData),
+            <span class="string">"vkCmdSetEvent2" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetEvent2),
+            <span class="string">"vkCmdResetEvent2" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdResetEvent2),
+            <span class="string">"vkCmdWaitEvents2" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdWaitEvents2),
+            <span class="string">"vkCmdPipelineBarrier2" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdPipelineBarrier2),
+            <span class="string">"vkCmdWriteTimestamp2" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdWriteTimestamp2),
+            <span class="string">"vkQueueSubmit2" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::QueueSubmit2),
+            <span class="string">"vkCmdCopyBuffer2" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdCopyBuffer2),
+            <span class="string">"vkCmdCopyImage2" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdCopyImage2),
+            <span class="string">"vkCmdCopyBufferToImage2" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdCopyBufferToImage2),
+            <span class="string">"vkCmdCopyImageToBuffer2" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdCopyImageToBuffer2),
+            <span class="string">"vkCmdBlitImage2" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdBlitImage2),
+            <span class="string">"vkCmdResolveImage2" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdResolveImage2),
+            <span class="string">"vkCmdBeginRendering" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdBeginRendering),
+            <span class="string">"vkCmdEndRendering" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdEndRendering),
+            <span class="string">"vkCmdSetCullMode" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetCullMode),
+            <span class="string">"vkCmdSetFrontFace" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetFrontFace),
+            <span class="string">"vkCmdSetPrimitiveTopology" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetPrimitiveTopology),
+            <span class="string">"vkCmdSetViewportWithCount" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetViewportWithCount),
+            <span class="string">"vkCmdSetScissorWithCount" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetScissorWithCount),
+            <span class="string">"vkCmdBindVertexBuffers2" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdBindVertexBuffers2),
+            <span class="string">"vkCmdSetDepthTestEnable" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetDepthTestEnable),
+            <span class="string">"vkCmdSetDepthWriteEnable" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetDepthWriteEnable),
+            <span class="string">"vkCmdSetDepthCompareOp" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetDepthCompareOp),
+            <span class="string">"vkCmdSetDepthBoundsTestEnable" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetDepthBoundsTestEnable),
+            <span class="string">"vkCmdSetStencilTestEnable" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetStencilTestEnable),
+            <span class="string">"vkCmdSetStencilOp" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetStencilOp),
+            <span class="string">"vkCmdSetRasterizerDiscardEnable" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetRasterizerDiscardEnable),
+            <span class="string">"vkCmdSetDepthBiasEnable" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetDepthBiasEnable),
+            <span class="string">"vkCmdSetPrimitiveRestartEnable" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetPrimitiveRestartEnable),
+            <span class="string">"vkGetDeviceBufferMemoryRequirements" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetDeviceBufferMemoryRequirements)
             }
-            <span class="string">&quot;vkGetDeviceImageMemoryRequirements&quot; </span>=&gt; {
+            <span class="string">"vkGetDeviceImageMemoryRequirements" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetDeviceImageMemoryRequirements)
             }
-            <span class="string">&quot;vkGetDeviceImageSparseMemoryRequirements&quot; </span>=&gt; {
+            <span class="string">"vkGetDeviceImageSparseMemoryRequirements" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetDeviceImageSparseMemoryRequirements)
             }
-            <span class="string">&quot;vkCreateSwapchainKHR&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateSwapchainKhr),
-            <span class="string">&quot;vkDestroySwapchainKHR&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroySwapchainKhr),
-            <span class="string">&quot;vkGetSwapchainImagesKHR&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetSwapchainImagesKhr),
-            <span class="string">&quot;vkAcquireNextImageKHR&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::AcquireNextImageKhr),
-            <span class="string">&quot;vkQueuePresentKHR&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::QueuePresentKhr),
-            <span class="string">&quot;vkGetDeviceGroupPresentCapabilitiesKHR&quot; </span>=&gt; {
+            <span class="string">"vkCreateSwapchainKHR" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateSwapchainKhr),
+            <span class="string">"vkDestroySwapchainKHR" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroySwapchainKhr),
+            <span class="string">"vkGetSwapchainImagesKHR" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetSwapchainImagesKhr),
+            <span class="string">"vkAcquireNextImageKHR" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::AcquireNextImageKhr),
+            <span class="string">"vkQueuePresentKHR" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::QueuePresentKhr),
+            <span class="string">"vkGetDeviceGroupPresentCapabilitiesKHR" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetDeviceGroupPresentCapabilitiesKhr)
             }
-            <span class="string">&quot;vkGetDeviceGroupSurfacePresentModesKHR&quot; </span>=&gt; {
+            <span class="string">"vkGetDeviceGroupSurfacePresentModesKHR" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetDeviceGroupSurfacePresentModesKhr)
             }
-            <span class="string">&quot;vkAcquireNextImage2KHR&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::AcquireNextImage2Khr),
-            <span class="string">&quot;vkCreateSharedSwapchainsKHR&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateSharedSwapchainsKhr),
-            <span class="string">&quot;vkCreateVideoSessionKHR&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateVideoSessionKhr),
-            <span class="string">&quot;vkDestroyVideoSessionKHR&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroyVideoSessionKhr),
-            <span class="string">&quot;vkGetVideoSessionMemoryRequirementsKHR&quot; </span>=&gt; {
+            <span class="string">"vkAcquireNextImage2KHR" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::AcquireNextImage2Khr),
+            <span class="string">"vkCreateSharedSwapchainsKHR" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateSharedSwapchainsKhr),
+            <span class="string">"vkCreateVideoSessionKHR" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateVideoSessionKhr),
+            <span class="string">"vkDestroyVideoSessionKHR" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroyVideoSessionKhr),
+            <span class="string">"vkGetVideoSessionMemoryRequirementsKHR" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetVideoSessionMemoryRequirementsKhr)
             }
-            <span class="string">&quot;vkBindVideoSessionMemoryKHR&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::BindVideoSessionMemoryKhr),
-            <span class="string">&quot;vkCreateVideoSessionParametersKHR&quot; </span>=&gt; {
+            <span class="string">"vkBindVideoSessionMemoryKHR" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::BindVideoSessionMemoryKhr),
+            <span class="string">"vkCreateVideoSessionParametersKHR" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::CreateVideoSessionParametersKhr)
             }
-            <span class="string">&quot;vkUpdateVideoSessionParametersKHR&quot; </span>=&gt; {
+            <span class="string">"vkUpdateVideoSessionParametersKHR" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::UpdateVideoSessionParametersKhr)
             }
-            <span class="string">&quot;vkDestroyVideoSessionParametersKHR&quot; </span>=&gt; {
+            <span class="string">"vkDestroyVideoSessionParametersKHR" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::DestroyVideoSessionParametersKhr)
             }
-            <span class="string">&quot;vkCmdBeginVideoCodingKHR&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdBeginVideoCodingKhr),
-            <span class="string">&quot;vkCmdEndVideoCodingKHR&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdEndVideoCodingKhr),
-            <span class="string">&quot;vkCmdControlVideoCodingKHR&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdControlVideoCodingKhr),
-            <span class="string">&quot;vkCmdDecodeVideoKHR&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdDecodeVideoKhr),
-            <span class="string">&quot;vkGetMemoryWin32HandleKHR&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetMemoryWin32HandleKhr),
-            <span class="string">&quot;vkGetMemoryWin32HandlePropertiesKHR&quot; </span>=&gt; {
+            <span class="string">"vkCmdBeginVideoCodingKHR" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdBeginVideoCodingKhr),
+            <span class="string">"vkCmdEndVideoCodingKHR" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdEndVideoCodingKhr),
+            <span class="string">"vkCmdControlVideoCodingKHR" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdControlVideoCodingKhr),
+            <span class="string">"vkCmdDecodeVideoKHR" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdDecodeVideoKhr),
+            <span class="string">"vkGetMemoryWin32HandleKHR" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetMemoryWin32HandleKhr),
+            <span class="string">"vkGetMemoryWin32HandlePropertiesKHR" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetMemoryWin32HandlePropertiesKhr)
             }
-            <span class="string">&quot;vkGetMemoryFdKHR&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetMemoryFdKhr),
-            <span class="string">&quot;vkGetMemoryFdPropertiesKHR&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetMemoryFdPropertiesKhr),
-            <span class="string">&quot;vkImportSemaphoreWin32HandleKHR&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::ImportSemaphoreWin32HandleKhr),
-            <span class="string">&quot;vkGetSemaphoreWin32HandleKHR&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetSemaphoreWin32HandleKhr),
-            <span class="string">&quot;vkImportSemaphoreFdKHR&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::ImportSemaphoreFdKhr),
-            <span class="string">&quot;vkGetSemaphoreFdKHR&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetSemaphoreFdKhr),
-            <span class="string">&quot;vkCmdPushDescriptorSetKHR&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdPushDescriptorSetKhr),
-            <span class="string">&quot;vkCmdPushDescriptorSetWithTemplateKHR&quot; </span>=&gt; {
+            <span class="string">"vkGetMemoryFdKHR" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetMemoryFdKhr),
+            <span class="string">"vkGetMemoryFdPropertiesKHR" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetMemoryFdPropertiesKhr),
+            <span class="string">"vkImportSemaphoreWin32HandleKHR" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::ImportSemaphoreWin32HandleKhr),
+            <span class="string">"vkGetSemaphoreWin32HandleKHR" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetSemaphoreWin32HandleKhr),
+            <span class="string">"vkImportSemaphoreFdKHR" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::ImportSemaphoreFdKhr),
+            <span class="string">"vkGetSemaphoreFdKHR" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetSemaphoreFdKhr),
+            <span class="string">"vkCmdPushDescriptorSetKHR" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdPushDescriptorSetKhr),
+            <span class="string">"vkCmdPushDescriptorSetWithTemplateKHR" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::CmdPushDescriptorSetWithTemplateKhr)
             }
-            <span class="string">&quot;vkGetSwapchainStatusKHR&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetSwapchainStatusKhr),
-            <span class="string">&quot;vkImportFenceWin32HandleKHR&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::ImportFenceWin32HandleKhr),
-            <span class="string">&quot;vkGetFenceWin32HandleKHR&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetFenceWin32HandleKhr),
-            <span class="string">&quot;vkImportFenceFdKHR&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::ImportFenceFdKhr),
-            <span class="string">&quot;vkGetFenceFdKHR&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetFenceFdKhr),
-            <span class="string">&quot;vkAcquireProfilingLockKHR&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::AcquireProfilingLockKhr),
-            <span class="string">&quot;vkReleaseProfilingLockKHR&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::ReleaseProfilingLockKhr),
-            <span class="string">&quot;vkCmdSetFragmentShadingRateKHR&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetFragmentShadingRateKhr),
-            <span class="string">&quot;vkWaitForPresentKHR&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::WaitForPresentKhr),
-            <span class="string">&quot;vkCreateDeferredOperationKHR&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateDeferredOperationKhr),
-            <span class="string">&quot;vkDestroyDeferredOperationKHR&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroyDeferredOperationKhr),
-            <span class="string">&quot;vkGetDeferredOperationMaxConcurrencyKHR&quot; </span>=&gt; {
+            <span class="string">"vkGetSwapchainStatusKHR" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetSwapchainStatusKhr),
+            <span class="string">"vkImportFenceWin32HandleKHR" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::ImportFenceWin32HandleKhr),
+            <span class="string">"vkGetFenceWin32HandleKHR" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetFenceWin32HandleKhr),
+            <span class="string">"vkImportFenceFdKHR" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::ImportFenceFdKhr),
+            <span class="string">"vkGetFenceFdKHR" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetFenceFdKhr),
+            <span class="string">"vkAcquireProfilingLockKHR" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::AcquireProfilingLockKhr),
+            <span class="string">"vkReleaseProfilingLockKHR" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::ReleaseProfilingLockKhr),
+            <span class="string">"vkCmdSetFragmentShadingRateKHR" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetFragmentShadingRateKhr),
+            <span class="string">"vkWaitForPresentKHR" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::WaitForPresentKhr),
+            <span class="string">"vkCreateDeferredOperationKHR" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateDeferredOperationKhr),
+            <span class="string">"vkDestroyDeferredOperationKHR" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroyDeferredOperationKhr),
+            <span class="string">"vkGetDeferredOperationMaxConcurrencyKHR" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetDeferredOperationMaxConcurrencyKhr)
             }
-            <span class="string">&quot;vkGetDeferredOperationResultKHR&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetDeferredOperationResultKhr),
-            <span class="string">&quot;vkDeferredOperationJoinKHR&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DeferredOperationJoinKhr),
-            <span class="string">&quot;vkGetPipelineExecutablePropertiesKHR&quot; </span>=&gt; {
+            <span class="string">"vkGetDeferredOperationResultKHR" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetDeferredOperationResultKhr),
+            <span class="string">"vkDeferredOperationJoinKHR" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DeferredOperationJoinKhr),
+            <span class="string">"vkGetPipelineExecutablePropertiesKHR" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetPipelineExecutablePropertiesKhr)
             }
-            <span class="string">&quot;vkGetPipelineExecutableStatisticsKHR&quot; </span>=&gt; {
+            <span class="string">"vkGetPipelineExecutableStatisticsKHR" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetPipelineExecutableStatisticsKhr)
             }
-            <span class="string">&quot;vkGetPipelineExecutableInternalRepresentationsKHR&quot; </span>=&gt; {
+            <span class="string">"vkGetPipelineExecutableInternalRepresentationsKHR" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetPipelineExecutableInternalRepresentationsKhr)
             }
-            <span class="string">&quot;vkCmdEncodeVideoKHR&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdEncodeVideoKhr),
-            <span class="string">&quot;vkCmdWriteBufferMarker2AMD&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdWriteBufferMarker2Amd),
-            <span class="string">&quot;vkGetQueueCheckpointData2NV&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetQueueCheckpointData2Nv),
-            <span class="string">&quot;vkCmdTraceRaysIndirect2KHR&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdTraceRaysIndirect2Khr),
-            <span class="string">&quot;vkGetSwapchainGrallocUsageANDROID&quot; </span>=&gt; {
+            <span class="string">"vkCmdEncodeVideoKHR" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdEncodeVideoKhr),
+            <span class="string">"vkCmdWriteBufferMarker2AMD" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdWriteBufferMarker2Amd),
+            <span class="string">"vkGetQueueCheckpointData2NV" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetQueueCheckpointData2Nv),
+            <span class="string">"vkCmdTraceRaysIndirect2KHR" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdTraceRaysIndirect2Khr),
+            <span class="string">"vkGetSwapchainGrallocUsageANDROID" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetSwapchainGrallocUsageAndroid)
             }
-            <span class="string">&quot;vkAcquireImageANDROID&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::AcquireImageAndroid),
-            <span class="string">&quot;vkQueueSignalReleaseImageANDROID&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::QueueSignalReleaseImageAndroid),
-            <span class="string">&quot;vkGetSwapchainGrallocUsage2ANDROID&quot; </span>=&gt; {
+            <span class="string">"vkAcquireImageANDROID" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::AcquireImageAndroid),
+            <span class="string">"vkQueueSignalReleaseImageANDROID" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::QueueSignalReleaseImageAndroid),
+            <span class="string">"vkGetSwapchainGrallocUsage2ANDROID" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetSwapchainGrallocUsage2Android)
             }
-            <span class="string">&quot;vkDebugMarkerSetObjectTagEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DebugMarkerSetObjectTagExt),
-            <span class="string">&quot;vkDebugMarkerSetObjectNameEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DebugMarkerSetObjectNameExt),
-            <span class="string">&quot;vkCmdDebugMarkerBeginEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdDebugMarkerBeginExt),
-            <span class="string">&quot;vkCmdDebugMarkerEndEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdDebugMarkerEndExt),
-            <span class="string">&quot;vkCmdDebugMarkerInsertEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdDebugMarkerInsertExt),
-            <span class="string">&quot;vkCmdBindTransformFeedbackBuffersEXT&quot; </span>=&gt; {
+            <span class="string">"vkDebugMarkerSetObjectTagEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DebugMarkerSetObjectTagExt),
+            <span class="string">"vkDebugMarkerSetObjectNameEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DebugMarkerSetObjectNameExt),
+            <span class="string">"vkCmdDebugMarkerBeginEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdDebugMarkerBeginExt),
+            <span class="string">"vkCmdDebugMarkerEndEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdDebugMarkerEndExt),
+            <span class="string">"vkCmdDebugMarkerInsertEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdDebugMarkerInsertExt),
+            <span class="string">"vkCmdBindTransformFeedbackBuffersEXT" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::CmdBindTransformFeedbackBuffersExt)
             }
-            <span class="string">&quot;vkCmdBeginTransformFeedbackEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdBeginTransformFeedbackExt),
-            <span class="string">&quot;vkCmdEndTransformFeedbackEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdEndTransformFeedbackExt),
-            <span class="string">&quot;vkCmdBeginQueryIndexedEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdBeginQueryIndexedExt),
-            <span class="string">&quot;vkCmdEndQueryIndexedEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdEndQueryIndexedExt),
-            <span class="string">&quot;vkCmdDrawIndirectByteCountEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdDrawIndirectByteCountExt),
-            <span class="string">&quot;vkCreateCuModuleNVX&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateCuModuleNvx),
-            <span class="string">&quot;vkCreateCuFunctionNVX&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateCuFunctionNvx),
-            <span class="string">&quot;vkDestroyCuModuleNVX&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroyCuModuleNvx),
-            <span class="string">&quot;vkDestroyCuFunctionNVX&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroyCuFunctionNvx),
-            <span class="string">&quot;vkCmdCuLaunchKernelNVX&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdCuLaunchKernelNvx),
-            <span class="string">&quot;vkGetImageViewHandleNVX&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetImageViewHandleNvx),
-            <span class="string">&quot;vkGetImageViewAddressNVX&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetImageViewAddressNvx),
-            <span class="string">&quot;vkGetShaderInfoAMD&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetShaderInfoAmd),
-            <span class="string">&quot;vkGetMemoryWin32HandleNV&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetMemoryWin32HandleNv),
-            <span class="string">&quot;vkCmdBeginConditionalRenderingEXT&quot; </span>=&gt; {
+            <span class="string">"vkCmdBeginTransformFeedbackEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdBeginTransformFeedbackExt),
+            <span class="string">"vkCmdEndTransformFeedbackEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdEndTransformFeedbackExt),
+            <span class="string">"vkCmdBeginQueryIndexedEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdBeginQueryIndexedExt),
+            <span class="string">"vkCmdEndQueryIndexedEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdEndQueryIndexedExt),
+            <span class="string">"vkCmdDrawIndirectByteCountEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdDrawIndirectByteCountExt),
+            <span class="string">"vkCreateCuModuleNVX" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateCuModuleNvx),
+            <span class="string">"vkCreateCuFunctionNVX" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateCuFunctionNvx),
+            <span class="string">"vkDestroyCuModuleNVX" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroyCuModuleNvx),
+            <span class="string">"vkDestroyCuFunctionNVX" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroyCuFunctionNvx),
+            <span class="string">"vkCmdCuLaunchKernelNVX" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdCuLaunchKernelNvx),
+            <span class="string">"vkGetImageViewHandleNVX" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetImageViewHandleNvx),
+            <span class="string">"vkGetImageViewAddressNVX" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetImageViewAddressNvx),
+            <span class="string">"vkGetShaderInfoAMD" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetShaderInfoAmd),
+            <span class="string">"vkGetMemoryWin32HandleNV" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetMemoryWin32HandleNv),
+            <span class="string">"vkCmdBeginConditionalRenderingEXT" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::CmdBeginConditionalRenderingExt)
             }
-            <span class="string">&quot;vkCmdEndConditionalRenderingEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdEndConditionalRenderingExt),
-            <span class="string">&quot;vkCmdSetViewportWScalingNV&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetViewportWScalingNv),
-            <span class="string">&quot;vkDisplayPowerControlEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DisplayPowerControlExt),
-            <span class="string">&quot;vkRegisterDeviceEventEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::RegisterDeviceEventExt),
-            <span class="string">&quot;vkRegisterDisplayEventEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::RegisterDisplayEventExt),
-            <span class="string">&quot;vkGetSwapchainCounterEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetSwapchainCounterExt),
-            <span class="string">&quot;vkGetRefreshCycleDurationGOOGLE&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetRefreshCycleDurationGoogle),
-            <span class="string">&quot;vkGetPastPresentationTimingGOOGLE&quot; </span>=&gt; {
+            <span class="string">"vkCmdEndConditionalRenderingEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdEndConditionalRenderingExt),
+            <span class="string">"vkCmdSetViewportWScalingNV" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetViewportWScalingNv),
+            <span class="string">"vkDisplayPowerControlEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DisplayPowerControlExt),
+            <span class="string">"vkRegisterDeviceEventEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::RegisterDeviceEventExt),
+            <span class="string">"vkRegisterDisplayEventEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::RegisterDisplayEventExt),
+            <span class="string">"vkGetSwapchainCounterEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetSwapchainCounterExt),
+            <span class="string">"vkGetRefreshCycleDurationGOOGLE" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetRefreshCycleDurationGoogle),
+            <span class="string">"vkGetPastPresentationTimingGOOGLE" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetPastPresentationTimingGoogle)
             }
-            <span class="string">&quot;vkCmdSetDiscardRectangleEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetDiscardRectangleExt),
-            <span class="string">&quot;vkSetHdrMetadataEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::SetHdrMetadataExt),
-            <span class="string">&quot;vkSetDebugUtilsObjectNameEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::SetDebugUtilsObjectNameExt),
-            <span class="string">&quot;vkSetDebugUtilsObjectTagEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::SetDebugUtilsObjectTagExt),
-            <span class="string">&quot;vkQueueBeginDebugUtilsLabelEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::QueueBeginDebugUtilsLabelExt),
-            <span class="string">&quot;vkQueueEndDebugUtilsLabelEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::QueueEndDebugUtilsLabelExt),
-            <span class="string">&quot;vkQueueInsertDebugUtilsLabelEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::QueueInsertDebugUtilsLabelExt),
-            <span class="string">&quot;vkCmdBeginDebugUtilsLabelEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdBeginDebugUtilsLabelExt),
-            <span class="string">&quot;vkCmdEndDebugUtilsLabelEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdEndDebugUtilsLabelExt),
-            <span class="string">&quot;vkCmdInsertDebugUtilsLabelEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdInsertDebugUtilsLabelExt),
-            <span class="string">&quot;vkGetAndroidHardwareBufferPropertiesANDROID&quot; </span>=&gt; {
+            <span class="string">"vkCmdSetDiscardRectangleEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetDiscardRectangleExt),
+            <span class="string">"vkSetHdrMetadataEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::SetHdrMetadataExt),
+            <span class="string">"vkSetDebugUtilsObjectNameEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::SetDebugUtilsObjectNameExt),
+            <span class="string">"vkSetDebugUtilsObjectTagEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::SetDebugUtilsObjectTagExt),
+            <span class="string">"vkQueueBeginDebugUtilsLabelEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::QueueBeginDebugUtilsLabelExt),
+            <span class="string">"vkQueueEndDebugUtilsLabelEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::QueueEndDebugUtilsLabelExt),
+            <span class="string">"vkQueueInsertDebugUtilsLabelEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::QueueInsertDebugUtilsLabelExt),
+            <span class="string">"vkCmdBeginDebugUtilsLabelEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdBeginDebugUtilsLabelExt),
+            <span class="string">"vkCmdEndDebugUtilsLabelEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdEndDebugUtilsLabelExt),
+            <span class="string">"vkCmdInsertDebugUtilsLabelEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdInsertDebugUtilsLabelExt),
+            <span class="string">"vkGetAndroidHardwareBufferPropertiesANDROID" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetAndroidHardwareBufferPropertiesAndroid)
             }
-            <span class="string">&quot;vkGetMemoryAndroidHardwareBufferANDROID&quot; </span>=&gt; {
+            <span class="string">"vkGetMemoryAndroidHardwareBufferANDROID" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetMemoryAndroidHardwareBufferAndroid)
             }
-            <span class="string">&quot;vkCmdSetSampleLocationsEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetSampleLocationsExt),
-            <span class="string">&quot;vkGetImageDrmFormatModifierPropertiesEXT&quot; </span>=&gt; {
+            <span class="string">"vkCmdSetSampleLocationsEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetSampleLocationsExt),
+            <span class="string">"vkGetImageDrmFormatModifierPropertiesEXT" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetImageDrmFormatModifierPropertiesExt)
             }
-            <span class="string">&quot;vkCreateValidationCacheEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateValidationCacheExt),
-            <span class="string">&quot;vkDestroyValidationCacheEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroyValidationCacheExt),
-            <span class="string">&quot;vkMergeValidationCachesEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::MergeValidationCachesExt),
-            <span class="string">&quot;vkGetValidationCacheDataEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetValidationCacheDataExt),
-            <span class="string">&quot;vkCmdBindShadingRateImageNV&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdBindShadingRateImageNv),
-            <span class="string">&quot;vkCmdSetViewportShadingRatePaletteNV&quot; </span>=&gt; {
+            <span class="string">"vkCreateValidationCacheEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateValidationCacheExt),
+            <span class="string">"vkDestroyValidationCacheEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroyValidationCacheExt),
+            <span class="string">"vkMergeValidationCachesEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::MergeValidationCachesExt),
+            <span class="string">"vkGetValidationCacheDataEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetValidationCacheDataExt),
+            <span class="string">"vkCmdBindShadingRateImageNV" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdBindShadingRateImageNv),
+            <span class="string">"vkCmdSetViewportShadingRatePaletteNV" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetViewportShadingRatePaletteNv)
             }
-            <span class="string">&quot;vkCmdSetCoarseSampleOrderNV&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetCoarseSampleOrderNv),
-            <span class="string">&quot;vkCreateAccelerationStructureNV&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateAccelerationStructureNv),
-            <span class="string">&quot;vkDestroyAccelerationStructureNV&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroyAccelerationStructureNv),
-            <span class="string">&quot;vkGetAccelerationStructureMemoryRequirementsNV&quot; </span>=&gt; {
+            <span class="string">"vkCmdSetCoarseSampleOrderNV" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetCoarseSampleOrderNv),
+            <span class="string">"vkCreateAccelerationStructureNV" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateAccelerationStructureNv),
+            <span class="string">"vkDestroyAccelerationStructureNV" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroyAccelerationStructureNv),
+            <span class="string">"vkGetAccelerationStructureMemoryRequirementsNV" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetAccelerationStructureMemoryRequirementsNv)
             }
-            <span class="string">&quot;vkBindAccelerationStructureMemoryNV&quot; </span>=&gt; {
+            <span class="string">"vkBindAccelerationStructureMemoryNV" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::BindAccelerationStructureMemoryNv)
             }
-            <span class="string">&quot;vkCmdBuildAccelerationStructureNV&quot; </span>=&gt; {
+            <span class="string">"vkCmdBuildAccelerationStructureNV" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::CmdBuildAccelerationStructureNv)
             }
-            <span class="string">&quot;vkCmdCopyAccelerationStructureNV&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdCopyAccelerationStructureNv),
-            <span class="string">&quot;vkCmdTraceRaysNV&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdTraceRaysNv),
-            <span class="string">&quot;vkCreateRayTracingPipelinesNV&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateRayTracingPipelinesNv),
-            <span class="string">&quot;vkGetRayTracingShaderGroupHandlesKHR&quot; </span>=&gt; {
+            <span class="string">"vkCmdCopyAccelerationStructureNV" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdCopyAccelerationStructureNv),
+            <span class="string">"vkCmdTraceRaysNV" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdTraceRaysNv),
+            <span class="string">"vkCreateRayTracingPipelinesNV" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateRayTracingPipelinesNv),
+            <span class="string">"vkGetRayTracingShaderGroupHandlesKHR" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetRayTracingShaderGroupHandlesKhr)
             }
-            <span class="string">&quot;vkGetAccelerationStructureHandleNV&quot; </span>=&gt; {
+            <span class="string">"vkGetAccelerationStructureHandleNV" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetAccelerationStructureHandleNv)
             }
-            <span class="string">&quot;vkCmdWriteAccelerationStructuresPropertiesNV&quot; </span>=&gt; {
+            <span class="string">"vkCmdWriteAccelerationStructuresPropertiesNV" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::CmdWriteAccelerationStructuresPropertiesNv)
             }
-            <span class="string">&quot;vkCompileDeferredNV&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CompileDeferredNv),
-            <span class="string">&quot;vkGetMemoryHostPointerPropertiesEXT&quot; </span>=&gt; {
+            <span class="string">"vkCompileDeferredNV" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CompileDeferredNv),
+            <span class="string">"vkGetMemoryHostPointerPropertiesEXT" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetMemoryHostPointerPropertiesExt)
             }
-            <span class="string">&quot;vkCmdWriteBufferMarkerAMD&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdWriteBufferMarkerAmd),
-            <span class="string">&quot;vkGetCalibratedTimestampsEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetCalibratedTimestampsExt),
-            <span class="string">&quot;vkCmdDrawMeshTasksNV&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdDrawMeshTasksNv),
-            <span class="string">&quot;vkCmdDrawMeshTasksIndirectNV&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdDrawMeshTasksIndirectNv),
-            <span class="string">&quot;vkCmdDrawMeshTasksIndirectCountNV&quot; </span>=&gt; {
+            <span class="string">"vkCmdWriteBufferMarkerAMD" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdWriteBufferMarkerAmd),
+            <span class="string">"vkGetCalibratedTimestampsEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetCalibratedTimestampsExt),
+            <span class="string">"vkCmdDrawMeshTasksNV" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdDrawMeshTasksNv),
+            <span class="string">"vkCmdDrawMeshTasksIndirectNV" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdDrawMeshTasksIndirectNv),
+            <span class="string">"vkCmdDrawMeshTasksIndirectCountNV" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::CmdDrawMeshTasksIndirectCountNv)
             }
-            <span class="string">&quot;vkCmdSetExclusiveScissorNV&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetExclusiveScissorNv),
-            <span class="string">&quot;vkCmdSetCheckpointNV&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetCheckpointNv),
-            <span class="string">&quot;vkGetQueueCheckpointDataNV&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetQueueCheckpointDataNv),
-            <span class="string">&quot;vkInitializePerformanceApiINTEL&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::InitializePerformanceApiIntel),
-            <span class="string">&quot;vkUninitializePerformanceApiINTEL&quot; </span>=&gt; {
+            <span class="string">"vkCmdSetExclusiveScissorNV" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetExclusiveScissorNv),
+            <span class="string">"vkCmdSetCheckpointNV" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetCheckpointNv),
+            <span class="string">"vkGetQueueCheckpointDataNV" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetQueueCheckpointDataNv),
+            <span class="string">"vkInitializePerformanceApiINTEL" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::InitializePerformanceApiIntel),
+            <span class="string">"vkUninitializePerformanceApiINTEL" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::UninitializePerformanceApiIntel)
             }
-            <span class="string">&quot;vkCmdSetPerformanceMarkerINTEL&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetPerformanceMarkerIntel),
-            <span class="string">&quot;vkCmdSetPerformanceStreamMarkerINTEL&quot; </span>=&gt; {
+            <span class="string">"vkCmdSetPerformanceMarkerINTEL" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetPerformanceMarkerIntel),
+            <span class="string">"vkCmdSetPerformanceStreamMarkerINTEL" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetPerformanceStreamMarkerIntel)
             }
-            <span class="string">&quot;vkCmdSetPerformanceOverrideINTEL&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetPerformanceOverrideIntel),
-            <span class="string">&quot;vkAcquirePerformanceConfigurationINTEL&quot; </span>=&gt; {
+            <span class="string">"vkCmdSetPerformanceOverrideINTEL" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetPerformanceOverrideIntel),
+            <span class="string">"vkAcquirePerformanceConfigurationINTEL" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::AcquirePerformanceConfigurationIntel)
             }
-            <span class="string">&quot;vkReleasePerformanceConfigurationINTEL&quot; </span>=&gt; {
+            <span class="string">"vkReleasePerformanceConfigurationINTEL" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::ReleasePerformanceConfigurationIntel)
             }
-            <span class="string">&quot;vkQueueSetPerformanceConfigurationINTEL&quot; </span>=&gt; {
+            <span class="string">"vkQueueSetPerformanceConfigurationINTEL" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::QueueSetPerformanceConfigurationIntel)
             }
-            <span class="string">&quot;vkGetPerformanceParameterINTEL&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetPerformanceParameterIntel),
-            <span class="string">&quot;vkSetLocalDimmingAMD&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::SetLocalDimmingAmd),
-            <span class="string">&quot;vkAcquireFullScreenExclusiveModeEXT&quot; </span>=&gt; {
+            <span class="string">"vkGetPerformanceParameterINTEL" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetPerformanceParameterIntel),
+            <span class="string">"vkSetLocalDimmingAMD" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::SetLocalDimmingAmd),
+            <span class="string">"vkAcquireFullScreenExclusiveModeEXT" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::AcquireFullScreenExclusiveModeExt)
             }
-            <span class="string">&quot;vkReleaseFullScreenExclusiveModeEXT&quot; </span>=&gt; {
+            <span class="string">"vkReleaseFullScreenExclusiveModeEXT" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::ReleaseFullScreenExclusiveModeExt)
             }
-            <span class="string">&quot;vkGetDeviceGroupSurfacePresentModes2EXT&quot; </span>=&gt; {
+            <span class="string">"vkGetDeviceGroupSurfacePresentModes2EXT" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetDeviceGroupSurfacePresentModes2Ext)
             }
-            <span class="string">&quot;vkCmdSetLineStippleEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetLineStippleExt),
-            <span class="string">&quot;vkReleaseSwapchainImagesEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::ReleaseSwapchainImagesExt),
-            <span class="string">&quot;vkGetGeneratedCommandsMemoryRequirementsNV&quot; </span>=&gt; {
+            <span class="string">"vkCmdSetLineStippleEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetLineStippleExt),
+            <span class="string">"vkReleaseSwapchainImagesEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::ReleaseSwapchainImagesExt),
+            <span class="string">"vkGetGeneratedCommandsMemoryRequirementsNV" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetGeneratedCommandsMemoryRequirementsNv)
             }
-            <span class="string">&quot;vkCmdPreprocessGeneratedCommandsNV&quot; </span>=&gt; {
+            <span class="string">"vkCmdPreprocessGeneratedCommandsNV" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::CmdPreprocessGeneratedCommandsNv)
             }
-            <span class="string">&quot;vkCmdExecuteGeneratedCommandsNV&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdExecuteGeneratedCommandsNv),
-            <span class="string">&quot;vkCmdBindPipelineShaderGroupNV&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdBindPipelineShaderGroupNv),
-            <span class="string">&quot;vkCreateIndirectCommandsLayoutNV&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateIndirectCommandsLayoutNv),
-            <span class="string">&quot;vkDestroyIndirectCommandsLayoutNV&quot; </span>=&gt; {
+            <span class="string">"vkCmdExecuteGeneratedCommandsNV" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdExecuteGeneratedCommandsNv),
+            <span class="string">"vkCmdBindPipelineShaderGroupNV" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdBindPipelineShaderGroupNv),
+            <span class="string">"vkCreateIndirectCommandsLayoutNV" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateIndirectCommandsLayoutNv),
+            <span class="string">"vkDestroyIndirectCommandsLayoutNV" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::DestroyIndirectCommandsLayoutNv)
             }
-            <span class="string">&quot;vkExportMetalObjectsEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::ExportMetalObjectsExt),
-            <span class="string">&quot;vkGetDescriptorSetLayoutSizeEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetDescriptorSetLayoutSizeExt),
-            <span class="string">&quot;vkGetDescriptorSetLayoutBindingOffsetEXT&quot; </span>=&gt; {
+            <span class="string">"vkExportMetalObjectsEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::ExportMetalObjectsExt),
+            <span class="string">"vkGetDescriptorSetLayoutSizeEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetDescriptorSetLayoutSizeExt),
+            <span class="string">"vkGetDescriptorSetLayoutBindingOffsetEXT" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetDescriptorSetLayoutBindingOffsetExt)
             }
-            <span class="string">&quot;vkGetDescriptorEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetDescriptorExt),
-            <span class="string">&quot;vkCmdBindDescriptorBuffersEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdBindDescriptorBuffersExt),
-            <span class="string">&quot;vkCmdSetDescriptorBufferOffsetsEXT&quot; </span>=&gt; {
+            <span class="string">"vkGetDescriptorEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetDescriptorExt),
+            <span class="string">"vkCmdBindDescriptorBuffersEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdBindDescriptorBuffersExt),
+            <span class="string">"vkCmdSetDescriptorBufferOffsetsEXT" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetDescriptorBufferOffsetsExt)
             }
-            <span class="string">&quot;vkCmdBindDescriptorBufferEmbeddedSamplersEXT&quot; </span>=&gt; {
+            <span class="string">"vkCmdBindDescriptorBufferEmbeddedSamplersEXT" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::CmdBindDescriptorBufferEmbeddedSamplersExt)
             }
-            <span class="string">&quot;vkGetBufferOpaqueCaptureDescriptorDataEXT&quot; </span>=&gt; {
+            <span class="string">"vkGetBufferOpaqueCaptureDescriptorDataEXT" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetBufferOpaqueCaptureDescriptorDataExt)
             }
-            <span class="string">&quot;vkGetImageOpaqueCaptureDescriptorDataEXT&quot; </span>=&gt; {
+            <span class="string">"vkGetImageOpaqueCaptureDescriptorDataEXT" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetImageOpaqueCaptureDescriptorDataExt)
             }
-            <span class="string">&quot;vkGetImageViewOpaqueCaptureDescriptorDataEXT&quot; </span>=&gt; {
+            <span class="string">"vkGetImageViewOpaqueCaptureDescriptorDataEXT" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetImageViewOpaqueCaptureDescriptorDataExt)
             }
-            <span class="string">&quot;vkGetSamplerOpaqueCaptureDescriptorDataEXT&quot; </span>=&gt; {
+            <span class="string">"vkGetSamplerOpaqueCaptureDescriptorDataEXT" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetSamplerOpaqueCaptureDescriptorDataExt)
             }
-            <span class="string">&quot;vkGetAccelerationStructureOpaqueCaptureDescriptorDataEXT&quot; </span>=&gt; {
+            <span class="string">"vkGetAccelerationStructureOpaqueCaptureDescriptorDataEXT" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetAccelerationStructureOpaqueCaptureDescriptorDataExt)
             }
-            <span class="string">&quot;vkCmdSetFragmentShadingRateEnumNV&quot; </span>=&gt; {
+            <span class="string">"vkCmdSetFragmentShadingRateEnumNV" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetFragmentShadingRateEnumNv)
             }
-            <span class="string">&quot;vkGetImageSubresourceLayout2EXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetImageSubresourceLayout2Ext),
-            <span class="string">&quot;vkCmdSetVertexInputEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetVertexInputExt),
-            <span class="string">&quot;vkGetMemoryZirconHandleFUCHSIA&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetMemoryZirconHandleFuchsia),
-            <span class="string">&quot;vkGetMemoryZirconHandlePropertiesFUCHSIA&quot; </span>=&gt; {
+            <span class="string">"vkGetImageSubresourceLayout2EXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetImageSubresourceLayout2Ext),
+            <span class="string">"vkCmdSetVertexInputEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetVertexInputExt),
+            <span class="string">"vkGetMemoryZirconHandleFUCHSIA" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetMemoryZirconHandleFuchsia),
+            <span class="string">"vkGetMemoryZirconHandlePropertiesFUCHSIA" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetMemoryZirconHandlePropertiesFuchsia)
             }
-            <span class="string">&quot;vkImportSemaphoreZirconHandleFUCHSIA&quot; </span>=&gt; {
+            <span class="string">"vkImportSemaphoreZirconHandleFUCHSIA" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::ImportSemaphoreZirconHandleFuchsia)
             }
-            <span class="string">&quot;vkGetSemaphoreZirconHandleFUCHSIA&quot; </span>=&gt; {
+            <span class="string">"vkGetSemaphoreZirconHandleFUCHSIA" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetSemaphoreZirconHandleFuchsia)
             }
-            <span class="string">&quot;vkCreateBufferCollectionFUCHSIA&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateBufferCollectionFuchsia),
-            <span class="string">&quot;vkSetBufferCollectionImageConstraintsFUCHSIA&quot; </span>=&gt; {
+            <span class="string">"vkCreateBufferCollectionFUCHSIA" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateBufferCollectionFuchsia),
+            <span class="string">"vkSetBufferCollectionImageConstraintsFUCHSIA" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::SetBufferCollectionImageConstraintsFuchsia)
             }
-            <span class="string">&quot;vkSetBufferCollectionBufferConstraintsFUCHSIA&quot; </span>=&gt; {
+            <span class="string">"vkSetBufferCollectionBufferConstraintsFUCHSIA" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::SetBufferCollectionBufferConstraintsFuchsia)
             }
-            <span class="string">&quot;vkDestroyBufferCollectionFUCHSIA&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroyBufferCollectionFuchsia),
-            <span class="string">&quot;vkGetBufferCollectionPropertiesFUCHSIA&quot; </span>=&gt; {
+            <span class="string">"vkDestroyBufferCollectionFUCHSIA" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroyBufferCollectionFuchsia),
+            <span class="string">"vkGetBufferCollectionPropertiesFUCHSIA" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetBufferCollectionPropertiesFuchsia)
             }
-            <span class="string">&quot;vkGetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI&quot; </span>=&gt; {
+            <span class="string">"vkGetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetDeviceSubpassShadingMaxWorkgroupSizeHuawei)
             }
-            <span class="string">&quot;vkCmdSubpassShadingHUAWEI&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSubpassShadingHuawei),
-            <span class="string">&quot;vkCmdBindInvocationMaskHUAWEI&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdBindInvocationMaskHuawei),
-            <span class="string">&quot;vkGetMemoryRemoteAddressNV&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetMemoryRemoteAddressNv),
-            <span class="string">&quot;vkGetPipelinePropertiesEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetPipelinePropertiesExt),
-            <span class="string">&quot;vkCmdSetPatchControlPointsEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetPatchControlPointsExt),
-            <span class="string">&quot;vkCmdSetLogicOpEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetLogicOpExt),
-            <span class="string">&quot;vkCmdSetColorWriteEnableEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetColorWriteEnableExt),
-            <span class="string">&quot;vkCmdDrawMultiEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdDrawMultiExt),
-            <span class="string">&quot;vkCmdDrawMultiIndexedEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdDrawMultiIndexedExt),
-            <span class="string">&quot;vkCreateMicromapEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateMicromapExt),
-            <span class="string">&quot;vkDestroyMicromapEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroyMicromapExt),
-            <span class="string">&quot;vkCmdBuildMicromapsEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdBuildMicromapsExt),
-            <span class="string">&quot;vkBuildMicromapsEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::BuildMicromapsExt),
-            <span class="string">&quot;vkCopyMicromapEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CopyMicromapExt),
-            <span class="string">&quot;vkCopyMicromapToMemoryEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CopyMicromapToMemoryExt),
-            <span class="string">&quot;vkCopyMemoryToMicromapEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CopyMemoryToMicromapExt),
-            <span class="string">&quot;vkWriteMicromapsPropertiesEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::WriteMicromapsPropertiesExt),
-            <span class="string">&quot;vkCmdCopyMicromapEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdCopyMicromapExt),
-            <span class="string">&quot;vkCmdCopyMicromapToMemoryEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdCopyMicromapToMemoryExt),
-            <span class="string">&quot;vkCmdCopyMemoryToMicromapEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdCopyMemoryToMicromapExt),
-            <span class="string">&quot;vkCmdWriteMicromapsPropertiesEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdWriteMicromapsPropertiesExt),
-            <span class="string">&quot;vkGetDeviceMicromapCompatibilityEXT&quot; </span>=&gt; {
+            <span class="string">"vkCmdSubpassShadingHUAWEI" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSubpassShadingHuawei),
+            <span class="string">"vkCmdBindInvocationMaskHUAWEI" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdBindInvocationMaskHuawei),
+            <span class="string">"vkGetMemoryRemoteAddressNV" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetMemoryRemoteAddressNv),
+            <span class="string">"vkGetPipelinePropertiesEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetPipelinePropertiesExt),
+            <span class="string">"vkCmdSetPatchControlPointsEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetPatchControlPointsExt),
+            <span class="string">"vkCmdSetLogicOpEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetLogicOpExt),
+            <span class="string">"vkCmdSetColorWriteEnableEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetColorWriteEnableExt),
+            <span class="string">"vkCmdDrawMultiEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdDrawMultiExt),
+            <span class="string">"vkCmdDrawMultiIndexedEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdDrawMultiIndexedExt),
+            <span class="string">"vkCreateMicromapEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateMicromapExt),
+            <span class="string">"vkDestroyMicromapEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroyMicromapExt),
+            <span class="string">"vkCmdBuildMicromapsEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdBuildMicromapsExt),
+            <span class="string">"vkBuildMicromapsEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::BuildMicromapsExt),
+            <span class="string">"vkCopyMicromapEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CopyMicromapExt),
+            <span class="string">"vkCopyMicromapToMemoryEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CopyMicromapToMemoryExt),
+            <span class="string">"vkCopyMemoryToMicromapEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CopyMemoryToMicromapExt),
+            <span class="string">"vkWriteMicromapsPropertiesEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::WriteMicromapsPropertiesExt),
+            <span class="string">"vkCmdCopyMicromapEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdCopyMicromapExt),
+            <span class="string">"vkCmdCopyMicromapToMemoryEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdCopyMicromapToMemoryExt),
+            <span class="string">"vkCmdCopyMemoryToMicromapEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdCopyMemoryToMicromapExt),
+            <span class="string">"vkCmdWriteMicromapsPropertiesEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdWriteMicromapsPropertiesExt),
+            <span class="string">"vkGetDeviceMicromapCompatibilityEXT" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetDeviceMicromapCompatibilityExt)
             }
-            <span class="string">&quot;vkGetMicromapBuildSizesEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetMicromapBuildSizesExt),
-            <span class="string">&quot;vkSetDeviceMemoryPriorityEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::SetDeviceMemoryPriorityExt),
-            <span class="string">&quot;vkGetDescriptorSetLayoutHostMappingInfoVALVE&quot; </span>=&gt; {
+            <span class="string">"vkGetMicromapBuildSizesEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetMicromapBuildSizesExt),
+            <span class="string">"vkSetDeviceMemoryPriorityEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::SetDeviceMemoryPriorityExt),
+            <span class="string">"vkGetDescriptorSetLayoutHostMappingInfoVALVE" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetDescriptorSetLayoutHostMappingInfoValve)
             }
-            <span class="string">&quot;vkGetDescriptorSetHostMappingVALVE&quot; </span>=&gt; {
+            <span class="string">"vkGetDescriptorSetHostMappingVALVE" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetDescriptorSetHostMappingValve)
             }
-            <span class="string">&quot;vkCmdCopyMemoryIndirectNV&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdCopyMemoryIndirectNv),
-            <span class="string">&quot;vkCmdCopyMemoryToImageIndirectNV&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdCopyMemoryToImageIndirectNv),
-            <span class="string">&quot;vkCmdDecompressMemoryNV&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdDecompressMemoryNv),
-            <span class="string">&quot;vkCmdDecompressMemoryIndirectCountNV&quot; </span>=&gt; {
+            <span class="string">"vkCmdCopyMemoryIndirectNV" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdCopyMemoryIndirectNv),
+            <span class="string">"vkCmdCopyMemoryToImageIndirectNV" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdCopyMemoryToImageIndirectNv),
+            <span class="string">"vkCmdDecompressMemoryNV" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdDecompressMemoryNv),
+            <span class="string">"vkCmdDecompressMemoryIndirectCountNV" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::CmdDecompressMemoryIndirectCountNv)
             }
-            <span class="string">&quot;vkCmdSetTessellationDomainOriginEXT&quot; </span>=&gt; {
+            <span class="string">"vkCmdSetTessellationDomainOriginEXT" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetTessellationDomainOriginExt)
             }
-            <span class="string">&quot;vkCmdSetDepthClampEnableEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetDepthClampEnableExt),
-            <span class="string">&quot;vkCmdSetPolygonModeEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetPolygonModeExt),
-            <span class="string">&quot;vkCmdSetRasterizationSamplesEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetRasterizationSamplesExt),
-            <span class="string">&quot;vkCmdSetSampleMaskEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetSampleMaskExt),
-            <span class="string">&quot;vkCmdSetAlphaToCoverageEnableEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetAlphaToCoverageEnableExt),
-            <span class="string">&quot;vkCmdSetAlphaToOneEnableEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetAlphaToOneEnableExt),
-            <span class="string">&quot;vkCmdSetLogicOpEnableEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetLogicOpEnableExt),
-            <span class="string">&quot;vkCmdSetColorBlendEnableEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetColorBlendEnableExt),
-            <span class="string">&quot;vkCmdSetColorBlendEquationEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetColorBlendEquationExt),
-            <span class="string">&quot;vkCmdSetColorWriteMaskEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetColorWriteMaskExt),
-            <span class="string">&quot;vkCmdSetRasterizationStreamEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetRasterizationStreamExt),
-            <span class="string">&quot;vkCmdSetConservativeRasterizationModeEXT&quot; </span>=&gt; {
+            <span class="string">"vkCmdSetDepthClampEnableEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetDepthClampEnableExt),
+            <span class="string">"vkCmdSetPolygonModeEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetPolygonModeExt),
+            <span class="string">"vkCmdSetRasterizationSamplesEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetRasterizationSamplesExt),
+            <span class="string">"vkCmdSetSampleMaskEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetSampleMaskExt),
+            <span class="string">"vkCmdSetAlphaToCoverageEnableEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetAlphaToCoverageEnableExt),
+            <span class="string">"vkCmdSetAlphaToOneEnableEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetAlphaToOneEnableExt),
+            <span class="string">"vkCmdSetLogicOpEnableEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetLogicOpEnableExt),
+            <span class="string">"vkCmdSetColorBlendEnableEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetColorBlendEnableExt),
+            <span class="string">"vkCmdSetColorBlendEquationEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetColorBlendEquationExt),
+            <span class="string">"vkCmdSetColorWriteMaskEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetColorWriteMaskExt),
+            <span class="string">"vkCmdSetRasterizationStreamEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetRasterizationStreamExt),
+            <span class="string">"vkCmdSetConservativeRasterizationModeEXT" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetConservativeRasterizationModeExt)
             }
-            <span class="string">&quot;vkCmdSetExtraPrimitiveOverestimationSizeEXT&quot; </span>=&gt; {
+            <span class="string">"vkCmdSetExtraPrimitiveOverestimationSizeEXT" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetExtraPrimitiveOverestimationSizeExt)
             }
-            <span class="string">&quot;vkCmdSetDepthClipEnableEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetDepthClipEnableExt),
-            <span class="string">&quot;vkCmdSetSampleLocationsEnableEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetSampleLocationsEnableExt),
-            <span class="string">&quot;vkCmdSetColorBlendAdvancedEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetColorBlendAdvancedExt),
-            <span class="string">&quot;vkCmdSetProvokingVertexModeEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetProvokingVertexModeExt),
-            <span class="string">&quot;vkCmdSetLineRasterizationModeEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetLineRasterizationModeExt),
-            <span class="string">&quot;vkCmdSetLineStippleEnableEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetLineStippleEnableExt),
-            <span class="string">&quot;vkCmdSetDepthClipNegativeOneToOneEXT&quot; </span>=&gt; {
+            <span class="string">"vkCmdSetDepthClipEnableEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetDepthClipEnableExt),
+            <span class="string">"vkCmdSetSampleLocationsEnableEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetSampleLocationsEnableExt),
+            <span class="string">"vkCmdSetColorBlendAdvancedEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetColorBlendAdvancedExt),
+            <span class="string">"vkCmdSetProvokingVertexModeEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetProvokingVertexModeExt),
+            <span class="string">"vkCmdSetLineRasterizationModeEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetLineRasterizationModeExt),
+            <span class="string">"vkCmdSetLineStippleEnableEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetLineStippleEnableExt),
+            <span class="string">"vkCmdSetDepthClipNegativeOneToOneEXT" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetDepthClipNegativeOneToOneExt)
             }
-            <span class="string">&quot;vkCmdSetViewportWScalingEnableNV&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetViewportWScalingEnableNv),
-            <span class="string">&quot;vkCmdSetViewportSwizzleNV&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetViewportSwizzleNv),
-            <span class="string">&quot;vkCmdSetCoverageToColorEnableNV&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetCoverageToColorEnableNv),
-            <span class="string">&quot;vkCmdSetCoverageToColorLocationNV&quot; </span>=&gt; {
+            <span class="string">"vkCmdSetViewportWScalingEnableNV" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetViewportWScalingEnableNv),
+            <span class="string">"vkCmdSetViewportSwizzleNV" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetViewportSwizzleNv),
+            <span class="string">"vkCmdSetCoverageToColorEnableNV" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetCoverageToColorEnableNv),
+            <span class="string">"vkCmdSetCoverageToColorLocationNV" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetCoverageToColorLocationNv)
             }
-            <span class="string">&quot;vkCmdSetCoverageModulationModeNV&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetCoverageModulationModeNv),
-            <span class="string">&quot;vkCmdSetCoverageModulationTableEnableNV&quot; </span>=&gt; {
+            <span class="string">"vkCmdSetCoverageModulationModeNV" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetCoverageModulationModeNv),
+            <span class="string">"vkCmdSetCoverageModulationTableEnableNV" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetCoverageModulationTableEnableNv)
             }
-            <span class="string">&quot;vkCmdSetCoverageModulationTableNV&quot; </span>=&gt; {
+            <span class="string">"vkCmdSetCoverageModulationTableNV" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetCoverageModulationTableNv)
             }
-            <span class="string">&quot;vkCmdSetShadingRateImageEnableNV&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetShadingRateImageEnableNv),
-            <span class="string">&quot;vkCmdSetRepresentativeFragmentTestEnableNV&quot; </span>=&gt; {
+            <span class="string">"vkCmdSetShadingRateImageEnableNV" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetShadingRateImageEnableNv),
+            <span class="string">"vkCmdSetRepresentativeFragmentTestEnableNV" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetRepresentativeFragmentTestEnableNv)
             }
-            <span class="string">&quot;vkCmdSetCoverageReductionModeNV&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetCoverageReductionModeNv),
-            <span class="string">&quot;vkGetShaderModuleIdentifierEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetShaderModuleIdentifierExt),
-            <span class="string">&quot;vkGetShaderModuleCreateInfoIdentifierEXT&quot; </span>=&gt; {
+            <span class="string">"vkCmdSetCoverageReductionModeNV" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetCoverageReductionModeNv),
+            <span class="string">"vkGetShaderModuleIdentifierEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::GetShaderModuleIdentifierExt),
+            <span class="string">"vkGetShaderModuleCreateInfoIdentifierEXT" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetShaderModuleCreateInfoIdentifierExt)
             }
-            <span class="string">&quot;vkCreateOpticalFlowSessionNV&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateOpticalFlowSessionNv),
-            <span class="string">&quot;vkDestroyOpticalFlowSessionNV&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroyOpticalFlowSessionNv),
-            <span class="string">&quot;vkBindOpticalFlowSessionImageNV&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::BindOpticalFlowSessionImageNv),
-            <span class="string">&quot;vkCmdOpticalFlowExecuteNV&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdOpticalFlowExecuteNv),
-            <span class="string">&quot;vkGetFramebufferTilePropertiesQCOM&quot; </span>=&gt; {
+            <span class="string">"vkCreateOpticalFlowSessionNV" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateOpticalFlowSessionNv),
+            <span class="string">"vkDestroyOpticalFlowSessionNV" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::DestroyOpticalFlowSessionNv),
+            <span class="string">"vkBindOpticalFlowSessionImageNV" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::BindOpticalFlowSessionImageNv),
+            <span class="string">"vkCmdOpticalFlowExecuteNV" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdOpticalFlowExecuteNv),
+            <span class="string">"vkGetFramebufferTilePropertiesQCOM" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetFramebufferTilePropertiesQcom)
             }
-            <span class="string">&quot;vkGetDynamicRenderingTilePropertiesQCOM&quot; </span>=&gt; {
+            <span class="string">"vkGetDynamicRenderingTilePropertiesQCOM" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetDynamicRenderingTilePropertiesQcom)
             }
-            <span class="string">&quot;vkCreateAccelerationStructureKHR&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateAccelerationStructureKhr),
-            <span class="string">&quot;vkDestroyAccelerationStructureKHR&quot; </span>=&gt; {
+            <span class="string">"vkCreateAccelerationStructureKHR" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateAccelerationStructureKhr),
+            <span class="string">"vkDestroyAccelerationStructureKHR" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::DestroyAccelerationStructureKhr)
             }
-            <span class="string">&quot;vkCopyAccelerationStructureKHR&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CopyAccelerationStructureKhr),
-            <span class="string">&quot;vkCopyAccelerationStructureToMemoryKHR&quot; </span>=&gt; {
+            <span class="string">"vkCopyAccelerationStructureKHR" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CopyAccelerationStructureKhr),
+            <span class="string">"vkCopyAccelerationStructureToMemoryKHR" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::CopyAccelerationStructureToMemoryKhr)
             }
-            <span class="string">&quot;vkCopyMemoryToAccelerationStructureKHR&quot; </span>=&gt; {
+            <span class="string">"vkCopyMemoryToAccelerationStructureKHR" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::CopyMemoryToAccelerationStructureKhr)
             }
-            <span class="string">&quot;vkWriteAccelerationStructuresPropertiesKHR&quot; </span>=&gt; {
+            <span class="string">"vkWriteAccelerationStructuresPropertiesKHR" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::WriteAccelerationStructuresPropertiesKhr)
             }
-            <span class="string">&quot;vkCmdCopyAccelerationStructureKHR&quot; </span>=&gt; {
+            <span class="string">"vkCmdCopyAccelerationStructureKHR" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::CmdCopyAccelerationStructureKhr)
             }
-            <span class="string">&quot;vkCmdCopyAccelerationStructureToMemoryKHR&quot; </span>=&gt; {
+            <span class="string">"vkCmdCopyAccelerationStructureToMemoryKHR" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::CmdCopyAccelerationStructureToMemoryKhr)
             }
-            <span class="string">&quot;vkCmdCopyMemoryToAccelerationStructureKHR&quot; </span>=&gt; {
+            <span class="string">"vkCmdCopyMemoryToAccelerationStructureKHR" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::CmdCopyMemoryToAccelerationStructureKhr)
             }
-            <span class="string">&quot;vkGetAccelerationStructureDeviceAddressKHR&quot; </span>=&gt; {
+            <span class="string">"vkGetAccelerationStructureDeviceAddressKHR" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetAccelerationStructureDeviceAddressKhr)
             }
-            <span class="string">&quot;vkCmdWriteAccelerationStructuresPropertiesKHR&quot; </span>=&gt; {
+            <span class="string">"vkCmdWriteAccelerationStructuresPropertiesKHR" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::CmdWriteAccelerationStructuresPropertiesKhr)
             }
-            <span class="string">&quot;vkGetDeviceAccelerationStructureCompatibilityKHR&quot; </span>=&gt; {
+            <span class="string">"vkGetDeviceAccelerationStructureCompatibilityKHR" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetDeviceAccelerationStructureCompatibilityKhr)
             }
-            <span class="string">&quot;vkGetAccelerationStructureBuildSizesKHR&quot; </span>=&gt; {
+            <span class="string">"vkGetAccelerationStructureBuildSizesKHR" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetAccelerationStructureBuildSizesKhr)
             }
-            <span class="string">&quot;vkCmdTraceRaysKHR&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdTraceRaysKhr),
-            <span class="string">&quot;vkCreateRayTracingPipelinesKHR&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateRayTracingPipelinesKhr),
-            <span class="string">&quot;vkGetRayTracingCaptureReplayShaderGroupHandlesKHR&quot; </span>=&gt; {
+            <span class="string">"vkCmdTraceRaysKHR" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdTraceRaysKhr),
+            <span class="string">"vkCreateRayTracingPipelinesKHR" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CreateRayTracingPipelinesKhr),
+            <span class="string">"vkGetRayTracingCaptureReplayShaderGroupHandlesKHR" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetRayTracingCaptureReplayShaderGroupHandlesKhr)
             }
-            <span class="string">&quot;vkCmdTraceRaysIndirectKHR&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdTraceRaysIndirectKhr),
-            <span class="string">&quot;vkGetRayTracingShaderGroupStackSizeKHR&quot; </span>=&gt; {
+            <span class="string">"vkCmdTraceRaysIndirectKHR" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdTraceRaysIndirectKhr),
+            <span class="string">"vkGetRayTracingShaderGroupStackSizeKHR" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::GetRayTracingShaderGroupStackSizeKhr)
             }
-            <span class="string">&quot;vkCmdSetRayTracingPipelineStackSizeKHR&quot; </span>=&gt; {
+            <span class="string">"vkCmdSetRayTracingPipelineStackSizeKHR" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::CmdSetRayTracingPipelineStackSizeKhr)
             }
-            <span class="string">&quot;vkCmdDrawMeshTasksEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdDrawMeshTasksExt),
-            <span class="string">&quot;vkCmdDrawMeshTasksIndirectEXT&quot; </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdDrawMeshTasksIndirectExt),
-            <span class="string">&quot;vkCmdDrawMeshTasksIndirectCountEXT&quot; </span>=&gt; {
+            <span class="string">"vkCmdDrawMeshTasksEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdDrawMeshTasksExt),
+            <span class="string">"vkCmdDrawMeshTasksIndirectEXT" </span>=&gt; <span class="prelude-val">Ok</span>(VulkanCommand::CmdDrawMeshTasksIndirectExt),
+            <span class="string">"vkCmdDrawMeshTasksIndirectCountEXT" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(VulkanCommand::CmdDrawMeshTasksIndirectCountExt)
             }
             <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(TryFromVulkanCommandError::UnknownCommand(value.to_owned())),
@@ -9419,7 +9419,7 @@
     ) -&gt; LayerResult&lt;()&gt; {
         LayerResult::Unhandled
     }
-    <span class="kw">fn </span>cmd_set_color_write_enable_ext&lt;T: Iterator&lt;Item = bool&gt; + <span class="lifetime">&#39;static</span>&gt;(
+    <span class="kw">fn </span>cmd_set_color_write_enable_ext&lt;T: Iterator&lt;Item = bool&gt; + <span class="lifetime">'static</span>&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _command_buffer: vk::CommandBuffer,
         _p_color_write_enables: T,
@@ -9663,7 +9663,7 @@
     ) -&gt; LayerResult&lt;()&gt; {
         LayerResult::Unhandled
     }
-    <span class="kw">fn </span>cmd_set_color_blend_enable_ext&lt;T: Iterator&lt;Item = bool&gt; + <span class="lifetime">&#39;static</span>&gt;(
+    <span class="kw">fn </span>cmd_set_color_blend_enable_ext&lt;T: Iterator&lt;Item = bool&gt; + <span class="lifetime">'static</span>&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _command_buffer: vk::CommandBuffer,
         _first_attachment: u32,
