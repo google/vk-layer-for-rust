@@ -2037,7 +2037,9 @@ mod create_destroy_device {
         let _ctx = TEST_GLOBAL2.create_context();
         let instance_ctx = vk::InstanceCreateInfo::builder()
             .default_instance::<(TestLayer<Tag<0>>, TestLayer<Tag<1>>)>();
-        let mut device = MaybeUninit::<vk::Device>::uninit();
+        // TODO: change back to MaybeUninit::uninit() once we use a more sound interface which uses
+        // the uninit crate for the layer trait.
+        let mut device = MaybeUninit::<vk::Device>::zeroed();
         TestLayer::<Tag<1>>::global_instance()
             .layer_info
             .get_instance_info(instance_ctx.instance.handle())

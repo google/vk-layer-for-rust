@@ -559,6 +559,12 @@ class RustType(NamedTuple):
                 points_to=RustType.from_vk_xml_type(vk_xml_type.points_to)._replace(is_root=False),
             )
         else:
+            # TODO: change to the Out<'_, T> type from the uninit crate. For mutable pointer
+            # paramters in vk.xml, they can be uninitialized (e.g. pDevice in vkCreateDevice), which
+            # makes it invalid to use the reference type (&mut T) to be the Rust interface type. The
+            # Rust reference type requires the underlying data be initialized. Note that this also
+            # applies to input arrays: &mut [T] is not the correct type. Out<'_, [T]> should
+            # be used.
             return RustType(
                 is_const=vk_xml_type.is_const,
                 is_optional=vk_xml_type.is_optional,
