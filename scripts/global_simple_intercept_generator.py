@@ -835,7 +835,10 @@ class GlobalSimpleInterceptGenerator(OutputGenerator):
                     f'    name: "{proc_name}",',
                     f'    features: smallvec![{", ".join(features)}],',
                     f"    hooked: {hooked_expr},",
-                    f"    proc: unsafe {{ std::mem::transmute({rust_fn_name} as {fp_type_name})}},",
+                    (
+                        f"    proc: unsafe {{ std::mem::transmute::<{fp_type_name},"
+                        f" vk::PFN_vkVoidFunction>({rust_fn_name})}},"
+                    ),
                     "},",
                 ]
             return "".join([" " * indent + line + "\n" for line in lines])

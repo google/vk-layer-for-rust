@@ -1,4 +1,4 @@
-// Copyright 2023 Google LLC
+// Copyright 2024 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -1551,10 +1551,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::AcquireFullScreenExclusiveModeExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::acquire_full_screen_exclusive_mode_ext
-                            as vk::PFN_vkAcquireFullScreenExclusiveModeEXT,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkAcquireFullScreenExclusiveModeEXT,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::acquire_full_screen_exclusive_mode_ext)
                 },
             },
             VulkanCommand {
@@ -1562,8 +1562,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::ANDROIDNativeBuffer)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::AcquireImageAndroid),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::acquire_image_android as vk::PFN_vkAcquireImageANDROID,
+                    std::mem::transmute::<vk::PFN_vkAcquireImageANDROID, vk::PFN_vkVoidFunction>(
+                        Self::acquire_image_android,
                     )
                 },
             },
@@ -1575,8 +1575,8 @@ impl<T: Layer> Global<T> {
                 ],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::AcquireNextImage2Khr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::acquire_next_image2_khr as vk::PFN_vkAcquireNextImage2KHR,
+                    std::mem::transmute::<vk::PFN_vkAcquireNextImage2KHR, vk::PFN_vkVoidFunction>(
+                        Self::acquire_next_image2_khr,
                     )
                 },
             },
@@ -1585,8 +1585,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRSwapchain)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::AcquireNextImageKhr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::acquire_next_image_khr as vk::PFN_vkAcquireNextImageKHR,
+                    std::mem::transmute::<vk::PFN_vkAcquireNextImageKHR, vk::PFN_vkVoidFunction>(
+                        Self::acquire_next_image_khr,
                     )
                 },
             },
@@ -1596,10 +1596,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::AcquirePerformanceConfigurationIntel),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::acquire_performance_configuration_intel
-                            as vk::PFN_vkAcquirePerformanceConfigurationINTEL,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkAcquirePerformanceConfigurationINTEL,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::acquire_performance_configuration_intel)
                 },
             },
             VulkanCommand {
@@ -1607,8 +1607,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRPerformanceQuery)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::AcquireProfilingLockKhr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::acquire_profiling_lock_khr as vk::PFN_vkAcquireProfilingLockKHR,
+                    std::mem::transmute::<vk::PFN_vkAcquireProfilingLockKHR, vk::PFN_vkVoidFunction>(
+                        Self::acquire_profiling_lock_khr,
                     )
                 },
             },
@@ -1617,8 +1617,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::AllocateCommandBuffers),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::allocate_command_buffers as vk::PFN_vkAllocateCommandBuffers,
+                    std::mem::transmute::<vk::PFN_vkAllocateCommandBuffers, vk::PFN_vkVoidFunction>(
+                        Self::allocate_command_buffers,
                     )
                 },
             },
@@ -1627,8 +1627,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::AllocateDescriptorSets),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::allocate_descriptor_sets as vk::PFN_vkAllocateDescriptorSets,
+                    std::mem::transmute::<vk::PFN_vkAllocateDescriptorSets, vk::PFN_vkVoidFunction>(
+                        Self::allocate_descriptor_sets,
                     )
                 },
             },
@@ -1637,7 +1637,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::AllocateMemory),
                 proc: unsafe {
-                    std::mem::transmute(Self::allocate_memory as vk::PFN_vkAllocateMemory)
+                    std::mem::transmute::<vk::PFN_vkAllocateMemory, vk::PFN_vkVoidFunction>(
+                        Self::allocate_memory,
+                    )
                 },
             },
             VulkanCommand {
@@ -1645,7 +1647,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::BeginCommandBuffer),
                 proc: unsafe {
-                    std::mem::transmute(Self::begin_command_buffer as vk::PFN_vkBeginCommandBuffer)
+                    std::mem::transmute::<vk::PFN_vkBeginCommandBuffer, vk::PFN_vkVoidFunction>(
+                        Self::begin_command_buffer,
+                    )
                 },
             },
             VulkanCommand {
@@ -1654,10 +1658,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::BindAccelerationStructureMemoryNv),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::bind_acceleration_structure_memory_nv
-                            as vk::PFN_vkBindAccelerationStructureMemoryNV,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkBindAccelerationStructureMemoryNV,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::bind_acceleration_structure_memory_nv)
                 },
             },
             VulkanCommand {
@@ -1665,7 +1669,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::BindBufferMemory),
                 proc: unsafe {
-                    std::mem::transmute(Self::bind_buffer_memory as vk::PFN_vkBindBufferMemory)
+                    std::mem::transmute::<vk::PFN_vkBindBufferMemory, vk::PFN_vkVoidFunction>(
+                        Self::bind_buffer_memory,
+                    )
                 },
             },
             VulkanCommand {
@@ -1673,7 +1679,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::BindBufferMemory2),
                 proc: unsafe {
-                    std::mem::transmute(Self::bind_buffer_memory2 as vk::PFN_vkBindBufferMemory2)
+                    std::mem::transmute::<vk::PFN_vkBindBufferMemory2, vk::PFN_vkVoidFunction>(
+                        Self::bind_buffer_memory2,
+                    )
                 },
             },
             VulkanCommand {
@@ -1681,7 +1689,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRBindMemory2)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::BindBufferMemory2),
                 proc: unsafe {
-                    std::mem::transmute(Self::bind_buffer_memory2 as vk::PFN_vkBindBufferMemory2)
+                    std::mem::transmute::<vk::PFN_vkBindBufferMemory2, vk::PFN_vkVoidFunction>(
+                        Self::bind_buffer_memory2,
+                    )
                 },
             },
             VulkanCommand {
@@ -1689,7 +1699,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::BindImageMemory),
                 proc: unsafe {
-                    std::mem::transmute(Self::bind_image_memory as vk::PFN_vkBindImageMemory)
+                    std::mem::transmute::<vk::PFN_vkBindImageMemory, vk::PFN_vkVoidFunction>(
+                        Self::bind_image_memory,
+                    )
                 },
             },
             VulkanCommand {
@@ -1697,7 +1709,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::BindImageMemory2),
                 proc: unsafe {
-                    std::mem::transmute(Self::bind_image_memory2 as vk::PFN_vkBindImageMemory2)
+                    std::mem::transmute::<vk::PFN_vkBindImageMemory2, vk::PFN_vkVoidFunction>(
+                        Self::bind_image_memory2,
+                    )
                 },
             },
             VulkanCommand {
@@ -1705,7 +1719,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRBindMemory2)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::BindImageMemory2),
                 proc: unsafe {
-                    std::mem::transmute(Self::bind_image_memory2 as vk::PFN_vkBindImageMemory2)
+                    std::mem::transmute::<vk::PFN_vkBindImageMemory2, vk::PFN_vkVoidFunction>(
+                        Self::bind_image_memory2,
+                    )
                 },
             },
             VulkanCommand {
@@ -1714,10 +1730,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::BindOpticalFlowSessionImageNv),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::bind_optical_flow_session_image_nv
-                            as vk::PFN_vkBindOpticalFlowSessionImageNV,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkBindOpticalFlowSessionImageNV,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::bind_optical_flow_session_image_nv)
                 },
             },
             VulkanCommand {
@@ -1725,8 +1741,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRVideoQueue)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::BindVideoSessionMemoryKhr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::bind_video_session_memory_khr as vk::PFN_vkBindVideoSessionMemoryKHR,
+                    std::mem::transmute::<vk::PFN_vkBindVideoSessionMemoryKHR, vk::PFN_vkVoidFunction>(
+                        Self::bind_video_session_memory_khr,
                     )
                 },
             },
@@ -1735,7 +1751,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTOpacityMicromap)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::BuildMicromapsExt),
                 proc: unsafe {
-                    std::mem::transmute(Self::build_micromaps_ext as vk::PFN_vkBuildMicromapsEXT)
+                    std::mem::transmute::<vk::PFN_vkBuildMicromapsEXT, vk::PFN_vkVoidFunction>(
+                        Self::build_micromaps_ext,
+                    )
                 },
             },
             VulkanCommand {
@@ -1744,10 +1762,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::CmdBeginConditionalRenderingExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_begin_conditional_rendering_ext
-                            as vk::PFN_vkCmdBeginConditionalRenderingEXT,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdBeginConditionalRenderingEXT,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_begin_conditional_rendering_ext)
                 },
             },
             VulkanCommand {
@@ -1755,10 +1773,10 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTDebugUtils)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBeginDebugUtilsLabelExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_begin_debug_utils_label_ext
-                            as vk::PFN_vkCmdBeginDebugUtilsLabelEXT,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdBeginDebugUtilsLabelEXT,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_begin_debug_utils_label_ext)
                 },
             },
             VulkanCommand {
@@ -1766,7 +1784,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBeginQuery),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_begin_query as vk::PFN_vkCmdBeginQuery)
+                    std::mem::transmute::<vk::PFN_vkCmdBeginQuery, vk::PFN_vkVoidFunction>(
+                        Self::cmd_begin_query,
+                    )
                 },
             },
             VulkanCommand {
@@ -1774,8 +1794,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTTransformFeedback)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBeginQueryIndexedExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_begin_query_indexed_ext as vk::PFN_vkCmdBeginQueryIndexedEXT,
+                    std::mem::transmute::<vk::PFN_vkCmdBeginQueryIndexedEXT, vk::PFN_vkVoidFunction>(
+                        Self::cmd_begin_query_indexed_ext,
                     )
                 },
             },
@@ -1784,7 +1804,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBeginRenderPass),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_begin_render_pass as vk::PFN_vkCmdBeginRenderPass)
+                    std::mem::transmute::<vk::PFN_vkCmdBeginRenderPass, vk::PFN_vkVoidFunction>(
+                        Self::cmd_begin_render_pass,
+                    )
                 },
             },
             VulkanCommand {
@@ -1792,8 +1814,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 2 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBeginRenderPass2),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_begin_render_pass2 as vk::PFN_vkCmdBeginRenderPass2,
+                    std::mem::transmute::<vk::PFN_vkCmdBeginRenderPass2, vk::PFN_vkVoidFunction>(
+                        Self::cmd_begin_render_pass2,
                     )
                 },
             },
@@ -1802,8 +1824,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRCreateRenderpass2)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBeginRenderPass2),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_begin_render_pass2 as vk::PFN_vkCmdBeginRenderPass2,
+                    std::mem::transmute::<vk::PFN_vkCmdBeginRenderPass2, vk::PFN_vkVoidFunction>(
+                        Self::cmd_begin_render_pass2,
                     )
                 },
             },
@@ -1812,7 +1834,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBeginRendering),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_begin_rendering as vk::PFN_vkCmdBeginRendering)
+                    std::mem::transmute::<vk::PFN_vkCmdBeginRendering, vk::PFN_vkVoidFunction>(
+                        Self::cmd_begin_rendering,
+                    )
                 },
             },
             VulkanCommand {
@@ -1820,7 +1844,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRDynamicRendering)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBeginRendering),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_begin_rendering as vk::PFN_vkCmdBeginRendering)
+                    std::mem::transmute::<vk::PFN_vkCmdBeginRendering, vk::PFN_vkVoidFunction>(
+                        Self::cmd_begin_rendering,
+                    )
                 },
             },
             VulkanCommand {
@@ -1828,10 +1854,10 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTTransformFeedback)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBeginTransformFeedbackExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_begin_transform_feedback_ext
-                            as vk::PFN_vkCmdBeginTransformFeedbackEXT,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdBeginTransformFeedbackEXT,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_begin_transform_feedback_ext)
                 },
             },
             VulkanCommand {
@@ -1839,8 +1865,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRVideoQueue)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBeginVideoCodingKhr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_begin_video_coding_khr as vk::PFN_vkCmdBeginVideoCodingKHR,
+                    std::mem::transmute::<vk::PFN_vkCmdBeginVideoCodingKHR, vk::PFN_vkVoidFunction>(
+                        Self::cmd_begin_video_coding_khr,
                     )
                 },
             },
@@ -1850,10 +1876,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::CmdBindDescriptorBufferEmbeddedSamplersExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_bind_descriptor_buffer_embedded_samplers_ext
-                            as vk::PFN_vkCmdBindDescriptorBufferEmbeddedSamplersEXT,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdBindDescriptorBufferEmbeddedSamplersEXT,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_bind_descriptor_buffer_embedded_samplers_ext)
                 },
             },
             VulkanCommand {
@@ -1861,10 +1887,10 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTDescriptorBuffer)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBindDescriptorBuffersExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_bind_descriptor_buffers_ext
-                            as vk::PFN_vkCmdBindDescriptorBuffersEXT,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdBindDescriptorBuffersEXT,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_bind_descriptor_buffers_ext)
                 },
             },
             VulkanCommand {
@@ -1872,8 +1898,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBindDescriptorSets),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_bind_descriptor_sets as vk::PFN_vkCmdBindDescriptorSets,
+                    std::mem::transmute::<vk::PFN_vkCmdBindDescriptorSets, vk::PFN_vkVoidFunction>(
+                        Self::cmd_bind_descriptor_sets,
                     )
                 },
             },
@@ -1882,7 +1908,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBindIndexBuffer),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_bind_index_buffer as vk::PFN_vkCmdBindIndexBuffer)
+                    std::mem::transmute::<vk::PFN_vkCmdBindIndexBuffer, vk::PFN_vkVoidFunction>(
+                        Self::cmd_bind_index_buffer,
+                    )
                 },
             },
             VulkanCommand {
@@ -1890,10 +1918,10 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::HUAWEIInvocationMask)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBindInvocationMaskHuawei),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_bind_invocation_mask_huawei
-                            as vk::PFN_vkCmdBindInvocationMaskHUAWEI,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdBindInvocationMaskHUAWEI,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_bind_invocation_mask_huawei)
                 },
             },
             VulkanCommand {
@@ -1901,7 +1929,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBindPipeline),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_bind_pipeline as vk::PFN_vkCmdBindPipeline)
+                    std::mem::transmute::<vk::PFN_vkCmdBindPipeline, vk::PFN_vkVoidFunction>(
+                        Self::cmd_bind_pipeline,
+                    )
                 },
             },
             VulkanCommand {
@@ -1909,10 +1939,10 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::NVDeviceGeneratedCommands)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBindPipelineShaderGroupNv),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_bind_pipeline_shader_group_nv
-                            as vk::PFN_vkCmdBindPipelineShaderGroupNV,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdBindPipelineShaderGroupNV,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_bind_pipeline_shader_group_nv)
                 },
             },
             VulkanCommand {
@@ -1920,8 +1950,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::NVShadingRateImage)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBindShadingRateImageNv),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_bind_shading_rate_image_nv as vk::PFN_vkCmdBindShadingRateImageNV,
+                    std::mem::transmute::<vk::PFN_vkCmdBindShadingRateImageNV, vk::PFN_vkVoidFunction>(
+                        Self::cmd_bind_shading_rate_image_nv,
                     )
                 },
             },
@@ -1931,10 +1961,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::CmdBindTransformFeedbackBuffersExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_bind_transform_feedback_buffers_ext
-                            as vk::PFN_vkCmdBindTransformFeedbackBuffersEXT,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdBindTransformFeedbackBuffersEXT,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_bind_transform_feedback_buffers_ext)
                 },
             },
             VulkanCommand {
@@ -1942,8 +1972,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBindVertexBuffers),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_bind_vertex_buffers as vk::PFN_vkCmdBindVertexBuffers,
+                    std::mem::transmute::<vk::PFN_vkCmdBindVertexBuffers, vk::PFN_vkVoidFunction>(
+                        Self::cmd_bind_vertex_buffers,
                     )
                 },
             },
@@ -1952,8 +1982,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBindVertexBuffers2),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_bind_vertex_buffers2 as vk::PFN_vkCmdBindVertexBuffers2,
+                    std::mem::transmute::<vk::PFN_vkCmdBindVertexBuffers2, vk::PFN_vkVoidFunction>(
+                        Self::cmd_bind_vertex_buffers2,
                     )
                 },
             },
@@ -1965,8 +1995,8 @@ impl<T: Layer> Global<T> {
                 ],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBindVertexBuffers2),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_bind_vertex_buffers2 as vk::PFN_vkCmdBindVertexBuffers2,
+                    std::mem::transmute::<vk::PFN_vkCmdBindVertexBuffers2, vk::PFN_vkVoidFunction>(
+                        Self::cmd_bind_vertex_buffers2,
                     )
                 },
             },
@@ -1975,7 +2005,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBlitImage),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_blit_image as vk::PFN_vkCmdBlitImage)
+                    std::mem::transmute::<vk::PFN_vkCmdBlitImage, vk::PFN_vkVoidFunction>(
+                        Self::cmd_blit_image,
+                    )
                 },
             },
             VulkanCommand {
@@ -1983,7 +2015,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBlitImage2),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_blit_image2 as vk::PFN_vkCmdBlitImage2)
+                    std::mem::transmute::<vk::PFN_vkCmdBlitImage2, vk::PFN_vkVoidFunction>(
+                        Self::cmd_blit_image2,
+                    )
                 },
             },
             VulkanCommand {
@@ -1991,7 +2025,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRCopyCommands2)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBlitImage2),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_blit_image2 as vk::PFN_vkCmdBlitImage2)
+                    std::mem::transmute::<vk::PFN_vkCmdBlitImage2, vk::PFN_vkVoidFunction>(
+                        Self::cmd_blit_image2,
+                    )
                 },
             },
             VulkanCommand {
@@ -2000,10 +2036,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::CmdBuildAccelerationStructureNv),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_build_acceleration_structure_nv
-                            as vk::PFN_vkCmdBuildAccelerationStructureNV,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdBuildAccelerationStructureNV,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_build_acceleration_structure_nv)
                 },
             },
             VulkanCommand {
@@ -2011,8 +2047,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTOpacityMicromap)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdBuildMicromapsExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_build_micromaps_ext as vk::PFN_vkCmdBuildMicromapsEXT,
+                    std::mem::transmute::<vk::PFN_vkCmdBuildMicromapsEXT, vk::PFN_vkVoidFunction>(
+                        Self::cmd_build_micromaps_ext,
                     )
                 },
             },
@@ -2021,8 +2057,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdClearAttachments),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_clear_attachments as vk::PFN_vkCmdClearAttachments,
+                    std::mem::transmute::<vk::PFN_vkCmdClearAttachments, vk::PFN_vkVoidFunction>(
+                        Self::cmd_clear_attachments,
                     )
                 },
             },
@@ -2031,7 +2067,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdClearColorImage),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_clear_color_image as vk::PFN_vkCmdClearColorImage)
+                    std::mem::transmute::<vk::PFN_vkCmdClearColorImage, vk::PFN_vkVoidFunction>(
+                        Self::cmd_clear_color_image,
+                    )
                 },
             },
             VulkanCommand {
@@ -2039,8 +2077,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdClearDepthStencilImage),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_clear_depth_stencil_image as vk::PFN_vkCmdClearDepthStencilImage,
+                    std::mem::transmute::<vk::PFN_vkCmdClearDepthStencilImage, vk::PFN_vkVoidFunction>(
+                        Self::cmd_clear_depth_stencil_image,
                     )
                 },
             },
@@ -2049,8 +2087,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRVideoQueue)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdControlVideoCodingKhr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_control_video_coding_khr as vk::PFN_vkCmdControlVideoCodingKHR,
+                    std::mem::transmute::<vk::PFN_vkCmdControlVideoCodingKHR, vk::PFN_vkVoidFunction>(
+                        Self::cmd_control_video_coding_khr,
                     )
                 },
             },
@@ -2060,10 +2098,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::CmdCopyAccelerationStructureKhr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_copy_acceleration_structure_khr
-                            as vk::PFN_vkCmdCopyAccelerationStructureKHR,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdCopyAccelerationStructureKHR,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_copy_acceleration_structure_khr)
                 },
             },
             VulkanCommand {
@@ -2072,10 +2110,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::CmdCopyAccelerationStructureNv),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_copy_acceleration_structure_nv
-                            as vk::PFN_vkCmdCopyAccelerationStructureNV,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdCopyAccelerationStructureNV,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_copy_acceleration_structure_nv)
                 },
             },
             VulkanCommand {
@@ -2084,10 +2122,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::CmdCopyAccelerationStructureToMemoryKhr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_copy_acceleration_structure_to_memory_khr
-                            as vk::PFN_vkCmdCopyAccelerationStructureToMemoryKHR,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdCopyAccelerationStructureToMemoryKHR,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_copy_acceleration_structure_to_memory_khr)
                 },
             },
             VulkanCommand {
@@ -2095,7 +2133,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdCopyBuffer),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_copy_buffer as vk::PFN_vkCmdCopyBuffer)
+                    std::mem::transmute::<vk::PFN_vkCmdCopyBuffer, vk::PFN_vkVoidFunction>(
+                        Self::cmd_copy_buffer,
+                    )
                 },
             },
             VulkanCommand {
@@ -2103,7 +2143,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdCopyBuffer2),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_copy_buffer2 as vk::PFN_vkCmdCopyBuffer2)
+                    std::mem::transmute::<vk::PFN_vkCmdCopyBuffer2, vk::PFN_vkVoidFunction>(
+                        Self::cmd_copy_buffer2,
+                    )
                 },
             },
             VulkanCommand {
@@ -2111,7 +2153,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRCopyCommands2)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdCopyBuffer2),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_copy_buffer2 as vk::PFN_vkCmdCopyBuffer2)
+                    std::mem::transmute::<vk::PFN_vkCmdCopyBuffer2, vk::PFN_vkVoidFunction>(
+                        Self::cmd_copy_buffer2,
+                    )
                 },
             },
             VulkanCommand {
@@ -2119,8 +2163,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdCopyBufferToImage),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_copy_buffer_to_image as vk::PFN_vkCmdCopyBufferToImage,
+                    std::mem::transmute::<vk::PFN_vkCmdCopyBufferToImage, vk::PFN_vkVoidFunction>(
+                        Self::cmd_copy_buffer_to_image,
                     )
                 },
             },
@@ -2129,8 +2173,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdCopyBufferToImage2),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_copy_buffer_to_image2 as vk::PFN_vkCmdCopyBufferToImage2,
+                    std::mem::transmute::<vk::PFN_vkCmdCopyBufferToImage2, vk::PFN_vkVoidFunction>(
+                        Self::cmd_copy_buffer_to_image2,
                     )
                 },
             },
@@ -2139,8 +2183,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRCopyCommands2)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdCopyBufferToImage2),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_copy_buffer_to_image2 as vk::PFN_vkCmdCopyBufferToImage2,
+                    std::mem::transmute::<vk::PFN_vkCmdCopyBufferToImage2, vk::PFN_vkVoidFunction>(
+                        Self::cmd_copy_buffer_to_image2,
                     )
                 },
             },
@@ -2149,7 +2193,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdCopyImage),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_copy_image as vk::PFN_vkCmdCopyImage)
+                    std::mem::transmute::<vk::PFN_vkCmdCopyImage, vk::PFN_vkVoidFunction>(
+                        Self::cmd_copy_image,
+                    )
                 },
             },
             VulkanCommand {
@@ -2157,7 +2203,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdCopyImage2),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_copy_image2 as vk::PFN_vkCmdCopyImage2)
+                    std::mem::transmute::<vk::PFN_vkCmdCopyImage2, vk::PFN_vkVoidFunction>(
+                        Self::cmd_copy_image2,
+                    )
                 },
             },
             VulkanCommand {
@@ -2165,7 +2213,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRCopyCommands2)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdCopyImage2),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_copy_image2 as vk::PFN_vkCmdCopyImage2)
+                    std::mem::transmute::<vk::PFN_vkCmdCopyImage2, vk::PFN_vkVoidFunction>(
+                        Self::cmd_copy_image2,
+                    )
                 },
             },
             VulkanCommand {
@@ -2173,8 +2223,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdCopyImageToBuffer),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_copy_image_to_buffer as vk::PFN_vkCmdCopyImageToBuffer,
+                    std::mem::transmute::<vk::PFN_vkCmdCopyImageToBuffer, vk::PFN_vkVoidFunction>(
+                        Self::cmd_copy_image_to_buffer,
                     )
                 },
             },
@@ -2183,8 +2233,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdCopyImageToBuffer2),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_copy_image_to_buffer2 as vk::PFN_vkCmdCopyImageToBuffer2,
+                    std::mem::transmute::<vk::PFN_vkCmdCopyImageToBuffer2, vk::PFN_vkVoidFunction>(
+                        Self::cmd_copy_image_to_buffer2,
                     )
                 },
             },
@@ -2193,8 +2243,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRCopyCommands2)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdCopyImageToBuffer2),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_copy_image_to_buffer2 as vk::PFN_vkCmdCopyImageToBuffer2,
+                    std::mem::transmute::<vk::PFN_vkCmdCopyImageToBuffer2, vk::PFN_vkVoidFunction>(
+                        Self::cmd_copy_image_to_buffer2,
                     )
                 },
             },
@@ -2203,8 +2253,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::NVCopyMemoryIndirect)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdCopyMemoryIndirectNv),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_copy_memory_indirect_nv as vk::PFN_vkCmdCopyMemoryIndirectNV,
+                    std::mem::transmute::<vk::PFN_vkCmdCopyMemoryIndirectNV, vk::PFN_vkVoidFunction>(
+                        Self::cmd_copy_memory_indirect_nv,
                     )
                 },
             },
@@ -2214,10 +2264,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::CmdCopyMemoryToAccelerationStructureKhr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_copy_memory_to_acceleration_structure_khr
-                            as vk::PFN_vkCmdCopyMemoryToAccelerationStructureKHR,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdCopyMemoryToAccelerationStructureKHR,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_copy_memory_to_acceleration_structure_khr)
                 },
             },
             VulkanCommand {
@@ -2226,10 +2276,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::CmdCopyMemoryToImageIndirectNv),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_copy_memory_to_image_indirect_nv
-                            as vk::PFN_vkCmdCopyMemoryToImageIndirectNV,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdCopyMemoryToImageIndirectNV,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_copy_memory_to_image_indirect_nv)
                 },
             },
             VulkanCommand {
@@ -2237,10 +2287,10 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTOpacityMicromap)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdCopyMemoryToMicromapExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_copy_memory_to_micromap_ext
-                            as vk::PFN_vkCmdCopyMemoryToMicromapEXT,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdCopyMemoryToMicromapEXT,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_copy_memory_to_micromap_ext)
                 },
             },
             VulkanCommand {
@@ -2248,7 +2298,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTOpacityMicromap)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdCopyMicromapExt),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_copy_micromap_ext as vk::PFN_vkCmdCopyMicromapEXT)
+                    std::mem::transmute::<vk::PFN_vkCmdCopyMicromapEXT, vk::PFN_vkVoidFunction>(
+                        Self::cmd_copy_micromap_ext,
+                    )
                 },
             },
             VulkanCommand {
@@ -2256,10 +2308,10 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTOpacityMicromap)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdCopyMicromapToMemoryExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_copy_micromap_to_memory_ext
-                            as vk::PFN_vkCmdCopyMicromapToMemoryEXT,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdCopyMicromapToMemoryEXT,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_copy_micromap_to_memory_ext)
                 },
             },
             VulkanCommand {
@@ -2267,8 +2319,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdCopyQueryPoolResults),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_copy_query_pool_results as vk::PFN_vkCmdCopyQueryPoolResults,
+                    std::mem::transmute::<vk::PFN_vkCmdCopyQueryPoolResults, vk::PFN_vkVoidFunction>(
+                        Self::cmd_copy_query_pool_results,
                     )
                 },
             },
@@ -2277,8 +2329,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::NVXBinaryImport)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdCuLaunchKernelNvx),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_cu_launch_kernel_nvx as vk::PFN_vkCmdCuLaunchKernelNVX,
+                    std::mem::transmute::<vk::PFN_vkCmdCuLaunchKernelNVX, vk::PFN_vkVoidFunction>(
+                        Self::cmd_cu_launch_kernel_nvx,
                     )
                 },
             },
@@ -2287,8 +2339,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTDebugMarker)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDebugMarkerBeginExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_debug_marker_begin_ext as vk::PFN_vkCmdDebugMarkerBeginEXT,
+                    std::mem::transmute::<vk::PFN_vkCmdDebugMarkerBeginEXT, vk::PFN_vkVoidFunction>(
+                        Self::cmd_debug_marker_begin_ext,
                     )
                 },
             },
@@ -2297,8 +2349,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTDebugMarker)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDebugMarkerEndExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_debug_marker_end_ext as vk::PFN_vkCmdDebugMarkerEndEXT,
+                    std::mem::transmute::<vk::PFN_vkCmdDebugMarkerEndEXT, vk::PFN_vkVoidFunction>(
+                        Self::cmd_debug_marker_end_ext,
                     )
                 },
             },
@@ -2307,8 +2359,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTDebugMarker)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDebugMarkerInsertExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_debug_marker_insert_ext as vk::PFN_vkCmdDebugMarkerInsertEXT,
+                    std::mem::transmute::<vk::PFN_vkCmdDebugMarkerInsertEXT, vk::PFN_vkVoidFunction>(
+                        Self::cmd_debug_marker_insert_ext,
                     )
                 },
             },
@@ -2317,7 +2369,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRVideoDecodeQueue)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDecodeVideoKhr),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_decode_video_khr as vk::PFN_vkCmdDecodeVideoKHR)
+                    std::mem::transmute::<vk::PFN_vkCmdDecodeVideoKHR, vk::PFN_vkVoidFunction>(
+                        Self::cmd_decode_video_khr,
+                    )
                 },
             },
             VulkanCommand {
@@ -2326,10 +2380,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::CmdDecompressMemoryIndirectCountNv),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_decompress_memory_indirect_count_nv
-                            as vk::PFN_vkCmdDecompressMemoryIndirectCountNV,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdDecompressMemoryIndirectCountNV,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_decompress_memory_indirect_count_nv)
                 },
             },
             VulkanCommand {
@@ -2337,8 +2391,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::NVMemoryDecompression)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDecompressMemoryNv),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_decompress_memory_nv as vk::PFN_vkCmdDecompressMemoryNV,
+                    std::mem::transmute::<vk::PFN_vkCmdDecompressMemoryNV, vk::PFN_vkVoidFunction>(
+                        Self::cmd_decompress_memory_nv,
                     )
                 },
             },
@@ -2346,14 +2400,20 @@ impl<T: Layer> Global<T> {
                 name: "vkCmdDispatch",
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDispatch),
-                proc: unsafe { std::mem::transmute(Self::cmd_dispatch as vk::PFN_vkCmdDispatch) },
+                proc: unsafe {
+                    std::mem::transmute::<vk::PFN_vkCmdDispatch, vk::PFN_vkVoidFunction>(
+                        Self::cmd_dispatch,
+                    )
+                },
             },
             VulkanCommand {
                 name: "vkCmdDispatchBase",
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDispatchBase),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_dispatch_base as vk::PFN_vkCmdDispatchBase)
+                    std::mem::transmute::<vk::PFN_vkCmdDispatchBase, vk::PFN_vkVoidFunction>(
+                        Self::cmd_dispatch_base,
+                    )
                 },
             },
             VulkanCommand {
@@ -2361,7 +2421,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRDeviceGroup)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDispatchBase),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_dispatch_base as vk::PFN_vkCmdDispatchBase)
+                    std::mem::transmute::<vk::PFN_vkCmdDispatchBase, vk::PFN_vkVoidFunction>(
+                        Self::cmd_dispatch_base,
+                    )
                 },
             },
             VulkanCommand {
@@ -2369,8 +2431,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDispatchIndirect),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_dispatch_indirect as vk::PFN_vkCmdDispatchIndirect,
+                    std::mem::transmute::<vk::PFN_vkCmdDispatchIndirect, vk::PFN_vkVoidFunction>(
+                        Self::cmd_dispatch_indirect,
                     )
                 },
             },
@@ -2378,14 +2440,18 @@ impl<T: Layer> Global<T> {
                 name: "vkCmdDraw",
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDraw),
-                proc: unsafe { std::mem::transmute(Self::cmd_draw as vk::PFN_vkCmdDraw) },
+                proc: unsafe {
+                    std::mem::transmute::<vk::PFN_vkCmdDraw, vk::PFN_vkVoidFunction>(Self::cmd_draw)
+                },
             },
             VulkanCommand {
                 name: "vkCmdDrawIndexed",
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDrawIndexed),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_draw_indexed as vk::PFN_vkCmdDrawIndexed)
+                    std::mem::transmute::<vk::PFN_vkCmdDrawIndexed, vk::PFN_vkVoidFunction>(
+                        Self::cmd_draw_indexed,
+                    )
                 },
             },
             VulkanCommand {
@@ -2393,8 +2459,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDrawIndexedIndirect),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_draw_indexed_indirect as vk::PFN_vkCmdDrawIndexedIndirect,
+                    std::mem::transmute::<vk::PFN_vkCmdDrawIndexedIndirect, vk::PFN_vkVoidFunction>(
+                        Self::cmd_draw_indexed_indirect,
                     )
                 },
             },
@@ -2403,10 +2469,10 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 2 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDrawIndexedIndirectCount),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_draw_indexed_indirect_count
-                            as vk::PFN_vkCmdDrawIndexedIndirectCount,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdDrawIndexedIndirectCount,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_draw_indexed_indirect_count)
                 },
             },
             VulkanCommand {
@@ -2414,10 +2480,10 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::AMDDrawIndirectCount)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDrawIndexedIndirectCount),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_draw_indexed_indirect_count
-                            as vk::PFN_vkCmdDrawIndexedIndirectCount,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdDrawIndexedIndirectCount,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_draw_indexed_indirect_count)
                 },
             },
             VulkanCommand {
@@ -2425,10 +2491,10 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRDrawIndirectCount)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDrawIndexedIndirectCount),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_draw_indexed_indirect_count
-                            as vk::PFN_vkCmdDrawIndexedIndirectCount,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdDrawIndexedIndirectCount,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_draw_indexed_indirect_count)
                 },
             },
             VulkanCommand {
@@ -2436,7 +2502,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDrawIndirect),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_draw_indirect as vk::PFN_vkCmdDrawIndirect)
+                    std::mem::transmute::<vk::PFN_vkCmdDrawIndirect, vk::PFN_vkVoidFunction>(
+                        Self::cmd_draw_indirect,
+                    )
                 },
             },
             VulkanCommand {
@@ -2444,10 +2512,10 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTTransformFeedback)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDrawIndirectByteCountExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_draw_indirect_byte_count_ext
-                            as vk::PFN_vkCmdDrawIndirectByteCountEXT,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdDrawIndirectByteCountEXT,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_draw_indirect_byte_count_ext)
                 },
             },
             VulkanCommand {
@@ -2455,8 +2523,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 2 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDrawIndirectCount),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_draw_indirect_count as vk::PFN_vkCmdDrawIndirectCount,
+                    std::mem::transmute::<vk::PFN_vkCmdDrawIndirectCount, vk::PFN_vkVoidFunction>(
+                        Self::cmd_draw_indirect_count,
                     )
                 },
             },
@@ -2465,8 +2533,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::AMDDrawIndirectCount)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDrawIndirectCount),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_draw_indirect_count as vk::PFN_vkCmdDrawIndirectCount,
+                    std::mem::transmute::<vk::PFN_vkCmdDrawIndirectCount, vk::PFN_vkVoidFunction>(
+                        Self::cmd_draw_indirect_count,
                     )
                 },
             },
@@ -2475,8 +2543,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRDrawIndirectCount)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDrawIndirectCount),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_draw_indirect_count as vk::PFN_vkCmdDrawIndirectCount,
+                    std::mem::transmute::<vk::PFN_vkCmdDrawIndirectCount, vk::PFN_vkVoidFunction>(
+                        Self::cmd_draw_indirect_count,
                     )
                 },
             },
@@ -2485,8 +2553,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTMeshShader)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDrawMeshTasksExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_draw_mesh_tasks_ext as vk::PFN_vkCmdDrawMeshTasksEXT,
+                    std::mem::transmute::<vk::PFN_vkCmdDrawMeshTasksEXT, vk::PFN_vkVoidFunction>(
+                        Self::cmd_draw_mesh_tasks_ext,
                     )
                 },
             },
@@ -2496,10 +2564,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::CmdDrawMeshTasksIndirectCountExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_draw_mesh_tasks_indirect_count_ext
-                            as vk::PFN_vkCmdDrawMeshTasksIndirectCountEXT,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdDrawMeshTasksIndirectCountEXT,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_draw_mesh_tasks_indirect_count_ext)
                 },
             },
             VulkanCommand {
@@ -2508,10 +2576,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::CmdDrawMeshTasksIndirectCountNv),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_draw_mesh_tasks_indirect_count_nv
-                            as vk::PFN_vkCmdDrawMeshTasksIndirectCountNV,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdDrawMeshTasksIndirectCountNV,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_draw_mesh_tasks_indirect_count_nv)
                 },
             },
             VulkanCommand {
@@ -2519,10 +2587,10 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTMeshShader)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDrawMeshTasksIndirectExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_draw_mesh_tasks_indirect_ext
-                            as vk::PFN_vkCmdDrawMeshTasksIndirectEXT,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdDrawMeshTasksIndirectEXT,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_draw_mesh_tasks_indirect_ext)
                 },
             },
             VulkanCommand {
@@ -2530,10 +2598,10 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::NVMeshShader)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDrawMeshTasksIndirectNv),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_draw_mesh_tasks_indirect_nv
-                            as vk::PFN_vkCmdDrawMeshTasksIndirectNV,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdDrawMeshTasksIndirectNV,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_draw_mesh_tasks_indirect_nv)
                 },
             },
             VulkanCommand {
@@ -2541,8 +2609,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::NVMeshShader)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDrawMeshTasksNv),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_draw_mesh_tasks_nv as vk::PFN_vkCmdDrawMeshTasksNV,
+                    std::mem::transmute::<vk::PFN_vkCmdDrawMeshTasksNV, vk::PFN_vkVoidFunction>(
+                        Self::cmd_draw_mesh_tasks_nv,
                     )
                 },
             },
@@ -2551,7 +2619,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTMultiDraw)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDrawMultiExt),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_draw_multi_ext as vk::PFN_vkCmdDrawMultiEXT)
+                    std::mem::transmute::<vk::PFN_vkCmdDrawMultiEXT, vk::PFN_vkVoidFunction>(
+                        Self::cmd_draw_multi_ext,
+                    )
                 },
             },
             VulkanCommand {
@@ -2559,8 +2629,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTMultiDraw)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdDrawMultiIndexedExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_draw_multi_indexed_ext as vk::PFN_vkCmdDrawMultiIndexedEXT,
+                    std::mem::transmute::<vk::PFN_vkCmdDrawMultiIndexedEXT, vk::PFN_vkVoidFunction>(
+                        Self::cmd_draw_multi_indexed_ext,
                     )
                 },
             },
@@ -2569,7 +2639,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRVideoEncodeQueue)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdEncodeVideoKhr),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_encode_video_khr as vk::PFN_vkCmdEncodeVideoKHR)
+                    std::mem::transmute::<vk::PFN_vkCmdEncodeVideoKHR, vk::PFN_vkVoidFunction>(
+                        Self::cmd_encode_video_khr,
+                    )
                 },
             },
             VulkanCommand {
@@ -2578,10 +2650,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::CmdEndConditionalRenderingExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_end_conditional_rendering_ext
-                            as vk::PFN_vkCmdEndConditionalRenderingEXT,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdEndConditionalRenderingEXT,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_end_conditional_rendering_ext)
                 },
             },
             VulkanCommand {
@@ -2589,8 +2661,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTDebugUtils)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdEndDebugUtilsLabelExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_end_debug_utils_label_ext as vk::PFN_vkCmdEndDebugUtilsLabelEXT,
+                    std::mem::transmute::<vk::PFN_vkCmdEndDebugUtilsLabelEXT, vk::PFN_vkVoidFunction>(
+                        Self::cmd_end_debug_utils_label_ext,
                     )
                 },
             },
@@ -2598,15 +2670,19 @@ impl<T: Layer> Global<T> {
                 name: "vkCmdEndQuery",
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdEndQuery),
-                proc: unsafe { std::mem::transmute(Self::cmd_end_query as vk::PFN_vkCmdEndQuery) },
+                proc: unsafe {
+                    std::mem::transmute::<vk::PFN_vkCmdEndQuery, vk::PFN_vkVoidFunction>(
+                        Self::cmd_end_query,
+                    )
+                },
             },
             VulkanCommand {
                 name: "vkCmdEndQueryIndexedEXT",
                 features: smallvec![Feature::Extension(Extension::EXTTransformFeedback)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdEndQueryIndexedExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_end_query_indexed_ext as vk::PFN_vkCmdEndQueryIndexedEXT,
+                    std::mem::transmute::<vk::PFN_vkCmdEndQueryIndexedEXT, vk::PFN_vkVoidFunction>(
+                        Self::cmd_end_query_indexed_ext,
                     )
                 },
             },
@@ -2615,7 +2691,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdEndRenderPass),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_end_render_pass as vk::PFN_vkCmdEndRenderPass)
+                    std::mem::transmute::<vk::PFN_vkCmdEndRenderPass, vk::PFN_vkVoidFunction>(
+                        Self::cmd_end_render_pass,
+                    )
                 },
             },
             VulkanCommand {
@@ -2623,7 +2701,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 2 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdEndRenderPass2),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_end_render_pass2 as vk::PFN_vkCmdEndRenderPass2)
+                    std::mem::transmute::<vk::PFN_vkCmdEndRenderPass2, vk::PFN_vkVoidFunction>(
+                        Self::cmd_end_render_pass2,
+                    )
                 },
             },
             VulkanCommand {
@@ -2631,7 +2711,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRCreateRenderpass2)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdEndRenderPass2),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_end_render_pass2 as vk::PFN_vkCmdEndRenderPass2)
+                    std::mem::transmute::<vk::PFN_vkCmdEndRenderPass2, vk::PFN_vkVoidFunction>(
+                        Self::cmd_end_render_pass2,
+                    )
                 },
             },
             VulkanCommand {
@@ -2639,7 +2721,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdEndRendering),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_end_rendering as vk::PFN_vkCmdEndRendering)
+                    std::mem::transmute::<vk::PFN_vkCmdEndRendering, vk::PFN_vkVoidFunction>(
+                        Self::cmd_end_rendering,
+                    )
                 },
             },
             VulkanCommand {
@@ -2647,7 +2731,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRDynamicRendering)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdEndRendering),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_end_rendering as vk::PFN_vkCmdEndRendering)
+                    std::mem::transmute::<vk::PFN_vkCmdEndRendering, vk::PFN_vkVoidFunction>(
+                        Self::cmd_end_rendering,
+                    )
                 },
             },
             VulkanCommand {
@@ -2655,10 +2741,10 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTTransformFeedback)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdEndTransformFeedbackExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_end_transform_feedback_ext
-                            as vk::PFN_vkCmdEndTransformFeedbackEXT,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdEndTransformFeedbackEXT,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_end_transform_feedback_ext)
                 },
             },
             VulkanCommand {
@@ -2666,8 +2752,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRVideoQueue)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdEndVideoCodingKhr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_end_video_coding_khr as vk::PFN_vkCmdEndVideoCodingKHR,
+                    std::mem::transmute::<vk::PFN_vkCmdEndVideoCodingKHR, vk::PFN_vkVoidFunction>(
+                        Self::cmd_end_video_coding_khr,
                     )
                 },
             },
@@ -2676,7 +2762,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdExecuteCommands),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_execute_commands as vk::PFN_vkCmdExecuteCommands)
+                    std::mem::transmute::<vk::PFN_vkCmdExecuteCommands, vk::PFN_vkVoidFunction>(
+                        Self::cmd_execute_commands,
+                    )
                 },
             },
             VulkanCommand {
@@ -2685,10 +2773,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::CmdExecuteGeneratedCommandsNv),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_execute_generated_commands_nv
-                            as vk::PFN_vkCmdExecuteGeneratedCommandsNV,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdExecuteGeneratedCommandsNV,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_execute_generated_commands_nv)
                 },
             },
             VulkanCommand {
@@ -2696,7 +2784,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdFillBuffer),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_fill_buffer as vk::PFN_vkCmdFillBuffer)
+                    std::mem::transmute::<vk::PFN_vkCmdFillBuffer, vk::PFN_vkVoidFunction>(
+                        Self::cmd_fill_buffer,
+                    )
                 },
             },
             VulkanCommand {
@@ -2704,10 +2794,10 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTDebugUtils)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdInsertDebugUtilsLabelExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_insert_debug_utils_label_ext
-                            as vk::PFN_vkCmdInsertDebugUtilsLabelEXT,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdInsertDebugUtilsLabelEXT,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_insert_debug_utils_label_ext)
                 },
             },
             VulkanCommand {
@@ -2715,7 +2805,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdNextSubpass),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_next_subpass as vk::PFN_vkCmdNextSubpass)
+                    std::mem::transmute::<vk::PFN_vkCmdNextSubpass, vk::PFN_vkVoidFunction>(
+                        Self::cmd_next_subpass,
+                    )
                 },
             },
             VulkanCommand {
@@ -2723,7 +2815,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 2 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdNextSubpass2),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_next_subpass2 as vk::PFN_vkCmdNextSubpass2)
+                    std::mem::transmute::<vk::PFN_vkCmdNextSubpass2, vk::PFN_vkVoidFunction>(
+                        Self::cmd_next_subpass2,
+                    )
                 },
             },
             VulkanCommand {
@@ -2731,7 +2825,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRCreateRenderpass2)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdNextSubpass2),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_next_subpass2 as vk::PFN_vkCmdNextSubpass2)
+                    std::mem::transmute::<vk::PFN_vkCmdNextSubpass2, vk::PFN_vkVoidFunction>(
+                        Self::cmd_next_subpass2,
+                    )
                 },
             },
             VulkanCommand {
@@ -2739,8 +2835,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::NVOpticalFlow)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdOpticalFlowExecuteNv),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_optical_flow_execute_nv as vk::PFN_vkCmdOpticalFlowExecuteNV,
+                    std::mem::transmute::<vk::PFN_vkCmdOpticalFlowExecuteNV, vk::PFN_vkVoidFunction>(
+                        Self::cmd_optical_flow_execute_nv,
                     )
                 },
             },
@@ -2749,7 +2845,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdPipelineBarrier),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_pipeline_barrier as vk::PFN_vkCmdPipelineBarrier)
+                    std::mem::transmute::<vk::PFN_vkCmdPipelineBarrier, vk::PFN_vkVoidFunction>(
+                        Self::cmd_pipeline_barrier,
+                    )
                 },
             },
             VulkanCommand {
@@ -2757,8 +2855,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdPipelineBarrier2),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_pipeline_barrier2 as vk::PFN_vkCmdPipelineBarrier2,
+                    std::mem::transmute::<vk::PFN_vkCmdPipelineBarrier2, vk::PFN_vkVoidFunction>(
+                        Self::cmd_pipeline_barrier2,
                     )
                 },
             },
@@ -2767,8 +2865,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRSynchronization2)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdPipelineBarrier2),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_pipeline_barrier2 as vk::PFN_vkCmdPipelineBarrier2,
+                    std::mem::transmute::<vk::PFN_vkCmdPipelineBarrier2, vk::PFN_vkVoidFunction>(
+                        Self::cmd_pipeline_barrier2,
                     )
                 },
             },
@@ -2778,10 +2876,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::CmdPreprocessGeneratedCommandsNv),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_preprocess_generated_commands_nv
-                            as vk::PFN_vkCmdPreprocessGeneratedCommandsNV,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdPreprocessGeneratedCommandsNV,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_preprocess_generated_commands_nv)
                 },
             },
             VulkanCommand {
@@ -2789,7 +2887,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdPushConstants),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_push_constants as vk::PFN_vkCmdPushConstants)
+                    std::mem::transmute::<vk::PFN_vkCmdPushConstants, vk::PFN_vkVoidFunction>(
+                        Self::cmd_push_constants,
+                    )
                 },
             },
             VulkanCommand {
@@ -2797,8 +2897,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRPushDescriptor)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdPushDescriptorSetKhr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_push_descriptor_set_khr as vk::PFN_vkCmdPushDescriptorSetKHR,
+                    std::mem::transmute::<vk::PFN_vkCmdPushDescriptorSetKHR, vk::PFN_vkVoidFunction>(
+                        Self::cmd_push_descriptor_set_khr,
                     )
                 },
             },
@@ -2811,10 +2911,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::CmdPushDescriptorSetWithTemplateKhr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_push_descriptor_set_with_template_khr
-                            as vk::PFN_vkCmdPushDescriptorSetWithTemplateKHR,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdPushDescriptorSetWithTemplateKHR,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_push_descriptor_set_with_template_khr)
                 },
             },
             VulkanCommand {
@@ -2822,7 +2922,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdResetEvent),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_reset_event as vk::PFN_vkCmdResetEvent)
+                    std::mem::transmute::<vk::PFN_vkCmdResetEvent, vk::PFN_vkVoidFunction>(
+                        Self::cmd_reset_event,
+                    )
                 },
             },
             VulkanCommand {
@@ -2830,7 +2932,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdResetEvent2),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_reset_event2 as vk::PFN_vkCmdResetEvent2)
+                    std::mem::transmute::<vk::PFN_vkCmdResetEvent2, vk::PFN_vkVoidFunction>(
+                        Self::cmd_reset_event2,
+                    )
                 },
             },
             VulkanCommand {
@@ -2838,7 +2942,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRSynchronization2)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdResetEvent2),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_reset_event2 as vk::PFN_vkCmdResetEvent2)
+                    std::mem::transmute::<vk::PFN_vkCmdResetEvent2, vk::PFN_vkVoidFunction>(
+                        Self::cmd_reset_event2,
+                    )
                 },
             },
             VulkanCommand {
@@ -2846,7 +2952,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdResetQueryPool),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_reset_query_pool as vk::PFN_vkCmdResetQueryPool)
+                    std::mem::transmute::<vk::PFN_vkCmdResetQueryPool, vk::PFN_vkVoidFunction>(
+                        Self::cmd_reset_query_pool,
+                    )
                 },
             },
             VulkanCommand {
@@ -2854,7 +2962,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdResolveImage),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_resolve_image as vk::PFN_vkCmdResolveImage)
+                    std::mem::transmute::<vk::PFN_vkCmdResolveImage, vk::PFN_vkVoidFunction>(
+                        Self::cmd_resolve_image,
+                    )
                 },
             },
             VulkanCommand {
@@ -2862,7 +2972,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdResolveImage2),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_resolve_image2 as vk::PFN_vkCmdResolveImage2)
+                    std::mem::transmute::<vk::PFN_vkCmdResolveImage2, vk::PFN_vkVoidFunction>(
+                        Self::cmd_resolve_image2,
+                    )
                 },
             },
             VulkanCommand {
@@ -2870,7 +2982,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRCopyCommands2)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdResolveImage2),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_resolve_image2 as vk::PFN_vkCmdResolveImage2)
+                    std::mem::transmute::<vk::PFN_vkCmdResolveImage2, vk::PFN_vkVoidFunction>(
+                        Self::cmd_resolve_image2,
+                    )
                 },
             },
             VulkanCommand {
@@ -2882,10 +2996,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::CmdSetAlphaToCoverageEnableExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_alpha_to_coverage_enable_ext
-                            as vk::PFN_vkCmdSetAlphaToCoverageEnableEXT,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdSetAlphaToCoverageEnableEXT,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_set_alpha_to_coverage_enable_ext)
                 },
             },
             VulkanCommand {
@@ -2896,9 +3010,8 @@ impl<T: Layer> Global<T> {
                 ],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetAlphaToOneEnableExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_alpha_to_one_enable_ext
-                            as vk::PFN_vkCmdSetAlphaToOneEnableEXT,
+                    std::mem::transmute::<vk::PFN_vkCmdSetAlphaToOneEnableEXT, vk::PFN_vkVoidFunction>(
+                        Self::cmd_set_alpha_to_one_enable_ext,
                     )
                 },
             },
@@ -2907,8 +3020,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetBlendConstants),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_blend_constants as vk::PFN_vkCmdSetBlendConstants,
+                    std::mem::transmute::<vk::PFN_vkCmdSetBlendConstants, vk::PFN_vkVoidFunction>(
+                        Self::cmd_set_blend_constants,
                     )
                 },
             },
@@ -2917,7 +3030,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::NVDeviceDiagnosticCheckpoints)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetCheckpointNv),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_set_checkpoint_nv as vk::PFN_vkCmdSetCheckpointNV)
+                    std::mem::transmute::<vk::PFN_vkCmdSetCheckpointNV, vk::PFN_vkVoidFunction>(
+                        Self::cmd_set_checkpoint_nv,
+                    )
                 },
             },
             VulkanCommand {
@@ -2925,8 +3040,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::NVShadingRateImage)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetCoarseSampleOrderNv),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_coarse_sample_order_nv as vk::PFN_vkCmdSetCoarseSampleOrderNV,
+                    std::mem::transmute::<vk::PFN_vkCmdSetCoarseSampleOrderNV, vk::PFN_vkVoidFunction>(
+                        Self::cmd_set_coarse_sample_order_nv,
                     )
                 },
             },
@@ -2938,10 +3053,10 @@ impl<T: Layer> Global<T> {
                 ],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetColorBlendAdvancedExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_color_blend_advanced_ext
-                            as vk::PFN_vkCmdSetColorBlendAdvancedEXT,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdSetColorBlendAdvancedEXT,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_set_color_blend_advanced_ext)
                 },
             },
             VulkanCommand {
@@ -2952,8 +3067,8 @@ impl<T: Layer> Global<T> {
                 ],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetColorBlendEnableExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_color_blend_enable_ext as vk::PFN_vkCmdSetColorBlendEnableEXT,
+                    std::mem::transmute::<vk::PFN_vkCmdSetColorBlendEnableEXT, vk::PFN_vkVoidFunction>(
+                        Self::cmd_set_color_blend_enable_ext,
                     )
                 },
             },
@@ -2965,10 +3080,10 @@ impl<T: Layer> Global<T> {
                 ],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetColorBlendEquationExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_color_blend_equation_ext
-                            as vk::PFN_vkCmdSetColorBlendEquationEXT,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdSetColorBlendEquationEXT,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_set_color_blend_equation_ext)
                 },
             },
             VulkanCommand {
@@ -2976,8 +3091,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTColorWriteEnable)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetColorWriteEnableExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_color_write_enable_ext as vk::PFN_vkCmdSetColorWriteEnableEXT,
+                    std::mem::transmute::<vk::PFN_vkCmdSetColorWriteEnableEXT, vk::PFN_vkVoidFunction>(
+                        Self::cmd_set_color_write_enable_ext,
                     )
                 },
             },
@@ -2989,8 +3104,8 @@ impl<T: Layer> Global<T> {
                 ],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetColorWriteMaskExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_color_write_mask_ext as vk::PFN_vkCmdSetColorWriteMaskEXT,
+                    std::mem::transmute::<vk::PFN_vkCmdSetColorWriteMaskEXT, vk::PFN_vkVoidFunction>(
+                        Self::cmd_set_color_write_mask_ext,
                     )
                 },
             },
@@ -3003,10 +3118,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::CmdSetConservativeRasterizationModeExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_conservative_rasterization_mode_ext
-                            as vk::PFN_vkCmdSetConservativeRasterizationModeEXT,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdSetConservativeRasterizationModeEXT,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_set_conservative_rasterization_mode_ext)
                 },
             },
             VulkanCommand {
@@ -3018,10 +3133,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::CmdSetCoverageModulationModeNv),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_coverage_modulation_mode_nv
-                            as vk::PFN_vkCmdSetCoverageModulationModeNV,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdSetCoverageModulationModeNV,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_set_coverage_modulation_mode_nv)
                 },
             },
             VulkanCommand {
@@ -3033,10 +3148,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::CmdSetCoverageModulationTableEnableNv),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_coverage_modulation_table_enable_nv
-                            as vk::PFN_vkCmdSetCoverageModulationTableEnableNV,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdSetCoverageModulationTableEnableNV,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_set_coverage_modulation_table_enable_nv)
                 },
             },
             VulkanCommand {
@@ -3048,10 +3163,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::CmdSetCoverageModulationTableNv),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_coverage_modulation_table_nv
-                            as vk::PFN_vkCmdSetCoverageModulationTableNV,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdSetCoverageModulationTableNV,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_set_coverage_modulation_table_nv)
                 },
             },
             VulkanCommand {
@@ -3063,10 +3178,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::CmdSetCoverageReductionModeNv),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_coverage_reduction_mode_nv
-                            as vk::PFN_vkCmdSetCoverageReductionModeNV,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdSetCoverageReductionModeNV,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_set_coverage_reduction_mode_nv)
                 },
             },
             VulkanCommand {
@@ -3078,10 +3193,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::CmdSetCoverageToColorEnableNv),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_coverage_to_color_enable_nv
-                            as vk::PFN_vkCmdSetCoverageToColorEnableNV,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdSetCoverageToColorEnableNV,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_set_coverage_to_color_enable_nv)
                 },
             },
             VulkanCommand {
@@ -3093,10 +3208,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::CmdSetCoverageToColorLocationNv),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_coverage_to_color_location_nv
-                            as vk::PFN_vkCmdSetCoverageToColorLocationNV,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdSetCoverageToColorLocationNV,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_set_coverage_to_color_location_nv)
                 },
             },
             VulkanCommand {
@@ -3104,7 +3219,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetCullMode),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_set_cull_mode as vk::PFN_vkCmdSetCullMode)
+                    std::mem::transmute::<vk::PFN_vkCmdSetCullMode, vk::PFN_vkVoidFunction>(
+                        Self::cmd_set_cull_mode,
+                    )
                 },
             },
             VulkanCommand {
@@ -3115,7 +3232,9 @@ impl<T: Layer> Global<T> {
                 ],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetCullMode),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_set_cull_mode as vk::PFN_vkCmdSetCullMode)
+                    std::mem::transmute::<vk::PFN_vkCmdSetCullMode, vk::PFN_vkVoidFunction>(
+                        Self::cmd_set_cull_mode,
+                    )
                 },
             },
             VulkanCommand {
@@ -3123,7 +3242,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetDepthBias),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_set_depth_bias as vk::PFN_vkCmdSetDepthBias)
+                    std::mem::transmute::<vk::PFN_vkCmdSetDepthBias, vk::PFN_vkVoidFunction>(
+                        Self::cmd_set_depth_bias,
+                    )
                 },
             },
             VulkanCommand {
@@ -3131,8 +3252,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetDepthBiasEnable),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_depth_bias_enable as vk::PFN_vkCmdSetDepthBiasEnable,
+                    std::mem::transmute::<vk::PFN_vkCmdSetDepthBiasEnable, vk::PFN_vkVoidFunction>(
+                        Self::cmd_set_depth_bias_enable,
                     )
                 },
             },
@@ -3144,8 +3265,8 @@ impl<T: Layer> Global<T> {
                 ],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetDepthBiasEnable),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_depth_bias_enable as vk::PFN_vkCmdSetDepthBiasEnable,
+                    std::mem::transmute::<vk::PFN_vkCmdSetDepthBiasEnable, vk::PFN_vkVoidFunction>(
+                        Self::cmd_set_depth_bias_enable,
                     )
                 },
             },
@@ -3154,7 +3275,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetDepthBounds),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_set_depth_bounds as vk::PFN_vkCmdSetDepthBounds)
+                    std::mem::transmute::<vk::PFN_vkCmdSetDepthBounds, vk::PFN_vkVoidFunction>(
+                        Self::cmd_set_depth_bounds,
+                    )
                 },
             },
             VulkanCommand {
@@ -3162,10 +3285,10 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetDepthBoundsTestEnable),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_depth_bounds_test_enable
-                            as vk::PFN_vkCmdSetDepthBoundsTestEnable,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdSetDepthBoundsTestEnable,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_set_depth_bounds_test_enable)
                 },
             },
             VulkanCommand {
@@ -3176,10 +3299,10 @@ impl<T: Layer> Global<T> {
                 ],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetDepthBoundsTestEnable),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_depth_bounds_test_enable
-                            as vk::PFN_vkCmdSetDepthBoundsTestEnable,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdSetDepthBoundsTestEnable,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_set_depth_bounds_test_enable)
                 },
             },
             VulkanCommand {
@@ -3190,8 +3313,8 @@ impl<T: Layer> Global<T> {
                 ],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetDepthClampEnableExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_depth_clamp_enable_ext as vk::PFN_vkCmdSetDepthClampEnableEXT,
+                    std::mem::transmute::<vk::PFN_vkCmdSetDepthClampEnableEXT, vk::PFN_vkVoidFunction>(
+                        Self::cmd_set_depth_clamp_enable_ext,
                     )
                 },
             },
@@ -3203,8 +3326,8 @@ impl<T: Layer> Global<T> {
                 ],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetDepthClipEnableExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_depth_clip_enable_ext as vk::PFN_vkCmdSetDepthClipEnableEXT,
+                    std::mem::transmute::<vk::PFN_vkCmdSetDepthClipEnableEXT, vk::PFN_vkVoidFunction>(
+                        Self::cmd_set_depth_clip_enable_ext,
                     )
                 },
             },
@@ -3217,10 +3340,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::CmdSetDepthClipNegativeOneToOneExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_depth_clip_negative_one_to_one_ext
-                            as vk::PFN_vkCmdSetDepthClipNegativeOneToOneEXT,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdSetDepthClipNegativeOneToOneEXT,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_set_depth_clip_negative_one_to_one_ext)
                 },
             },
             VulkanCommand {
@@ -3228,8 +3351,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetDepthCompareOp),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_depth_compare_op as vk::PFN_vkCmdSetDepthCompareOp,
+                    std::mem::transmute::<vk::PFN_vkCmdSetDepthCompareOp, vk::PFN_vkVoidFunction>(
+                        Self::cmd_set_depth_compare_op,
                     )
                 },
             },
@@ -3241,8 +3364,8 @@ impl<T: Layer> Global<T> {
                 ],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetDepthCompareOp),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_depth_compare_op as vk::PFN_vkCmdSetDepthCompareOp,
+                    std::mem::transmute::<vk::PFN_vkCmdSetDepthCompareOp, vk::PFN_vkVoidFunction>(
+                        Self::cmd_set_depth_compare_op,
                     )
                 },
             },
@@ -3251,8 +3374,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetDepthTestEnable),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_depth_test_enable as vk::PFN_vkCmdSetDepthTestEnable,
+                    std::mem::transmute::<vk::PFN_vkCmdSetDepthTestEnable, vk::PFN_vkVoidFunction>(
+                        Self::cmd_set_depth_test_enable,
                     )
                 },
             },
@@ -3264,8 +3387,8 @@ impl<T: Layer> Global<T> {
                 ],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetDepthTestEnable),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_depth_test_enable as vk::PFN_vkCmdSetDepthTestEnable,
+                    std::mem::transmute::<vk::PFN_vkCmdSetDepthTestEnable, vk::PFN_vkVoidFunction>(
+                        Self::cmd_set_depth_test_enable,
                     )
                 },
             },
@@ -3274,8 +3397,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetDepthWriteEnable),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_depth_write_enable as vk::PFN_vkCmdSetDepthWriteEnable,
+                    std::mem::transmute::<vk::PFN_vkCmdSetDepthWriteEnable, vk::PFN_vkVoidFunction>(
+                        Self::cmd_set_depth_write_enable,
                     )
                 },
             },
@@ -3287,8 +3410,8 @@ impl<T: Layer> Global<T> {
                 ],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetDepthWriteEnable),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_depth_write_enable as vk::PFN_vkCmdSetDepthWriteEnable,
+                    std::mem::transmute::<vk::PFN_vkCmdSetDepthWriteEnable, vk::PFN_vkVoidFunction>(
+                        Self::cmd_set_depth_write_enable,
                     )
                 },
             },
@@ -3298,10 +3421,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::CmdSetDescriptorBufferOffsetsExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_descriptor_buffer_offsets_ext
-                            as vk::PFN_vkCmdSetDescriptorBufferOffsetsEXT,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdSetDescriptorBufferOffsetsEXT,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_set_descriptor_buffer_offsets_ext)
                 },
             },
             VulkanCommand {
@@ -3309,7 +3432,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetDeviceMask),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_set_device_mask as vk::PFN_vkCmdSetDeviceMask)
+                    std::mem::transmute::<vk::PFN_vkCmdSetDeviceMask, vk::PFN_vkVoidFunction>(
+                        Self::cmd_set_device_mask,
+                    )
                 },
             },
             VulkanCommand {
@@ -3317,7 +3442,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRDeviceGroup)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetDeviceMask),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_set_device_mask as vk::PFN_vkCmdSetDeviceMask)
+                    std::mem::transmute::<vk::PFN_vkCmdSetDeviceMask, vk::PFN_vkVoidFunction>(
+                        Self::cmd_set_device_mask,
+                    )
                 },
             },
             VulkanCommand {
@@ -3325,8 +3452,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTDiscardRectangles)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetDiscardRectangleExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_discard_rectangle_ext as vk::PFN_vkCmdSetDiscardRectangleEXT,
+                    std::mem::transmute::<vk::PFN_vkCmdSetDiscardRectangleEXT, vk::PFN_vkVoidFunction>(
+                        Self::cmd_set_discard_rectangle_ext,
                     )
                 },
             },
@@ -3334,14 +3461,20 @@ impl<T: Layer> Global<T> {
                 name: "vkCmdSetEvent",
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetEvent),
-                proc: unsafe { std::mem::transmute(Self::cmd_set_event as vk::PFN_vkCmdSetEvent) },
+                proc: unsafe {
+                    std::mem::transmute::<vk::PFN_vkCmdSetEvent, vk::PFN_vkVoidFunction>(
+                        Self::cmd_set_event,
+                    )
+                },
             },
             VulkanCommand {
                 name: "vkCmdSetEvent2",
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetEvent2),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_set_event2 as vk::PFN_vkCmdSetEvent2)
+                    std::mem::transmute::<vk::PFN_vkCmdSetEvent2, vk::PFN_vkVoidFunction>(
+                        Self::cmd_set_event2,
+                    )
                 },
             },
             VulkanCommand {
@@ -3349,7 +3482,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRSynchronization2)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetEvent2),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_set_event2 as vk::PFN_vkCmdSetEvent2)
+                    std::mem::transmute::<vk::PFN_vkCmdSetEvent2, vk::PFN_vkVoidFunction>(
+                        Self::cmd_set_event2,
+                    )
                 },
             },
             VulkanCommand {
@@ -3357,8 +3492,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::NVScissorExclusive)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetExclusiveScissorNv),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_exclusive_scissor_nv as vk::PFN_vkCmdSetExclusiveScissorNV,
+                    std::mem::transmute::<vk::PFN_vkCmdSetExclusiveScissorNV, vk::PFN_vkVoidFunction>(
+                        Self::cmd_set_exclusive_scissor_nv,
                     )
                 },
             },
@@ -3371,10 +3506,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::CmdSetExtraPrimitiveOverestimationSizeExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_extra_primitive_overestimation_size_ext
-                            as vk::PFN_vkCmdSetExtraPrimitiveOverestimationSizeEXT,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdSetExtraPrimitiveOverestimationSizeEXT,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_set_extra_primitive_overestimation_size_ext)
                 },
             },
             VulkanCommand {
@@ -3383,10 +3518,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::CmdSetFragmentShadingRateEnumNv),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_fragment_shading_rate_enum_nv
-                            as vk::PFN_vkCmdSetFragmentShadingRateEnumNV,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdSetFragmentShadingRateEnumNV,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_set_fragment_shading_rate_enum_nv)
                 },
             },
             VulkanCommand {
@@ -3394,10 +3529,10 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRFragmentShadingRate)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetFragmentShadingRateKhr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_fragment_shading_rate_khr
-                            as vk::PFN_vkCmdSetFragmentShadingRateKHR,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdSetFragmentShadingRateKHR,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_set_fragment_shading_rate_khr)
                 },
             },
             VulkanCommand {
@@ -3405,7 +3540,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetFrontFace),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_set_front_face as vk::PFN_vkCmdSetFrontFace)
+                    std::mem::transmute::<vk::PFN_vkCmdSetFrontFace, vk::PFN_vkVoidFunction>(
+                        Self::cmd_set_front_face,
+                    )
                 },
             },
             VulkanCommand {
@@ -3416,7 +3553,9 @@ impl<T: Layer> Global<T> {
                 ],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetFrontFace),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_set_front_face as vk::PFN_vkCmdSetFrontFace)
+                    std::mem::transmute::<vk::PFN_vkCmdSetFrontFace, vk::PFN_vkVoidFunction>(
+                        Self::cmd_set_front_face,
+                    )
                 },
             },
             VulkanCommand {
@@ -3428,10 +3567,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::CmdSetLineRasterizationModeExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_line_rasterization_mode_ext
-                            as vk::PFN_vkCmdSetLineRasterizationModeEXT,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdSetLineRasterizationModeEXT,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_set_line_rasterization_mode_ext)
                 },
             },
             VulkanCommand {
@@ -3439,8 +3578,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTLineRasterization)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetLineStippleExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_line_stipple_ext as vk::PFN_vkCmdSetLineStippleEXT,
+                    std::mem::transmute::<vk::PFN_vkCmdSetLineStippleEXT, vk::PFN_vkVoidFunction>(
+                        Self::cmd_set_line_stipple_ext,
                     )
                 },
             },
@@ -3452,10 +3591,10 @@ impl<T: Layer> Global<T> {
                 ],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetLineStippleEnableExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_line_stipple_enable_ext
-                            as vk::PFN_vkCmdSetLineStippleEnableEXT,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdSetLineStippleEnableEXT,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_set_line_stipple_enable_ext)
                 },
             },
             VulkanCommand {
@@ -3463,7 +3602,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetLineWidth),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_set_line_width as vk::PFN_vkCmdSetLineWidth)
+                    std::mem::transmute::<vk::PFN_vkCmdSetLineWidth, vk::PFN_vkVoidFunction>(
+                        Self::cmd_set_line_width,
+                    )
                 },
             },
             VulkanCommand {
@@ -3474,7 +3615,9 @@ impl<T: Layer> Global<T> {
                 ],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetLogicOpExt),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_set_logic_op_ext as vk::PFN_vkCmdSetLogicOpEXT)
+                    std::mem::transmute::<vk::PFN_vkCmdSetLogicOpEXT, vk::PFN_vkVoidFunction>(
+                        Self::cmd_set_logic_op_ext,
+                    )
                 },
             },
             VulkanCommand {
@@ -3485,8 +3628,8 @@ impl<T: Layer> Global<T> {
                 ],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetLogicOpEnableExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_logic_op_enable_ext as vk::PFN_vkCmdSetLogicOpEnableEXT,
+                    std::mem::transmute::<vk::PFN_vkCmdSetLogicOpEnableEXT, vk::PFN_vkVoidFunction>(
+                        Self::cmd_set_logic_op_enable_ext,
                     )
                 },
             },
@@ -3498,10 +3641,10 @@ impl<T: Layer> Global<T> {
                 ],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetPatchControlPointsExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_patch_control_points_ext
-                            as vk::PFN_vkCmdSetPatchControlPointsEXT,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdSetPatchControlPointsEXT,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_set_patch_control_points_ext)
                 },
             },
             VulkanCommand {
@@ -3509,10 +3652,10 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::INTELPerformanceQuery)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetPerformanceMarkerIntel),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_performance_marker_intel
-                            as vk::PFN_vkCmdSetPerformanceMarkerINTEL,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdSetPerformanceMarkerINTEL,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_set_performance_marker_intel)
                 },
             },
             VulkanCommand {
@@ -3521,10 +3664,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::CmdSetPerformanceOverrideIntel),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_performance_override_intel
-                            as vk::PFN_vkCmdSetPerformanceOverrideINTEL,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdSetPerformanceOverrideINTEL,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_set_performance_override_intel)
                 },
             },
             VulkanCommand {
@@ -3533,10 +3676,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::CmdSetPerformanceStreamMarkerIntel),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_performance_stream_marker_intel
-                            as vk::PFN_vkCmdSetPerformanceStreamMarkerINTEL,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdSetPerformanceStreamMarkerINTEL,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_set_performance_stream_marker_intel)
                 },
             },
             VulkanCommand {
@@ -3547,8 +3690,8 @@ impl<T: Layer> Global<T> {
                 ],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetPolygonModeExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_polygon_mode_ext as vk::PFN_vkCmdSetPolygonModeEXT,
+                    std::mem::transmute::<vk::PFN_vkCmdSetPolygonModeEXT, vk::PFN_vkVoidFunction>(
+                        Self::cmd_set_polygon_mode_ext,
                     )
                 },
             },
@@ -3557,10 +3700,10 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetPrimitiveRestartEnable),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_primitive_restart_enable
-                            as vk::PFN_vkCmdSetPrimitiveRestartEnable,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdSetPrimitiveRestartEnable,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_set_primitive_restart_enable)
                 },
             },
             VulkanCommand {
@@ -3571,10 +3714,10 @@ impl<T: Layer> Global<T> {
                 ],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetPrimitiveRestartEnable),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_primitive_restart_enable
-                            as vk::PFN_vkCmdSetPrimitiveRestartEnable,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdSetPrimitiveRestartEnable,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_set_primitive_restart_enable)
                 },
             },
             VulkanCommand {
@@ -3582,8 +3725,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetPrimitiveTopology),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_primitive_topology as vk::PFN_vkCmdSetPrimitiveTopology,
+                    std::mem::transmute::<vk::PFN_vkCmdSetPrimitiveTopology, vk::PFN_vkVoidFunction>(
+                        Self::cmd_set_primitive_topology,
                     )
                 },
             },
@@ -3595,8 +3738,8 @@ impl<T: Layer> Global<T> {
                 ],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetPrimitiveTopology),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_primitive_topology as vk::PFN_vkCmdSetPrimitiveTopology,
+                    std::mem::transmute::<vk::PFN_vkCmdSetPrimitiveTopology, vk::PFN_vkVoidFunction>(
+                        Self::cmd_set_primitive_topology,
                     )
                 },
             },
@@ -3608,10 +3751,10 @@ impl<T: Layer> Global<T> {
                 ],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetProvokingVertexModeExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_provoking_vertex_mode_ext
-                            as vk::PFN_vkCmdSetProvokingVertexModeEXT,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdSetProvokingVertexModeEXT,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_set_provoking_vertex_mode_ext)
                 },
             },
             VulkanCommand {
@@ -3623,10 +3766,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::CmdSetRasterizationSamplesExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_rasterization_samples_ext
-                            as vk::PFN_vkCmdSetRasterizationSamplesEXT,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdSetRasterizationSamplesEXT,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_set_rasterization_samples_ext)
                 },
             },
             VulkanCommand {
@@ -3637,10 +3780,10 @@ impl<T: Layer> Global<T> {
                 ],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetRasterizationStreamExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_rasterization_stream_ext
-                            as vk::PFN_vkCmdSetRasterizationStreamEXT,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdSetRasterizationStreamEXT,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_set_rasterization_stream_ext)
                 },
             },
             VulkanCommand {
@@ -3649,10 +3792,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::CmdSetRasterizerDiscardEnable),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_rasterizer_discard_enable
-                            as vk::PFN_vkCmdSetRasterizerDiscardEnable,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdSetRasterizerDiscardEnable,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_set_rasterizer_discard_enable)
                 },
             },
             VulkanCommand {
@@ -3664,10 +3807,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::CmdSetRasterizerDiscardEnable),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_rasterizer_discard_enable
-                            as vk::PFN_vkCmdSetRasterizerDiscardEnable,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdSetRasterizerDiscardEnable,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_set_rasterizer_discard_enable)
                 },
             },
             VulkanCommand {
@@ -3676,10 +3819,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::CmdSetRayTracingPipelineStackSizeKhr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_ray_tracing_pipeline_stack_size_khr
-                            as vk::PFN_vkCmdSetRayTracingPipelineStackSizeKHR,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdSetRayTracingPipelineStackSizeKHR,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_set_ray_tracing_pipeline_stack_size_khr)
                 },
             },
             VulkanCommand {
@@ -3691,10 +3834,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::CmdSetRepresentativeFragmentTestEnableNv),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_representative_fragment_test_enable_nv
-                            as vk::PFN_vkCmdSetRepresentativeFragmentTestEnableNV,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdSetRepresentativeFragmentTestEnableNV,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_set_representative_fragment_test_enable_nv)
                 },
             },
             VulkanCommand {
@@ -3702,8 +3845,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTSampleLocations)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetSampleLocationsExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_sample_locations_ext as vk::PFN_vkCmdSetSampleLocationsEXT,
+                    std::mem::transmute::<vk::PFN_vkCmdSetSampleLocationsEXT, vk::PFN_vkVoidFunction>(
+                        Self::cmd_set_sample_locations_ext,
                     )
                 },
             },
@@ -3716,10 +3859,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::CmdSetSampleLocationsEnableExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_sample_locations_enable_ext
-                            as vk::PFN_vkCmdSetSampleLocationsEnableEXT,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdSetSampleLocationsEnableEXT,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_set_sample_locations_enable_ext)
                 },
             },
             VulkanCommand {
@@ -3730,8 +3873,8 @@ impl<T: Layer> Global<T> {
                 ],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetSampleMaskExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_sample_mask_ext as vk::PFN_vkCmdSetSampleMaskEXT,
+                    std::mem::transmute::<vk::PFN_vkCmdSetSampleMaskEXT, vk::PFN_vkVoidFunction>(
+                        Self::cmd_set_sample_mask_ext,
                     )
                 },
             },
@@ -3740,7 +3883,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetScissor),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_set_scissor as vk::PFN_vkCmdSetScissor)
+                    std::mem::transmute::<vk::PFN_vkCmdSetScissor, vk::PFN_vkVoidFunction>(
+                        Self::cmd_set_scissor,
+                    )
                 },
             },
             VulkanCommand {
@@ -3748,8 +3893,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetScissorWithCount),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_scissor_with_count as vk::PFN_vkCmdSetScissorWithCount,
+                    std::mem::transmute::<vk::PFN_vkCmdSetScissorWithCount, vk::PFN_vkVoidFunction>(
+                        Self::cmd_set_scissor_with_count,
                     )
                 },
             },
@@ -3761,8 +3906,8 @@ impl<T: Layer> Global<T> {
                 ],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetScissorWithCount),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_scissor_with_count as vk::PFN_vkCmdSetScissorWithCount,
+                    std::mem::transmute::<vk::PFN_vkCmdSetScissorWithCount, vk::PFN_vkVoidFunction>(
+                        Self::cmd_set_scissor_with_count,
                     )
                 },
             },
@@ -3775,10 +3920,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::CmdSetShadingRateImageEnableNv),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_shading_rate_image_enable_nv
-                            as vk::PFN_vkCmdSetShadingRateImageEnableNV,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdSetShadingRateImageEnableNV,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_set_shading_rate_image_enable_nv)
                 },
             },
             VulkanCommand {
@@ -3786,8 +3931,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetStencilCompareMask),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_stencil_compare_mask as vk::PFN_vkCmdSetStencilCompareMask,
+                    std::mem::transmute::<vk::PFN_vkCmdSetStencilCompareMask, vk::PFN_vkVoidFunction>(
+                        Self::cmd_set_stencil_compare_mask,
                     )
                 },
             },
@@ -3796,7 +3941,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetStencilOp),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_set_stencil_op as vk::PFN_vkCmdSetStencilOp)
+                    std::mem::transmute::<vk::PFN_vkCmdSetStencilOp, vk::PFN_vkVoidFunction>(
+                        Self::cmd_set_stencil_op,
+                    )
                 },
             },
             VulkanCommand {
@@ -3807,7 +3954,9 @@ impl<T: Layer> Global<T> {
                 ],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetStencilOp),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_set_stencil_op as vk::PFN_vkCmdSetStencilOp)
+                    std::mem::transmute::<vk::PFN_vkCmdSetStencilOp, vk::PFN_vkVoidFunction>(
+                        Self::cmd_set_stencil_op,
+                    )
                 },
             },
             VulkanCommand {
@@ -3815,8 +3964,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetStencilReference),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_stencil_reference as vk::PFN_vkCmdSetStencilReference,
+                    std::mem::transmute::<vk::PFN_vkCmdSetStencilReference, vk::PFN_vkVoidFunction>(
+                        Self::cmd_set_stencil_reference,
                     )
                 },
             },
@@ -3825,8 +3974,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetStencilTestEnable),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_stencil_test_enable as vk::PFN_vkCmdSetStencilTestEnable,
+                    std::mem::transmute::<vk::PFN_vkCmdSetStencilTestEnable, vk::PFN_vkVoidFunction>(
+                        Self::cmd_set_stencil_test_enable,
                     )
                 },
             },
@@ -3838,8 +3987,8 @@ impl<T: Layer> Global<T> {
                 ],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetStencilTestEnable),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_stencil_test_enable as vk::PFN_vkCmdSetStencilTestEnable,
+                    std::mem::transmute::<vk::PFN_vkCmdSetStencilTestEnable, vk::PFN_vkVoidFunction>(
+                        Self::cmd_set_stencil_test_enable,
                     )
                 },
             },
@@ -3848,8 +3997,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetStencilWriteMask),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_stencil_write_mask as vk::PFN_vkCmdSetStencilWriteMask,
+                    std::mem::transmute::<vk::PFN_vkCmdSetStencilWriteMask, vk::PFN_vkVoidFunction>(
+                        Self::cmd_set_stencil_write_mask,
                     )
                 },
             },
@@ -3862,10 +4011,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::CmdSetTessellationDomainOriginExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_tessellation_domain_origin_ext
-                            as vk::PFN_vkCmdSetTessellationDomainOriginEXT,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdSetTessellationDomainOriginEXT,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_set_tessellation_domain_origin_ext)
                 },
             },
             VulkanCommand {
@@ -3876,8 +4025,8 @@ impl<T: Layer> Global<T> {
                 ],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetVertexInputExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_vertex_input_ext as vk::PFN_vkCmdSetVertexInputEXT,
+                    std::mem::transmute::<vk::PFN_vkCmdSetVertexInputEXT, vk::PFN_vkVoidFunction>(
+                        Self::cmd_set_vertex_input_ext,
                     )
                 },
             },
@@ -3886,7 +4035,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetViewport),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_set_viewport as vk::PFN_vkCmdSetViewport)
+                    std::mem::transmute::<vk::PFN_vkCmdSetViewport, vk::PFN_vkVoidFunction>(
+                        Self::cmd_set_viewport,
+                    )
                 },
             },
             VulkanCommand {
@@ -3895,10 +4046,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::CmdSetViewportShadingRatePaletteNv),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_viewport_shading_rate_palette_nv
-                            as vk::PFN_vkCmdSetViewportShadingRatePaletteNV,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdSetViewportShadingRatePaletteNV,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_set_viewport_shading_rate_palette_nv)
                 },
             },
             VulkanCommand {
@@ -3909,8 +4060,8 @@ impl<T: Layer> Global<T> {
                 ],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetViewportSwizzleNv),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_viewport_swizzle_nv as vk::PFN_vkCmdSetViewportSwizzleNV,
+                    std::mem::transmute::<vk::PFN_vkCmdSetViewportSwizzleNV, vk::PFN_vkVoidFunction>(
+                        Self::cmd_set_viewport_swizzle_nv,
                     )
                 },
             },
@@ -3923,10 +4074,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::CmdSetViewportWScalingEnableNv),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_viewport_w_scaling_enable_nv
-                            as vk::PFN_vkCmdSetViewportWScalingEnableNV,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdSetViewportWScalingEnableNV,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_set_viewport_w_scaling_enable_nv)
                 },
             },
             VulkanCommand {
@@ -3934,8 +4085,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::NVClipSpaceWScaling)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetViewportWScalingNv),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_viewport_w_scaling_nv as vk::PFN_vkCmdSetViewportWScalingNV,
+                    std::mem::transmute::<vk::PFN_vkCmdSetViewportWScalingNV, vk::PFN_vkVoidFunction>(
+                        Self::cmd_set_viewport_w_scaling_nv,
                     )
                 },
             },
@@ -3944,8 +4095,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetViewportWithCount),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_viewport_with_count as vk::PFN_vkCmdSetViewportWithCount,
+                    std::mem::transmute::<vk::PFN_vkCmdSetViewportWithCount, vk::PFN_vkVoidFunction>(
+                        Self::cmd_set_viewport_with_count,
                     )
                 },
             },
@@ -3957,8 +4108,8 @@ impl<T: Layer> Global<T> {
                 ],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSetViewportWithCount),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_set_viewport_with_count as vk::PFN_vkCmdSetViewportWithCount,
+                    std::mem::transmute::<vk::PFN_vkCmdSetViewportWithCount, vk::PFN_vkVoidFunction>(
+                        Self::cmd_set_viewport_with_count,
                     )
                 },
             },
@@ -3967,8 +4118,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::HUAWEISubpassShading)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdSubpassShadingHuawei),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_subpass_shading_huawei as vk::PFN_vkCmdSubpassShadingHUAWEI,
+                    std::mem::transmute::<vk::PFN_vkCmdSubpassShadingHUAWEI, vk::PFN_vkVoidFunction>(
+                        Self::cmd_subpass_shading_huawei,
                     )
                 },
             },
@@ -3977,8 +4128,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRRayTracingMaintenance1)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdTraceRaysIndirect2Khr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_trace_rays_indirect2_khr as vk::PFN_vkCmdTraceRaysIndirect2KHR,
+                    std::mem::transmute::<vk::PFN_vkCmdTraceRaysIndirect2KHR, vk::PFN_vkVoidFunction>(
+                        Self::cmd_trace_rays_indirect2_khr,
                     )
                 },
             },
@@ -3987,8 +4138,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRRayTracingPipeline)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdTraceRaysIndirectKhr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_trace_rays_indirect_khr as vk::PFN_vkCmdTraceRaysIndirectKHR,
+                    std::mem::transmute::<vk::PFN_vkCmdTraceRaysIndirectKHR, vk::PFN_vkVoidFunction>(
+                        Self::cmd_trace_rays_indirect_khr,
                     )
                 },
             },
@@ -3997,7 +4148,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRRayTracingPipeline)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdTraceRaysKhr),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_trace_rays_khr as vk::PFN_vkCmdTraceRaysKHR)
+                    std::mem::transmute::<vk::PFN_vkCmdTraceRaysKHR, vk::PFN_vkVoidFunction>(
+                        Self::cmd_trace_rays_khr,
+                    )
                 },
             },
             VulkanCommand {
@@ -4005,7 +4158,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::NVRayTracing)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdTraceRaysNv),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_trace_rays_nv as vk::PFN_vkCmdTraceRaysNV)
+                    std::mem::transmute::<vk::PFN_vkCmdTraceRaysNV, vk::PFN_vkVoidFunction>(
+                        Self::cmd_trace_rays_nv,
+                    )
                 },
             },
             VulkanCommand {
@@ -4013,7 +4168,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdUpdateBuffer),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_update_buffer as vk::PFN_vkCmdUpdateBuffer)
+                    std::mem::transmute::<vk::PFN_vkCmdUpdateBuffer, vk::PFN_vkVoidFunction>(
+                        Self::cmd_update_buffer,
+                    )
                 },
             },
             VulkanCommand {
@@ -4021,7 +4178,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdWaitEvents),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_wait_events as vk::PFN_vkCmdWaitEvents)
+                    std::mem::transmute::<vk::PFN_vkCmdWaitEvents, vk::PFN_vkVoidFunction>(
+                        Self::cmd_wait_events,
+                    )
                 },
             },
             VulkanCommand {
@@ -4029,7 +4188,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdWaitEvents2),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_wait_events2 as vk::PFN_vkCmdWaitEvents2)
+                    std::mem::transmute::<vk::PFN_vkCmdWaitEvents2, vk::PFN_vkVoidFunction>(
+                        Self::cmd_wait_events2,
+                    )
                 },
             },
             VulkanCommand {
@@ -4037,7 +4198,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRSynchronization2)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdWaitEvents2),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_wait_events2 as vk::PFN_vkCmdWaitEvents2)
+                    std::mem::transmute::<vk::PFN_vkCmdWaitEvents2, vk::PFN_vkVoidFunction>(
+                        Self::cmd_wait_events2,
+                    )
                 },
             },
             VulkanCommand {
@@ -4046,10 +4209,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::CmdWriteAccelerationStructuresPropertiesKhr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_write_acceleration_structures_properties_khr
-                            as vk::PFN_vkCmdWriteAccelerationStructuresPropertiesKHR,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdWriteAccelerationStructuresPropertiesKHR,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_write_acceleration_structures_properties_khr)
                 },
             },
             VulkanCommand {
@@ -4058,10 +4221,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::CmdWriteAccelerationStructuresPropertiesNv),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_write_acceleration_structures_properties_nv
-                            as vk::PFN_vkCmdWriteAccelerationStructuresPropertiesNV,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdWriteAccelerationStructuresPropertiesNV,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_write_acceleration_structures_properties_nv)
                 },
             },
             VulkanCommand {
@@ -4069,8 +4232,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRSynchronization2)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdWriteBufferMarker2Amd),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_write_buffer_marker2_amd as vk::PFN_vkCmdWriteBufferMarker2AMD,
+                    std::mem::transmute::<vk::PFN_vkCmdWriteBufferMarker2AMD, vk::PFN_vkVoidFunction>(
+                        Self::cmd_write_buffer_marker2_amd,
                     )
                 },
             },
@@ -4079,8 +4242,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::AMDBufferMarker)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdWriteBufferMarkerAmd),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_write_buffer_marker_amd as vk::PFN_vkCmdWriteBufferMarkerAMD,
+                    std::mem::transmute::<vk::PFN_vkCmdWriteBufferMarkerAMD, vk::PFN_vkVoidFunction>(
+                        Self::cmd_write_buffer_marker_amd,
                     )
                 },
             },
@@ -4090,10 +4253,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::CmdWriteMicromapsPropertiesExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::cmd_write_micromaps_properties_ext
-                            as vk::PFN_vkCmdWriteMicromapsPropertiesEXT,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCmdWriteMicromapsPropertiesEXT,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::cmd_write_micromaps_properties_ext)
                 },
             },
             VulkanCommand {
@@ -4101,7 +4264,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdWriteTimestamp),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_write_timestamp as vk::PFN_vkCmdWriteTimestamp)
+                    std::mem::transmute::<vk::PFN_vkCmdWriteTimestamp, vk::PFN_vkVoidFunction>(
+                        Self::cmd_write_timestamp,
+                    )
                 },
             },
             VulkanCommand {
@@ -4109,7 +4274,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdWriteTimestamp2),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_write_timestamp2 as vk::PFN_vkCmdWriteTimestamp2)
+                    std::mem::transmute::<vk::PFN_vkCmdWriteTimestamp2, vk::PFN_vkVoidFunction>(
+                        Self::cmd_write_timestamp2,
+                    )
                 },
             },
             VulkanCommand {
@@ -4117,7 +4284,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRSynchronization2)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CmdWriteTimestamp2),
                 proc: unsafe {
-                    std::mem::transmute(Self::cmd_write_timestamp2 as vk::PFN_vkCmdWriteTimestamp2)
+                    std::mem::transmute::<vk::PFN_vkCmdWriteTimestamp2, vk::PFN_vkVoidFunction>(
+                        Self::cmd_write_timestamp2,
+                    )
                 },
             },
             VulkanCommand {
@@ -4125,7 +4294,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::NVRayTracing)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CompileDeferredNv),
                 proc: unsafe {
-                    std::mem::transmute(Self::compile_deferred_nv as vk::PFN_vkCompileDeferredNV)
+                    std::mem::transmute::<vk::PFN_vkCompileDeferredNV, vk::PFN_vkVoidFunction>(
+                        Self::compile_deferred_nv,
+                    )
                 },
             },
             VulkanCommand {
@@ -4133,10 +4304,10 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRAccelerationStructure)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CopyAccelerationStructureKhr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::copy_acceleration_structure_khr
-                            as vk::PFN_vkCopyAccelerationStructureKHR,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCopyAccelerationStructureKHR,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::copy_acceleration_structure_khr)
                 },
             },
             VulkanCommand {
@@ -4145,10 +4316,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::CopyAccelerationStructureToMemoryKhr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::copy_acceleration_structure_to_memory_khr
-                            as vk::PFN_vkCopyAccelerationStructureToMemoryKHR,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCopyAccelerationStructureToMemoryKHR,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::copy_acceleration_structure_to_memory_khr)
                 },
             },
             VulkanCommand {
@@ -4157,10 +4328,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::CopyMemoryToAccelerationStructureKhr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::copy_memory_to_acceleration_structure_khr
-                            as vk::PFN_vkCopyMemoryToAccelerationStructureKHR,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCopyMemoryToAccelerationStructureKHR,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::copy_memory_to_acceleration_structure_khr)
                 },
             },
             VulkanCommand {
@@ -4168,8 +4339,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTOpacityMicromap)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CopyMemoryToMicromapExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::copy_memory_to_micromap_ext as vk::PFN_vkCopyMemoryToMicromapEXT,
+                    std::mem::transmute::<vk::PFN_vkCopyMemoryToMicromapEXT, vk::PFN_vkVoidFunction>(
+                        Self::copy_memory_to_micromap_ext,
                     )
                 },
             },
@@ -4178,7 +4349,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTOpacityMicromap)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CopyMicromapExt),
                 proc: unsafe {
-                    std::mem::transmute(Self::copy_micromap_ext as vk::PFN_vkCopyMicromapEXT)
+                    std::mem::transmute::<vk::PFN_vkCopyMicromapEXT, vk::PFN_vkVoidFunction>(
+                        Self::copy_micromap_ext,
+                    )
                 },
             },
             VulkanCommand {
@@ -4186,8 +4359,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTOpacityMicromap)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CopyMicromapToMemoryExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::copy_micromap_to_memory_ext as vk::PFN_vkCopyMicromapToMemoryEXT,
+                    std::mem::transmute::<vk::PFN_vkCopyMicromapToMemoryEXT, vk::PFN_vkVoidFunction>(
+                        Self::copy_micromap_to_memory_ext,
                     )
                 },
             },
@@ -4197,10 +4370,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::CreateAccelerationStructureKhr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::create_acceleration_structure_khr
-                            as vk::PFN_vkCreateAccelerationStructureKHR,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCreateAccelerationStructureKHR,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::create_acceleration_structure_khr)
                 },
             },
             VulkanCommand {
@@ -4209,17 +4382,21 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::CreateAccelerationStructureNv),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::create_acceleration_structure_nv
-                            as vk::PFN_vkCreateAccelerationStructureNV,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCreateAccelerationStructureNV,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::create_acceleration_structure_nv)
                 },
             },
             VulkanCommand {
                 name: "vkCreateBuffer",
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CreateBuffer),
-                proc: unsafe { std::mem::transmute(Self::create_buffer as vk::PFN_vkCreateBuffer) },
+                proc: unsafe {
+                    std::mem::transmute::<vk::PFN_vkCreateBuffer, vk::PFN_vkVoidFunction>(
+                        Self::create_buffer,
+                    )
+                },
             },
             VulkanCommand {
                 name: "vkCreateBufferCollectionFUCHSIA",
@@ -4227,10 +4404,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::CreateBufferCollectionFuchsia),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::create_buffer_collection_fuchsia
-                            as vk::PFN_vkCreateBufferCollectionFUCHSIA,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCreateBufferCollectionFUCHSIA,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::create_buffer_collection_fuchsia)
                 },
             },
             VulkanCommand {
@@ -4238,7 +4415,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CreateBufferView),
                 proc: unsafe {
-                    std::mem::transmute(Self::create_buffer_view as vk::PFN_vkCreateBufferView)
+                    std::mem::transmute::<vk::PFN_vkCreateBufferView, vk::PFN_vkVoidFunction>(
+                        Self::create_buffer_view,
+                    )
                 },
             },
             VulkanCommand {
@@ -4246,7 +4425,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CreateCommandPool),
                 proc: unsafe {
-                    std::mem::transmute(Self::create_command_pool as vk::PFN_vkCreateCommandPool)
+                    std::mem::transmute::<vk::PFN_vkCreateCommandPool, vk::PFN_vkVoidFunction>(
+                        Self::create_command_pool,
+                    )
                 },
             },
             VulkanCommand {
@@ -4254,8 +4435,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CreateComputePipelines),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::create_compute_pipelines as vk::PFN_vkCreateComputePipelines,
+                    std::mem::transmute::<vk::PFN_vkCreateComputePipelines, vk::PFN_vkVoidFunction>(
+                        Self::create_compute_pipelines,
                     )
                 },
             },
@@ -4264,8 +4445,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::NVXBinaryImport)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CreateCuFunctionNvx),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::create_cu_function_nvx as vk::PFN_vkCreateCuFunctionNVX,
+                    std::mem::transmute::<vk::PFN_vkCreateCuFunctionNVX, vk::PFN_vkVoidFunction>(
+                        Self::create_cu_function_nvx,
                     )
                 },
             },
@@ -4274,7 +4455,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::NVXBinaryImport)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CreateCuModuleNvx),
                 proc: unsafe {
-                    std::mem::transmute(Self::create_cu_module_nvx as vk::PFN_vkCreateCuModuleNVX)
+                    std::mem::transmute::<vk::PFN_vkCreateCuModuleNVX, vk::PFN_vkVoidFunction>(
+                        Self::create_cu_module_nvx,
+                    )
                 },
             },
             VulkanCommand {
@@ -4282,9 +4465,10 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRDeferredHostOperations)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CreateDeferredOperationKhr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::create_deferred_operation_khr as vk::PFN_vkCreateDeferredOperationKHR,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCreateDeferredOperationKHR,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::create_deferred_operation_khr)
                 },
             },
             VulkanCommand {
@@ -4292,8 +4476,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CreateDescriptorPool),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::create_descriptor_pool as vk::PFN_vkCreateDescriptorPool,
+                    std::mem::transmute::<vk::PFN_vkCreateDescriptorPool, vk::PFN_vkVoidFunction>(
+                        Self::create_descriptor_pool,
                     )
                 },
             },
@@ -4302,8 +4486,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CreateDescriptorSetLayout),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::create_descriptor_set_layout as vk::PFN_vkCreateDescriptorSetLayout,
+                    std::mem::transmute::<vk::PFN_vkCreateDescriptorSetLayout, vk::PFN_vkVoidFunction>(
+                        Self::create_descriptor_set_layout,
                     )
                 },
             },
@@ -4313,10 +4497,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::CreateDescriptorUpdateTemplate),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::create_descriptor_update_template
-                            as vk::PFN_vkCreateDescriptorUpdateTemplate,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCreateDescriptorUpdateTemplate,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::create_descriptor_update_template)
                 },
             },
             VulkanCommand {
@@ -4325,30 +4509,40 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::CreateDescriptorUpdateTemplate),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::create_descriptor_update_template
-                            as vk::PFN_vkCreateDescriptorUpdateTemplate,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCreateDescriptorUpdateTemplate,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::create_descriptor_update_template)
                 },
             },
             VulkanCommand {
                 name: "vkCreateEvent",
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CreateEvent),
-                proc: unsafe { std::mem::transmute(Self::create_event as vk::PFN_vkCreateEvent) },
+                proc: unsafe {
+                    std::mem::transmute::<vk::PFN_vkCreateEvent, vk::PFN_vkVoidFunction>(
+                        Self::create_event,
+                    )
+                },
             },
             VulkanCommand {
                 name: "vkCreateFence",
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CreateFence),
-                proc: unsafe { std::mem::transmute(Self::create_fence as vk::PFN_vkCreateFence) },
+                proc: unsafe {
+                    std::mem::transmute::<vk::PFN_vkCreateFence, vk::PFN_vkVoidFunction>(
+                        Self::create_fence,
+                    )
+                },
             },
             VulkanCommand {
                 name: "vkCreateFramebuffer",
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CreateFramebuffer),
                 proc: unsafe {
-                    std::mem::transmute(Self::create_framebuffer as vk::PFN_vkCreateFramebuffer)
+                    std::mem::transmute::<vk::PFN_vkCreateFramebuffer, vk::PFN_vkVoidFunction>(
+                        Self::create_framebuffer,
+                    )
                 },
             },
             VulkanCommand {
@@ -4356,8 +4550,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CreateGraphicsPipelines),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::create_graphics_pipelines as vk::PFN_vkCreateGraphicsPipelines,
+                    std::mem::transmute::<vk::PFN_vkCreateGraphicsPipelines, vk::PFN_vkVoidFunction>(
+                        Self::create_graphics_pipelines,
                     )
                 },
             },
@@ -4365,14 +4559,20 @@ impl<T: Layer> Global<T> {
                 name: "vkCreateImage",
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CreateImage),
-                proc: unsafe { std::mem::transmute(Self::create_image as vk::PFN_vkCreateImage) },
+                proc: unsafe {
+                    std::mem::transmute::<vk::PFN_vkCreateImage, vk::PFN_vkVoidFunction>(
+                        Self::create_image,
+                    )
+                },
             },
             VulkanCommand {
                 name: "vkCreateImageView",
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CreateImageView),
                 proc: unsafe {
-                    std::mem::transmute(Self::create_image_view as vk::PFN_vkCreateImageView)
+                    std::mem::transmute::<vk::PFN_vkCreateImageView, vk::PFN_vkVoidFunction>(
+                        Self::create_image_view,
+                    )
                 },
             },
             VulkanCommand {
@@ -4381,10 +4581,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::CreateIndirectCommandsLayoutNv),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::create_indirect_commands_layout_nv
-                            as vk::PFN_vkCreateIndirectCommandsLayoutNV,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCreateIndirectCommandsLayoutNV,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::create_indirect_commands_layout_nv)
                 },
             },
             VulkanCommand {
@@ -4392,7 +4592,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTOpacityMicromap)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CreateMicromapExt),
                 proc: unsafe {
-                    std::mem::transmute(Self::create_micromap_ext as vk::PFN_vkCreateMicromapEXT)
+                    std::mem::transmute::<vk::PFN_vkCreateMicromapEXT, vk::PFN_vkVoidFunction>(
+                        Self::create_micromap_ext,
+                    )
                 },
             },
             VulkanCommand {
@@ -4400,10 +4602,10 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::NVOpticalFlow)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CreateOpticalFlowSessionNv),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::create_optical_flow_session_nv
-                            as vk::PFN_vkCreateOpticalFlowSessionNV,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCreateOpticalFlowSessionNV,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::create_optical_flow_session_nv)
                 },
             },
             VulkanCommand {
@@ -4411,8 +4613,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CreatePipelineCache),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::create_pipeline_cache as vk::PFN_vkCreatePipelineCache,
+                    std::mem::transmute::<vk::PFN_vkCreatePipelineCache, vk::PFN_vkVoidFunction>(
+                        Self::create_pipeline_cache,
                     )
                 },
             },
@@ -4421,8 +4623,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CreatePipelineLayout),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::create_pipeline_layout as vk::PFN_vkCreatePipelineLayout,
+                    std::mem::transmute::<vk::PFN_vkCreatePipelineLayout, vk::PFN_vkVoidFunction>(
+                        Self::create_pipeline_layout,
                     )
                 },
             },
@@ -4431,8 +4633,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CreatePrivateDataSlot),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::create_private_data_slot as vk::PFN_vkCreatePrivateDataSlot,
+                    std::mem::transmute::<vk::PFN_vkCreatePrivateDataSlot, vk::PFN_vkVoidFunction>(
+                        Self::create_private_data_slot,
                     )
                 },
             },
@@ -4441,8 +4643,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTPrivateData)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CreatePrivateDataSlot),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::create_private_data_slot as vk::PFN_vkCreatePrivateDataSlot,
+                    std::mem::transmute::<vk::PFN_vkCreatePrivateDataSlot, vk::PFN_vkVoidFunction>(
+                        Self::create_private_data_slot,
                     )
                 },
             },
@@ -4451,7 +4653,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CreateQueryPool),
                 proc: unsafe {
-                    std::mem::transmute(Self::create_query_pool as vk::PFN_vkCreateQueryPool)
+                    std::mem::transmute::<vk::PFN_vkCreateQueryPool, vk::PFN_vkVoidFunction>(
+                        Self::create_query_pool,
+                    )
                 },
             },
             VulkanCommand {
@@ -4459,10 +4663,10 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRRayTracingPipeline)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CreateRayTracingPipelinesKhr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::create_ray_tracing_pipelines_khr
-                            as vk::PFN_vkCreateRayTracingPipelinesKHR,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCreateRayTracingPipelinesKHR,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::create_ray_tracing_pipelines_khr)
                 },
             },
             VulkanCommand {
@@ -4470,10 +4674,10 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::NVRayTracing)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CreateRayTracingPipelinesNv),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::create_ray_tracing_pipelines_nv
-                            as vk::PFN_vkCreateRayTracingPipelinesNV,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCreateRayTracingPipelinesNV,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::create_ray_tracing_pipelines_nv)
                 },
             },
             VulkanCommand {
@@ -4481,7 +4685,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CreateRenderPass),
                 proc: unsafe {
-                    std::mem::transmute(Self::create_render_pass as vk::PFN_vkCreateRenderPass)
+                    std::mem::transmute::<vk::PFN_vkCreateRenderPass, vk::PFN_vkVoidFunction>(
+                        Self::create_render_pass,
+                    )
                 },
             },
             VulkanCommand {
@@ -4489,7 +4695,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 2 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CreateRenderPass2),
                 proc: unsafe {
-                    std::mem::transmute(Self::create_render_pass2 as vk::PFN_vkCreateRenderPass2)
+                    std::mem::transmute::<vk::PFN_vkCreateRenderPass2, vk::PFN_vkVoidFunction>(
+                        Self::create_render_pass2,
+                    )
                 },
             },
             VulkanCommand {
@@ -4497,7 +4705,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRCreateRenderpass2)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CreateRenderPass2),
                 proc: unsafe {
-                    std::mem::transmute(Self::create_render_pass2 as vk::PFN_vkCreateRenderPass2)
+                    std::mem::transmute::<vk::PFN_vkCreateRenderPass2, vk::PFN_vkVoidFunction>(
+                        Self::create_render_pass2,
+                    )
                 },
             },
             VulkanCommand {
@@ -4505,7 +4715,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CreateSampler),
                 proc: unsafe {
-                    std::mem::transmute(Self::create_sampler as vk::PFN_vkCreateSampler)
+                    std::mem::transmute::<vk::PFN_vkCreateSampler, vk::PFN_vkVoidFunction>(
+                        Self::create_sampler,
+                    )
                 },
             },
             VulkanCommand {
@@ -4513,10 +4725,10 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CreateSamplerYcbcrConversion),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::create_sampler_ycbcr_conversion
-                            as vk::PFN_vkCreateSamplerYcbcrConversion,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCreateSamplerYcbcrConversion,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::create_sampler_ycbcr_conversion)
                 },
             },
             VulkanCommand {
@@ -4524,10 +4736,10 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRSamplerYcbcrConversion)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CreateSamplerYcbcrConversion),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::create_sampler_ycbcr_conversion
-                            as vk::PFN_vkCreateSamplerYcbcrConversion,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCreateSamplerYcbcrConversion,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::create_sampler_ycbcr_conversion)
                 },
             },
             VulkanCommand {
@@ -4535,7 +4747,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CreateSemaphore),
                 proc: unsafe {
-                    std::mem::transmute(Self::create_semaphore as vk::PFN_vkCreateSemaphore)
+                    std::mem::transmute::<vk::PFN_vkCreateSemaphore, vk::PFN_vkVoidFunction>(
+                        Self::create_semaphore,
+                    )
                 },
             },
             VulkanCommand {
@@ -4543,7 +4757,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CreateShaderModule),
                 proc: unsafe {
-                    std::mem::transmute(Self::create_shader_module as vk::PFN_vkCreateShaderModule)
+                    std::mem::transmute::<vk::PFN_vkCreateShaderModule, vk::PFN_vkVoidFunction>(
+                        Self::create_shader_module,
+                    )
                 },
             },
             VulkanCommand {
@@ -4551,8 +4767,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRDisplaySwapchain)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CreateSharedSwapchainsKhr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::create_shared_swapchains_khr as vk::PFN_vkCreateSharedSwapchainsKHR,
+                    std::mem::transmute::<vk::PFN_vkCreateSharedSwapchainsKHR, vk::PFN_vkVoidFunction>(
+                        Self::create_shared_swapchains_khr,
                     )
                 },
             },
@@ -4561,7 +4777,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRSwapchain)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CreateSwapchainKhr),
                 proc: unsafe {
-                    std::mem::transmute(Self::create_swapchain_khr as vk::PFN_vkCreateSwapchainKHR)
+                    std::mem::transmute::<vk::PFN_vkCreateSwapchainKHR, vk::PFN_vkVoidFunction>(
+                        Self::create_swapchain_khr,
+                    )
                 },
             },
             VulkanCommand {
@@ -4569,8 +4787,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTValidationCache)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CreateValidationCacheExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::create_validation_cache_ext as vk::PFN_vkCreateValidationCacheEXT,
+                    std::mem::transmute::<vk::PFN_vkCreateValidationCacheEXT, vk::PFN_vkVoidFunction>(
+                        Self::create_validation_cache_ext,
                     )
                 },
             },
@@ -4579,8 +4797,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRVideoQueue)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CreateVideoSessionKhr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::create_video_session_khr as vk::PFN_vkCreateVideoSessionKHR,
+                    std::mem::transmute::<vk::PFN_vkCreateVideoSessionKHR, vk::PFN_vkVoidFunction>(
+                        Self::create_video_session_khr,
                     )
                 },
             },
@@ -4590,10 +4808,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::CreateVideoSessionParametersKhr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::create_video_session_parameters_khr
-                            as vk::PFN_vkCreateVideoSessionParametersKHR,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkCreateVideoSessionParametersKHR,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::create_video_session_parameters_khr)
                 },
             },
             VulkanCommand {
@@ -4601,10 +4819,10 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTDebugMarker)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::DebugMarkerSetObjectNameExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::debug_marker_set_object_name_ext
-                            as vk::PFN_vkDebugMarkerSetObjectNameEXT,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkDebugMarkerSetObjectNameEXT,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::debug_marker_set_object_name_ext)
                 },
             },
             VulkanCommand {
@@ -4612,10 +4830,10 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTDebugMarker)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::DebugMarkerSetObjectTagExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::debug_marker_set_object_tag_ext
-                            as vk::PFN_vkDebugMarkerSetObjectTagEXT,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkDebugMarkerSetObjectTagEXT,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::debug_marker_set_object_tag_ext)
                 },
             },
             VulkanCommand {
@@ -4623,8 +4841,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRDeferredHostOperations)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::DeferredOperationJoinKhr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::deferred_operation_join_khr as vk::PFN_vkDeferredOperationJoinKHR,
+                    std::mem::transmute::<vk::PFN_vkDeferredOperationJoinKHR, vk::PFN_vkVoidFunction>(
+                        Self::deferred_operation_join_khr,
                     )
                 },
             },
@@ -4634,10 +4852,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::DestroyAccelerationStructureKhr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::destroy_acceleration_structure_khr
-                            as vk::PFN_vkDestroyAccelerationStructureKHR,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkDestroyAccelerationStructureKHR,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::destroy_acceleration_structure_khr)
                 },
             },
             VulkanCommand {
@@ -4646,10 +4864,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::DestroyAccelerationStructureNv),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::destroy_acceleration_structure_nv
-                            as vk::PFN_vkDestroyAccelerationStructureNV,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkDestroyAccelerationStructureNV,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::destroy_acceleration_structure_nv)
                 },
             },
             VulkanCommand {
@@ -4657,7 +4875,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyBuffer),
                 proc: unsafe {
-                    std::mem::transmute(Self::destroy_buffer as vk::PFN_vkDestroyBuffer)
+                    std::mem::transmute::<vk::PFN_vkDestroyBuffer, vk::PFN_vkVoidFunction>(
+                        Self::destroy_buffer,
+                    )
                 },
             },
             VulkanCommand {
@@ -4666,10 +4886,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::DestroyBufferCollectionFuchsia),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::destroy_buffer_collection_fuchsia
-                            as vk::PFN_vkDestroyBufferCollectionFUCHSIA,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkDestroyBufferCollectionFUCHSIA,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::destroy_buffer_collection_fuchsia)
                 },
             },
             VulkanCommand {
@@ -4677,7 +4897,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyBufferView),
                 proc: unsafe {
-                    std::mem::transmute(Self::destroy_buffer_view as vk::PFN_vkDestroyBufferView)
+                    std::mem::transmute::<vk::PFN_vkDestroyBufferView, vk::PFN_vkVoidFunction>(
+                        Self::destroy_buffer_view,
+                    )
                 },
             },
             VulkanCommand {
@@ -4685,7 +4907,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyCommandPool),
                 proc: unsafe {
-                    std::mem::transmute(Self::destroy_command_pool as vk::PFN_vkDestroyCommandPool)
+                    std::mem::transmute::<vk::PFN_vkDestroyCommandPool, vk::PFN_vkVoidFunction>(
+                        Self::destroy_command_pool,
+                    )
                 },
             },
             VulkanCommand {
@@ -4693,8 +4917,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::NVXBinaryImport)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyCuFunctionNvx),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::destroy_cu_function_nvx as vk::PFN_vkDestroyCuFunctionNVX,
+                    std::mem::transmute::<vk::PFN_vkDestroyCuFunctionNVX, vk::PFN_vkVoidFunction>(
+                        Self::destroy_cu_function_nvx,
                     )
                 },
             },
@@ -4703,7 +4927,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::NVXBinaryImport)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyCuModuleNvx),
                 proc: unsafe {
-                    std::mem::transmute(Self::destroy_cu_module_nvx as vk::PFN_vkDestroyCuModuleNVX)
+                    std::mem::transmute::<vk::PFN_vkDestroyCuModuleNVX, vk::PFN_vkVoidFunction>(
+                        Self::destroy_cu_module_nvx,
+                    )
                 },
             },
             VulkanCommand {
@@ -4711,10 +4937,10 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRDeferredHostOperations)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyDeferredOperationKhr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::destroy_deferred_operation_khr
-                            as vk::PFN_vkDestroyDeferredOperationKHR,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkDestroyDeferredOperationKHR,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::destroy_deferred_operation_khr)
                 },
             },
             VulkanCommand {
@@ -4722,8 +4948,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyDescriptorPool),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::destroy_descriptor_pool as vk::PFN_vkDestroyDescriptorPool,
+                    std::mem::transmute::<vk::PFN_vkDestroyDescriptorPool, vk::PFN_vkVoidFunction>(
+                        Self::destroy_descriptor_pool,
                     )
                 },
             },
@@ -4732,9 +4958,10 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyDescriptorSetLayout),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::destroy_descriptor_set_layout as vk::PFN_vkDestroyDescriptorSetLayout,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkDestroyDescriptorSetLayout,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::destroy_descriptor_set_layout)
                 },
             },
             VulkanCommand {
@@ -4743,10 +4970,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::DestroyDescriptorUpdateTemplate),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::destroy_descriptor_update_template
-                            as vk::PFN_vkDestroyDescriptorUpdateTemplate,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkDestroyDescriptorUpdateTemplate,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::destroy_descriptor_update_template)
                 },
             },
             VulkanCommand {
@@ -4755,10 +4982,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::DestroyDescriptorUpdateTemplate),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::destroy_descriptor_update_template
-                            as vk::PFN_vkDestroyDescriptorUpdateTemplate,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkDestroyDescriptorUpdateTemplate,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::destroy_descriptor_update_template)
                 },
             },
             VulkanCommand {
@@ -4766,41 +4993,59 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: true,
                 proc: unsafe {
-                    std::mem::transmute(Self::destroy_device as vk::PFN_vkDestroyDevice)
+                    std::mem::transmute::<vk::PFN_vkDestroyDevice, vk::PFN_vkVoidFunction>(
+                        Self::destroy_device,
+                    )
                 },
             },
             VulkanCommand {
                 name: "vkDestroyEvent",
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyEvent),
-                proc: unsafe { std::mem::transmute(Self::destroy_event as vk::PFN_vkDestroyEvent) },
+                proc: unsafe {
+                    std::mem::transmute::<vk::PFN_vkDestroyEvent, vk::PFN_vkVoidFunction>(
+                        Self::destroy_event,
+                    )
+                },
             },
             VulkanCommand {
                 name: "vkDestroyFence",
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyFence),
-                proc: unsafe { std::mem::transmute(Self::destroy_fence as vk::PFN_vkDestroyFence) },
+                proc: unsafe {
+                    std::mem::transmute::<vk::PFN_vkDestroyFence, vk::PFN_vkVoidFunction>(
+                        Self::destroy_fence,
+                    )
+                },
             },
             VulkanCommand {
                 name: "vkDestroyFramebuffer",
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyFramebuffer),
                 proc: unsafe {
-                    std::mem::transmute(Self::destroy_framebuffer as vk::PFN_vkDestroyFramebuffer)
+                    std::mem::transmute::<vk::PFN_vkDestroyFramebuffer, vk::PFN_vkVoidFunction>(
+                        Self::destroy_framebuffer,
+                    )
                 },
             },
             VulkanCommand {
                 name: "vkDestroyImage",
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyImage),
-                proc: unsafe { std::mem::transmute(Self::destroy_image as vk::PFN_vkDestroyImage) },
+                proc: unsafe {
+                    std::mem::transmute::<vk::PFN_vkDestroyImage, vk::PFN_vkVoidFunction>(
+                        Self::destroy_image,
+                    )
+                },
             },
             VulkanCommand {
                 name: "vkDestroyImageView",
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyImageView),
                 proc: unsafe {
-                    std::mem::transmute(Self::destroy_image_view as vk::PFN_vkDestroyImageView)
+                    std::mem::transmute::<vk::PFN_vkDestroyImageView, vk::PFN_vkVoidFunction>(
+                        Self::destroy_image_view,
+                    )
                 },
             },
             VulkanCommand {
@@ -4809,10 +5054,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::DestroyIndirectCommandsLayoutNv),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::destroy_indirect_commands_layout_nv
-                            as vk::PFN_vkDestroyIndirectCommandsLayoutNV,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkDestroyIndirectCommandsLayoutNV,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::destroy_indirect_commands_layout_nv)
                 },
             },
             VulkanCommand {
@@ -4820,7 +5065,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTOpacityMicromap)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyMicromapExt),
                 proc: unsafe {
-                    std::mem::transmute(Self::destroy_micromap_ext as vk::PFN_vkDestroyMicromapEXT)
+                    std::mem::transmute::<vk::PFN_vkDestroyMicromapEXT, vk::PFN_vkVoidFunction>(
+                        Self::destroy_micromap_ext,
+                    )
                 },
             },
             VulkanCommand {
@@ -4828,10 +5075,10 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::NVOpticalFlow)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyOpticalFlowSessionNv),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::destroy_optical_flow_session_nv
-                            as vk::PFN_vkDestroyOpticalFlowSessionNV,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkDestroyOpticalFlowSessionNV,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::destroy_optical_flow_session_nv)
                 },
             },
             VulkanCommand {
@@ -4839,7 +5086,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyPipeline),
                 proc: unsafe {
-                    std::mem::transmute(Self::destroy_pipeline as vk::PFN_vkDestroyPipeline)
+                    std::mem::transmute::<vk::PFN_vkDestroyPipeline, vk::PFN_vkVoidFunction>(
+                        Self::destroy_pipeline,
+                    )
                 },
             },
             VulkanCommand {
@@ -4847,8 +5096,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyPipelineCache),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::destroy_pipeline_cache as vk::PFN_vkDestroyPipelineCache,
+                    std::mem::transmute::<vk::PFN_vkDestroyPipelineCache, vk::PFN_vkVoidFunction>(
+                        Self::destroy_pipeline_cache,
                     )
                 },
             },
@@ -4857,8 +5106,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyPipelineLayout),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::destroy_pipeline_layout as vk::PFN_vkDestroyPipelineLayout,
+                    std::mem::transmute::<vk::PFN_vkDestroyPipelineLayout, vk::PFN_vkVoidFunction>(
+                        Self::destroy_pipeline_layout,
                     )
                 },
             },
@@ -4867,8 +5116,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyPrivateDataSlot),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::destroy_private_data_slot as vk::PFN_vkDestroyPrivateDataSlot,
+                    std::mem::transmute::<vk::PFN_vkDestroyPrivateDataSlot, vk::PFN_vkVoidFunction>(
+                        Self::destroy_private_data_slot,
                     )
                 },
             },
@@ -4877,8 +5126,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTPrivateData)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyPrivateDataSlot),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::destroy_private_data_slot as vk::PFN_vkDestroyPrivateDataSlot,
+                    std::mem::transmute::<vk::PFN_vkDestroyPrivateDataSlot, vk::PFN_vkVoidFunction>(
+                        Self::destroy_private_data_slot,
                     )
                 },
             },
@@ -4887,7 +5136,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyQueryPool),
                 proc: unsafe {
-                    std::mem::transmute(Self::destroy_query_pool as vk::PFN_vkDestroyQueryPool)
+                    std::mem::transmute::<vk::PFN_vkDestroyQueryPool, vk::PFN_vkVoidFunction>(
+                        Self::destroy_query_pool,
+                    )
                 },
             },
             VulkanCommand {
@@ -4895,7 +5146,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyRenderPass),
                 proc: unsafe {
-                    std::mem::transmute(Self::destroy_render_pass as vk::PFN_vkDestroyRenderPass)
+                    std::mem::transmute::<vk::PFN_vkDestroyRenderPass, vk::PFN_vkVoidFunction>(
+                        Self::destroy_render_pass,
+                    )
                 },
             },
             VulkanCommand {
@@ -4903,7 +5156,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::DestroySampler),
                 proc: unsafe {
-                    std::mem::transmute(Self::destroy_sampler as vk::PFN_vkDestroySampler)
+                    std::mem::transmute::<vk::PFN_vkDestroySampler, vk::PFN_vkVoidFunction>(
+                        Self::destroy_sampler,
+                    )
                 },
             },
             VulkanCommand {
@@ -4912,10 +5167,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::DestroySamplerYcbcrConversion),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::destroy_sampler_ycbcr_conversion
-                            as vk::PFN_vkDestroySamplerYcbcrConversion,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkDestroySamplerYcbcrConversion,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::destroy_sampler_ycbcr_conversion)
                 },
             },
             VulkanCommand {
@@ -4924,10 +5179,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::DestroySamplerYcbcrConversion),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::destroy_sampler_ycbcr_conversion
-                            as vk::PFN_vkDestroySamplerYcbcrConversion,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkDestroySamplerYcbcrConversion,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::destroy_sampler_ycbcr_conversion)
                 },
             },
             VulkanCommand {
@@ -4935,7 +5190,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::DestroySemaphore),
                 proc: unsafe {
-                    std::mem::transmute(Self::destroy_semaphore as vk::PFN_vkDestroySemaphore)
+                    std::mem::transmute::<vk::PFN_vkDestroySemaphore, vk::PFN_vkVoidFunction>(
+                        Self::destroy_semaphore,
+                    )
                 },
             },
             VulkanCommand {
@@ -4943,8 +5200,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyShaderModule),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::destroy_shader_module as vk::PFN_vkDestroyShaderModule,
+                    std::mem::transmute::<vk::PFN_vkDestroyShaderModule, vk::PFN_vkVoidFunction>(
+                        Self::destroy_shader_module,
                     )
                 },
             },
@@ -4953,8 +5210,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRSwapchain)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::DestroySwapchainKhr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::destroy_swapchain_khr as vk::PFN_vkDestroySwapchainKHR,
+                    std::mem::transmute::<vk::PFN_vkDestroySwapchainKHR, vk::PFN_vkVoidFunction>(
+                        Self::destroy_swapchain_khr,
                     )
                 },
             },
@@ -4963,8 +5220,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTValidationCache)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyValidationCacheExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::destroy_validation_cache_ext as vk::PFN_vkDestroyValidationCacheEXT,
+                    std::mem::transmute::<vk::PFN_vkDestroyValidationCacheEXT, vk::PFN_vkVoidFunction>(
+                        Self::destroy_validation_cache_ext,
                     )
                 },
             },
@@ -4973,8 +5230,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRVideoQueue)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyVideoSessionKhr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::destroy_video_session_khr as vk::PFN_vkDestroyVideoSessionKHR,
+                    std::mem::transmute::<vk::PFN_vkDestroyVideoSessionKHR, vk::PFN_vkVoidFunction>(
+                        Self::destroy_video_session_khr,
                     )
                 },
             },
@@ -4984,10 +5241,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::DestroyVideoSessionParametersKhr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::destroy_video_session_parameters_khr
-                            as vk::PFN_vkDestroyVideoSessionParametersKHR,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkDestroyVideoSessionParametersKHR,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::destroy_video_session_parameters_khr)
                 },
             },
             VulkanCommand {
@@ -4995,7 +5252,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::DeviceWaitIdle),
                 proc: unsafe {
-                    std::mem::transmute(Self::device_wait_idle as vk::PFN_vkDeviceWaitIdle)
+                    std::mem::transmute::<vk::PFN_vkDeviceWaitIdle, vk::PFN_vkVoidFunction>(
+                        Self::device_wait_idle,
+                    )
                 },
             },
             VulkanCommand {
@@ -5003,8 +5262,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTDisplayControl)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::DisplayPowerControlExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::display_power_control_ext as vk::PFN_vkDisplayPowerControlEXT,
+                    std::mem::transmute::<vk::PFN_vkDisplayPowerControlEXT, vk::PFN_vkVoidFunction>(
+                        Self::display_power_control_ext,
                     )
                 },
             },
@@ -5013,7 +5272,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::EndCommandBuffer),
                 proc: unsafe {
-                    std::mem::transmute(Self::end_command_buffer as vk::PFN_vkEndCommandBuffer)
+                    std::mem::transmute::<vk::PFN_vkEndCommandBuffer, vk::PFN_vkVoidFunction>(
+                        Self::end_command_buffer,
+                    )
                 },
             },
             VulkanCommand {
@@ -5021,8 +5282,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTMetalObjects)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::ExportMetalObjectsExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::export_metal_objects_ext as vk::PFN_vkExportMetalObjectsEXT,
+                    std::mem::transmute::<vk::PFN_vkExportMetalObjectsEXT, vk::PFN_vkVoidFunction>(
+                        Self::export_metal_objects_ext,
                     )
                 },
             },
@@ -5031,8 +5292,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::FlushMappedMemoryRanges),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::flush_mapped_memory_ranges as vk::PFN_vkFlushMappedMemoryRanges,
+                    std::mem::transmute::<vk::PFN_vkFlushMappedMemoryRanges, vk::PFN_vkVoidFunction>(
+                        Self::flush_mapped_memory_ranges,
                     )
                 },
             },
@@ -5041,7 +5302,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::FreeCommandBuffers),
                 proc: unsafe {
-                    std::mem::transmute(Self::free_command_buffers as vk::PFN_vkFreeCommandBuffers)
+                    std::mem::transmute::<vk::PFN_vkFreeCommandBuffers, vk::PFN_vkVoidFunction>(
+                        Self::free_command_buffers,
+                    )
                 },
             },
             VulkanCommand {
@@ -5049,14 +5312,20 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::FreeDescriptorSets),
                 proc: unsafe {
-                    std::mem::transmute(Self::free_descriptor_sets as vk::PFN_vkFreeDescriptorSets)
+                    std::mem::transmute::<vk::PFN_vkFreeDescriptorSets, vk::PFN_vkVoidFunction>(
+                        Self::free_descriptor_sets,
+                    )
                 },
             },
             VulkanCommand {
                 name: "vkFreeMemory",
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::FreeMemory),
-                proc: unsafe { std::mem::transmute(Self::free_memory as vk::PFN_vkFreeMemory) },
+                proc: unsafe {
+                    std::mem::transmute::<vk::PFN_vkFreeMemory, vk::PFN_vkVoidFunction>(
+                        Self::free_memory,
+                    )
+                },
             },
             VulkanCommand {
                 name: "vkGetAccelerationStructureBuildSizesKHR",
@@ -5064,10 +5333,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetAccelerationStructureBuildSizesKhr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_acceleration_structure_build_sizes_khr
-                            as vk::PFN_vkGetAccelerationStructureBuildSizesKHR,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetAccelerationStructureBuildSizesKHR,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_acceleration_structure_build_sizes_khr)
                 },
             },
             VulkanCommand {
@@ -5076,10 +5345,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetAccelerationStructureDeviceAddressKhr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_acceleration_structure_device_address_khr
-                            as vk::PFN_vkGetAccelerationStructureDeviceAddressKHR,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetAccelerationStructureDeviceAddressKHR,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_acceleration_structure_device_address_khr)
                 },
             },
             VulkanCommand {
@@ -5088,10 +5357,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetAccelerationStructureHandleNv),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_acceleration_structure_handle_nv
-                            as vk::PFN_vkGetAccelerationStructureHandleNV,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetAccelerationStructureHandleNV,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_acceleration_structure_handle_nv)
                 },
             },
             VulkanCommand {
@@ -5100,10 +5369,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetAccelerationStructureMemoryRequirementsNv),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_acceleration_structure_memory_requirements_nv
-                            as vk::PFN_vkGetAccelerationStructureMemoryRequirementsNV,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetAccelerationStructureMemoryRequirementsNV,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_acceleration_structure_memory_requirements_nv)
                 },
             },
             VulkanCommand {
@@ -5113,9 +5382,11 @@ impl<T: Layer> Global<T> {
                     &LayerVulkanCommand::GetAccelerationStructureOpaqueCaptureDescriptorDataExt,
                 ),
                 proc: unsafe {
-                    std::mem::transmute(
+                    std::mem::transmute::<
+                        vk::PFN_vkGetAccelerationStructureOpaqueCaptureDescriptorDataEXT,
+                        vk::PFN_vkVoidFunction,
+                    >(
                         Self::get_acceleration_structure_opaque_capture_descriptor_data_ext
-                            as vk::PFN_vkGetAccelerationStructureOpaqueCaptureDescriptorDataEXT,
                     )
                 },
             },
@@ -5127,10 +5398,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetAndroidHardwareBufferPropertiesAndroid),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_android_hardware_buffer_properties_android
-                            as vk::PFN_vkGetAndroidHardwareBufferPropertiesANDROID,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetAndroidHardwareBufferPropertiesANDROID,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_android_hardware_buffer_properties_android)
                 },
             },
             VulkanCommand {
@@ -5139,10 +5410,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetBufferCollectionPropertiesFuchsia),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_buffer_collection_properties_fuchsia
-                            as vk::PFN_vkGetBufferCollectionPropertiesFUCHSIA,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetBufferCollectionPropertiesFUCHSIA,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_buffer_collection_properties_fuchsia)
                 },
             },
             VulkanCommand {
@@ -5150,8 +5421,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 2 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetBufferDeviceAddress),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_buffer_device_address as vk::PFN_vkGetBufferDeviceAddress,
+                    std::mem::transmute::<vk::PFN_vkGetBufferDeviceAddress, vk::PFN_vkVoidFunction>(
+                        Self::get_buffer_device_address,
                     )
                 },
             },
@@ -5160,8 +5431,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTBufferDeviceAddress)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetBufferDeviceAddress),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_buffer_device_address as vk::PFN_vkGetBufferDeviceAddress,
+                    std::mem::transmute::<vk::PFN_vkGetBufferDeviceAddress, vk::PFN_vkVoidFunction>(
+                        Self::get_buffer_device_address,
                     )
                 },
             },
@@ -5170,8 +5441,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRBufferDeviceAddress)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetBufferDeviceAddress),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_buffer_device_address as vk::PFN_vkGetBufferDeviceAddress,
+                    std::mem::transmute::<vk::PFN_vkGetBufferDeviceAddress, vk::PFN_vkVoidFunction>(
+                        Self::get_buffer_device_address,
                     )
                 },
             },
@@ -5180,10 +5451,10 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetBufferMemoryRequirements),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_buffer_memory_requirements
-                            as vk::PFN_vkGetBufferMemoryRequirements,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetBufferMemoryRequirements,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_buffer_memory_requirements)
                 },
             },
             VulkanCommand {
@@ -5191,10 +5462,10 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetBufferMemoryRequirements2),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_buffer_memory_requirements2
-                            as vk::PFN_vkGetBufferMemoryRequirements2,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetBufferMemoryRequirements2,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_buffer_memory_requirements2)
                 },
             },
             VulkanCommand {
@@ -5202,10 +5473,10 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRGetMemoryRequirements2)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetBufferMemoryRequirements2),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_buffer_memory_requirements2
-                            as vk::PFN_vkGetBufferMemoryRequirements2,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetBufferMemoryRequirements2,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_buffer_memory_requirements2)
                 },
             },
             VulkanCommand {
@@ -5214,10 +5485,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetBufferOpaqueCaptureAddress),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_buffer_opaque_capture_address
-                            as vk::PFN_vkGetBufferOpaqueCaptureAddress,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetBufferOpaqueCaptureAddress,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_buffer_opaque_capture_address)
                 },
             },
             VulkanCommand {
@@ -5226,10 +5497,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetBufferOpaqueCaptureAddress),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_buffer_opaque_capture_address
-                            as vk::PFN_vkGetBufferOpaqueCaptureAddress,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetBufferOpaqueCaptureAddress,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_buffer_opaque_capture_address)
                 },
             },
             VulkanCommand {
@@ -5238,10 +5509,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetBufferOpaqueCaptureDescriptorDataExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_buffer_opaque_capture_descriptor_data_ext
-                            as vk::PFN_vkGetBufferOpaqueCaptureDescriptorDataEXT,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetBufferOpaqueCaptureDescriptorDataEXT,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_buffer_opaque_capture_descriptor_data_ext)
                 },
             },
             VulkanCommand {
@@ -5249,9 +5520,10 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTCalibratedTimestamps)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetCalibratedTimestampsExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_calibrated_timestamps_ext as vk::PFN_vkGetCalibratedTimestampsEXT,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetCalibratedTimestampsEXT,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_calibrated_timestamps_ext)
                 },
             },
             VulkanCommand {
@@ -5260,10 +5532,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetDeferredOperationMaxConcurrencyKhr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_deferred_operation_max_concurrency_khr
-                            as vk::PFN_vkGetDeferredOperationMaxConcurrencyKHR,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetDeferredOperationMaxConcurrencyKHR,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_deferred_operation_max_concurrency_khr)
                 },
             },
             VulkanCommand {
@@ -5272,10 +5544,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetDeferredOperationResultKhr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_deferred_operation_result_khr
-                            as vk::PFN_vkGetDeferredOperationResultKHR,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetDeferredOperationResultKHR,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_deferred_operation_result_khr)
                 },
             },
             VulkanCommand {
@@ -5283,7 +5555,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTDescriptorBuffer)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetDescriptorExt),
                 proc: unsafe {
-                    std::mem::transmute(Self::get_descriptor_ext as vk::PFN_vkGetDescriptorEXT)
+                    std::mem::transmute::<vk::PFN_vkGetDescriptorEXT, vk::PFN_vkVoidFunction>(
+                        Self::get_descriptor_ext,
+                    )
                 },
             },
             VulkanCommand {
@@ -5292,10 +5566,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetDescriptorSetHostMappingValve),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_descriptor_set_host_mapping_valve
-                            as vk::PFN_vkGetDescriptorSetHostMappingVALVE,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetDescriptorSetHostMappingVALVE,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_descriptor_set_host_mapping_valve)
                 },
             },
             VulkanCommand {
@@ -5304,10 +5578,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetDescriptorSetLayoutBindingOffsetExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_descriptor_set_layout_binding_offset_ext
-                            as vk::PFN_vkGetDescriptorSetLayoutBindingOffsetEXT,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetDescriptorSetLayoutBindingOffsetEXT,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_descriptor_set_layout_binding_offset_ext)
                 },
             },
             VulkanCommand {
@@ -5316,10 +5590,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetDescriptorSetLayoutHostMappingInfoValve),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_descriptor_set_layout_host_mapping_info_valve
-                            as vk::PFN_vkGetDescriptorSetLayoutHostMappingInfoVALVE,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetDescriptorSetLayoutHostMappingInfoVALVE,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_descriptor_set_layout_host_mapping_info_valve)
                 },
             },
             VulkanCommand {
@@ -5328,10 +5602,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetDescriptorSetLayoutSizeExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_descriptor_set_layout_size_ext
-                            as vk::PFN_vkGetDescriptorSetLayoutSizeEXT,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetDescriptorSetLayoutSizeEXT,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_descriptor_set_layout_size_ext)
                 },
             },
             VulkanCommand {
@@ -5340,10 +5614,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetDescriptorSetLayoutSupport),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_descriptor_set_layout_support
-                            as vk::PFN_vkGetDescriptorSetLayoutSupport,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetDescriptorSetLayoutSupport,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_descriptor_set_layout_support)
                 },
             },
             VulkanCommand {
@@ -5352,10 +5626,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetDescriptorSetLayoutSupport),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_descriptor_set_layout_support
-                            as vk::PFN_vkGetDescriptorSetLayoutSupport,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetDescriptorSetLayoutSupport,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_descriptor_set_layout_support)
                 },
             },
             VulkanCommand {
@@ -5364,10 +5638,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetDeviceAccelerationStructureCompatibilityKhr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_device_acceleration_structure_compatibility_khr
-                            as vk::PFN_vkGetDeviceAccelerationStructureCompatibilityKHR,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetDeviceAccelerationStructureCompatibilityKHR,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_device_acceleration_structure_compatibility_khr)
                 },
             },
             VulkanCommand {
@@ -5376,10 +5650,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetDeviceBufferMemoryRequirements),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_device_buffer_memory_requirements
-                            as vk::PFN_vkGetDeviceBufferMemoryRequirements,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetDeviceBufferMemoryRequirements,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_device_buffer_memory_requirements)
                 },
             },
             VulkanCommand {
@@ -5388,10 +5662,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetDeviceBufferMemoryRequirements),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_device_buffer_memory_requirements
-                            as vk::PFN_vkGetDeviceBufferMemoryRequirements,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetDeviceBufferMemoryRequirements,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_device_buffer_memory_requirements)
                 },
             },
             VulkanCommand {
@@ -5400,10 +5674,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetDeviceGroupPeerMemoryFeatures),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_device_group_peer_memory_features
-                            as vk::PFN_vkGetDeviceGroupPeerMemoryFeatures,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetDeviceGroupPeerMemoryFeatures,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_device_group_peer_memory_features)
                 },
             },
             VulkanCommand {
@@ -5412,10 +5686,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetDeviceGroupPeerMemoryFeatures),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_device_group_peer_memory_features
-                            as vk::PFN_vkGetDeviceGroupPeerMemoryFeatures,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetDeviceGroupPeerMemoryFeatures,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_device_group_peer_memory_features)
                 },
             },
             VulkanCommand {
@@ -5427,10 +5701,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetDeviceGroupPresentCapabilitiesKhr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_device_group_present_capabilities_khr
-                            as vk::PFN_vkGetDeviceGroupPresentCapabilitiesKHR,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetDeviceGroupPresentCapabilitiesKHR,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_device_group_present_capabilities_khr)
                 },
             },
             VulkanCommand {
@@ -5439,10 +5713,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetDeviceGroupSurfacePresentModes2Ext),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_device_group_surface_present_modes2_ext
-                            as vk::PFN_vkGetDeviceGroupSurfacePresentModes2EXT,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetDeviceGroupSurfacePresentModes2EXT,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_device_group_surface_present_modes2_ext)
                 },
             },
             VulkanCommand {
@@ -5454,10 +5728,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetDeviceGroupSurfacePresentModesKhr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_device_group_surface_present_modes_khr
-                            as vk::PFN_vkGetDeviceGroupSurfacePresentModesKHR,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetDeviceGroupSurfacePresentModesKHR,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_device_group_surface_present_modes_khr)
                 },
             },
             VulkanCommand {
@@ -5466,10 +5740,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetDeviceImageMemoryRequirements),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_device_image_memory_requirements
-                            as vk::PFN_vkGetDeviceImageMemoryRequirements,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetDeviceImageMemoryRequirements,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_device_image_memory_requirements)
                 },
             },
             VulkanCommand {
@@ -5478,10 +5752,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetDeviceImageMemoryRequirements),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_device_image_memory_requirements
-                            as vk::PFN_vkGetDeviceImageMemoryRequirements,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetDeviceImageMemoryRequirements,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_device_image_memory_requirements)
                 },
             },
             VulkanCommand {
@@ -5490,10 +5764,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetDeviceImageSparseMemoryRequirements),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_device_image_sparse_memory_requirements
-                            as vk::PFN_vkGetDeviceImageSparseMemoryRequirements,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetDeviceImageSparseMemoryRequirements,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_device_image_sparse_memory_requirements)
                 },
             },
             VulkanCommand {
@@ -5502,10 +5776,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetDeviceImageSparseMemoryRequirements),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_device_image_sparse_memory_requirements
-                            as vk::PFN_vkGetDeviceImageSparseMemoryRequirements,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetDeviceImageSparseMemoryRequirements,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_device_image_sparse_memory_requirements)
                 },
             },
             VulkanCommand {
@@ -5513,8 +5787,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetDeviceMemoryCommitment),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_device_memory_commitment as vk::PFN_vkGetDeviceMemoryCommitment,
+                    std::mem::transmute::<vk::PFN_vkGetDeviceMemoryCommitment, vk::PFN_vkVoidFunction>(
+                        Self::get_device_memory_commitment,
                     )
                 },
             },
@@ -5524,10 +5798,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetDeviceMemoryOpaqueCaptureAddress),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_device_memory_opaque_capture_address
-                            as vk::PFN_vkGetDeviceMemoryOpaqueCaptureAddress,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetDeviceMemoryOpaqueCaptureAddress,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_device_memory_opaque_capture_address)
                 },
             },
             VulkanCommand {
@@ -5536,10 +5810,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetDeviceMemoryOpaqueCaptureAddress),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_device_memory_opaque_capture_address
-                            as vk::PFN_vkGetDeviceMemoryOpaqueCaptureAddress,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetDeviceMemoryOpaqueCaptureAddress,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_device_memory_opaque_capture_address)
                 },
             },
             VulkanCommand {
@@ -5548,10 +5822,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetDeviceMicromapCompatibilityExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_device_micromap_compatibility_ext
-                            as vk::PFN_vkGetDeviceMicromapCompatibilityEXT,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetDeviceMicromapCompatibilityEXT,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_device_micromap_compatibility_ext)
                 },
             },
             VulkanCommand {
@@ -5559,7 +5833,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: true,
                 proc: unsafe {
-                    std::mem::transmute(Self::get_device_proc_addr as vk::PFN_vkGetDeviceProcAddr)
+                    std::mem::transmute::<vk::PFN_vkGetDeviceProcAddr, vk::PFN_vkVoidFunction>(
+                        Self::get_device_proc_addr,
+                    )
                 },
             },
             VulkanCommand {
@@ -5567,7 +5843,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetDeviceQueue),
                 proc: unsafe {
-                    std::mem::transmute(Self::get_device_queue as vk::PFN_vkGetDeviceQueue)
+                    std::mem::transmute::<vk::PFN_vkGetDeviceQueue, vk::PFN_vkVoidFunction>(
+                        Self::get_device_queue,
+                    )
                 },
             },
             VulkanCommand {
@@ -5575,7 +5853,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetDeviceQueue2),
                 proc: unsafe {
-                    std::mem::transmute(Self::get_device_queue2 as vk::PFN_vkGetDeviceQueue2)
+                    std::mem::transmute::<vk::PFN_vkGetDeviceQueue2, vk::PFN_vkVoidFunction>(
+                        Self::get_device_queue2,
+                    )
                 },
             },
             VulkanCommand {
@@ -5584,10 +5864,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetDeviceSubpassShadingMaxWorkgroupSizeHuawei),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_device_subpass_shading_max_workgroup_size_huawei
-                            as vk::PFN_vkGetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_device_subpass_shading_max_workgroup_size_huawei)
                 },
             },
             VulkanCommand {
@@ -5596,10 +5876,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetDynamicRenderingTilePropertiesQcom),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_dynamic_rendering_tile_properties_qcom
-                            as vk::PFN_vkGetDynamicRenderingTilePropertiesQCOM,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetDynamicRenderingTilePropertiesQCOM,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_dynamic_rendering_tile_properties_qcom)
                 },
             },
             VulkanCommand {
@@ -5607,7 +5887,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetEventStatus),
                 proc: unsafe {
-                    std::mem::transmute(Self::get_event_status as vk::PFN_vkGetEventStatus)
+                    std::mem::transmute::<vk::PFN_vkGetEventStatus, vk::PFN_vkVoidFunction>(
+                        Self::get_event_status,
+                    )
                 },
             },
             VulkanCommand {
@@ -5615,7 +5897,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRExternalFenceFd)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetFenceFdKhr),
                 proc: unsafe {
-                    std::mem::transmute(Self::get_fence_fd_khr as vk::PFN_vkGetFenceFdKHR)
+                    std::mem::transmute::<vk::PFN_vkGetFenceFdKHR, vk::PFN_vkVoidFunction>(
+                        Self::get_fence_fd_khr,
+                    )
                 },
             },
             VulkanCommand {
@@ -5623,7 +5907,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetFenceStatus),
                 proc: unsafe {
-                    std::mem::transmute(Self::get_fence_status as vk::PFN_vkGetFenceStatus)
+                    std::mem::transmute::<vk::PFN_vkGetFenceStatus, vk::PFN_vkVoidFunction>(
+                        Self::get_fence_status,
+                    )
                 },
             },
             VulkanCommand {
@@ -5631,8 +5917,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRExternalFenceWin32)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetFenceWin32HandleKhr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_fence_win32_handle_khr as vk::PFN_vkGetFenceWin32HandleKHR,
+                    std::mem::transmute::<vk::PFN_vkGetFenceWin32HandleKHR, vk::PFN_vkVoidFunction>(
+                        Self::get_fence_win32_handle_khr,
                     )
                 },
             },
@@ -5642,10 +5928,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetFramebufferTilePropertiesQcom),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_framebuffer_tile_properties_qcom
-                            as vk::PFN_vkGetFramebufferTilePropertiesQCOM,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetFramebufferTilePropertiesQCOM,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_framebuffer_tile_properties_qcom)
                 },
             },
             VulkanCommand {
@@ -5654,10 +5940,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetGeneratedCommandsMemoryRequirementsNv),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_generated_commands_memory_requirements_nv
-                            as vk::PFN_vkGetGeneratedCommandsMemoryRequirementsNV,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetGeneratedCommandsMemoryRequirementsNV,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_generated_commands_memory_requirements_nv)
                 },
             },
             VulkanCommand {
@@ -5666,10 +5952,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetImageDrmFormatModifierPropertiesExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_image_drm_format_modifier_properties_ext
-                            as vk::PFN_vkGetImageDrmFormatModifierPropertiesEXT,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetImageDrmFormatModifierPropertiesEXT,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_image_drm_format_modifier_properties_ext)
                 },
             },
             VulkanCommand {
@@ -5677,9 +5963,10 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetImageMemoryRequirements),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_image_memory_requirements as vk::PFN_vkGetImageMemoryRequirements,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetImageMemoryRequirements,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_image_memory_requirements)
                 },
             },
             VulkanCommand {
@@ -5687,10 +5974,10 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetImageMemoryRequirements2),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_image_memory_requirements2
-                            as vk::PFN_vkGetImageMemoryRequirements2,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetImageMemoryRequirements2,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_image_memory_requirements2)
                 },
             },
             VulkanCommand {
@@ -5698,10 +5985,10 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRGetMemoryRequirements2)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetImageMemoryRequirements2),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_image_memory_requirements2
-                            as vk::PFN_vkGetImageMemoryRequirements2,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetImageMemoryRequirements2,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_image_memory_requirements2)
                 },
             },
             VulkanCommand {
@@ -5710,10 +5997,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetImageOpaqueCaptureDescriptorDataExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_image_opaque_capture_descriptor_data_ext
-                            as vk::PFN_vkGetImageOpaqueCaptureDescriptorDataEXT,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetImageOpaqueCaptureDescriptorDataEXT,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_image_opaque_capture_descriptor_data_ext)
                 },
             },
             VulkanCommand {
@@ -5722,10 +6009,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetImageSparseMemoryRequirements),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_image_sparse_memory_requirements
-                            as vk::PFN_vkGetImageSparseMemoryRequirements,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetImageSparseMemoryRequirements,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_image_sparse_memory_requirements)
                 },
             },
             VulkanCommand {
@@ -5734,10 +6021,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetImageSparseMemoryRequirements2),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_image_sparse_memory_requirements2
-                            as vk::PFN_vkGetImageSparseMemoryRequirements2,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetImageSparseMemoryRequirements2,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_image_sparse_memory_requirements2)
                 },
             },
             VulkanCommand {
@@ -5746,10 +6033,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetImageSparseMemoryRequirements2),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_image_sparse_memory_requirements2
-                            as vk::PFN_vkGetImageSparseMemoryRequirements2,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetImageSparseMemoryRequirements2,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_image_sparse_memory_requirements2)
                 },
             },
             VulkanCommand {
@@ -5757,8 +6044,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetImageSubresourceLayout),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_image_subresource_layout as vk::PFN_vkGetImageSubresourceLayout,
+                    std::mem::transmute::<vk::PFN_vkGetImageSubresourceLayout, vk::PFN_vkVoidFunction>(
+                        Self::get_image_subresource_layout,
                     )
                 },
             },
@@ -5768,10 +6055,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetImageSubresourceLayout2Ext),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_image_subresource_layout2_ext
-                            as vk::PFN_vkGetImageSubresourceLayout2EXT,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetImageSubresourceLayout2EXT,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_image_subresource_layout2_ext)
                 },
             },
             VulkanCommand {
@@ -5779,8 +6066,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::NVXImageViewHandle)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetImageViewAddressNvx),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_image_view_address_nvx as vk::PFN_vkGetImageViewAddressNVX,
+                    std::mem::transmute::<vk::PFN_vkGetImageViewAddressNVX, vk::PFN_vkVoidFunction>(
+                        Self::get_image_view_address_nvx,
                     )
                 },
             },
@@ -5789,8 +6076,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::NVXImageViewHandle)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetImageViewHandleNvx),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_image_view_handle_nvx as vk::PFN_vkGetImageViewHandleNVX,
+                    std::mem::transmute::<vk::PFN_vkGetImageViewHandleNVX, vk::PFN_vkVoidFunction>(
+                        Self::get_image_view_handle_nvx,
                     )
                 },
             },
@@ -5800,10 +6087,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetImageViewOpaqueCaptureDescriptorDataExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_image_view_opaque_capture_descriptor_data_ext
-                            as vk::PFN_vkGetImageViewOpaqueCaptureDescriptorDataEXT,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetImageViewOpaqueCaptureDescriptorDataEXT,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_image_view_opaque_capture_descriptor_data_ext)
                 },
             },
             VulkanCommand {
@@ -5814,10 +6101,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetMemoryAndroidHardwareBufferAndroid),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_memory_android_hardware_buffer_android
-                            as vk::PFN_vkGetMemoryAndroidHardwareBufferANDROID,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetMemoryAndroidHardwareBufferANDROID,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_memory_android_hardware_buffer_android)
                 },
             },
             VulkanCommand {
@@ -5825,7 +6112,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRExternalMemoryFd)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetMemoryFdKhr),
                 proc: unsafe {
-                    std::mem::transmute(Self::get_memory_fd_khr as vk::PFN_vkGetMemoryFdKHR)
+                    std::mem::transmute::<vk::PFN_vkGetMemoryFdKHR, vk::PFN_vkVoidFunction>(
+                        Self::get_memory_fd_khr,
+                    )
                 },
             },
             VulkanCommand {
@@ -5833,8 +6122,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRExternalMemoryFd)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetMemoryFdPropertiesKhr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_memory_fd_properties_khr as vk::PFN_vkGetMemoryFdPropertiesKHR,
+                    std::mem::transmute::<vk::PFN_vkGetMemoryFdPropertiesKHR, vk::PFN_vkVoidFunction>(
+                        Self::get_memory_fd_properties_khr,
                     )
                 },
             },
@@ -5844,10 +6133,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetMemoryHostPointerPropertiesExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_memory_host_pointer_properties_ext
-                            as vk::PFN_vkGetMemoryHostPointerPropertiesEXT,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetMemoryHostPointerPropertiesEXT,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_memory_host_pointer_properties_ext)
                 },
             },
             VulkanCommand {
@@ -5855,8 +6144,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::NVExternalMemoryRdma)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetMemoryRemoteAddressNv),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_memory_remote_address_nv as vk::PFN_vkGetMemoryRemoteAddressNV,
+                    std::mem::transmute::<vk::PFN_vkGetMemoryRemoteAddressNV, vk::PFN_vkVoidFunction>(
+                        Self::get_memory_remote_address_nv,
                     )
                 },
             },
@@ -5865,8 +6154,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRExternalMemoryWin32)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetMemoryWin32HandleKhr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_memory_win32_handle_khr as vk::PFN_vkGetMemoryWin32HandleKHR,
+                    std::mem::transmute::<vk::PFN_vkGetMemoryWin32HandleKHR, vk::PFN_vkVoidFunction>(
+                        Self::get_memory_win32_handle_khr,
                     )
                 },
             },
@@ -5875,8 +6164,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::NVExternalMemoryWin32)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetMemoryWin32HandleNv),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_memory_win32_handle_nv as vk::PFN_vkGetMemoryWin32HandleNV,
+                    std::mem::transmute::<vk::PFN_vkGetMemoryWin32HandleNV, vk::PFN_vkVoidFunction>(
+                        Self::get_memory_win32_handle_nv,
                     )
                 },
             },
@@ -5886,10 +6175,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetMemoryWin32HandlePropertiesKhr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_memory_win32_handle_properties_khr
-                            as vk::PFN_vkGetMemoryWin32HandlePropertiesKHR,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetMemoryWin32HandlePropertiesKHR,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_memory_win32_handle_properties_khr)
                 },
             },
             VulkanCommand {
@@ -5897,10 +6186,10 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::FUCHSIAExternalMemory)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetMemoryZirconHandleFuchsia),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_memory_zircon_handle_fuchsia
-                            as vk::PFN_vkGetMemoryZirconHandleFUCHSIA,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetMemoryZirconHandleFUCHSIA,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_memory_zircon_handle_fuchsia)
                 },
             },
             VulkanCommand {
@@ -5909,10 +6198,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetMemoryZirconHandlePropertiesFuchsia),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_memory_zircon_handle_properties_fuchsia
-                            as vk::PFN_vkGetMemoryZirconHandlePropertiesFUCHSIA,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetMemoryZirconHandlePropertiesFUCHSIA,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_memory_zircon_handle_properties_fuchsia)
                 },
             },
             VulkanCommand {
@@ -5920,8 +6209,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTOpacityMicromap)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetMicromapBuildSizesExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_micromap_build_sizes_ext as vk::PFN_vkGetMicromapBuildSizesEXT,
+                    std::mem::transmute::<vk::PFN_vkGetMicromapBuildSizesEXT, vk::PFN_vkVoidFunction>(
+                        Self::get_micromap_build_sizes_ext,
                     )
                 },
             },
@@ -5931,10 +6220,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetPastPresentationTimingGoogle),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_past_presentation_timing_google
-                            as vk::PFN_vkGetPastPresentationTimingGOOGLE,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetPastPresentationTimingGOOGLE,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_past_presentation_timing_google)
                 },
             },
             VulkanCommand {
@@ -5942,10 +6231,10 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::INTELPerformanceQuery)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPerformanceParameterIntel),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_performance_parameter_intel
-                            as vk::PFN_vkGetPerformanceParameterINTEL,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetPerformanceParameterINTEL,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_performance_parameter_intel)
                 },
             },
             VulkanCommand {
@@ -5953,8 +6242,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPipelineCacheData),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_pipeline_cache_data as vk::PFN_vkGetPipelineCacheData,
+                    std::mem::transmute::<vk::PFN_vkGetPipelineCacheData, vk::PFN_vkVoidFunction>(
+                        Self::get_pipeline_cache_data,
                     )
                 },
             },
@@ -5966,10 +6255,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetPipelineExecutableInternalRepresentationsKhr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_pipeline_executable_internal_representations_khr
-                            as vk::PFN_vkGetPipelineExecutableInternalRepresentationsKHR,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetPipelineExecutableInternalRepresentationsKHR,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_pipeline_executable_internal_representations_khr)
                 },
             },
             VulkanCommand {
@@ -5980,10 +6269,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetPipelineExecutablePropertiesKhr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_pipeline_executable_properties_khr
-                            as vk::PFN_vkGetPipelineExecutablePropertiesKHR,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetPipelineExecutablePropertiesKHR,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_pipeline_executable_properties_khr)
                 },
             },
             VulkanCommand {
@@ -5994,10 +6283,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetPipelineExecutableStatisticsKhr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_pipeline_executable_statistics_khr
-                            as vk::PFN_vkGetPipelineExecutableStatisticsKHR,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetPipelineExecutableStatisticsKHR,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_pipeline_executable_statistics_khr)
                 },
             },
             VulkanCommand {
@@ -6005,8 +6294,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTPipelineProperties)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPipelinePropertiesExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_pipeline_properties_ext as vk::PFN_vkGetPipelinePropertiesEXT,
+                    std::mem::transmute::<vk::PFN_vkGetPipelinePropertiesEXT, vk::PFN_vkVoidFunction>(
+                        Self::get_pipeline_properties_ext,
                     )
                 },
             },
@@ -6015,7 +6304,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPrivateData),
                 proc: unsafe {
-                    std::mem::transmute(Self::get_private_data as vk::PFN_vkGetPrivateData)
+                    std::mem::transmute::<vk::PFN_vkGetPrivateData, vk::PFN_vkVoidFunction>(
+                        Self::get_private_data,
+                    )
                 },
             },
             VulkanCommand {
@@ -6023,7 +6314,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTPrivateData)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPrivateData),
                 proc: unsafe {
-                    std::mem::transmute(Self::get_private_data as vk::PFN_vkGetPrivateData)
+                    std::mem::transmute::<vk::PFN_vkGetPrivateData, vk::PFN_vkVoidFunction>(
+                        Self::get_private_data,
+                    )
                 },
             },
             VulkanCommand {
@@ -6031,8 +6324,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetQueryPoolResults),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_query_pool_results as vk::PFN_vkGetQueryPoolResults,
+                    std::mem::transmute::<vk::PFN_vkGetQueryPoolResults, vk::PFN_vkVoidFunction>(
+                        Self::get_query_pool_results,
                     )
                 },
             },
@@ -6041,8 +6334,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRSynchronization2)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetQueueCheckpointData2Nv),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_queue_checkpoint_data2_nv as vk::PFN_vkGetQueueCheckpointData2NV,
+                    std::mem::transmute::<vk::PFN_vkGetQueueCheckpointData2NV, vk::PFN_vkVoidFunction>(
+                        Self::get_queue_checkpoint_data2_nv,
                     )
                 },
             },
@@ -6051,8 +6344,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::NVDeviceDiagnosticCheckpoints)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetQueueCheckpointDataNv),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_queue_checkpoint_data_nv as vk::PFN_vkGetQueueCheckpointDataNV,
+                    std::mem::transmute::<vk::PFN_vkGetQueueCheckpointDataNV, vk::PFN_vkVoidFunction>(
+                        Self::get_queue_checkpoint_data_nv,
                     )
                 },
             },
@@ -6062,9 +6355,11 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetRayTracingCaptureReplayShaderGroupHandlesKhr),
                 proc: unsafe {
-                    std::mem::transmute(
+                    std::mem::transmute::<
+                        vk::PFN_vkGetRayTracingCaptureReplayShaderGroupHandlesKHR,
+                        vk::PFN_vkVoidFunction,
+                    >(
                         Self::get_ray_tracing_capture_replay_shader_group_handles_khr
-                            as vk::PFN_vkGetRayTracingCaptureReplayShaderGroupHandlesKHR,
                     )
                 },
             },
@@ -6074,10 +6369,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetRayTracingShaderGroupHandlesKhr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_ray_tracing_shader_group_handles_khr
-                            as vk::PFN_vkGetRayTracingShaderGroupHandlesKHR,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetRayTracingShaderGroupHandlesKHR,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_ray_tracing_shader_group_handles_khr)
                 },
             },
             VulkanCommand {
@@ -6086,10 +6381,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetRayTracingShaderGroupHandlesKhr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_ray_tracing_shader_group_handles_khr
-                            as vk::PFN_vkGetRayTracingShaderGroupHandlesKHR,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetRayTracingShaderGroupHandlesKHR,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_ray_tracing_shader_group_handles_khr)
                 },
             },
             VulkanCommand {
@@ -6098,10 +6393,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetRayTracingShaderGroupStackSizeKhr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_ray_tracing_shader_group_stack_size_khr
-                            as vk::PFN_vkGetRayTracingShaderGroupStackSizeKHR,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetRayTracingShaderGroupStackSizeKHR,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_ray_tracing_shader_group_stack_size_khr)
                 },
             },
             VulkanCommand {
@@ -6110,10 +6405,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetRefreshCycleDurationGoogle),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_refresh_cycle_duration_google
-                            as vk::PFN_vkGetRefreshCycleDurationGOOGLE,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetRefreshCycleDurationGOOGLE,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_refresh_cycle_duration_google)
                 },
             },
             VulkanCommand {
@@ -6121,8 +6416,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetRenderAreaGranularity),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_render_area_granularity as vk::PFN_vkGetRenderAreaGranularity,
+                    std::mem::transmute::<vk::PFN_vkGetRenderAreaGranularity, vk::PFN_vkVoidFunction>(
+                        Self::get_render_area_granularity,
                     )
                 },
             },
@@ -6132,10 +6427,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetSamplerOpaqueCaptureDescriptorDataExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_sampler_opaque_capture_descriptor_data_ext
-                            as vk::PFN_vkGetSamplerOpaqueCaptureDescriptorDataEXT,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetSamplerOpaqueCaptureDescriptorDataEXT,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_sampler_opaque_capture_descriptor_data_ext)
                 },
             },
             VulkanCommand {
@@ -6143,8 +6438,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 2 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetSemaphoreCounterValue),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_semaphore_counter_value as vk::PFN_vkGetSemaphoreCounterValue,
+                    std::mem::transmute::<vk::PFN_vkGetSemaphoreCounterValue, vk::PFN_vkVoidFunction>(
+                        Self::get_semaphore_counter_value,
                     )
                 },
             },
@@ -6153,8 +6448,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRTimelineSemaphore)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetSemaphoreCounterValue),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_semaphore_counter_value as vk::PFN_vkGetSemaphoreCounterValue,
+                    std::mem::transmute::<vk::PFN_vkGetSemaphoreCounterValue, vk::PFN_vkVoidFunction>(
+                        Self::get_semaphore_counter_value,
                     )
                 },
             },
@@ -6163,7 +6458,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRExternalSemaphoreFd)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetSemaphoreFdKhr),
                 proc: unsafe {
-                    std::mem::transmute(Self::get_semaphore_fd_khr as vk::PFN_vkGetSemaphoreFdKHR)
+                    std::mem::transmute::<vk::PFN_vkGetSemaphoreFdKHR, vk::PFN_vkVoidFunction>(
+                        Self::get_semaphore_fd_khr,
+                    )
                 },
             },
             VulkanCommand {
@@ -6171,10 +6468,10 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRExternalSemaphoreWin32)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetSemaphoreWin32HandleKhr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_semaphore_win32_handle_khr
-                            as vk::PFN_vkGetSemaphoreWin32HandleKHR,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetSemaphoreWin32HandleKHR,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_semaphore_win32_handle_khr)
                 },
             },
             VulkanCommand {
@@ -6183,10 +6480,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetSemaphoreZirconHandleFuchsia),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_semaphore_zircon_handle_fuchsia
-                            as vk::PFN_vkGetSemaphoreZirconHandleFUCHSIA,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetSemaphoreZirconHandleFUCHSIA,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_semaphore_zircon_handle_fuchsia)
                 },
             },
             VulkanCommand {
@@ -6194,7 +6491,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::AMDShaderInfo)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetShaderInfoAmd),
                 proc: unsafe {
-                    std::mem::transmute(Self::get_shader_info_amd as vk::PFN_vkGetShaderInfoAMD)
+                    std::mem::transmute::<vk::PFN_vkGetShaderInfoAMD, vk::PFN_vkVoidFunction>(
+                        Self::get_shader_info_amd,
+                    )
                 },
             },
             VulkanCommand {
@@ -6203,10 +6502,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetShaderModuleCreateInfoIdentifierExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_shader_module_create_info_identifier_ext
-                            as vk::PFN_vkGetShaderModuleCreateInfoIdentifierEXT,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetShaderModuleCreateInfoIdentifierEXT,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_shader_module_create_info_identifier_ext)
                 },
             },
             VulkanCommand {
@@ -6214,10 +6513,10 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTShaderModuleIdentifier)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetShaderModuleIdentifierExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_shader_module_identifier_ext
-                            as vk::PFN_vkGetShaderModuleIdentifierEXT,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetShaderModuleIdentifierEXT,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_shader_module_identifier_ext)
                 },
             },
             VulkanCommand {
@@ -6225,8 +6524,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTDisplayControl)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetSwapchainCounterExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_swapchain_counter_ext as vk::PFN_vkGetSwapchainCounterEXT,
+                    std::mem::transmute::<vk::PFN_vkGetSwapchainCounterEXT, vk::PFN_vkVoidFunction>(
+                        Self::get_swapchain_counter_ext,
                     )
                 },
             },
@@ -6236,10 +6535,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetSwapchainGrallocUsage2Android),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_swapchain_gralloc_usage2_android
-                            as vk::PFN_vkGetSwapchainGrallocUsage2ANDROID,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetSwapchainGrallocUsage2ANDROID,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_swapchain_gralloc_usage2_android)
                 },
             },
             VulkanCommand {
@@ -6248,10 +6547,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetSwapchainGrallocUsageAndroid),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_swapchain_gralloc_usage_android
-                            as vk::PFN_vkGetSwapchainGrallocUsageANDROID,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetSwapchainGrallocUsageANDROID,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_swapchain_gralloc_usage_android)
                 },
             },
             VulkanCommand {
@@ -6259,8 +6558,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRSwapchain)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetSwapchainImagesKhr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_swapchain_images_khr as vk::PFN_vkGetSwapchainImagesKHR,
+                    std::mem::transmute::<vk::PFN_vkGetSwapchainImagesKHR, vk::PFN_vkVoidFunction>(
+                        Self::get_swapchain_images_khr,
                     )
                 },
             },
@@ -6269,8 +6568,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRSharedPresentableImage)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetSwapchainStatusKhr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_swapchain_status_khr as vk::PFN_vkGetSwapchainStatusKHR,
+                    std::mem::transmute::<vk::PFN_vkGetSwapchainStatusKHR, vk::PFN_vkVoidFunction>(
+                        Self::get_swapchain_status_khr,
                     )
                 },
             },
@@ -6279,8 +6578,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTValidationCache)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetValidationCacheDataExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_validation_cache_data_ext as vk::PFN_vkGetValidationCacheDataEXT,
+                    std::mem::transmute::<vk::PFN_vkGetValidationCacheDataEXT, vk::PFN_vkVoidFunction>(
+                        Self::get_validation_cache_data_ext,
                     )
                 },
             },
@@ -6290,10 +6589,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::GetVideoSessionMemoryRequirementsKhr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::get_video_session_memory_requirements_khr
-                            as vk::PFN_vkGetVideoSessionMemoryRequirementsKHR,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkGetVideoSessionMemoryRequirementsKHR,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::get_video_session_memory_requirements_khr)
                 },
             },
             VulkanCommand {
@@ -6301,7 +6600,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRExternalFenceFd)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::ImportFenceFdKhr),
                 proc: unsafe {
-                    std::mem::transmute(Self::import_fence_fd_khr as vk::PFN_vkImportFenceFdKHR)
+                    std::mem::transmute::<vk::PFN_vkImportFenceFdKHR, vk::PFN_vkVoidFunction>(
+                        Self::import_fence_fd_khr,
+                    )
                 },
             },
             VulkanCommand {
@@ -6309,8 +6610,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRExternalFenceWin32)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::ImportFenceWin32HandleKhr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::import_fence_win32_handle_khr as vk::PFN_vkImportFenceWin32HandleKHR,
+                    std::mem::transmute::<vk::PFN_vkImportFenceWin32HandleKHR, vk::PFN_vkVoidFunction>(
+                        Self::import_fence_win32_handle_khr,
                     )
                 },
             },
@@ -6319,8 +6620,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRExternalSemaphoreFd)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::ImportSemaphoreFdKhr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::import_semaphore_fd_khr as vk::PFN_vkImportSemaphoreFdKHR,
+                    std::mem::transmute::<vk::PFN_vkImportSemaphoreFdKHR, vk::PFN_vkVoidFunction>(
+                        Self::import_semaphore_fd_khr,
                     )
                 },
             },
@@ -6330,10 +6631,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::ImportSemaphoreWin32HandleKhr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::import_semaphore_win32_handle_khr
-                            as vk::PFN_vkImportSemaphoreWin32HandleKHR,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkImportSemaphoreWin32HandleKHR,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::import_semaphore_win32_handle_khr)
                 },
             },
             VulkanCommand {
@@ -6342,10 +6643,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::ImportSemaphoreZirconHandleFuchsia),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::import_semaphore_zircon_handle_fuchsia
-                            as vk::PFN_vkImportSemaphoreZirconHandleFUCHSIA,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkImportSemaphoreZirconHandleFUCHSIA,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::import_semaphore_zircon_handle_fuchsia)
                 },
             },
             VulkanCommand {
@@ -6354,10 +6655,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::InitializePerformanceApiIntel),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::initialize_performance_api_intel
-                            as vk::PFN_vkInitializePerformanceApiINTEL,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkInitializePerformanceApiINTEL,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::initialize_performance_api_intel)
                 },
             },
             VulkanCommand {
@@ -6365,25 +6666,29 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::InvalidateMappedMemoryRanges),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::invalidate_mapped_memory_ranges
-                            as vk::PFN_vkInvalidateMappedMemoryRanges,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkInvalidateMappedMemoryRanges,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::invalidate_mapped_memory_ranges)
                 },
             },
             VulkanCommand {
                 name: "vkMapMemory",
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::MapMemory),
-                proc: unsafe { std::mem::transmute(Self::map_memory as vk::PFN_vkMapMemory) },
+                proc: unsafe {
+                    std::mem::transmute::<vk::PFN_vkMapMemory, vk::PFN_vkVoidFunction>(
+                        Self::map_memory,
+                    )
+                },
             },
             VulkanCommand {
                 name: "vkMergePipelineCaches",
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::MergePipelineCaches),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::merge_pipeline_caches as vk::PFN_vkMergePipelineCaches,
+                    std::mem::transmute::<vk::PFN_vkMergePipelineCaches, vk::PFN_vkVoidFunction>(
+                        Self::merge_pipeline_caches,
                     )
                 },
             },
@@ -6392,8 +6697,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTValidationCache)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::MergeValidationCachesExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::merge_validation_caches_ext as vk::PFN_vkMergeValidationCachesEXT,
+                    std::mem::transmute::<vk::PFN_vkMergeValidationCachesEXT, vk::PFN_vkVoidFunction>(
+                        Self::merge_validation_caches_ext,
                     )
                 },
             },
@@ -6402,10 +6707,10 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTDebugUtils)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::QueueBeginDebugUtilsLabelExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::queue_begin_debug_utils_label_ext
-                            as vk::PFN_vkQueueBeginDebugUtilsLabelEXT,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkQueueBeginDebugUtilsLabelEXT,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::queue_begin_debug_utils_label_ext)
                 },
             },
             VulkanCommand {
@@ -6413,7 +6718,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::QueueBindSparse),
                 proc: unsafe {
-                    std::mem::transmute(Self::queue_bind_sparse as vk::PFN_vkQueueBindSparse)
+                    std::mem::transmute::<vk::PFN_vkQueueBindSparse, vk::PFN_vkVoidFunction>(
+                        Self::queue_bind_sparse,
+                    )
                 },
             },
             VulkanCommand {
@@ -6421,10 +6728,10 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTDebugUtils)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::QueueEndDebugUtilsLabelExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::queue_end_debug_utils_label_ext
-                            as vk::PFN_vkQueueEndDebugUtilsLabelEXT,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkQueueEndDebugUtilsLabelEXT,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::queue_end_debug_utils_label_ext)
                 },
             },
             VulkanCommand {
@@ -6433,10 +6740,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::QueueInsertDebugUtilsLabelExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::queue_insert_debug_utils_label_ext
-                            as vk::PFN_vkQueueInsertDebugUtilsLabelEXT,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkQueueInsertDebugUtilsLabelEXT,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::queue_insert_debug_utils_label_ext)
                 },
             },
             VulkanCommand {
@@ -6444,7 +6751,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRSwapchain)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::QueuePresentKhr),
                 proc: unsafe {
-                    std::mem::transmute(Self::queue_present_khr as vk::PFN_vkQueuePresentKHR)
+                    std::mem::transmute::<vk::PFN_vkQueuePresentKHR, vk::PFN_vkVoidFunction>(
+                        Self::queue_present_khr,
+                    )
                 },
             },
             VulkanCommand {
@@ -6453,10 +6762,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::QueueSetPerformanceConfigurationIntel),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::queue_set_performance_configuration_intel
-                            as vk::PFN_vkQueueSetPerformanceConfigurationINTEL,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkQueueSetPerformanceConfigurationINTEL,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::queue_set_performance_configuration_intel)
                 },
             },
             VulkanCommand {
@@ -6465,36 +6774,50 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::QueueSignalReleaseImageAndroid),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::queue_signal_release_image_android
-                            as vk::PFN_vkQueueSignalReleaseImageANDROID,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkQueueSignalReleaseImageANDROID,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::queue_signal_release_image_android)
                 },
             },
             VulkanCommand {
                 name: "vkQueueSubmit",
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::QueueSubmit),
-                proc: unsafe { std::mem::transmute(Self::queue_submit as vk::PFN_vkQueueSubmit) },
+                proc: unsafe {
+                    std::mem::transmute::<vk::PFN_vkQueueSubmit, vk::PFN_vkVoidFunction>(
+                        Self::queue_submit,
+                    )
+                },
             },
             VulkanCommand {
                 name: "vkQueueSubmit2",
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::QueueSubmit2),
-                proc: unsafe { std::mem::transmute(Self::queue_submit2 as vk::PFN_vkQueueSubmit2) },
+                proc: unsafe {
+                    std::mem::transmute::<vk::PFN_vkQueueSubmit2, vk::PFN_vkVoidFunction>(
+                        Self::queue_submit2,
+                    )
+                },
             },
             VulkanCommand {
                 name: "vkQueueSubmit2KHR",
                 features: smallvec![Feature::Extension(Extension::KHRSynchronization2)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::QueueSubmit2),
-                proc: unsafe { std::mem::transmute(Self::queue_submit2 as vk::PFN_vkQueueSubmit2) },
+                proc: unsafe {
+                    std::mem::transmute::<vk::PFN_vkQueueSubmit2, vk::PFN_vkVoidFunction>(
+                        Self::queue_submit2,
+                    )
+                },
             },
             VulkanCommand {
                 name: "vkQueueWaitIdle",
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::QueueWaitIdle),
                 proc: unsafe {
-                    std::mem::transmute(Self::queue_wait_idle as vk::PFN_vkQueueWaitIdle)
+                    std::mem::transmute::<vk::PFN_vkQueueWaitIdle, vk::PFN_vkVoidFunction>(
+                        Self::queue_wait_idle,
+                    )
                 },
             },
             VulkanCommand {
@@ -6502,8 +6825,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTDisplayControl)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::RegisterDeviceEventExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::register_device_event_ext as vk::PFN_vkRegisterDeviceEventEXT,
+                    std::mem::transmute::<vk::PFN_vkRegisterDeviceEventEXT, vk::PFN_vkVoidFunction>(
+                        Self::register_device_event_ext,
                     )
                 },
             },
@@ -6512,8 +6835,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTDisplayControl)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::RegisterDisplayEventExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::register_display_event_ext as vk::PFN_vkRegisterDisplayEventEXT,
+                    std::mem::transmute::<vk::PFN_vkRegisterDisplayEventEXT, vk::PFN_vkVoidFunction>(
+                        Self::register_display_event_ext,
                     )
                 },
             },
@@ -6523,10 +6846,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::ReleaseFullScreenExclusiveModeExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::release_full_screen_exclusive_mode_ext
-                            as vk::PFN_vkReleaseFullScreenExclusiveModeEXT,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkReleaseFullScreenExclusiveModeEXT,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::release_full_screen_exclusive_mode_ext)
                 },
             },
             VulkanCommand {
@@ -6535,10 +6858,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::ReleasePerformanceConfigurationIntel),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::release_performance_configuration_intel
-                            as vk::PFN_vkReleasePerformanceConfigurationINTEL,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkReleasePerformanceConfigurationINTEL,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::release_performance_configuration_intel)
                 },
             },
             VulkanCommand {
@@ -6546,8 +6869,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRPerformanceQuery)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::ReleaseProfilingLockKhr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::release_profiling_lock_khr as vk::PFN_vkReleaseProfilingLockKHR,
+                    std::mem::transmute::<vk::PFN_vkReleaseProfilingLockKHR, vk::PFN_vkVoidFunction>(
+                        Self::release_profiling_lock_khr,
                     )
                 },
             },
@@ -6556,8 +6879,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTSwapchainMaintenance1)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::ReleaseSwapchainImagesExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::release_swapchain_images_ext as vk::PFN_vkReleaseSwapchainImagesEXT,
+                    std::mem::transmute::<vk::PFN_vkReleaseSwapchainImagesEXT, vk::PFN_vkVoidFunction>(
+                        Self::release_swapchain_images_ext,
                     )
                 },
             },
@@ -6566,7 +6889,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::ResetCommandBuffer),
                 proc: unsafe {
-                    std::mem::transmute(Self::reset_command_buffer as vk::PFN_vkResetCommandBuffer)
+                    std::mem::transmute::<vk::PFN_vkResetCommandBuffer, vk::PFN_vkVoidFunction>(
+                        Self::reset_command_buffer,
+                    )
                 },
             },
             VulkanCommand {
@@ -6574,7 +6899,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::ResetCommandPool),
                 proc: unsafe {
-                    std::mem::transmute(Self::reset_command_pool as vk::PFN_vkResetCommandPool)
+                    std::mem::transmute::<vk::PFN_vkResetCommandPool, vk::PFN_vkVoidFunction>(
+                        Self::reset_command_pool,
+                    )
                 },
             },
             VulkanCommand {
@@ -6582,8 +6909,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::ResetDescriptorPool),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::reset_descriptor_pool as vk::PFN_vkResetDescriptorPool,
+                    std::mem::transmute::<vk::PFN_vkResetDescriptorPool, vk::PFN_vkVoidFunction>(
+                        Self::reset_descriptor_pool,
                     )
                 },
             },
@@ -6591,20 +6918,30 @@ impl<T: Layer> Global<T> {
                 name: "vkResetEvent",
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::ResetEvent),
-                proc: unsafe { std::mem::transmute(Self::reset_event as vk::PFN_vkResetEvent) },
+                proc: unsafe {
+                    std::mem::transmute::<vk::PFN_vkResetEvent, vk::PFN_vkVoidFunction>(
+                        Self::reset_event,
+                    )
+                },
             },
             VulkanCommand {
                 name: "vkResetFences",
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::ResetFences),
-                proc: unsafe { std::mem::transmute(Self::reset_fences as vk::PFN_vkResetFences) },
+                proc: unsafe {
+                    std::mem::transmute::<vk::PFN_vkResetFences, vk::PFN_vkVoidFunction>(
+                        Self::reset_fences,
+                    )
+                },
             },
             VulkanCommand {
                 name: "vkResetQueryPool",
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 2 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::ResetQueryPool),
                 proc: unsafe {
-                    std::mem::transmute(Self::reset_query_pool as vk::PFN_vkResetQueryPool)
+                    std::mem::transmute::<vk::PFN_vkResetQueryPool, vk::PFN_vkVoidFunction>(
+                        Self::reset_query_pool,
+                    )
                 },
             },
             VulkanCommand {
@@ -6612,7 +6949,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTHostQueryReset)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::ResetQueryPool),
                 proc: unsafe {
-                    std::mem::transmute(Self::reset_query_pool as vk::PFN_vkResetQueryPool)
+                    std::mem::transmute::<vk::PFN_vkResetQueryPool, vk::PFN_vkVoidFunction>(
+                        Self::reset_query_pool,
+                    )
                 },
             },
             VulkanCommand {
@@ -6621,10 +6960,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::SetBufferCollectionBufferConstraintsFuchsia),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::set_buffer_collection_buffer_constraints_fuchsia
-                            as vk::PFN_vkSetBufferCollectionBufferConstraintsFUCHSIA,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkSetBufferCollectionBufferConstraintsFUCHSIA,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::set_buffer_collection_buffer_constraints_fuchsia)
                 },
             },
             VulkanCommand {
@@ -6633,10 +6972,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::SetBufferCollectionImageConstraintsFuchsia),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::set_buffer_collection_image_constraints_fuchsia
-                            as vk::PFN_vkSetBufferCollectionImageConstraintsFUCHSIA,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkSetBufferCollectionImageConstraintsFUCHSIA,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::set_buffer_collection_image_constraints_fuchsia)
                 },
             },
             VulkanCommand {
@@ -6644,10 +6983,10 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTDebugUtils)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::SetDebugUtilsObjectNameExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::set_debug_utils_object_name_ext
-                            as vk::PFN_vkSetDebugUtilsObjectNameEXT,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkSetDebugUtilsObjectNameEXT,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::set_debug_utils_object_name_ext)
                 },
             },
             VulkanCommand {
@@ -6655,8 +6994,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTDebugUtils)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::SetDebugUtilsObjectTagExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::set_debug_utils_object_tag_ext as vk::PFN_vkSetDebugUtilsObjectTagEXT,
+                    std::mem::transmute::<vk::PFN_vkSetDebugUtilsObjectTagEXT, vk::PFN_vkVoidFunction>(
+                        Self::set_debug_utils_object_tag_ext,
                     )
                 },
             },
@@ -6665,24 +7004,30 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTPageableDeviceLocalMemory)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::SetDeviceMemoryPriorityExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::set_device_memory_priority_ext
-                            as vk::PFN_vkSetDeviceMemoryPriorityEXT,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkSetDeviceMemoryPriorityEXT,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::set_device_memory_priority_ext)
                 },
             },
             VulkanCommand {
                 name: "vkSetEvent",
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::SetEvent),
-                proc: unsafe { std::mem::transmute(Self::set_event as vk::PFN_vkSetEvent) },
+                proc: unsafe {
+                    std::mem::transmute::<vk::PFN_vkSetEvent, vk::PFN_vkVoidFunction>(
+                        Self::set_event,
+                    )
+                },
             },
             VulkanCommand {
                 name: "vkSetHdrMetadataEXT",
                 features: smallvec![Feature::Extension(Extension::EXTHdrMetadata)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::SetHdrMetadataExt),
                 proc: unsafe {
-                    std::mem::transmute(Self::set_hdr_metadata_ext as vk::PFN_vkSetHdrMetadataEXT)
+                    std::mem::transmute::<vk::PFN_vkSetHdrMetadataEXT, vk::PFN_vkVoidFunction>(
+                        Self::set_hdr_metadata_ext,
+                    )
                 },
             },
             VulkanCommand {
@@ -6690,7 +7035,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::AMDDisplayNativeHdr)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::SetLocalDimmingAmd),
                 proc: unsafe {
-                    std::mem::transmute(Self::set_local_dimming_amd as vk::PFN_vkSetLocalDimmingAMD)
+                    std::mem::transmute::<vk::PFN_vkSetLocalDimmingAMD, vk::PFN_vkVoidFunction>(
+                        Self::set_local_dimming_amd,
+                    )
                 },
             },
             VulkanCommand {
@@ -6698,7 +7045,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::SetPrivateData),
                 proc: unsafe {
-                    std::mem::transmute(Self::set_private_data as vk::PFN_vkSetPrivateData)
+                    std::mem::transmute::<vk::PFN_vkSetPrivateData, vk::PFN_vkVoidFunction>(
+                        Self::set_private_data,
+                    )
                 },
             },
             VulkanCommand {
@@ -6706,7 +7055,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTPrivateData)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::SetPrivateData),
                 proc: unsafe {
-                    std::mem::transmute(Self::set_private_data as vk::PFN_vkSetPrivateData)
+                    std::mem::transmute::<vk::PFN_vkSetPrivateData, vk::PFN_vkVoidFunction>(
+                        Self::set_private_data,
+                    )
                 },
             },
             VulkanCommand {
@@ -6714,7 +7065,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 2 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::SignalSemaphore),
                 proc: unsafe {
-                    std::mem::transmute(Self::signal_semaphore as vk::PFN_vkSignalSemaphore)
+                    std::mem::transmute::<vk::PFN_vkSignalSemaphore, vk::PFN_vkVoidFunction>(
+                        Self::signal_semaphore,
+                    )
                 },
             },
             VulkanCommand {
@@ -6722,7 +7075,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRTimelineSemaphore)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::SignalSemaphore),
                 proc: unsafe {
-                    std::mem::transmute(Self::signal_semaphore as vk::PFN_vkSignalSemaphore)
+                    std::mem::transmute::<vk::PFN_vkSignalSemaphore, vk::PFN_vkVoidFunction>(
+                        Self::signal_semaphore,
+                    )
                 },
             },
             VulkanCommand {
@@ -6730,7 +7085,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::TrimCommandPool),
                 proc: unsafe {
-                    std::mem::transmute(Self::trim_command_pool as vk::PFN_vkTrimCommandPool)
+                    std::mem::transmute::<vk::PFN_vkTrimCommandPool, vk::PFN_vkVoidFunction>(
+                        Self::trim_command_pool,
+                    )
                 },
             },
             VulkanCommand {
@@ -6738,7 +7095,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRMaintenance1)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::TrimCommandPool),
                 proc: unsafe {
-                    std::mem::transmute(Self::trim_command_pool as vk::PFN_vkTrimCommandPool)
+                    std::mem::transmute::<vk::PFN_vkTrimCommandPool, vk::PFN_vkVoidFunction>(
+                        Self::trim_command_pool,
+                    )
                 },
             },
             VulkanCommand {
@@ -6747,17 +7106,21 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::UninitializePerformanceApiIntel),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::uninitialize_performance_api_intel
-                            as vk::PFN_vkUninitializePerformanceApiINTEL,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkUninitializePerformanceApiINTEL,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::uninitialize_performance_api_intel)
                 },
             },
             VulkanCommand {
                 name: "vkUnmapMemory",
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::UnmapMemory),
-                proc: unsafe { std::mem::transmute(Self::unmap_memory as vk::PFN_vkUnmapMemory) },
+                proc: unsafe {
+                    std::mem::transmute::<vk::PFN_vkUnmapMemory, vk::PFN_vkVoidFunction>(
+                        Self::unmap_memory,
+                    )
+                },
             },
             VulkanCommand {
                 name: "vkUpdateDescriptorSetWithTemplate",
@@ -6765,10 +7128,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::UpdateDescriptorSetWithTemplate),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::update_descriptor_set_with_template
-                            as vk::PFN_vkUpdateDescriptorSetWithTemplate,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkUpdateDescriptorSetWithTemplate,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::update_descriptor_set_with_template)
                 },
             },
             VulkanCommand {
@@ -6777,10 +7140,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::UpdateDescriptorSetWithTemplate),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::update_descriptor_set_with_template
-                            as vk::PFN_vkUpdateDescriptorSetWithTemplate,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkUpdateDescriptorSetWithTemplate,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::update_descriptor_set_with_template)
                 },
             },
             VulkanCommand {
@@ -6788,8 +7151,8 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::UpdateDescriptorSets),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::update_descriptor_sets as vk::PFN_vkUpdateDescriptorSets,
+                    std::mem::transmute::<vk::PFN_vkUpdateDescriptorSets, vk::PFN_vkVoidFunction>(
+                        Self::update_descriptor_sets,
                     )
                 },
             },
@@ -6799,10 +7162,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::UpdateVideoSessionParametersKhr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::update_video_session_parameters_khr
-                            as vk::PFN_vkUpdateVideoSessionParametersKHR,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkUpdateVideoSessionParametersKHR,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::update_video_session_parameters_khr)
                 },
             },
             VulkanCommand {
@@ -6810,7 +7173,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::WaitForFences),
                 proc: unsafe {
-                    std::mem::transmute(Self::wait_for_fences as vk::PFN_vkWaitForFences)
+                    std::mem::transmute::<vk::PFN_vkWaitForFences, vk::PFN_vkVoidFunction>(
+                        Self::wait_for_fences,
+                    )
                 },
             },
             VulkanCommand {
@@ -6818,7 +7183,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRPresentWait)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::WaitForPresentKhr),
                 proc: unsafe {
-                    std::mem::transmute(Self::wait_for_present_khr as vk::PFN_vkWaitForPresentKHR)
+                    std::mem::transmute::<vk::PFN_vkWaitForPresentKHR, vk::PFN_vkVoidFunction>(
+                        Self::wait_for_present_khr,
+                    )
                 },
             },
             VulkanCommand {
@@ -6826,7 +7193,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 2 })],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::WaitSemaphores),
                 proc: unsafe {
-                    std::mem::transmute(Self::wait_semaphores as vk::PFN_vkWaitSemaphores)
+                    std::mem::transmute::<vk::PFN_vkWaitSemaphores, vk::PFN_vkVoidFunction>(
+                        Self::wait_semaphores,
+                    )
                 },
             },
             VulkanCommand {
@@ -6834,7 +7203,9 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::KHRTimelineSemaphore)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::WaitSemaphores),
                 proc: unsafe {
-                    std::mem::transmute(Self::wait_semaphores as vk::PFN_vkWaitSemaphores)
+                    std::mem::transmute::<vk::PFN_vkWaitSemaphores, vk::PFN_vkVoidFunction>(
+                        Self::wait_semaphores,
+                    )
                 },
             },
             VulkanCommand {
@@ -6843,10 +7214,10 @@ impl<T: Layer> Global<T> {
                 hooked: hooked_commands
                     .contains(&LayerVulkanCommand::WriteAccelerationStructuresPropertiesKhr),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::write_acceleration_structures_properties_khr
-                            as vk::PFN_vkWriteAccelerationStructuresPropertiesKHR,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkWriteAccelerationStructuresPropertiesKHR,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::write_acceleration_structures_properties_khr)
                 },
             },
             VulkanCommand {
@@ -6854,10 +7225,10 @@ impl<T: Layer> Global<T> {
                 features: smallvec![Feature::Extension(Extension::EXTOpacityMicromap)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::WriteMicromapsPropertiesExt),
                 proc: unsafe {
-                    std::mem::transmute(
-                        Self::write_micromaps_properties_ext
-                            as vk::PFN_vkWriteMicromapsPropertiesEXT,
-                    )
+                    std::mem::transmute::<
+                        vk::PFN_vkWriteMicromapsPropertiesEXT,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::write_micromaps_properties_ext)
                 },
             },
         ])
@@ -6875,613 +7246,613 @@ impl<T: Layer> Global<T> {
                 name: "vkAcquireDrmDisplayEXT",
                 features: smallvec![Feature::Extension(Extension::EXTAcquireDrmDisplay)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::AcquireDrmDisplayExt),
-                proc: unsafe { std::mem::transmute(Self::acquire_drm_display_ext as vk::PFN_vkAcquireDrmDisplayEXT)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkAcquireDrmDisplayEXT, vk::PFN_vkVoidFunction>(Self::acquire_drm_display_ext)},
             },
             VulkanCommand {
                 name: "vkAcquireWinrtDisplayNV",
                 features: smallvec![Feature::Extension(Extension::NVAcquireWinrtDisplay)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::AcquireWinrtDisplayNv),
-                proc: unsafe { std::mem::transmute(Self::acquire_winrt_display_nv as vk::PFN_vkAcquireWinrtDisplayNV)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkAcquireWinrtDisplayNV, vk::PFN_vkVoidFunction>(Self::acquire_winrt_display_nv)},
             },
             VulkanCommand {
                 name: "vkAcquireXlibDisplayEXT",
                 features: smallvec![Feature::Extension(Extension::EXTAcquireXlibDisplay)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::AcquireXlibDisplayExt),
-                proc: unsafe { std::mem::transmute(Self::acquire_xlib_display_ext as vk::PFN_vkAcquireXlibDisplayEXT)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkAcquireXlibDisplayEXT, vk::PFN_vkVoidFunction>(Self::acquire_xlib_display_ext)},
             },
             VulkanCommand {
                 name: "vkCreateAndroidSurfaceKHR",
                 features: smallvec![Feature::Extension(Extension::KHRAndroidSurface)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CreateAndroidSurfaceKhr),
-                proc: unsafe { std::mem::transmute(Self::create_android_surface_khr as vk::PFN_vkCreateAndroidSurfaceKHR)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkCreateAndroidSurfaceKHR, vk::PFN_vkVoidFunction>(Self::create_android_surface_khr)},
             },
             VulkanCommand {
                 name: "vkCreateDebugReportCallbackEXT",
                 features: smallvec![Feature::Extension(Extension::EXTDebugReport)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CreateDebugReportCallbackExt),
-                proc: unsafe { std::mem::transmute(Self::create_debug_report_callback_ext as vk::PFN_vkCreateDebugReportCallbackEXT)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkCreateDebugReportCallbackEXT, vk::PFN_vkVoidFunction>(Self::create_debug_report_callback_ext)},
             },
             VulkanCommand {
                 name: "vkCreateDebugUtilsMessengerEXT",
                 features: smallvec![Feature::Extension(Extension::EXTDebugUtils)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CreateDebugUtilsMessengerExt),
-                proc: unsafe { std::mem::transmute(Self::create_debug_utils_messenger_ext as vk::PFN_vkCreateDebugUtilsMessengerEXT)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkCreateDebugUtilsMessengerEXT, vk::PFN_vkVoidFunction>(Self::create_debug_utils_messenger_ext)},
             },
             VulkanCommand {
                 name: "vkCreateDevice",
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0})],
                 hooked: true,
-                proc: unsafe { std::mem::transmute(Self::create_device as vk::PFN_vkCreateDevice)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkCreateDevice, vk::PFN_vkVoidFunction>(Self::create_device)},
             },
             VulkanCommand {
                 name: "vkCreateDirectFBSurfaceEXT",
                 features: smallvec![Feature::Extension(Extension::EXTDirectfbSurface)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CreateDirectFbSurfaceExt),
-                proc: unsafe { std::mem::transmute(Self::create_direct_fb_surface_ext as vk::PFN_vkCreateDirectFBSurfaceEXT)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkCreateDirectFBSurfaceEXT, vk::PFN_vkVoidFunction>(Self::create_direct_fb_surface_ext)},
             },
             VulkanCommand {
                 name: "vkCreateDisplayModeKHR",
                 features: smallvec![Feature::Extension(Extension::KHRDisplay)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CreateDisplayModeKhr),
-                proc: unsafe { std::mem::transmute(Self::create_display_mode_khr as vk::PFN_vkCreateDisplayModeKHR)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkCreateDisplayModeKHR, vk::PFN_vkVoidFunction>(Self::create_display_mode_khr)},
             },
             VulkanCommand {
                 name: "vkCreateDisplayPlaneSurfaceKHR",
                 features: smallvec![Feature::Extension(Extension::KHRDisplay)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CreateDisplayPlaneSurfaceKhr),
-                proc: unsafe { std::mem::transmute(Self::create_display_plane_surface_khr as vk::PFN_vkCreateDisplayPlaneSurfaceKHR)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkCreateDisplayPlaneSurfaceKHR, vk::PFN_vkVoidFunction>(Self::create_display_plane_surface_khr)},
             },
             VulkanCommand {
                 name: "vkCreateHeadlessSurfaceEXT",
                 features: smallvec![Feature::Extension(Extension::EXTHeadlessSurface)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CreateHeadlessSurfaceExt),
-                proc: unsafe { std::mem::transmute(Self::create_headless_surface_ext as vk::PFN_vkCreateHeadlessSurfaceEXT)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkCreateHeadlessSurfaceEXT, vk::PFN_vkVoidFunction>(Self::create_headless_surface_ext)},
             },
             VulkanCommand {
                 name: "vkCreateIOSSurfaceMVK",
                 features: smallvec![Feature::Extension(Extension::MVKIosSurface)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CreateIosSurfaceMvk),
-                proc: unsafe { std::mem::transmute(Self::create_ios_surface_mvk as vk::PFN_vkCreateIOSSurfaceMVK)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkCreateIOSSurfaceMVK, vk::PFN_vkVoidFunction>(Self::create_ios_surface_mvk)},
             },
             VulkanCommand {
                 name: "vkCreateImagePipeSurfaceFUCHSIA",
                 features: smallvec![Feature::Extension(Extension::FUCHSIAImagepipeSurface)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CreateImagePipeSurfaceFuchsia),
-                proc: unsafe { std::mem::transmute(Self::create_image_pipe_surface_fuchsia as vk::PFN_vkCreateImagePipeSurfaceFUCHSIA)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkCreateImagePipeSurfaceFUCHSIA, vk::PFN_vkVoidFunction>(Self::create_image_pipe_surface_fuchsia)},
             },
             VulkanCommand {
                 name: "vkCreateMacOSSurfaceMVK",
                 features: smallvec![Feature::Extension(Extension::MVKMacosSurface)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CreateMacOsSurfaceMvk),
-                proc: unsafe { std::mem::transmute(Self::create_mac_os_surface_mvk as vk::PFN_vkCreateMacOSSurfaceMVK)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkCreateMacOSSurfaceMVK, vk::PFN_vkVoidFunction>(Self::create_mac_os_surface_mvk)},
             },
             VulkanCommand {
                 name: "vkCreateMetalSurfaceEXT",
                 features: smallvec![Feature::Extension(Extension::EXTMetalSurface)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CreateMetalSurfaceExt),
-                proc: unsafe { std::mem::transmute(Self::create_metal_surface_ext as vk::PFN_vkCreateMetalSurfaceEXT)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkCreateMetalSurfaceEXT, vk::PFN_vkVoidFunction>(Self::create_metal_surface_ext)},
             },
             VulkanCommand {
                 name: "vkCreateScreenSurfaceQNX",
                 features: smallvec![Feature::Extension(Extension::QNXScreenSurface)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CreateScreenSurfaceQnx),
-                proc: unsafe { std::mem::transmute(Self::create_screen_surface_qnx as vk::PFN_vkCreateScreenSurfaceQNX)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkCreateScreenSurfaceQNX, vk::PFN_vkVoidFunction>(Self::create_screen_surface_qnx)},
             },
             VulkanCommand {
                 name: "vkCreateStreamDescriptorSurfaceGGP",
                 features: smallvec![Feature::Extension(Extension::GGPStreamDescriptorSurface)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CreateStreamDescriptorSurfaceGgp),
-                proc: unsafe { std::mem::transmute(Self::create_stream_descriptor_surface_ggp as vk::PFN_vkCreateStreamDescriptorSurfaceGGP)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkCreateStreamDescriptorSurfaceGGP, vk::PFN_vkVoidFunction>(Self::create_stream_descriptor_surface_ggp)},
             },
             VulkanCommand {
                 name: "vkCreateViSurfaceNN",
                 features: smallvec![Feature::Extension(Extension::NNViSurface)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CreateViSurfaceNn),
-                proc: unsafe { std::mem::transmute(Self::create_vi_surface_nn as vk::PFN_vkCreateViSurfaceNN)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkCreateViSurfaceNN, vk::PFN_vkVoidFunction>(Self::create_vi_surface_nn)},
             },
             VulkanCommand {
                 name: "vkCreateWaylandSurfaceKHR",
                 features: smallvec![Feature::Extension(Extension::KHRWaylandSurface)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CreateWaylandSurfaceKhr),
-                proc: unsafe { std::mem::transmute(Self::create_wayland_surface_khr as vk::PFN_vkCreateWaylandSurfaceKHR)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkCreateWaylandSurfaceKHR, vk::PFN_vkVoidFunction>(Self::create_wayland_surface_khr)},
             },
             VulkanCommand {
                 name: "vkCreateWin32SurfaceKHR",
                 features: smallvec![Feature::Extension(Extension::KHRWin32Surface)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CreateWin32SurfaceKhr),
-                proc: unsafe { std::mem::transmute(Self::create_win32_surface_khr as vk::PFN_vkCreateWin32SurfaceKHR)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkCreateWin32SurfaceKHR, vk::PFN_vkVoidFunction>(Self::create_win32_surface_khr)},
             },
             VulkanCommand {
                 name: "vkCreateXcbSurfaceKHR",
                 features: smallvec![Feature::Extension(Extension::KHRXcbSurface)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CreateXcbSurfaceKhr),
-                proc: unsafe { std::mem::transmute(Self::create_xcb_surface_khr as vk::PFN_vkCreateXcbSurfaceKHR)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkCreateXcbSurfaceKHR, vk::PFN_vkVoidFunction>(Self::create_xcb_surface_khr)},
             },
             VulkanCommand {
                 name: "vkCreateXlibSurfaceKHR",
                 features: smallvec![Feature::Extension(Extension::KHRXlibSurface)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::CreateXlibSurfaceKhr),
-                proc: unsafe { std::mem::transmute(Self::create_xlib_surface_khr as vk::PFN_vkCreateXlibSurfaceKHR)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkCreateXlibSurfaceKHR, vk::PFN_vkVoidFunction>(Self::create_xlib_surface_khr)},
             },
             VulkanCommand {
                 name: "vkDebugReportMessageEXT",
                 features: smallvec![Feature::Extension(Extension::EXTDebugReport)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::DebugReportMessageExt),
-                proc: unsafe { std::mem::transmute(Self::debug_report_message_ext as vk::PFN_vkDebugReportMessageEXT)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkDebugReportMessageEXT, vk::PFN_vkVoidFunction>(Self::debug_report_message_ext)},
             },
             VulkanCommand {
                 name: "vkDestroyDebugReportCallbackEXT",
                 features: smallvec![Feature::Extension(Extension::EXTDebugReport)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyDebugReportCallbackExt),
-                proc: unsafe { std::mem::transmute(Self::destroy_debug_report_callback_ext as vk::PFN_vkDestroyDebugReportCallbackEXT)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkDestroyDebugReportCallbackEXT, vk::PFN_vkVoidFunction>(Self::destroy_debug_report_callback_ext)},
             },
             VulkanCommand {
                 name: "vkDestroyDebugUtilsMessengerEXT",
                 features: smallvec![Feature::Extension(Extension::EXTDebugUtils)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::DestroyDebugUtilsMessengerExt),
-                proc: unsafe { std::mem::transmute(Self::destroy_debug_utils_messenger_ext as vk::PFN_vkDestroyDebugUtilsMessengerEXT)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkDestroyDebugUtilsMessengerEXT, vk::PFN_vkVoidFunction>(Self::destroy_debug_utils_messenger_ext)},
             },
             VulkanCommand {
                 name: "vkDestroyInstance",
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0})],
                 hooked: true,
-                proc: unsafe { std::mem::transmute(Self::destroy_instance as vk::PFN_vkDestroyInstance)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkDestroyInstance, vk::PFN_vkVoidFunction>(Self::destroy_instance)},
             },
             VulkanCommand {
                 name: "vkDestroySurfaceKHR",
                 features: smallvec![Feature::Extension(Extension::KHRSurface)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::DestroySurfaceKhr),
-                proc: unsafe { std::mem::transmute(Self::destroy_surface_khr as vk::PFN_vkDestroySurfaceKHR)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkDestroySurfaceKHR, vk::PFN_vkVoidFunction>(Self::destroy_surface_khr)},
             },
             VulkanCommand {
                 name: "vkEnumerateDeviceExtensionProperties",
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0})],
                 hooked: true,
-                proc: unsafe { std::mem::transmute(Self::enumerate_device_extension_properties as vk::PFN_vkEnumerateDeviceExtensionProperties)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkEnumerateDeviceExtensionProperties, vk::PFN_vkVoidFunction>(Self::enumerate_device_extension_properties)},
             },
             VulkanCommand {
                 name: "vkEnumerateDeviceLayerProperties",
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0})],
                 hooked: true,
-                proc: unsafe { std::mem::transmute(Self::enumerate_device_layer_properties as vk::PFN_vkEnumerateDeviceLayerProperties)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkEnumerateDeviceLayerProperties, vk::PFN_vkVoidFunction>(Self::enumerate_device_layer_properties)},
             },
             VulkanCommand {
                 name: "vkEnumeratePhysicalDeviceGroups",
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1})],
                 hooked: true,
-                proc: unsafe { std::mem::transmute(Self::enumerate_physical_device_groups as vk::PFN_vkEnumeratePhysicalDeviceGroups)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkEnumeratePhysicalDeviceGroups, vk::PFN_vkVoidFunction>(Self::enumerate_physical_device_groups)},
             },
             VulkanCommand {
                 name: "vkEnumeratePhysicalDeviceGroupsKHR",
                 features: smallvec![Feature::Extension(Extension::KHRDeviceGroupCreation)],
                 hooked: true,
-                proc: unsafe { std::mem::transmute(Self::enumerate_physical_device_groups as vk::PFN_vkEnumeratePhysicalDeviceGroups)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkEnumeratePhysicalDeviceGroups, vk::PFN_vkVoidFunction>(Self::enumerate_physical_device_groups)},
             },
             VulkanCommand {
                 name: "vkEnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHR",
                 features: smallvec![Feature::Extension(Extension::KHRPerformanceQuery)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::EnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKhr),
-                proc: unsafe { std::mem::transmute(Self::enumerate_physical_device_queue_family_performance_query_counters_khr as vk::PFN_vkEnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHR)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkEnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHR, vk::PFN_vkVoidFunction>(Self::enumerate_physical_device_queue_family_performance_query_counters_khr)},
             },
             VulkanCommand {
                 name: "vkEnumeratePhysicalDevices",
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0})],
                 hooked: true,
-                proc: unsafe { std::mem::transmute(Self::enumerate_physical_devices as vk::PFN_vkEnumeratePhysicalDevices)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkEnumeratePhysicalDevices, vk::PFN_vkVoidFunction>(Self::enumerate_physical_devices)},
             },
             VulkanCommand {
                 name: "vkGetDisplayModeProperties2KHR",
                 features: smallvec![Feature::Extension(Extension::KHRGetDisplayProperties2)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetDisplayModeProperties2Khr),
-                proc: unsafe { std::mem::transmute(Self::get_display_mode_properties2_khr as vk::PFN_vkGetDisplayModeProperties2KHR)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetDisplayModeProperties2KHR, vk::PFN_vkVoidFunction>(Self::get_display_mode_properties2_khr)},
             },
             VulkanCommand {
                 name: "vkGetDisplayModePropertiesKHR",
                 features: smallvec![Feature::Extension(Extension::KHRDisplay)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetDisplayModePropertiesKhr),
-                proc: unsafe { std::mem::transmute(Self::get_display_mode_properties_khr as vk::PFN_vkGetDisplayModePropertiesKHR)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetDisplayModePropertiesKHR, vk::PFN_vkVoidFunction>(Self::get_display_mode_properties_khr)},
             },
             VulkanCommand {
                 name: "vkGetDisplayPlaneCapabilities2KHR",
                 features: smallvec![Feature::Extension(Extension::KHRGetDisplayProperties2)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetDisplayPlaneCapabilities2Khr),
-                proc: unsafe { std::mem::transmute(Self::get_display_plane_capabilities2_khr as vk::PFN_vkGetDisplayPlaneCapabilities2KHR)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetDisplayPlaneCapabilities2KHR, vk::PFN_vkVoidFunction>(Self::get_display_plane_capabilities2_khr)},
             },
             VulkanCommand {
                 name: "vkGetDisplayPlaneCapabilitiesKHR",
                 features: smallvec![Feature::Extension(Extension::KHRDisplay)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetDisplayPlaneCapabilitiesKhr),
-                proc: unsafe { std::mem::transmute(Self::get_display_plane_capabilities_khr as vk::PFN_vkGetDisplayPlaneCapabilitiesKHR)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetDisplayPlaneCapabilitiesKHR, vk::PFN_vkVoidFunction>(Self::get_display_plane_capabilities_khr)},
             },
             VulkanCommand {
                 name: "vkGetDisplayPlaneSupportedDisplaysKHR",
                 features: smallvec![Feature::Extension(Extension::KHRDisplay)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetDisplayPlaneSupportedDisplaysKhr),
-                proc: unsafe { std::mem::transmute(Self::get_display_plane_supported_displays_khr as vk::PFN_vkGetDisplayPlaneSupportedDisplaysKHR)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetDisplayPlaneSupportedDisplaysKHR, vk::PFN_vkVoidFunction>(Self::get_display_plane_supported_displays_khr)},
             },
             VulkanCommand {
                 name: "vkGetDrmDisplayEXT",
                 features: smallvec![Feature::Extension(Extension::EXTAcquireDrmDisplay)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetDrmDisplayExt),
-                proc: unsafe { std::mem::transmute(Self::get_drm_display_ext as vk::PFN_vkGetDrmDisplayEXT)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetDrmDisplayEXT, vk::PFN_vkVoidFunction>(Self::get_drm_display_ext)},
             },
             VulkanCommand {
                 name: "vkGetInstanceProcAddr",
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0})],
                 hooked: true,
-                proc: unsafe { std::mem::transmute(Self::get_instance_proc_addr as vk::PFN_vkGetInstanceProcAddr)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetInstanceProcAddr, vk::PFN_vkVoidFunction>(Self::get_instance_proc_addr)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDeviceCalibrateableTimeDomainsEXT",
                 features: smallvec![Feature::Extension(Extension::EXTCalibratedTimestamps)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceCalibrateableTimeDomainsExt),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_calibrateable_time_domains_ext as vk::PFN_vkGetPhysicalDeviceCalibrateableTimeDomainsEXT)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDeviceCalibrateableTimeDomainsEXT, vk::PFN_vkVoidFunction>(Self::get_physical_device_calibrateable_time_domains_ext)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDeviceCooperativeMatrixPropertiesNV",
                 features: smallvec![Feature::Extension(Extension::NVCooperativeMatrix)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceCooperativeMatrixPropertiesNv),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_cooperative_matrix_properties_nv as vk::PFN_vkGetPhysicalDeviceCooperativeMatrixPropertiesNV)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDeviceCooperativeMatrixPropertiesNV, vk::PFN_vkVoidFunction>(Self::get_physical_device_cooperative_matrix_properties_nv)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDeviceDirectFBPresentationSupportEXT",
                 features: smallvec![Feature::Extension(Extension::EXTDirectfbSurface)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceDirectFbPresentationSupportExt),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_direct_fb_presentation_support_ext as vk::PFN_vkGetPhysicalDeviceDirectFBPresentationSupportEXT)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDeviceDirectFBPresentationSupportEXT, vk::PFN_vkVoidFunction>(Self::get_physical_device_direct_fb_presentation_support_ext)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDeviceDisplayPlaneProperties2KHR",
                 features: smallvec![Feature::Extension(Extension::KHRGetDisplayProperties2)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceDisplayPlaneProperties2Khr),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_display_plane_properties2_khr as vk::PFN_vkGetPhysicalDeviceDisplayPlaneProperties2KHR)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDeviceDisplayPlaneProperties2KHR, vk::PFN_vkVoidFunction>(Self::get_physical_device_display_plane_properties2_khr)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDeviceDisplayPlanePropertiesKHR",
                 features: smallvec![Feature::Extension(Extension::KHRDisplay)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceDisplayPlanePropertiesKhr),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_display_plane_properties_khr as vk::PFN_vkGetPhysicalDeviceDisplayPlanePropertiesKHR)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDeviceDisplayPlanePropertiesKHR, vk::PFN_vkVoidFunction>(Self::get_physical_device_display_plane_properties_khr)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDeviceDisplayProperties2KHR",
                 features: smallvec![Feature::Extension(Extension::KHRGetDisplayProperties2)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceDisplayProperties2Khr),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_display_properties2_khr as vk::PFN_vkGetPhysicalDeviceDisplayProperties2KHR)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDeviceDisplayProperties2KHR, vk::PFN_vkVoidFunction>(Self::get_physical_device_display_properties2_khr)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDeviceDisplayPropertiesKHR",
                 features: smallvec![Feature::Extension(Extension::KHRDisplay)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceDisplayPropertiesKhr),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_display_properties_khr as vk::PFN_vkGetPhysicalDeviceDisplayPropertiesKHR)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDeviceDisplayPropertiesKHR, vk::PFN_vkVoidFunction>(Self::get_physical_device_display_properties_khr)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDeviceExternalBufferProperties",
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1})],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceExternalBufferProperties),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_external_buffer_properties as vk::PFN_vkGetPhysicalDeviceExternalBufferProperties)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDeviceExternalBufferProperties, vk::PFN_vkVoidFunction>(Self::get_physical_device_external_buffer_properties)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDeviceExternalBufferPropertiesKHR",
                 features: smallvec![Feature::Extension(Extension::KHRExternalMemoryCapabilities)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceExternalBufferProperties),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_external_buffer_properties as vk::PFN_vkGetPhysicalDeviceExternalBufferProperties)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDeviceExternalBufferProperties, vk::PFN_vkVoidFunction>(Self::get_physical_device_external_buffer_properties)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDeviceExternalFenceProperties",
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1})],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceExternalFenceProperties),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_external_fence_properties as vk::PFN_vkGetPhysicalDeviceExternalFenceProperties)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDeviceExternalFenceProperties, vk::PFN_vkVoidFunction>(Self::get_physical_device_external_fence_properties)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDeviceExternalFencePropertiesKHR",
                 features: smallvec![Feature::Extension(Extension::KHRExternalFenceCapabilities)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceExternalFenceProperties),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_external_fence_properties as vk::PFN_vkGetPhysicalDeviceExternalFenceProperties)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDeviceExternalFenceProperties, vk::PFN_vkVoidFunction>(Self::get_physical_device_external_fence_properties)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDeviceExternalImageFormatPropertiesNV",
                 features: smallvec![Feature::Extension(Extension::NVExternalMemoryCapabilities)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceExternalImageFormatPropertiesNv),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_external_image_format_properties_nv as vk::PFN_vkGetPhysicalDeviceExternalImageFormatPropertiesNV)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDeviceExternalImageFormatPropertiesNV, vk::PFN_vkVoidFunction>(Self::get_physical_device_external_image_format_properties_nv)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDeviceExternalSemaphoreProperties",
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1})],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceExternalSemaphoreProperties),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_external_semaphore_properties as vk::PFN_vkGetPhysicalDeviceExternalSemaphoreProperties)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDeviceExternalSemaphoreProperties, vk::PFN_vkVoidFunction>(Self::get_physical_device_external_semaphore_properties)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDeviceExternalSemaphorePropertiesKHR",
                 features: smallvec![Feature::Extension(Extension::KHRExternalSemaphoreCapabilities)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceExternalSemaphoreProperties),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_external_semaphore_properties as vk::PFN_vkGetPhysicalDeviceExternalSemaphoreProperties)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDeviceExternalSemaphoreProperties, vk::PFN_vkVoidFunction>(Self::get_physical_device_external_semaphore_properties)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDeviceFeatures",
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0})],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceFeatures),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_features as vk::PFN_vkGetPhysicalDeviceFeatures)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDeviceFeatures, vk::PFN_vkVoidFunction>(Self::get_physical_device_features)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDeviceFeatures2",
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1})],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceFeatures2),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_features2 as vk::PFN_vkGetPhysicalDeviceFeatures2)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDeviceFeatures2, vk::PFN_vkVoidFunction>(Self::get_physical_device_features2)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDeviceFeatures2KHR",
                 features: smallvec![Feature::Extension(Extension::KHRGetPhysicalDeviceProperties2)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceFeatures2),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_features2 as vk::PFN_vkGetPhysicalDeviceFeatures2)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDeviceFeatures2, vk::PFN_vkVoidFunction>(Self::get_physical_device_features2)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDeviceFormatProperties",
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0})],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceFormatProperties),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_format_properties as vk::PFN_vkGetPhysicalDeviceFormatProperties)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDeviceFormatProperties, vk::PFN_vkVoidFunction>(Self::get_physical_device_format_properties)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDeviceFormatProperties2",
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1})],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceFormatProperties2),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_format_properties2 as vk::PFN_vkGetPhysicalDeviceFormatProperties2)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDeviceFormatProperties2, vk::PFN_vkVoidFunction>(Self::get_physical_device_format_properties2)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDeviceFormatProperties2KHR",
                 features: smallvec![Feature::Extension(Extension::KHRGetPhysicalDeviceProperties2)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceFormatProperties2),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_format_properties2 as vk::PFN_vkGetPhysicalDeviceFormatProperties2)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDeviceFormatProperties2, vk::PFN_vkVoidFunction>(Self::get_physical_device_format_properties2)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDeviceFragmentShadingRatesKHR",
                 features: smallvec![Feature::Extension(Extension::KHRFragmentShadingRate)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceFragmentShadingRatesKhr),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_fragment_shading_rates_khr as vk::PFN_vkGetPhysicalDeviceFragmentShadingRatesKHR)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDeviceFragmentShadingRatesKHR, vk::PFN_vkVoidFunction>(Self::get_physical_device_fragment_shading_rates_khr)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDeviceImageFormatProperties",
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0})],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceImageFormatProperties),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_image_format_properties as vk::PFN_vkGetPhysicalDeviceImageFormatProperties)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDeviceImageFormatProperties, vk::PFN_vkVoidFunction>(Self::get_physical_device_image_format_properties)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDeviceImageFormatProperties2",
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1})],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceImageFormatProperties2),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_image_format_properties2 as vk::PFN_vkGetPhysicalDeviceImageFormatProperties2)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDeviceImageFormatProperties2, vk::PFN_vkVoidFunction>(Self::get_physical_device_image_format_properties2)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDeviceImageFormatProperties2KHR",
                 features: smallvec![Feature::Extension(Extension::KHRGetPhysicalDeviceProperties2)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceImageFormatProperties2),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_image_format_properties2 as vk::PFN_vkGetPhysicalDeviceImageFormatProperties2)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDeviceImageFormatProperties2, vk::PFN_vkVoidFunction>(Self::get_physical_device_image_format_properties2)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDeviceMemoryProperties",
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0})],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceMemoryProperties),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_memory_properties as vk::PFN_vkGetPhysicalDeviceMemoryProperties)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDeviceMemoryProperties, vk::PFN_vkVoidFunction>(Self::get_physical_device_memory_properties)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDeviceMemoryProperties2",
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1})],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceMemoryProperties2),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_memory_properties2 as vk::PFN_vkGetPhysicalDeviceMemoryProperties2)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDeviceMemoryProperties2, vk::PFN_vkVoidFunction>(Self::get_physical_device_memory_properties2)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDeviceMemoryProperties2KHR",
                 features: smallvec![Feature::Extension(Extension::KHRGetPhysicalDeviceProperties2)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceMemoryProperties2),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_memory_properties2 as vk::PFN_vkGetPhysicalDeviceMemoryProperties2)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDeviceMemoryProperties2, vk::PFN_vkVoidFunction>(Self::get_physical_device_memory_properties2)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDeviceMultisamplePropertiesEXT",
                 features: smallvec![Feature::Extension(Extension::EXTSampleLocations)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceMultisamplePropertiesExt),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_multisample_properties_ext as vk::PFN_vkGetPhysicalDeviceMultisamplePropertiesEXT)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDeviceMultisamplePropertiesEXT, vk::PFN_vkVoidFunction>(Self::get_physical_device_multisample_properties_ext)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDeviceOpticalFlowImageFormatsNV",
                 features: smallvec![Feature::Extension(Extension::NVOpticalFlow)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceOpticalFlowImageFormatsNv),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_optical_flow_image_formats_nv as vk::PFN_vkGetPhysicalDeviceOpticalFlowImageFormatsNV)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDeviceOpticalFlowImageFormatsNV, vk::PFN_vkVoidFunction>(Self::get_physical_device_optical_flow_image_formats_nv)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDevicePresentRectanglesKHR",
                 features: smallvec![Feature::Extension(Extension::KHRSwapchain), Feature::Extension(Extension::KHRDeviceGroup)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDevicePresentRectanglesKhr),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_present_rectangles_khr as vk::PFN_vkGetPhysicalDevicePresentRectanglesKHR)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDevicePresentRectanglesKHR, vk::PFN_vkVoidFunction>(Self::get_physical_device_present_rectangles_khr)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDeviceProperties",
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0})],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceProperties),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_properties as vk::PFN_vkGetPhysicalDeviceProperties)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDeviceProperties, vk::PFN_vkVoidFunction>(Self::get_physical_device_properties)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDeviceProperties2",
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1})],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceProperties2),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_properties2 as vk::PFN_vkGetPhysicalDeviceProperties2)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDeviceProperties2, vk::PFN_vkVoidFunction>(Self::get_physical_device_properties2)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDeviceProperties2KHR",
                 features: smallvec![Feature::Extension(Extension::KHRGetPhysicalDeviceProperties2)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceProperties2),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_properties2 as vk::PFN_vkGetPhysicalDeviceProperties2)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDeviceProperties2, vk::PFN_vkVoidFunction>(Self::get_physical_device_properties2)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDeviceQueueFamilyPerformanceQueryPassesKHR",
                 features: smallvec![Feature::Extension(Extension::KHRPerformanceQuery)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceQueueFamilyPerformanceQueryPassesKhr),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_queue_family_performance_query_passes_khr as vk::PFN_vkGetPhysicalDeviceQueueFamilyPerformanceQueryPassesKHR)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDeviceQueueFamilyPerformanceQueryPassesKHR, vk::PFN_vkVoidFunction>(Self::get_physical_device_queue_family_performance_query_passes_khr)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDeviceQueueFamilyProperties",
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0})],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceQueueFamilyProperties),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_queue_family_properties as vk::PFN_vkGetPhysicalDeviceQueueFamilyProperties)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDeviceQueueFamilyProperties, vk::PFN_vkVoidFunction>(Self::get_physical_device_queue_family_properties)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDeviceQueueFamilyProperties2",
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1})],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceQueueFamilyProperties2),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_queue_family_properties2 as vk::PFN_vkGetPhysicalDeviceQueueFamilyProperties2)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDeviceQueueFamilyProperties2, vk::PFN_vkVoidFunction>(Self::get_physical_device_queue_family_properties2)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDeviceQueueFamilyProperties2KHR",
                 features: smallvec![Feature::Extension(Extension::KHRGetPhysicalDeviceProperties2)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceQueueFamilyProperties2),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_queue_family_properties2 as vk::PFN_vkGetPhysicalDeviceQueueFamilyProperties2)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDeviceQueueFamilyProperties2, vk::PFN_vkVoidFunction>(Self::get_physical_device_queue_family_properties2)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDeviceScreenPresentationSupportQNX",
                 features: smallvec![Feature::Extension(Extension::QNXScreenSurface)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceScreenPresentationSupportQnx),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_screen_presentation_support_qnx as vk::PFN_vkGetPhysicalDeviceScreenPresentationSupportQNX)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDeviceScreenPresentationSupportQNX, vk::PFN_vkVoidFunction>(Self::get_physical_device_screen_presentation_support_qnx)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDeviceSparseImageFormatProperties",
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 0})],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceSparseImageFormatProperties),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_sparse_image_format_properties as vk::PFN_vkGetPhysicalDeviceSparseImageFormatProperties)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDeviceSparseImageFormatProperties, vk::PFN_vkVoidFunction>(Self::get_physical_device_sparse_image_format_properties)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDeviceSparseImageFormatProperties2",
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 1})],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceSparseImageFormatProperties2),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_sparse_image_format_properties2 as vk::PFN_vkGetPhysicalDeviceSparseImageFormatProperties2)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDeviceSparseImageFormatProperties2, vk::PFN_vkVoidFunction>(Self::get_physical_device_sparse_image_format_properties2)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDeviceSparseImageFormatProperties2KHR",
                 features: smallvec![Feature::Extension(Extension::KHRGetPhysicalDeviceProperties2)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceSparseImageFormatProperties2),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_sparse_image_format_properties2 as vk::PFN_vkGetPhysicalDeviceSparseImageFormatProperties2)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDeviceSparseImageFormatProperties2, vk::PFN_vkVoidFunction>(Self::get_physical_device_sparse_image_format_properties2)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDeviceSupportedFramebufferMixedSamplesCombinationsNV",
                 features: smallvec![Feature::Extension(Extension::NVCoverageReductionMode)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceSupportedFramebufferMixedSamplesCombinationsNv),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_supported_framebuffer_mixed_samples_combinations_nv as vk::PFN_vkGetPhysicalDeviceSupportedFramebufferMixedSamplesCombinationsNV)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDeviceSupportedFramebufferMixedSamplesCombinationsNV, vk::PFN_vkVoidFunction>(Self::get_physical_device_supported_framebuffer_mixed_samples_combinations_nv)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDeviceSurfaceCapabilities2EXT",
                 features: smallvec![Feature::Extension(Extension::EXTDisplaySurfaceCounter)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceSurfaceCapabilities2Ext),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_surface_capabilities2_ext as vk::PFN_vkGetPhysicalDeviceSurfaceCapabilities2EXT)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDeviceSurfaceCapabilities2EXT, vk::PFN_vkVoidFunction>(Self::get_physical_device_surface_capabilities2_ext)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDeviceSurfaceCapabilities2KHR",
                 features: smallvec![Feature::Extension(Extension::KHRGetSurfaceCapabilities2)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceSurfaceCapabilities2Khr),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_surface_capabilities2_khr as vk::PFN_vkGetPhysicalDeviceSurfaceCapabilities2KHR)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDeviceSurfaceCapabilities2KHR, vk::PFN_vkVoidFunction>(Self::get_physical_device_surface_capabilities2_khr)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDeviceSurfaceCapabilitiesKHR",
                 features: smallvec![Feature::Extension(Extension::KHRSurface)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceSurfaceCapabilitiesKhr),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_surface_capabilities_khr as vk::PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR, vk::PFN_vkVoidFunction>(Self::get_physical_device_surface_capabilities_khr)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDeviceSurfaceFormats2KHR",
                 features: smallvec![Feature::Extension(Extension::KHRGetSurfaceCapabilities2)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceSurfaceFormats2Khr),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_surface_formats2_khr as vk::PFN_vkGetPhysicalDeviceSurfaceFormats2KHR)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDeviceSurfaceFormats2KHR, vk::PFN_vkVoidFunction>(Self::get_physical_device_surface_formats2_khr)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDeviceSurfaceFormatsKHR",
                 features: smallvec![Feature::Extension(Extension::KHRSurface)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceSurfaceFormatsKhr),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_surface_formats_khr as vk::PFN_vkGetPhysicalDeviceSurfaceFormatsKHR)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDeviceSurfaceFormatsKHR, vk::PFN_vkVoidFunction>(Self::get_physical_device_surface_formats_khr)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDeviceSurfacePresentModes2EXT",
                 features: smallvec![Feature::Extension(Extension::EXTFullScreenExclusive)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceSurfacePresentModes2Ext),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_surface_present_modes2_ext as vk::PFN_vkGetPhysicalDeviceSurfacePresentModes2EXT)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDeviceSurfacePresentModes2EXT, vk::PFN_vkVoidFunction>(Self::get_physical_device_surface_present_modes2_ext)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDeviceSurfacePresentModesKHR",
                 features: smallvec![Feature::Extension(Extension::KHRSurface)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceSurfacePresentModesKhr),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_surface_present_modes_khr as vk::PFN_vkGetPhysicalDeviceSurfacePresentModesKHR)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDeviceSurfacePresentModesKHR, vk::PFN_vkVoidFunction>(Self::get_physical_device_surface_present_modes_khr)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDeviceSurfaceSupportKHR",
                 features: smallvec![Feature::Extension(Extension::KHRSurface)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceSurfaceSupportKhr),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_surface_support_khr as vk::PFN_vkGetPhysicalDeviceSurfaceSupportKHR)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDeviceSurfaceSupportKHR, vk::PFN_vkVoidFunction>(Self::get_physical_device_surface_support_khr)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDeviceToolProperties",
                 features: smallvec![Feature::Core(ApiVersion { major: 1, minor: 3})],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceToolProperties),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_tool_properties as vk::PFN_vkGetPhysicalDeviceToolProperties)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDeviceToolProperties, vk::PFN_vkVoidFunction>(Self::get_physical_device_tool_properties)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDeviceToolPropertiesEXT",
                 features: smallvec![Feature::Extension(Extension::EXTToolingInfo)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceToolProperties),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_tool_properties as vk::PFN_vkGetPhysicalDeviceToolProperties)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDeviceToolProperties, vk::PFN_vkVoidFunction>(Self::get_physical_device_tool_properties)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDeviceVideoCapabilitiesKHR",
                 features: smallvec![Feature::Extension(Extension::KHRVideoQueue)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceVideoCapabilitiesKhr),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_video_capabilities_khr as vk::PFN_vkGetPhysicalDeviceVideoCapabilitiesKHR)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDeviceVideoCapabilitiesKHR, vk::PFN_vkVoidFunction>(Self::get_physical_device_video_capabilities_khr)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDeviceVideoFormatPropertiesKHR",
                 features: smallvec![Feature::Extension(Extension::KHRVideoQueue)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceVideoFormatPropertiesKhr),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_video_format_properties_khr as vk::PFN_vkGetPhysicalDeviceVideoFormatPropertiesKHR)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDeviceVideoFormatPropertiesKHR, vk::PFN_vkVoidFunction>(Self::get_physical_device_video_format_properties_khr)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDeviceWaylandPresentationSupportKHR",
                 features: smallvec![Feature::Extension(Extension::KHRWaylandSurface)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceWaylandPresentationSupportKhr),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_wayland_presentation_support_khr as vk::PFN_vkGetPhysicalDeviceWaylandPresentationSupportKHR)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDeviceWaylandPresentationSupportKHR, vk::PFN_vkVoidFunction>(Self::get_physical_device_wayland_presentation_support_khr)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDeviceWin32PresentationSupportKHR",
                 features: smallvec![Feature::Extension(Extension::KHRWin32Surface)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceWin32PresentationSupportKhr),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_win32_presentation_support_khr as vk::PFN_vkGetPhysicalDeviceWin32PresentationSupportKHR)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDeviceWin32PresentationSupportKHR, vk::PFN_vkVoidFunction>(Self::get_physical_device_win32_presentation_support_khr)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDeviceXcbPresentationSupportKHR",
                 features: smallvec![Feature::Extension(Extension::KHRXcbSurface)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceXcbPresentationSupportKhr),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_xcb_presentation_support_khr as vk::PFN_vkGetPhysicalDeviceXcbPresentationSupportKHR)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDeviceXcbPresentationSupportKHR, vk::PFN_vkVoidFunction>(Self::get_physical_device_xcb_presentation_support_khr)},
             },
             VulkanCommand {
                 name: "vkGetPhysicalDeviceXlibPresentationSupportKHR",
                 features: smallvec![Feature::Extension(Extension::KHRXlibSurface)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetPhysicalDeviceXlibPresentationSupportKhr),
-                proc: unsafe { std::mem::transmute(Self::get_physical_device_xlib_presentation_support_khr as vk::PFN_vkGetPhysicalDeviceXlibPresentationSupportKHR)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetPhysicalDeviceXlibPresentationSupportKHR, vk::PFN_vkVoidFunction>(Self::get_physical_device_xlib_presentation_support_khr)},
             },
             VulkanCommand {
                 name: "vkGetRandROutputDisplayEXT",
                 features: smallvec![Feature::Extension(Extension::EXTAcquireXlibDisplay)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetRandROutputDisplayExt),
-                proc: unsafe { std::mem::transmute(Self::get_rand_r_output_display_ext as vk::PFN_vkGetRandROutputDisplayEXT)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetRandROutputDisplayEXT, vk::PFN_vkVoidFunction>(Self::get_rand_r_output_display_ext)},
             },
             VulkanCommand {
                 name: "vkGetWinrtDisplayNV",
                 features: smallvec![Feature::Extension(Extension::NVAcquireWinrtDisplay)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::GetWinrtDisplayNv),
-                proc: unsafe { std::mem::transmute(Self::get_winrt_display_nv as vk::PFN_vkGetWinrtDisplayNV)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkGetWinrtDisplayNV, vk::PFN_vkVoidFunction>(Self::get_winrt_display_nv)},
             },
             VulkanCommand {
                 name: "vkReleaseDisplayEXT",
                 features: smallvec![Feature::Extension(Extension::EXTDirectModeDisplay)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::ReleaseDisplayExt),
-                proc: unsafe { std::mem::transmute(Self::release_display_ext as vk::PFN_vkReleaseDisplayEXT)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkReleaseDisplayEXT, vk::PFN_vkVoidFunction>(Self::release_display_ext)},
             },
             VulkanCommand {
                 name: "vkSubmitDebugUtilsMessageEXT",
                 features: smallvec![Feature::Extension(Extension::EXTDebugUtils)],
                 hooked: hooked_commands.contains(&LayerVulkanCommand::SubmitDebugUtilsMessageExt),
-                proc: unsafe { std::mem::transmute(Self::submit_debug_utils_message_ext as vk::PFN_vkSubmitDebugUtilsMessageEXT)},
+                proc: unsafe { std::mem::transmute::<vk::PFN_vkSubmitDebugUtilsMessageEXT, vk::PFN_vkVoidFunction>(Self::submit_debug_utils_message_ext)},
             },
         ])
     }

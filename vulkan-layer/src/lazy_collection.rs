@@ -190,7 +190,7 @@ mod test {
         let vec1 = lazy_vec.get();
         assert_eq!(*vec1, vec![42]);
         let vec2 = lazy_vec.get();
-        std::ptr::eq(&*vec1, &*vec2);
+        assert!(std::ptr::eq(&*vec1, &*vec2));
     }
 
     #[test]

@@ -64,9 +64,8 @@ impl<'a> Iterator for VulkanBaseOutStructChain<'a> {
     type Item = &'a mut vk::BaseOutStructure;
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.next.take().map(|element| {
+        self.next.take().inspect(|element| {
             self.next = unsafe { element.p_next.as_mut() };
-            element
         })
     }
 }
@@ -116,9 +115,8 @@ impl<'a> Iterator for VulkanBaseInStructChain<'a> {
     type Item = &'a vk::BaseInStructure;
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.next.take().map(|element| {
+        self.next.take().inspect(|element| {
             self.next = unsafe { element.p_next.as_ref() };
-            element
         })
     }
 }
