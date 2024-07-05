@@ -28,6 +28,6 @@ panic = "abort"
 panic = "abort"
 
 [dependencies]
-ash = "0.37.2"
-once_cell = "1.19.0"
+ash = "0.37.3"
+once_cell = "1.17.1"
 vulkan-layer = { path = "../../vulkan-layer" }
