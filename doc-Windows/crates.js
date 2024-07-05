@@ -1,1 +1,1 @@
-window.ALL_CRATES = ["ci","codegen","vulkan_layer","vulkan_layer_macros","xtask"];
+window.ALL_CRATES = ["VkLayer_vendor_rust_example_hello_world","ci","codegen","vulkan_layer","vulkan_layer_macros","xtask"];

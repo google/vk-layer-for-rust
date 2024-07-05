@@ -1770,6 +1770,8 @@
 <a href="#1770" id="1770">1770</a>
 <a href="#1771" id="1771">1771</a>
 <a href="#1772" id="1772">1772</a>
+<a href="#1773" id="1773">1773</a>
+<a href="#1774" id="1774">1774</a>
 </pre></div><pre class="rust"><code><span class="comment">// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -1903,6 +1905,8 @@
 //!
 //! # Usage
 //!
+//! You can check a live example in `examples/hello-world`.
+//!
 //! First, create a Rust lib crate.
 //! ```bash
 //! $ mkdir vulkan-layer-rust-example
@@ -1930,7 +1934,7 @@
 //! `VkLayer_vendor_rust_example`, because Android requires that the layer shared object library
 //! follow a specific name convention.
 //! ```toml
-//! [package]
+//! [lib]
 //! name = "VkLayer_vendor_rust_example"
 //! ```
 //!
