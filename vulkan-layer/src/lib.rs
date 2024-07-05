@@ -131,6 +131,8 @@
 //!
 //! # Usage
 //!
+//! You can check a live example in `examples/hello-world`.
+//!
 //! First, create a Rust lib crate.
 //! ```bash
 //! $ mkdir vulkan-layer-rust-example
@@ -158,7 +160,7 @@
 //! `VkLayer_vendor_rust_example`, because Android requires that the layer shared object library
 //! follow a specific name convention.
 //! ```toml
-//! [package]
+//! [lib]
 //! name = "VkLayer_vendor_rust_example"
 //! ```
 //!

@@ -12,26 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-[workspace]
-resolver = "2"
-members = [
-    "vulkan-layer",
-    "vulkan-layer-macros",
-    "xtask",
-    "examples/hello-world",
-]
-# Do not operate on vulkan-layer-macros by default, because it doesn't work well with panic=abort
-# for testing.
-default-members = [
-    "vulkan-layer",
-    "xtask",
-]
+[package]
+name = "vk-layer-example-hello-world"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "VkLayer_vendor_rust_example_hello_world"
+crate-type = ["cdylib"]
 
 [profile.dev]
 panic = "abort"
 
-[profile.dev.build-override]
-opt-level = 3
-
 [profile.release]
 panic = "abort"
+
+[dependencies]
+ash = "0.37.2"
+once_cell = "1.19.0"
+vulkan-layer = { path = "../../vulkan-layer" }
