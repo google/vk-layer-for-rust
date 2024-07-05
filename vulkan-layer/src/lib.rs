@@ -497,8 +497,6 @@ impl From<usize> for DeviceDispatchKey {
     }
 }
 
-trait DeviceDispatchableObject: vk::Handle {}
-
 impl DispatchableObject for vk::Device {
     type DispatchKey = DeviceDispatchKey;
 }
@@ -1420,30 +1418,32 @@ impl<T: Layer> Global<T> {
             match name {
                 "vkGetInstanceProcAddr" => {
                     return unsafe {
-                        std::mem::transmute(
-                            Self::get_instance_proc_addr as vk::PFN_vkGetInstanceProcAddr,
+                        std::mem::transmute::<vk::PFN_vkGetInstanceProcAddr, vk::PFN_vkVoidFunction>(
+                            Self::get_instance_proc_addr,
                         )
                     }
                 }
                 "vkEnumerateInstanceExtensionProperties" => {
                     return unsafe {
-                        std::mem::transmute(
-                            Self::enumerate_instance_extension_properties
-                                as vk::PFN_vkEnumerateInstanceExtensionProperties,
-                        )
+                        std::mem::transmute::<
+                            vk::PFN_vkEnumerateInstanceExtensionProperties,
+                            vk::PFN_vkVoidFunction,
+                        >(Self::enumerate_instance_extension_properties)
                     }
                 }
                 "vkEnumerateInstanceLayerProperties" => {
                     return unsafe {
-                        std::mem::transmute(
-                            Self::enumerate_instance_layer_properties
-                                as vk::PFN_vkEnumerateInstanceLayerProperties,
-                        )
+                        std::mem::transmute::<
+                            vk::PFN_vkEnumerateInstanceLayerProperties,
+                            vk::PFN_vkVoidFunction,
+                        >(Self::enumerate_instance_layer_properties)
                     }
                 }
                 "vkCreateInstance" => {
                     return unsafe {
-                        std::mem::transmute(Self::create_instance as vk::PFN_vkCreateInstance)
+                        std::mem::transmute::<vk::PFN_vkCreateInstance, vk::PFN_vkVoidFunction>(
+                            Self::create_instance,
+                        )
                     }
                 }
                 _ => {}

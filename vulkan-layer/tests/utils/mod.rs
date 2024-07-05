@@ -274,7 +274,7 @@ static VULKAN_COMMANDS: Lazy<BTreeMap<VulkanCommandName, VulkanCommand>> = Lazy:
                                 if api_version == 0 {
                                     api_version = vk::API_VERSION_1_0;
                                 }
-                                api_version.try_into().unwrap()
+                                api_version.into()
                             })
                             .unwrap_or(ApiVersion::V1_0);
                         let instance_data: Arc<InstanceData> = Arc::new_cyclic(|instance_data| {
@@ -309,7 +309,11 @@ static VULKAN_COMMANDS: Lazy<BTreeMap<VulkanCommandName, VulkanCommand>> = Lazy:
                         *unsafe { instance.as_mut() }.unwrap() = instance_data.into_vulkan_handle();
                         vk::Result::SUCCESS
                     }
-                    unsafe { std::mem::transmute(create_instance as vk::PFN_vkCreateInstance) }
+                    unsafe {
+                        std::mem::transmute::<vk::PFN_vkCreateInstance, vk::PFN_vkVoidFunction>(
+                            create_instance,
+                        )
+                    }
                 },
                 dispatch_kind: DispatchKind::Global,
                 features: [ApiVersion::V1_0.into()].into(),
@@ -328,7 +332,11 @@ static VULKAN_COMMANDS: Lazy<BTreeMap<VulkanCommandName, VulkanCommand>> = Lazy:
                         }
                         unsafe { DeviceData::destroy(device) };
                     }
-                    unsafe { std::mem::transmute(destroy_device as vk::PFN_vkDestroyDevice) }
+                    unsafe {
+                        std::mem::transmute::<vk::PFN_vkDestroyDevice, vk::PFN_vkVoidFunction>(
+                            destroy_device,
+                        )
+                    }
                 },
                 dispatch_kind: DispatchKind::Device,
                 features: [ApiVersion::V1_0.into()].into(),
@@ -404,7 +412,11 @@ static VULKAN_COMMANDS: Lazy<BTreeMap<VulkanCommandName, VulkanCommand>> = Lazy:
                         *unsafe { device.as_mut() }.unwrap() = device_data.into_vulkan_handle();
                         vk::Result::SUCCESS
                     }
-                    unsafe { std::mem::transmute(create_device as vk::PFN_vkCreateDevice) }
+                    unsafe {
+                        std::mem::transmute::<vk::PFN_vkCreateDevice, vk::PFN_vkVoidFunction>(
+                            create_device,
+                        )
+                    }
                 },
                 dispatch_kind: DispatchKind::Instance,
                 features: [ApiVersion::V1_0.into()].into(),
@@ -422,10 +434,10 @@ static VULKAN_COMMANDS: Lazy<BTreeMap<VulkanCommandName, VulkanCommand>> = Lazy:
                         unimplemented!()
                     }
                     unsafe {
-                        std::mem::transmute(
-                            enumerate_physical_device_groups
-                                as vk::PFN_vkEnumeratePhysicalDeviceGroups,
-                        )
+                        std::mem::transmute::<
+                            vk::PFN_vkEnumeratePhysicalDeviceGroups,
+                            vk::PFN_vkVoidFunction,
+                        >(enumerate_physical_device_groups)
                     }
                 },
                 dispatch_kind: DispatchKind::Instance,
@@ -460,9 +472,10 @@ static VULKAN_COMMANDS: Lazy<BTreeMap<VulkanCommandName, VulkanCommand>> = Lazy:
                         }
                     }
                     unsafe {
-                        std::mem::transmute(
-                            enumerate_physical_devices as vk::PFN_vkEnumeratePhysicalDevices,
-                        )
+                        std::mem::transmute::<
+                            vk::PFN_vkEnumeratePhysicalDevices,
+                            vk::PFN_vkVoidFunction,
+                        >(enumerate_physical_devices)
                     }
                 },
                 dispatch_kind: DispatchKind::Instance,
@@ -494,7 +507,9 @@ static VULKAN_COMMANDS: Lazy<BTreeMap<VulkanCommandName, VulkanCommand>> = Lazy:
                         command.proc
                     }
                     unsafe {
-                        std::mem::transmute(get_device_proc_addr as vk::PFN_vkGetDeviceProcAddr)
+                        std::mem::transmute::<vk::PFN_vkGetDeviceProcAddr, vk::PFN_vkVoidFunction>(
+                            get_device_proc_addr,
+                        )
                     }
                 },
                 dispatch_kind: DispatchKind::Device,
@@ -505,7 +520,9 @@ static VULKAN_COMMANDS: Lazy<BTreeMap<VulkanCommandName, VulkanCommand>> = Lazy:
             GetInstanceProcAddr.into(),
             VulkanCommand {
                 proc: unsafe {
-                    std::mem::transmute(get_instance_proc_addr as vk::PFN_vkGetInstanceProcAddr)
+                    std::mem::transmute::<vk::PFN_vkGetInstanceProcAddr, vk::PFN_vkVoidFunction>(
+                        get_instance_proc_addr,
+                    )
                 },
                 dispatch_kind: DispatchKind::Instance,
                 features: [ApiVersion::V1_0.into()].into(),
@@ -523,10 +540,10 @@ static VULKAN_COMMANDS: Lazy<BTreeMap<VulkanCommandName, VulkanCommand>> = Lazy:
                         unimplemented!()
                     }
                     unsafe {
-                        std::mem::transmute(
-                            enumerate_device_layer_properties
-                                as vk::PFN_vkEnumerateDeviceLayerProperties,
-                        )
+                        std::mem::transmute::<
+                            vk::PFN_vkEnumerateDeviceLayerProperties,
+                            vk::PFN_vkVoidFunction,
+                        >(enumerate_device_layer_properties)
                     }
                 },
                 dispatch_kind: DispatchKind::Instance,
@@ -568,10 +585,10 @@ static VULKAN_COMMANDS: Lazy<BTreeMap<VulkanCommandName, VulkanCommand>> = Lazy:
                         unsafe { fill_vk_out_array(&out_properties, property_count, properties) }
                     }
                     unsafe {
-                        std::mem::transmute(
-                            enumerate_device_extension_properties
-                                as vk::PFN_vkEnumerateDeviceExtensionProperties,
-                        )
+                        std::mem::transmute::<
+                            vk::PFN_vkEnumerateDeviceExtensionProperties,
+                            vk::PFN_vkVoidFunction,
+                        >(enumerate_device_extension_properties)
                     }
                 },
                 dispatch_kind: DispatchKind::Instance,
@@ -591,7 +608,11 @@ static VULKAN_COMMANDS: Lazy<BTreeMap<VulkanCommandName, VulkanCommand>> = Lazy:
                         }
                         unsafe { InstanceData::destroy(instance) }
                     }
-                    unsafe { std::mem::transmute(destroy_instance as vk::PFN_vkDestroyInstance) }
+                    unsafe {
+                        std::mem::transmute::<vk::PFN_vkDestroyInstance, vk::PFN_vkVoidFunction>(
+                            destroy_instance,
+                        )
+                    }
                 },
                 dispatch_kind: DispatchKind::Instance,
                 features: [ApiVersion::V1_0.into()].into(),
@@ -610,9 +631,11 @@ static VULKAN_COMMANDS: Lazy<BTreeMap<VulkanCommandName, VulkanCommand>> = Lazy:
                         unimplemented!()
                     }
                     unsafe {
-                        std::mem::transmute(
+                        std::mem::transmute::<
+                            vk::PFN_vkGetPhysicalDeviceSparseImageFormatProperties2,
+                            vk::PFN_vkVoidFunction,
+                        >(
                             get_physical_device_sparse_image_format_properties2
-                                as vk::PFN_vkGetPhysicalDeviceSparseImageFormatProperties2,
                         )
                     }
                 },
@@ -639,7 +662,9 @@ static VULKAN_COMMANDS: Lazy<BTreeMap<VulkanCommandName, VulkanCommand>> = Lazy:
                         unimplemented!()
                     }
                     unsafe {
-                        std::mem::transmute(destroy_surface_khr as vk::PFN_vkDestroySurfaceKHR)
+                        std::mem::transmute::<vk::PFN_vkDestroySurfaceKHR, vk::PFN_vkVoidFunction>(
+                            destroy_surface_khr,
+                        )
                     }
                 },
                 dispatch_kind: DispatchKind::Instance,
@@ -672,10 +697,10 @@ static VULKAN_COMMANDS: Lazy<BTreeMap<VulkanCommandName, VulkanCommand>> = Lazy:
                         );
                     }
                     unsafe {
-                        std::mem::transmute(
-                            get_physical_device_queue_family_properties
-                                as vk::PFN_vkGetPhysicalDeviceQueueFamilyProperties,
-                        )
+                        std::mem::transmute::<
+                            vk::PFN_vkGetPhysicalDeviceQueueFamilyProperties,
+                            vk::PFN_vkVoidFunction,
+                        >(get_physical_device_queue_family_properties)
                     }
                 },
                 dispatch_kind: DispatchKind::Instance,
@@ -696,7 +721,11 @@ static VULKAN_COMMANDS: Lazy<BTreeMap<VulkanCommandName, VulkanCommand>> = Lazy:
                         }
                         unimplemented!()
                     }
-                    unsafe { std::mem::transmute(destroy_image as vk::PFN_vkDestroyImage) }
+                    unsafe {
+                        std::mem::transmute::<vk::PFN_vkDestroyImage, vk::PFN_vkVoidFunction>(
+                            destroy_image,
+                        )
+                    }
                 },
                 dispatch_kind: DispatchKind::Device,
                 features: [ApiVersion::V1_0.into()].into(),
@@ -714,7 +743,9 @@ static VULKAN_COMMANDS: Lazy<BTreeMap<VulkanCommandName, VulkanCommand>> = Lazy:
                         unimplemented!()
                     }
                     unsafe {
-                        std::mem::transmute(destroy_swapchain_khr as vk::PFN_vkDestroySwapchainKHR)
+                        std::mem::transmute::<vk::PFN_vkDestroySwapchainKHR, vk::PFN_vkVoidFunction>(
+                            destroy_swapchain_khr,
+                        )
                     }
                 },
                 dispatch_kind: DispatchKind::Device,
@@ -736,10 +767,10 @@ static VULKAN_COMMANDS: Lazy<BTreeMap<VulkanCommandName, VulkanCommand>> = Lazy:
                         unimplemented!()
                     }
                     unsafe {
-                        std::mem::transmute(
-                            destroy_sampler_ycbcr_conversion
-                                as vk::PFN_vkDestroySamplerYcbcrConversion,
-                        )
+                        std::mem::transmute::<
+                            vk::PFN_vkDestroySamplerYcbcrConversion,
+                            vk::PFN_vkVoidFunction,
+                        >(destroy_sampler_ycbcr_conversion)
                     }
                 },
                 dispatch_kind: DispatchKind::Device,
@@ -771,9 +802,10 @@ static VULKAN_COMMANDS: Lazy<BTreeMap<VulkanCommandName, VulkanCommand>> = Lazy:
                         };
                     }
                     unsafe {
-                        std::mem::transmute(
-                            get_physical_device_properties as vk::PFN_vkGetPhysicalDeviceProperties,
-                        )
+                        std::mem::transmute::<
+                            vk::PFN_vkGetPhysicalDeviceProperties,
+                            vk::PFN_vkVoidFunction,
+                        >(get_physical_device_properties)
                     }
                 },
                 dispatch_kind: DispatchKind::Instance,

@@ -26,3 +26,6 @@ vulkan-layer = { path = ".", default-features = false, features = ["_test"] }
 
 [build-dependencies]
 rustc_version = "0.4.0"
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(RUSTC_NIGHTLY)'] }
