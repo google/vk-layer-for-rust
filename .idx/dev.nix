@@ -47,19 +47,24 @@
     pkgs.cargo-nextest
     pkgs.git
     pkgs.pipenv
+    pkgs.go
   ];
   idx = {
     extensions = [
       "rust-lang.rust-analyzer"
       "ms-python.python"
+      "ms-python.debugpy"
       "ms-python.black-formatter"
+      "tamasfe.even-better-toml"
     ];
     workspace = {
       onCreate = {
         git-clone-submodules = "git submodule update --init --recursive";
         rust-toolchain-stable-install = "rustup toolchain install stable";
-        rust-toolchain-nightly-install = "rustup toolchain install nightly";
+        rust-toolchain-nightly-install =
+          "rustup toolchain install nightly --component miri rustfmt rust-src --profile minimal";
         pipenv-install = "pipenv install --ignore-pipfile";
+        addlicense-install = "go install github.com/google/addlicense@master";
       };
     };
   };
