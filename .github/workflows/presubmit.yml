@@ -235,5 +235,5 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Install addlicense
-        run: go install github.com/google/addlicense@latest
+        run: go install github.com/google/addlicense@master
       - run: ~/go/bin/addlicense -check -ignore "third_party/**" -ignore "target/**" .
