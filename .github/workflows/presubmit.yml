@@ -78,6 +78,8 @@ jobs:
         run: cargo install cargo-nextest --locked
       - name: Install cargo llvm cov
         run: cargo install cargo-llvm-cov
+      - name: Install cargo-make
+        run: cargo install --no-default-features --force cargo-make
       - name: Generate lcov coverage report
         run: cargo llvm-cov nextest --lcov --output-path target/lcov.info --all-features --all-targets
       - name: Checkout base coverage
@@ -101,7 +103,7 @@ jobs:
       - name: Generate JSON coverage report
         run: cargo llvm-cov nextest --json --summary-only --output-path target/coverage.json --all-features --all-targets
       - name: Generate coverage badge JSON
-        run: ${{ format('cargo xtask ci --label ''{0} coverage'' --output-path target/coverage_badge.json target/coverage.json', runner.os) }}
+        run: ${{ format('cargo make ci --label ''{0} coverage'' --output-path target/coverage_badge.json target/coverage.json', runner.os) }}
       # Must run the HTML coverage last. Otherwise other commands can clear this directory.
       - name: Generate HTML coverage report
         run: cargo llvm-cov nextest --html --all-features --all-targets
@@ -201,7 +203,9 @@ jobs:
         uses: Swatinem/rust-cache@dd05243424bd5c0e585e4b55eb2d7615cdd32f1f
         with:
           key: ${{ runner.os }}
-      - run: cargo xtask codegen
+      - name: Install cargo-make
+        run: cargo install --no-default-features --force cargo-make
+      - run: cargo make codegen
       - run: git diff --exit-code
   
   doctest:

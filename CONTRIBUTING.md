@@ -25,6 +25,10 @@ Guidelines](https://opensource.google/conduct/).
 
 ## Contribution process
 
+### Prerequisites
+
+* Install [cargo-make](https://sagiegurari.github.io/cargo-make/#installation).
+
 ### Code Reviews
 
 All submissions, including submissions by project members, require review. We
@@ -66,12 +70,12 @@ Files named `generated.rs` are generated files. One should avoid manually editti
 3. Run the following command:
 
 ```bash
-cargo xtask codegen
+cargo make codegen
 ```
 
 The codegen scripts will automatically format the generated file, so no need to manually format the project after running codegen.
 
-[cargo xtask pattern](https://github.com/matklad/cargo-xtask) is used to automate the code generation process.
+A separate Rust binary `scripts/codegen.rs` is used to automate the code generation process.
 
 Files are generated in different mechanism:
 

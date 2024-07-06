@@ -45,6 +45,7 @@
     pkgs.python39
     pkgs.rustup
     pkgs.cargo-nextest
+    pkgs.cargo-make
     pkgs.git
     pkgs.pipenv
     pkgs.go

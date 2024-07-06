@@ -64,7 +64,7 @@ TODO
 - [x] Use an attribute macro to track which function is implemented in the `Layer` trait, and don't inject all other functions for performance.
 - [x] Make global instance trivially destructible after all instances are destroyed, so the layer is robust against the situation where the dynamic library is loaded and unloaded for several times.
 - [x] Use procedure macro to generate the export functions in `lib.rs` file for the layer user.
-- [ ] Use the xtask workflow to generate the layer json file.
+- [ ] Use the cargo-make workflow to generate the layer json files for examples.
 - [ ] Support the latest layer interface version. Currently 2 is the latest version. e.g. correctly handle the `vk_layerGetPhysicalDeviceProcAddr` case.
 - [ ] Allow intercepting [pre-instance functions](https://github.com/KhronosGroup/Vulkan-Loader/blob/0c63db1aeda6916690b863688fa6cdf2ac1f790b/docs/LoaderLayerInterface.md#pre-instance-functions).
 - [ ] Add docstring to generated `layer_trait.rs` file.

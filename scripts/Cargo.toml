@@ -13,7 +13,7 @@
 # limitations under the License.
 
 [package]
-name = "xtask"
+name = "vulkan-layer-scripts"
 version = "0.1.0"
 edition = "2021"
 
@@ -26,3 +26,11 @@ env_logger = "0.11.3"
 log = "0.4.22"
 serde = { version = "1.0.203", features = ["derive"] }
 serde_json = "1.0.120"
+
+[[bin]]
+name = "ci"
+path = "ci.rs"
+
+[[bin]]
+name = "codegen"
+path = "codegen.rs"
