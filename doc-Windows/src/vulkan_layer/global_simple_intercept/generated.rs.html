@@ -23600,6 +23600,13 @@
 <a href="#23600" id="23600">23600</a>
 <a href="#23601" id="23601">23601</a>
 <a href="#23602" id="23602">23602</a>
+<a href="#23603" id="23603">23603</a>
+<a href="#23604" id="23604">23604</a>
+<a href="#23605" id="23605">23605</a>
+<a href="#23606" id="23606">23606</a>
+<a href="#23607" id="23607">23607</a>
+<a href="#23608" id="23608">23608</a>
+<a href="#23609" id="23609">23609</a>
 </pre></div><pre class="rust"><code><span class="comment">// Copyright 2024 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -23959,6 +23966,7 @@
     EXTMutableDescriptorType,
     ARMShaderCoreBuiltins,
     EXTPipelineLibraryGroupHandles,
+    EXTDynamicRenderingUnusedAttachments,
     QCOMMultiviewPerViewRenderAreas,
     EXTAttachmentFeedbackLoopDynamicState,
     KHRAccelerationStructure,
@@ -24341,6 +24349,9 @@
             <span class="string">"VK_EXT_pipeline_library_group_handles" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(Extension::EXTPipelineLibraryGroupHandles)
             }
+            <span class="string">"VK_EXT_dynamic_rendering_unused_attachments" </span>=&gt; {
+                <span class="prelude-val">Ok</span>(Extension::EXTDynamicRenderingUnusedAttachments)
+            }
             <span class="string">"VK_QCOM_multiview_per_view_render_areas" </span>=&gt; {
                 <span class="prelude-val">Ok</span>(Extension::QCOMMultiviewPerViewRenderAreas)
             }
@@ -24704,6 +24715,9 @@
             Extension::EXTMutableDescriptorType =&gt; <span class="string">"VK_EXT_mutable_descriptor_type"</span>,
             Extension::ARMShaderCoreBuiltins =&gt; <span class="string">"VK_ARM_shader_core_builtins"</span>,
             Extension::EXTPipelineLibraryGroupHandles =&gt; <span class="string">"VK_EXT_pipeline_library_group_handles"</span>,
+            Extension::EXTDynamicRenderingUnusedAttachments =&gt; {
+                <span class="string">"VK_EXT_dynamic_rendering_unused_attachments"
+            </span>}
             Extension::QCOMMultiviewPerViewRenderAreas =&gt; <span class="string">"VK_QCOM_multiview_per_view_render_areas"</span>,
             Extension::EXTAttachmentFeedbackLoopDynamicState =&gt; {
                 <span class="string">"VK_EXT_attachment_feedback_loop_dynamic_state"
