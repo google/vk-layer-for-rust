@@ -28,6 +28,8 @@ Guidelines](https://opensource.google/conduct/).
 ### Prerequisites
 
 * Install [cargo-make](https://sagiegurari.github.io/cargo-make/#installation).
+* Install [pipenv](https://pipenv.pypa.io/en/latest/#install-pipenv-today).
+* Install Python dependencies: `pipenv install`.
 
 ### Code Reviews
 
@@ -37,18 +39,20 @@ for this purpose.
 
 ### Format the code
 
-Presubmit will fail if the code is not properly format.
+Presubmit will fail if the code is not properly format. To run all lints and formatters, run `cargo make lint`.
 
 #### Rust
 
 Nightly features in `rustfmt` is used, so run `cargo +nightly fmt` to format the entire project.
+
+To run both rustfmt and clippy, run `cargo make rust-lint`.
 
 #### Python
 
 Python scripts are used to generate some Rust source files. Use [black](https://black.readthedocs.io/en/stable) to format python code:
 
 ```bash
-$ python -m black .
+$ pipenv run black .
 All done! ✨ 🍰 ✨
 4 files left unchanged.
 ```
@@ -56,8 +60,10 @@ All done! ✨ 🍰 ✨
 Use [ruff](https://github.com/astral-sh/ruff) to lint the python scripts:
 
 ```bash
-python -m ruff check . --fix
+pipenv run ruff check . --fix
 ```
+
+To run all python formatters and lints, run `cargo make python-lint`.
 
 ### Regenerate code
 
