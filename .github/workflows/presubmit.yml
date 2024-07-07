@@ -25,7 +25,7 @@ jobs:
   buildtest:
     name: Rust build and test
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         os: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
@@ -36,6 +36,14 @@ jobs:
       - name: Set up stable Rust toolchain
         # dtolnay/rust-toolchain@stable
         uses: dtolnay/rust-toolchain@4f366e621dc8fa63f557ca04b8f4361824a35a45
+        with:
+          components: clippy
+      - name: Set up nightly Rust toolchain
+        # dtolnay/rust-toolchain@nightly
+        uses: dtolnay/rust-toolchain@f2f3c4b315c5bb8415dbb043af44ec90f68ae503
+        with:
+          components: rustfmt
+      - run: rustup default stable
       - name: Set up Rust dependency cache
         # Swatinem/rust-cache@v2.5.1
         uses: Swatinem/rust-cache@dd05243424bd5c0e585e4b55eb2d7615cdd32f1f
@@ -43,16 +51,19 @@ jobs:
           key: ${{ runner.os }}
       - name: Install cargo nextest
         run: cargo install cargo-nextest --locked
-      - name: Cargo check
-        run: cargo check --workspace --all-targets --all-features
-      - name: Cargo clippy
-        run: cargo clippy --workspace --all-targets --all-features -- -D warnings
-      - name: Test
-        if: ${{ !cancelled() }}
-        run: cargo nextest run --all-targets --all-features --profile ci
-      - name: Documentation tests
-        if: ${{ !cancelled() }}
-        run: cargo test --doc --all-features --workspace -- --show-output
+      - name: Install cargo-make
+        run: cargo install --no-default-features --locked cargo-make
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.9.13"
+          cache: "pipenv"
+      - name: Install pipenv
+        run: python -m pip install pipenv==2023.7.23
+      - name: Install python dependencies
+        run: pipenv install --ignore-pipfile
+      - name: Install addlicense
+        run: go install github.com/google/addlicense@master
+      - run: cargo make ci-buildtest
 
   coverage:
     name: Code coverage
@@ -79,7 +90,7 @@ jobs:
       - name: Install cargo llvm cov
         run: cargo install cargo-llvm-cov
       - name: Install cargo-make
-        run: cargo install --no-default-features --force cargo-make
+        run: cargo install --no-default-features --locked cargo-make
       - name: Generate lcov coverage report
         run: cargo llvm-cov nextest --lcov --output-path target/lcov.info --all-features --all-targets
       - name: Checkout base coverage
@@ -117,41 +128,6 @@ jobs:
             target/lcov.info
             target/llvm-cov
             target/coverage_badge.json
-
-  rust-fmt:
-    name: Rust format
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest]
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: recursive
-      - name: Set up nightly Rust toolchain
-        # dtolnay/rust-toolchain@nightly
-        uses: dtolnay/rust-toolchain@f2f3c4b315c5bb8415dbb043af44ec90f68ae503
-        with:
-          components: rustfmt
-      - run: cargo +nightly fmt --check
-
-  py-lint:
-    name: Python lint
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: recursive
-      - uses: actions/setup-python@v4
-        with:
-          python-version: "3.9.13"
-          cache: "pipenv"
-      - name: Install pipenv
-        run: python -m pip install pipenv==2023.7.23
-      - run: pipenv install
-      - run: pipenv run black --check .
-      - run: pipenv run ruff check .
 
   codegen:
     name: Rust codegen
@@ -192,14 +168,15 @@ jobs:
       - name: Set up stable Rust toolchain
         # dtolnay/rust-toolchain@stable
         uses: dtolnay/rust-toolchain@4f366e621dc8fa63f557ca04b8f4361824a35a45
+      - run: rustup default stable
       - name: Set up Rust dependency cache
         # Swatinem/rust-cache@v2.5.1
         uses: Swatinem/rust-cache@dd05243424bd5c0e585e4b55eb2d7615cdd32f1f
         with:
           key: ${{ runner.os }}
       - name: Install cargo-make
-        run: cargo install --no-default-features --force cargo-make
-      - run: cargo make codegen-check
+        run: cargo install --no-default-features --locked cargo-make
+      - run: cargo make codegen --check
 
   doctest:
     name: Rust doc test
@@ -225,12 +202,3 @@ jobs:
         with:
           name: ${{ format('doc-{0}', runner.os) }}
           path: target/doc
-
-  license:
-    name: License check
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Install addlicense
-        run: go install github.com/google/addlicense@master
-      - run: ~/go/bin/addlicense -check -ignore "third_party/**" -ignore "target/**" .

@@ -17,14 +17,66 @@ default_to_workspace = false
 skip_core_tasks = true
 unstable_features = ["CTRL_C_HANDLING"]
 
+[tasks.init]
+# Should not use env_scripts which will also be executed by child cargo-make tasks.
+private = true
+description = "Set up environements."
+script_runner = "@duckscript"
+script = '''
+# TODO: MY_CARGO_MAKE_INIT_CALLED is to WA https://github.com/sagiegurari/cargo-make/issues/1108.
+# Remove it once the bug is fixed.
+if ${MY_CARGO_MAKE_INIT_CALLED}
+    echo Skip init task because we have called it.
+    exit 0
+endif
+set_env MY_CARGO_MAKE_INIT_CALLED true
+
+# Check whether linters and formatters should only check or fix in place.
+echo Parsing arguments...
+args = split ${CARGO_MAKE_TASK_ARGS} ;
+args = set_from_array ${args}
+
+# Handle the arguments
+has_check_arg = set_contains ${args} --check
+echo Check if --check is passed to the argument: ${has_check_arg}
+cargo_make_task = get_env CARGO_MAKE_TASK
+is_ci_target = starts_with ${cargo_make_task} ci-
+echo Check if the ${cargo_make_task} target is a CI target: ${is_ci_target}
+if ${has_check_arg} or ${is_ci_target}
+    set_env MY_CARGO_MAKE_BLACK_CHECK_ARG --check
+    set_env MY_CARGO_MAKE_RUSTFMT_CHECK_ARG --check
+    set_env MY_CARGO_MAKE_ADDLICENSE_CHECK_ARG -check
+    set_env MY_CARGO_MAKE_CODEGEN_CHECK_ARG --check
+else
+    set_env MY_CARGO_MAKE_CLIPPY_FIX_ARGS --fix;--allow-dirty;--allow-staged
+    set_env MY_CARGO_MAKE_RUFF_FIX_ARG --fix
+end
+
+# Set up envs specific to CI
+echo Check if run on CI: ${CARGO_MAKE_CI}
+if ${CARGO_MAKE_CI}
+    # Use the ci profile for nextest
+    set_env MY_CARGO_MAKE_NEXTEST_PROFILE_ARGS --profile;ci
+
+    # Set up the -D warnings rustc flags
+    rust_flags = get_env RUSTFLAGS
+    if not is_empty rust_flags
+        rust_flags = concat ${rust_flags} " "
+    end
+    rust_flags = concat ${rust_flags} "-D warnings"
+    set_env RUSTFLAGS ${rust_flags}
+end
+'''
+
 [tasks.coverage]
 command = "cargo"
+category = "Development"
 args = ["llvm-cov", "nextest", "--all-features", "--all-targets", "${@}"]
 install_crate_args = ["--locked"]
 
-[tasks.codegen-check]
+[tasks.codegen]
 # TODO: Detect if LLVM is correctly installed. If not, guide the user to install.
-description = "Check if codegen will modify files."
+description = "Runs the codegen."
 command = "cargo"
 category = "Development"
 args = [
@@ -36,22 +88,146 @@ args = [
     "--bin",
     "codegen",
     "--",
-    "--check",
+    "@@remove-empty(MY_CARGO_MAKE_CODEGEN_CHECK_ARG)",
 ]
 
-[tasks.ci]
-command = "cargo"
-args = ["run", "-p", "vulkan-layer-scripts", "--bin", "ci", "--", "${@}"]
-
-[tasks.codegen]
-command = "cargo"
-args = ["run", "-p", "vulkan-layer-scripts", "--bin", "codegen"]
+[tasks.detect-addlicense]
+private = true
+script_runner = "@duckscript"
+# TODO: Install addlicense if missing.
+script = '''
+echo Detecting the GOPATH environment...
+output = exec --fail-on-error go env GOPATH
+gopath = trim ${output.stdout}
+echo GOPATH=${gopath}
+addlicense_path = join_path ${gopath} bin addlicense
+echo Path of addlicense is ${addlicense_path}
+set_env MY_CARGO_MAKE_ADDLICENSE_PATH ${addlicense_path}
+'''
 
 [tasks.license]
 description = "Add license to source files."
-# TODO: make this also work on Windows: detect go binary install folder via go env GOPATH, and also
-# install addlicense if missing.
-command = "${HOME}/go/bin/addlicense"
-# TODO: test whether the --check argument exists, and add -check accordingly instead of arguments
-# passthrough.
-args = ["-ignore", "third_party/**", "-ignore", "target/**", "${@}", "."]
+category = "Development"
+condition.platforms = ["linux"]
+condition.fail_message = """
+on Windows, the -ignore argument of addlicense won't work until \
+https://github.com/google/addlicense/pull/157 is merged"""
+command = "${MY_CARGO_MAKE_ADDLICENSE_PATH}"
+args = [
+    "@@remove-empty(MY_CARGO_MAKE_ADDLICENSE_CHECK_ARG)",
+    "-ignore",
+    "third_party/**",
+    "-ignore",
+    "target/**",
+    ".",
+]
+dependencies = ["detect-addlicense"]
+
+[tasks.rust-check]
+description = "Runs cargo check."
+category = "Development"
+command = "cargo"
+args = ["check", "--workspace", "--all-targets", "--all-features"]
+
+[tasks.rust-clippy]
+description = "Runs cargo clippy."
+category = "Development"
+command = "cargo"
+args = [
+    "clippy",
+    "--workspace",
+    "--all-targets",
+    "--all-features",
+    "@@split(MY_CARGO_MAKE_CLIPPY_FIX_ARGS,;)",
+]
+
+[tasks.rust-fmt]
+description = "Runs cargo fmt."
+category = "Development"
+command = "cargo"
+args = ["+nightly", "fmt", "@@remove-empty(MY_CARGO_MAKE_RUSTFMT_CHECK_ARG)"]
+install_crate = false
+
+[tasks.rust-lint]
+description = "Lint Rust source files."
+category = "Development"
+dependencies = ["rust-fmt", "rust-check", "rust-clippy"]
+
+[tasks.python-ruff]
+private = true
+description = "Runs python ruff linter."
+category = "Development"
+command = "pipenv"
+args = [
+    "run",
+    "ruff",
+    "check",
+    "@@remove-empty(MY_CARGO_MAKE_RUFF_FIX_ARG)",
+    ".",
+]
+
+[tasks.python-black]
+private = true
+description = "Runs python black formatter."
+category = "Development"
+command = "pipenv"
+args = ["run", "black", "@@remove-empty(MY_CARGO_MAKE_BLACK_CHECK_ARG)", "."]
+
+[tasks.python-lint]
+description = "Lint python source files."
+category = "Development"
+dependencies = ["python-ruff", "python-black"]
+
+[tasks.lint]
+# TODO: if --check is specified, increase the level of parallel as --check shouldn't modify files.
+description = "Lint all source files."
+category = "Development"
+run_task = { name = ["rust-lint", "python-lint"], fork = true, parallel = true }
+dependencies = ["license"]
+
+[tasks.test]
+description = "Runs cargo nextest."
+category = "Development"
+command = "cargo"
+args = [
+    "nextest",
+    "run",
+    "--all-targets",
+    "--all-features",
+    "@@split(MY_CARGO_MAKE_NEXTEST_PROFILE_ARGS,;)",
+    "${@}",
+]
+
+[tasks.doctest]
+description = "Runs Rust doc test."
+category = "Development"
+command = "cargo"
+args = [
+    "+nightly",
+    "test",
+    "--doc",
+    "--all-features",
+    "--workspace",
+    "--",
+    "--show-output",
+]
+install_crate = false
+
+[tasks.ci]
+description = "Runs the ci binary."
+category = "CI"
+command = "cargo"
+args = [
+    "run",
+    "-p",
+    "vulkan-layer-scripts",
+    "--bin",
+    "ci",
+    "--",
+    "${@}",
+]
+
+[tasks.ci-buildtest]
+description = "Build the project and tests."
+category = "CI"
+run_task = { name = ["lint", "test", "doctest"], fork = true }
