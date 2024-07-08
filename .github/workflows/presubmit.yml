@@ -88,11 +88,11 @@ jobs:
       - name: Install cargo nextest
         run: cargo install cargo-nextest --locked
       - name: Install cargo llvm cov
-        run: cargo install cargo-llvm-cov
+        run: cargo install cargo-llvm-cov --locked
       - name: Install cargo-make
         run: cargo install --no-default-features --locked cargo-make
-      - name: Generate lcov coverage report
-        run: cargo llvm-cov nextest --lcov --output-path target/lcov.info --all-features --all-targets
+      - name: Run CI coverage tasks
+        run: cargo make ci-coverage
       - name: Checkout base coverage
         uses: actions/checkout@v3
         with:
@@ -111,13 +111,6 @@ jobs:
           filter-changed-files: true
           title: ${{ format('Test coverage for {0}', runner.os) }}
           post-to: ${{ github.event_name == 'push' && 'comment' || 'job-summary' }}
-      - name: Generate JSON coverage report
-        run: cargo llvm-cov nextest --json --summary-only --output-path target/coverage.json --all-features --all-targets
-      - name: Generate coverage badge JSON
-        run: ${{ format('cargo make ci --label ''{0} coverage'' --output-path target/coverage_badge.json target/coverage.json', runner.os) }}
-      # Must run the HTML coverage last. Otherwise other commands can clear this directory.
-      - name: Generate HTML coverage report
-        run: cargo llvm-cov nextest --html --all-features --all-targets
       - uses: actions/upload-artifact@v3
         with:
           name: ${{ format('coverage-{0}', runner.os) }}
@@ -196,8 +189,9 @@ jobs:
         uses: Swatinem/rust-cache@dd05243424bd5c0e585e4b55eb2d7615cdd32f1f
         with:
           key: ${{ runner.os }}
-      - run: cargo +nightly test --doc --all-features --workspace -- --show-output
-      - run: cargo +nightly doc --workspace --all-features --no-deps
+      - name: Install cargo-make
+        run: cargo install --no-default-features --locked cargo-make
+      - run: cargo make doc
       - uses: actions/upload-artifact@v3
         with:
           name: ${{ format('doc-{0}', runner.os) }}

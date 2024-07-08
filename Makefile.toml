@@ -213,19 +213,82 @@ args = [
 ]
 install_crate = false
 
-[tasks.ci]
-description = "Runs the ci binary."
+[tasks.doc]
+description = "Generates Rust doc."
+category = "Development"
+command = "cargo"
+args = ["+nightly", "doc", "--workspace", "--all-features", "--no-deps", "${@}"]
+install_crate = false
+
+[tasks.ci-coverage-lcov-info]
+description = "Runs code coverage and generate the lcov.info output."
+category = "CI"
+command = "cargo"
+args = [
+    "llvm-cov",
+    "nextest",
+    "--all-features",
+    "--all-targets",
+    "--lcov",
+    "--output-path",
+    "target/lcov.info",
+]
+install_crate_args = ["--locked"]
+
+
+[tasks.ci-coverage-html]
+description = "Runs code coverage and generate the HTML output."
+category = "CI"
+command = "cargo"
+args = ["llvm-cov", "nextest", "--html", "--all-features", "--all-targets"]
+install_crate_args = ["--locked"]
+
+[tasks.ci-coverage-summary-json]
+description = "Runs code coverage and generate the JSON summary."
+category = "CI"
+command = "cargo"
+args = [
+    "llvm-cov",
+    "nextest",
+    "--all-features",
+    "--all-targets",
+    "--json",
+    "--summary-only",
+    "--output-path",
+    "target/coverage.json",
+]
+install_crate_args = ["--locked"]
+
+[tasks.ci-coverage-badge]
+description = "Generate the code coverage badge."
 category = "CI"
 command = "cargo"
 args = [
     "run",
+    "--all-features",
+    "--release",
     "-p",
     "vulkan-layer-scripts",
     "--bin",
     "ci",
     "--",
-    "${@}",
+    "--label",
+    "${MY_CARGO_MAKE_COVERAGE_BADGE_LABEL}",
+    "--output-path",
+    "target/coverage_badge.json",
+    "target/coverage.json",
 ]
+dependencies = ["ci-coverage-summary-json"]
+
+[tasks.ci-coverage-badge.env.MY_CARGO_MAKE_COVERAGE_BADGE_LABEL]
+source = "${CARGO_MAKE_RUST_TARGET_OS}"
+default_value = "Unknown coverage"
+mapping.linux = "Linux coverage"
+mapping.windows = "Windows coverage"
+
+[tasks.ci-coverage]
+# Must run the HTML coverage last. Otherwise other commands can clear this directory.
+run_task.name = ["ci-coverage-badge", "ci-coverage-lcov-info", "ci-coverage-html"]
 
 [tasks.ci-buildtest]
 description = "Build the project and tests."
