@@ -23,9 +23,11 @@ edition = "2021"
 bindgen = "0.69.4"
 clap = { version = "4.5.8", features = ["derive"] }
 env_logger = "0.11.3"
+imara-diff = "0.1.6"
 log = "0.4.22"
 serde = { version = "1.0.203", features = ["derive"] }
 serde_json = "1.0.120"
+tempfile = "3.10.1"
 
 [[bin]]
 name = "ci"

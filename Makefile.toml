@@ -15,11 +15,29 @@
 [config]
 default_to_workspace = false
 skip_core_tasks = true
+unstable_features = ["CTRL_C_HANDLING"]
 
 [tasks.coverage]
 command = "cargo"
 args = ["llvm-cov", "nextest", "--all-features", "--all-targets", "${@}"]
 install_crate_args = ["--locked"]
+
+[tasks.codegen-check]
+# TODO: Detect if LLVM is correctly installed. If not, guide the user to install.
+description = "Check if codegen will modify files."
+command = "cargo"
+category = "Development"
+args = [
+    "run",
+    "--all-features",
+    "--release",
+    "-p",
+    "vulkan-layer-scripts",
+    "--bin",
+    "codegen",
+    "--",
+    "--check",
+]
 
 [tasks.ci]
 command = "cargo"
