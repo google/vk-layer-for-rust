@@ -16,7 +16,7 @@
 
 on:
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
   workflow_call: {}
 
 name: presubmit
@@ -53,7 +53,7 @@ jobs:
       - name: Documentation tests
         if: ${{ !cancelled() }}
         run: cargo test --doc --all-features --workspace -- --show-output
-    
+
   coverage:
     name: Code coverage
     strategy:
@@ -143,30 +143,24 @@ jobs:
       - uses: actions/checkout@v3
         with:
           submodules: recursive
-      - uses: actions/setup-python@v4 
+      - uses: actions/setup-python@v4
         with:
-          python-version: '3.9.13' 
-          cache: 'pipenv'
+          python-version: "3.9.13"
+          cache: "pipenv"
       - name: Install pipenv
         run: python -m pip install pipenv==2023.7.23
       - run: pipenv install
       - run: pipenv run black --check .
       - run: pipenv run ruff check .
-  
+
   codegen:
     name: Rust codegen
     strategy:
       fail-fast: false
       matrix:
         config:
-        - {
-          os: ubuntu-latest,
-          llvm_path: ./llvm,
-        }
-        - {
-          os: windows-latest,
-          llvm_path: "C:/Program Files/LLVM",
-        }
+          - { os: ubuntu-latest, llvm_path: ./llvm }
+          - { os: windows-latest, llvm_path: "C:/Program Files/LLVM" }
     runs-on: ${{ matrix.config.os }}
     steps:
       - uses: actions/checkout@v3
@@ -205,9 +199,8 @@ jobs:
           key: ${{ runner.os }}
       - name: Install cargo-make
         run: cargo install --no-default-features --force cargo-make
-      - run: cargo make codegen
-      - run: git diff --exit-code
-  
+      - run: cargo make codegen-check
+
   doctest:
     name: Rust doc test
     strategy:
