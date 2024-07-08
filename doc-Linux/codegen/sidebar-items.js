@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["current_year","generate_vulkan_layer_header_binding","guess_python_command","main","run_vulkan_layer_genvk"],"struct":["GenvkArgs"],"type":["Task"]};
+window.SIDEBAR_ITEMS = {"fn":["create_file_all","current_year","generate_vulkan_layer_header_binding","guess_python_command","main","run_vulkan_layer_genvk"],"struct":["Cli","GenvkArgs"],"type":["Task"]};
