@@ -13,18 +13,11 @@
 # limitations under the License.
 
 [workspace]
+members = ["vulkan-layer", "vulkan-layer-macros", "examples/hello-world", "scripts"]
 resolver = "2"
-members = [
-    "vulkan-layer",
-    "vulkan-layer-macros",
-    "examples/hello-world",
-    "scripts",
-]
 # Do not operate on vulkan-layer-macros by default, because it doesn't work well with panic=abort
 # for testing.
-default-members = [
-    "vulkan-layer",
-]
+default-members = ["vulkan-layer"]
 
 [profile.dev]
 panic = "abort"

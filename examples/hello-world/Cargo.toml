@@ -13,13 +13,13 @@
 # limitations under the License.
 
 [package]
+edition = "2021"
 name = "vk-layer-example-hello-world"
 version = "0.1.0"
-edition = "2021"
 
 [lib]
-name = "VkLayer_vendor_rust_example_hello_world"
 crate-type = ["cdylib"]
+name = "VkLayer_vendor_rust_example_hello_world"
 
 [profile.dev]
 panic = "abort"

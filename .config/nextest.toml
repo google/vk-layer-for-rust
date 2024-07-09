@@ -17,5 +17,5 @@ retries = 0
 test-threads = "num-cpus"
 
 [profile.ci]
-failure-output = "immediate-final"
 fail-fast = false
+failure-output = "immediate-final"
