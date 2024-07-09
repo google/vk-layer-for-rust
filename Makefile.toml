@@ -184,10 +184,12 @@ category = "Development"
 dependencies = ["python-ruff", "python-black"]
 
 [tasks.lint]
-# TODO: if --check is specified, increase the level of parallel as --check shouldn't modify files.
+# No need to run lint tasks in parallel as the overhead of fork in cargo-make is significant. In the
+# IDX environment, with everything cached running in parallel takes 15s, while without parallel, it
+# takes less than 10s.
 description = "Lint all source files."
 category = "Development"
-run_task = { name = ["rust-lint", "python-lint"], fork = true, parallel = true }
+run_task.name = ["rust-lint", "python-lint"]
 dependencies = ["license"]
 
 [tasks.test]
