@@ -110,7 +110,7 @@ pub trait DeviceInfo: Send + Sync {
     /// A type that can be dereferencing to [`DeviceInfo::HooksType`]. Usually just
     /// `&DeviceInfo::HooksType`.
     ///
-    /// This extra associated type allows the layer implemention to use a smart pointer like
+    /// This extra associated type allows the layer implementation to use a smart pointer like
     /// [`Arc`][std::sync::Arc] or [`MutexGuard`][std::sync::MutexGuard] to hold the reference.
     ///
     /// # Examples
@@ -160,7 +160,7 @@ pub trait DeviceInfo: Send + Sync {
     ///
     /// For Vulkan commands that have multiple names, e.g. `vkCreateSamplerYcbcrConversion` and
     /// `vkCreateSamplerYcbcrConversionKHR`, only the shortest name should be
-    /// used([`VulkanCommand::CreateSamplerYcbcrConversion`] in this example). The layer framwork
+    /// used([`VulkanCommand::CreateSamplerYcbcrConversion`] in this example). The layer framework
     /// automatically wires both entries to the layer implementation.
     ///
     /// # Examples
@@ -365,7 +365,7 @@ pub trait InstanceInfo: Send + Sync {
     /// A type that can be dereferencing to [`InstanceInfo::HooksType`]. Usually
     /// `&InstanceInfo::HooksType`.
     ///
-    /// This extra associated type allows the layer implemention to use a smart pointer like
+    /// This extra associated type allows the layer implementation to use a smart pointer like
     /// [`Arc`][std::sync::Arc] or [`MutexGuard`][std::sync::MutexGuard] to hold the reference.
     ///
     /// # Examples
@@ -418,7 +418,7 @@ pub trait InstanceInfo: Send + Sync {
     ///
     /// For Vulkan commands that have multiple names, e.g. `vkGetPhysicalDeviceProperties2` and
     /// `vkGetPhysicalDeviceProperties2KHR`, only the shortest name should be
-    /// used([`VulkanCommand::GetPhysicalDeviceProperties2`] in this example). The layer framwork
+    /// used([`VulkanCommand::GetPhysicalDeviceProperties2`] in this example). The layer framework
     /// automatically wires both entries to the layer implementation.
     ///
     /// # Examples
@@ -729,7 +729,7 @@ pub trait GlobalHooksInfo: Send + Sync {
     /// A type that can be dereferencing to [`GlobalHooksInfo::HooksType`]. Usually just
     /// `&GlobalHooksInfo::HooksType`.
     ///
-    /// This extra associated type allows the layer implemention to use a smart pointer like
+    /// This extra associated type allows the layer implementation to use a smart pointer like
     /// [`Arc`][std::sync::Arc] or [`MutexGuard`][std::sync::MutexGuard] to hold the reference.
     ///
     /// # Examples

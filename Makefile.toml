@@ -52,10 +52,14 @@ else
     set_env MY_CARGO_MAKE_RUFF_FIX_ARG --fix
 end
 
-# For the test target, only passthrough the arguments if it's the toplevel target.
+# For some targets, only passthrough the arguments if it's the toplevel target.
 is_test_toplevel_target = eq ${cargo_make_task} test
 if ${is_test_toplevel_target}
     set_env MY_CARGO_MAKE_NEXTEST_USER_ARGS ${CARGO_MAKE_TASK_ARGS}
+end
+is_typos_toplevel_target = eq ${cargo_make_task} typos
+if ${is_typos_toplevel_target}
+    set_env MY_CARGO_MAKE_TYPOS_USER_ARGS ${CARGO_MAKE_TASK_ARGS}
 end
 
 # Set up envs specific to CI
@@ -196,6 +200,14 @@ install_crate_args = ["--locked"]
 condition.platforms = ["windows"]
 value = "--option=crlf=true"
 
+[tasks.typos]
+args = ["@@split(MY_CARGO_MAKE_TYPOS_USER_ARGS,;)"]
+command = "typos"
+install_crate.binary = "typos"
+install_crate.crate_name = "typos-cli"
+install_crate.test_arg = "--version"
+install_crate_args = ["--locked"]
+
 [tasks.lint]
 # No need to run lint tasks in parallel as the overhead of fork in cargo-make is significant. In the
 # IDX environment, with everything cached running in parallel takes 15s, while without parallel, it
@@ -305,7 +317,7 @@ run_task.name = ["ci-coverage-badge", "ci-coverage-lcov-info", "ci-coverage-html
 [tasks.buildtest]
 category = "Development"
 description = "Build the project and tests. Pass --check to avoid linter to modify files."
-run_task = { name = ["lint", "test", "doctest"], fork = true }
+run_task = { name = ["typos", "lint", "test", "doctest"], fork = true }
 
 [tasks.ci-buildtest]
 category = "CI"

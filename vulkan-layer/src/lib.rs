@@ -540,7 +540,7 @@ struct DeviceInfoWrapper<T: Layer> {
     customized_info: T::DeviceInfoContainer,
 }
 
-/// A struct that implements all necessarly functions for a layer given a type that implements
+/// A struct that implements all necessarily functions for a layer given a type that implements
 /// [`Layer`].
 ///
 /// The layer implementation should use [`Global::default`] to construct a [`Global`] object.
@@ -1140,7 +1140,7 @@ impl<T: Layer> Global<T> {
     }
 
     // Introspection queries required by Android, so we need to expose them as public functions so
-    // that the user can futher expose them as functions exported by the dynamic link library.
+    // that the user can further expose them as functions exported by the dynamic link library.
 
     /// The `vkEnumerateInstanceLayerProperties` entry point provided by the layer framework.
     ///
@@ -1159,7 +1159,7 @@ impl<T: Layer> Global<T> {
         let ret_properties = Self::layer_properties();
         // Safe, because the caller guarantees that `property_count` is a valid pointer to u32, and
         // if the value referenced by property_count is not 0, and properties is not NULL,
-        // properties must be a valid pointer to an array of propert_count vk::LayerProperties
+        // properties must be a valid pointer to an array of property_count vk::LayerProperties
         // structures. See details in
         // VUID-vkEnumerateInstanceLayerProperties-pPropertyCount-parameter and
         // VUID-vkEnumerateInstanceLayerProperties-pProperties-parameter.
@@ -1174,7 +1174,7 @@ impl<T: Layer> Global<T> {
 
     /// The `vkEnumerateInstanceExtensionProperties` entry point provided by the layer framework.
     ///
-    /// Returns an empty list with `VK_SUCCESS` if the layer name matchies; returns
+    /// Returns an empty list with `VK_SUCCESS` if the layer name matches; returns
     /// `VK_ERROR_LAYER_NOT_PRESENT` with all the out pointers untouched, according to the
     /// [`LLP_LAYER_15`](<https://github.com/KhronosGroup/Vulkan-Loader/blob/v1.3.261/docs/LoaderLayerInterface.md#:~:text=LLP_LAYER_15,Conventions%20and%20Rules>)
     /// rule.

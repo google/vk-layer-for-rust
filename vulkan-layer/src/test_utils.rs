@@ -24,7 +24,7 @@
 //! Follow the following steps to write a unit test:
 //! 1. Use [`TestGlobal::builder`] to construct the static resources needed to mock one layer. Mocks
 //!    to static methods can be set with different builder functions.
-//! 2. Call [`TestGlobal::create_context`] to set up the scope for expections.
+//! 2. Call [`TestGlobal::create_context`] to set up the scope for expectations.
 //! 3. Use [`TestLayer`] as a layer implementation.
 
 use crate::{
@@ -216,7 +216,7 @@ pub struct MockInstanceInfo<T: TestLayerMock> {
 impl<T: TestLayerMock> MockInstanceInfo<T> {
     /// Mock the drop behavior.
     ///
-    /// The expections can be set through the `f` argument. If this method is never called, the
+    /// The expectations can be set through the `f` argument. If this method is never called, the
     /// struct will be dropped as if the drop is not mocked, i.e. won't check how drop is called.
     pub fn with_mock_drop(&self, f: impl FnOnce(&mut MockDrop)) {
         let mut mock_drop = self.mock_drop.lock().unwrap();
@@ -252,7 +252,7 @@ pub struct MockDeviceInfo<T: TestLayerMock> {
 impl<T: TestLayerMock> MockDeviceInfo<T> {
     /// Mock the drop behavior.
     ///
-    /// The expections can be set through the `f` argument. If this method is never called, the
+    /// The expectations can be set through the `f` argument. If this method is never called, the
     /// struct will be dropped as if the drop is not mocked, i.e. won't check how drop is called.
     pub fn with_mock_drop(&self, f: impl FnOnce(&mut MockDrop)) {
         let mut mock_drop = self.mock_drop.lock().unwrap();
@@ -409,7 +409,7 @@ mock! {
 impl<T: TestLayerTag> MockTestLayer<T> {
     /// Set the default behavior of the [`MockTestLayer`]: intercept no commands and a valid
     /// [`LayerManifest`].
-    pub fn set_default_expections(&mut self) {
+    pub fn set_default_expectations(&mut self) {
         self.expect_manifest()
             .return_const(LayerManifest::test_default());
         self.expect_hooked_global_commands().return_const(vec![]);
@@ -439,7 +439,7 @@ impl<T: TestLayerTag> TestGlobalBuilder<T> {
     /// [`InstanceInfo::hooked_commands`].
     ///
     /// Pre-initialized methods are almost always called, so it is usually needed to call
-    /// [`MockTestLayer::set_default_expections`] right before return to provide a meaningful
+    /// [`MockTestLayer::set_default_expectations`] right before return to provide a meaningful
     /// default behavior.
     pub const fn set_layer_mock_builder(
         self,
@@ -453,8 +453,8 @@ impl<T: TestLayerTag> TestGlobalBuilder<T> {
 
     /// Specify how [`Global<TestLayer<T>>`] should be created.
     ///
-    /// Can be used to customize the behavior and expections of layer behaviors after [`Global`] is
-    /// initialized, especially the global commands, e.g.
+    /// Can be used to customize the behavior and expectations of layer behaviors after [`Global`]
+    /// is initialized, especially the global commands, e.g.
     /// [`GlobalHooks::create_instance`][crate::GlobalHooks::create_instance].
     pub const fn set_layer_global_builder(
         self,
@@ -483,7 +483,7 @@ impl<T: TestLayerTag> TestGlobal<T> {
         TestGlobalBuilder {
             layer_mock_builder: || {
                 let mut mock = MockTestLayer::<T>::default();
-                mock.set_default_expections();
+                mock.set_default_expectations();
                 mock
             },
             layer_global_builder: Default::default,

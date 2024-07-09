@@ -107,7 +107,7 @@ mod get_instance_proc_addr {
                         mock.expect_hooked_instance_commands().return_const(vec![
                             LayerVulkanCommand::GetPhysicalDeviceSparseImageFormatProperties2,
                         ]);
-                        mock.set_default_expections();
+                        mock.set_default_expectations();
                         mock
                     })
                     .build();
@@ -159,7 +159,7 @@ mod get_instance_proc_addr {
                             }];
                             layer_manifest
                         });
-                        mock.set_default_expections();
+                        mock.set_default_expectations();
                         mock
                     })
                     .build();
@@ -215,7 +215,7 @@ mod get_instance_proc_addr {
                         let mut mock = MockTestLayer::default();
                         mock.expect_hooked_global_commands()
                             .return_const(vec![LayerVulkanCommand::CreateInstance]);
-                        mock.set_default_expections();
+                        mock.set_default_expectations();
                         mock
                     })
                     .set_layer_global_builder(|| {
@@ -341,7 +341,7 @@ mod get_instance_proc_addr {
                         let mut mock = MockTestLayer::default();
                         mock.expect_hooked_instance_commands()
                             .return_const(vec![LayerVulkanCommand::DestroySurfaceKhr]);
-                        mock.set_default_expections();
+                        mock.set_default_expectations();
                         mock
                     })
                     .build();
@@ -412,7 +412,7 @@ mod get_instance_proc_addr {
                         LayerVulkanCommand::DestroySurfaceKhr,
                         LayerVulkanCommand::GetPhysicalDeviceSparseImageFormatProperties2,
                     ]);
-                    mock.set_default_expections();
+                    mock.set_default_expectations();
                     mock
                 })
                 .build();
@@ -515,7 +515,7 @@ mod get_instance_proc_addr {
                         let mut mock = MockTestLayer::default();
                         mock.expect_hooked_device_commands()
                             .return_const(vec![LayerVulkanCommand::DestroySwapchainKhr]);
-                        mock.set_default_expections();
+                        mock.set_default_expectations();
                         mock
                     })
                     .build();
@@ -545,7 +545,7 @@ mod get_instance_proc_addr {
                         let mut mock = MockTestLayer::default();
                         mock.expect_hooked_device_commands()
                             .return_const(vec![LayerVulkanCommand::DestroySwapchainKhr]);
-                        mock.set_default_expections();
+                        mock.set_default_expectations();
                         mock
                     })
                     .build();
@@ -596,7 +596,7 @@ mod get_instance_proc_addr {
                         });
                         mock.expect_hooked_device_commands()
                             .return_const(vec![LayerVulkanCommand::DestroySwapchainKhr]);
-                        mock.set_default_expections();
+                        mock.set_default_expectations();
                         mock
                     })
                     .build();
@@ -683,7 +683,7 @@ mod get_instance_proc_addr {
                     let mut mock = MockTestLayer::default();
                     mock.expect_hooked_device_commands()
                         .return_const(vec![LayerVulkanCommand::DestroySwapchainKhr]);
-                    mock.set_default_expections();
+                    mock.set_default_expectations();
                     mock
                 })
                 .build();
@@ -733,7 +733,7 @@ mod create_destroy_instance {
                 let mut mock = MockTestLayer::default();
                 mock.expect_hooked_global_commands()
                     .return_const(vec![LayerVulkanCommand::CreateInstance]);
-                mock.set_default_expections();
+                mock.set_default_expectations();
                 mock
             })
             .build();
@@ -743,7 +743,7 @@ mod create_destroy_instance {
                 let mut mock = MockTestLayer::default();
                 mock.expect_hooked_global_commands()
                     .return_const(vec![LayerVulkanCommand::CreateInstance]);
-                mock.set_default_expections();
+                mock.set_default_expectations();
                 mock
             })
             .build();
@@ -911,7 +911,7 @@ mod create_destroy_instance {
                 let mut mock = MockTestLayer::default();
                 mock.expect_hooked_global_commands()
                     .return_const(vec![LayerVulkanCommand::CreateInstance]);
-                mock.set_default_expections();
+                mock.set_default_expectations();
                 mock
             })
             .build();
@@ -986,7 +986,7 @@ mod get_device_proc_addr {
                 mock.expect_hooked_instance_commands().return_const(vec![
                     LayerVulkanCommand::GetPhysicalDeviceSparseImageFormatProperties2,
                 ]);
-                mock.set_default_expections();
+                mock.set_default_expectations();
                 mock
             })
             .build();
@@ -1019,7 +1019,7 @@ mod get_device_proc_addr {
                 let mut mock = MockTestLayer::default();
                 mock.expect_hooked_device_commands()
                     .return_const(vec![LayerVulkanCommand::DestroySwapchainKhr]);
-                mock.set_default_expections();
+                mock.set_default_expectations();
                 mock
             })
             .build();
@@ -1071,7 +1071,7 @@ mod get_device_proc_addr {
                 let mut mock = MockTestLayer::default();
                 mock.expect_hooked_device_commands()
                     .return_const(vec![LayerVulkanCommand::DestroySamplerYcbcrConversion]);
-                mock.set_default_expections();
+                mock.set_default_expectations();
                 mock
             })
             .build();
@@ -1124,7 +1124,7 @@ mod get_device_proc_addr {
                 let mut mock = MockTestLayer::default();
                 mock.expect_hooked_device_commands()
                     .return_const(vec![LayerVulkanCommand::DestroySamplerYcbcrConversion]);
-                mock.set_default_expections();
+                mock.set_default_expectations();
                 mock
             })
             .build();
@@ -1161,7 +1161,7 @@ mod get_device_proc_addr {
                 let mut mock = MockTestLayer::default();
                 mock.expect_hooked_device_commands()
                     .return_const(vec![LayerVulkanCommand::DestroySamplerYcbcrConversion]);
-                mock.set_default_expections();
+                mock.set_default_expectations();
                 mock
             })
             .build();
@@ -1254,7 +1254,7 @@ mod get_device_proc_addr {
                     let mut mock = MockTestLayer::default();
                     mock.expect_hooked_device_commands()
                         .return_const(vec![LayerVulkanCommand::DestroySwapchainKhr]);
-                    mock.set_default_expections();
+                    mock.set_default_expectations();
                     mock
                 })
                 .build();
@@ -1297,7 +1297,7 @@ mod get_device_proc_addr {
                 });
                 mock.expect_hooked_device_commands()
                     .return_const(vec![LayerVulkanCommand::DestroySwapchainKhr]);
-                mock.set_default_expections();
+                mock.set_default_expectations();
                 mock
             })
             .build();
@@ -1362,7 +1362,7 @@ mod device_commands {
                 let mut mock = MockTestLayer::default();
                 mock.expect_hooked_device_commands()
                     .return_const(vec![LayerVulkanCommand::DestroyImage]);
-                mock.set_default_expections();
+                mock.set_default_expectations();
                 mock
             })
             .build();
@@ -1393,7 +1393,7 @@ mod device_commands {
             .set_layer_mock_builder(|| {
                 let mut mock = MockTestLayer::default();
                 mock.expect_hooked_device_commands().return_const(vec![]);
-                mock.set_default_expections();
+                mock.set_default_expectations();
                 mock
             })
             .build();
@@ -1432,7 +1432,7 @@ mod enumerate_device_extensions {
                     }];
                     layer_manifest
                 });
-                mock.set_default_expections();
+                mock.set_default_expectations();
                 mock
             })
             .build();
@@ -1509,7 +1509,7 @@ mod enumerate_device_extensions {
                     }];
                     layer_manifest
                 });
-                mock.set_default_expections();
+                mock.set_default_expectations();
                 mock
             })
             .build();
@@ -1552,7 +1552,7 @@ mod enumerate_device_extensions {
                     }];
                     layer_manifest
                 });
-                mock.set_default_expections();
+                mock.set_default_expectations();
                 mock
             })
             .build();
@@ -1592,7 +1592,7 @@ mod enumerate_device_extensions {
                     }];
                     layer_manifest
                 });
-                mock.set_default_expections();
+                mock.set_default_expectations();
                 mock
             })
             .build();
@@ -1667,7 +1667,7 @@ mod create_destroy_device {
                     }];
                     layer_manifest
                 });
-                mock.set_default_expections();
+                mock.set_default_expectations();
                 mock
             })
             .build();
@@ -1726,7 +1726,7 @@ mod create_destroy_device {
                     }];
                     layer_manifest
                 });
-                mock.set_default_expections();
+                mock.set_default_expectations();
                 mock
             })
             .build();
@@ -1778,7 +1778,7 @@ mod create_destroy_device {
                     }];
                     layer_manifest
                 });
-                mock.set_default_expections();
+                mock.set_default_expectations();
                 mock
             })
             .build();
@@ -1809,7 +1809,7 @@ mod create_destroy_device {
                 let mut mock = MockTestLayer::default();
                 mock.expect_hooked_instance_commands()
                     .return_const(vec![LayerVulkanCommand::CreateDevice]);
-                mock.set_default_expections();
+                mock.set_default_expectations();
                 mock
             })
             .build();
@@ -1819,7 +1819,7 @@ mod create_destroy_device {
                 let mut mock = MockTestLayer::default();
                 mock.expect_hooked_instance_commands()
                     .return_const(vec![LayerVulkanCommand::CreateDevice]);
-                mock.set_default_expections();
+                mock.set_default_expectations();
                 mock
             })
             .build();
@@ -1943,7 +1943,7 @@ mod create_destroy_device {
                 });
                 mock.expect_hooked_instance_commands()
                     .return_const(vec![LayerVulkanCommand::CreateDevice]);
-                mock.set_default_expections();
+                mock.set_default_expectations();
                 mock
             })
             .build();
@@ -2029,7 +2029,7 @@ mod create_destroy_device {
                 let mut mock = MockTestLayer::default();
                 mock.expect_hooked_instance_commands()
                     .return_const(vec![LayerVulkanCommand::CreateDevice]);
-                mock.set_default_expections();
+                mock.set_default_expectations();
                 mock
             })
             .build();
@@ -2070,7 +2070,7 @@ mod create_destroy_device {
 fn enumerate_instance_layer_properties_should_return_correct_properties() {
     static LAYER_MANIFEST: Lazy<LayerManifest> = Lazy::new(|| {
         let mut layer_manifest = LayerManifest::test_default();
-        layer_manifest.name = "VK_LAYER_UNKNWON_TESTLAYER";
+        layer_manifest.name = "VK_LAYER_UNKNOWN_TESTLAYER";
         layer_manifest.description = "A test description.";
         layer_manifest.spec_version = vk::API_VERSION_1_3;
         layer_manifest.implementation_version = 42;
@@ -2081,7 +2081,7 @@ fn enumerate_instance_layer_properties_should_return_correct_properties() {
         .set_layer_mock_builder(|| {
             let mut mock = MockTestLayer::default();
             mock.expect_manifest().return_const(LAYER_MANIFEST.clone());
-            mock.set_default_expections();
+            mock.set_default_expectations();
             mock
         })
         .build();

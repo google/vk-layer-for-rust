@@ -89,7 +89,7 @@ taplo fmt --option clrf=true
 
 ### Regenerate code
 
-Files named `generated.rs` are generated files. One should avoid manually editting the files. Presubmit will fail if the generated files are not sync with the source.
+Files named `generated.rs` are generated files. One should avoid manually editing the files. Presubmit will fail if the generated files are not sync with the source.
 
 1. Install LLVM and set up the environment variable required by `bindgen`: [link](https://rust-lang.github.io/rust-bindgen/requirements.html), because `bindgen` is used in the codegen process.
 

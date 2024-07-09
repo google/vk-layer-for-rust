@@ -524,7 +524,7 @@ class VulkanCommand(NamedTuple):
         )
         assert (
             dispatch_info is not None
-        ), f"No dipatch info found for command {self.vk_xml_command.name}"
+        ), f"No dispatch info found for command {self.vk_xml_command.name}"
         lines += [
             (
                 f"let dispatch_table = &{dispatch_chain_var}.dispatch_table."
@@ -591,7 +591,7 @@ class VulkanCommand(NamedTuple):
                 leading_lines, arg_exp = self.__generate_ptr_param_expr(i)
                 lines += leading_lines
             else:
-                assert False, "Should have exausted all parameter types."
+                assert False, "Should have exhausted all parameter types."
             intercept_params.append(arg_exp)
 
         def generate_ret_expr(ret_var: str) -> list[str]:
@@ -811,7 +811,7 @@ class GlobalSimpleInterceptGenerator(OutputGenerator):
                 "vkEnumeratePhysicalDevices",
             ]
             for proc_name, command in command_items:
-                # Use the actual name, because ash doesn't generate type names for alised types.
+                # Use the actual name, because ash doesn't generate type names for aliased types.
                 fp_type_name = f"vk::PFN_{command.vk_xml_command.name}"
                 rust_fn_name = f"Self::{command.rust_fn.name}"
                 features = [

@@ -406,7 +406,7 @@ class VkXmlParam(NamedTuple):
                 len_var = altlen_attr
                 vk_xml_type.len = VkXmlLenKind.VARIABLE
             else:
-                assert "," not in len_attr, "Multi-dimentional array unimplemented."
+                assert "," not in len_attr, "Multi-dimensional array unimplemented."
                 assert len_attr != "1", "Unsupported length attribute: 1"
                 if len_attr == "null-terminated":
                     vk_xml_type.len = VkXmlLenKind.NULL_TERMINATED
@@ -549,7 +549,7 @@ class RustType(NamedTuple):
                 slice_of=element_rust_type,
             )
         else:
-            assert vk_xml_type.len is None, "Should have exausted all len link."
+            assert vk_xml_type.len is None, "Should have exhausted all len link."
 
         if vk_xml_type.points_to.name in opaque_type_map:
             # A pointer to an opaque type will translate to a pointer
@@ -560,7 +560,7 @@ class RustType(NamedTuple):
             )
         else:
             # TODO: change to the Out<'_, T> type from the uninit crate. For mutable pointer
-            # paramters in vk.xml, they can be uninitialized (e.g. pDevice in vkCreateDevice), which
+            # parameters in vk.xml, they can be uninitialized (e.g. pDevice in vkCreateDevice), which
             # makes it invalid to use the reference type (&mut T) to be the Rust interface type. The
             # Rust reference type requires the underlying data be initialized. Note that this also
             # applies to input arrays: &mut [T] is not the correct type. Out<'_, [T]> should
@@ -616,7 +616,7 @@ class RustType(NamedTuple):
         inner_type = self.points_to or self.slice_of or self.refers_to
         if self.array_info is not None:
             inner_type = self.array_info.element_type
-        assert inner_type.name != "bool", "This interface breaks the ABI, and won't be effcient."
+        assert inner_type.name != "bool", "This interface breaks the ABI, and won't be efficient."
 
         if self.points_to is not None:
 
