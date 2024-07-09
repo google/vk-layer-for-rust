@@ -52,9 +52,14 @@ else
     set_env MY_CARGO_MAKE_RUFF_FIX_ARG --fix
 end
 
+# For the test target, only passthrough the arguments if it's the toplevel target.
+is_test_toplevel_target = eq ${cargo_make_task} test
+if ${is_test_toplevel_target}
+    set_env MY_CARGO_MAKE_NEXTEST_USER_ARGS ${CARGO_MAKE_TASK_ARGS}
+end
+
 # Set up envs specific to CI
-echo Check if run on CI: ${CARGO_MAKE_CI}
-if ${CARGO_MAKE_CI}
+if ${is_ci_target}
     # Use the ci profile for nextest
     set_env MY_CARGO_MAKE_NEXTEST_PROFILE_ARGS --profile;ci
 
@@ -195,7 +200,7 @@ args = [
     "--all-targets",
     "--all-features",
     "@@split(MY_CARGO_MAKE_NEXTEST_PROFILE_ARGS,;)",
-    "${@}",
+    "@@split(MY_CARGO_MAKE_NEXTEST_USER_ARGS,;)",
 ]
 
 [tasks.doctest]
@@ -288,9 +293,18 @@ mapping.windows = "Windows coverage"
 
 [tasks.ci-coverage]
 # Must run the HTML coverage last. Otherwise other commands can clear this directory.
-run_task.name = ["ci-coverage-badge", "ci-coverage-lcov-info", "ci-coverage-html"]
+run_task.name = [
+    "ci-coverage-badge",
+    "ci-coverage-lcov-info",
+    "ci-coverage-html",
+]
+
+[tasks.buildtest]
+description = "Build the project and tests. Pass --check to avoid linter to modify files."
+category = "Development"
+run_task = { name = ["lint", "test", "doctest"], fork = true }
 
 [tasks.ci-buildtest]
-description = "Build the project and tests."
+description = "Build the project and tests with the CI configuration."
 category = "CI"
-run_task = { name = ["lint", "test", "doctest"], fork = true }
+run_task.name = ["buildtest"]
