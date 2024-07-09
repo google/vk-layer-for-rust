@@ -13,10 +13,10 @@
 # limitations under the License.
 
 [tool.black]
-line-length = 100
-target-version = ['py39']
 extend-exclude = '^/third_party/.*'
+line-length = 100
 preview = true
+target-version = ['py39']
 
 [tool.ruff]
 exclude = [

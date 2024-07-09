@@ -65,6 +65,28 @@ pipenv run ruff check . --fix
 
 To run all python formatters and lints, run `cargo make python-lint`.
 
+#### TOML
+
+[taplo](https://taplo.tamasfe.dev/) is used to format all TOML files.
+
+Use the `toml-fmt` cargo-make target to run it, and it will also handle the end of lines for different platforms.
+
+```bash
+cargo make toml-fmt
+```
+
+We can also just use `taplo`. One must take care of end of lines on Windows.
+
+```bash
+taplo fmt
+```
+
+on Windows
+
+```bash
+taplo fmt --option clrf=true
+```
+
 ### Regenerate code
 
 Files named `generated.rs` are generated files. One should avoid manually editting the files. Presubmit will fail if the generated files are not sync with the source.

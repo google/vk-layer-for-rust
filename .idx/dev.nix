@@ -49,6 +49,7 @@
     pkgs.git
     pkgs.pipenv
     pkgs.go
+    pkgs.taplo
   ];
   idx = {
     extensions = [

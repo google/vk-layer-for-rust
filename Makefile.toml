@@ -19,9 +19,8 @@ unstable_features = ["CTRL_C_HANDLING"]
 
 [tasks.init]
 # Should not use env_scripts which will also be executed by child cargo-make tasks.
-private = true
 description = "Set up environements."
-script_runner = "@duckscript"
+private = true
 script = '''
 # TODO: MY_CARGO_MAKE_INIT_CALLED is to WA https://github.com/sagiegurari/cargo-make/issues/1108.
 # Remove it once the bug is fixed.
@@ -47,6 +46,7 @@ if ${has_check_arg} or ${is_ci_target}
     set_env MY_CARGO_MAKE_RUSTFMT_CHECK_ARG --check
     set_env MY_CARGO_MAKE_ADDLICENSE_CHECK_ARG -check
     set_env MY_CARGO_MAKE_CODEGEN_CHECK_ARG --check
+    set_env MY_CARGO_MAKE_TAPLO_CHECK_ARG --check
 else
     set_env MY_CARGO_MAKE_CLIPPY_FIX_ARGS --fix;--allow-dirty;--allow-staged
     set_env MY_CARGO_MAKE_RUFF_FIX_ARG --fix
@@ -72,18 +72,16 @@ if ${is_ci_target}
     set_env RUSTFLAGS ${rust_flags}
 end
 '''
+script_runner = "@duckscript"
 
 [tasks.coverage]
-command = "cargo"
-category = "Development"
 args = ["llvm-cov", "nextest", "--all-features", "--all-targets", "${@}"]
+category = "Development"
+command = "cargo"
 install_crate_args = ["--locked"]
 
 [tasks.codegen]
 # TODO: Detect if LLVM is correctly installed. If not, guide the user to install.
-description = "Runs the codegen."
-command = "cargo"
-category = "Development"
 args = [
     "run",
     "--all-features",
@@ -95,6 +93,9 @@ args = [
     "--",
     "@@remove-empty(MY_CARGO_MAKE_CODEGEN_CHECK_ARG)",
 ]
+category = "Development"
+command = "cargo"
+description = "Runs the codegen."
 
 [tasks.detect-addlicense]
 private = true
@@ -111,13 +112,6 @@ set_env MY_CARGO_MAKE_ADDLICENSE_PATH ${addlicense_path}
 '''
 
 [tasks.license]
-description = "Add license to source files."
-category = "Development"
-condition.platforms = ["linux"]
-condition.fail_message = """
-on Windows, the -ignore argument of addlicense won't work until \
-https://github.com/google/addlicense/pull/157 is merged"""
-command = "${MY_CARGO_MAKE_ADDLICENSE_PATH}"
 args = [
     "@@remove-empty(MY_CARGO_MAKE_ADDLICENSE_CHECK_ARG)",
     "-ignore",
@@ -126,18 +120,22 @@ args = [
     "target/**",
     ".",
 ]
+category = "Development"
+command = "${MY_CARGO_MAKE_ADDLICENSE_PATH}"
+condition.fail_message = """
+on Windows, the -ignore argument of addlicense won't work until \
+https://github.com/google/addlicense/pull/157 is merged"""
+condition.platforms = ["linux"]
 dependencies = ["detect-addlicense"]
+description = "Add license to source files."
 
 [tasks.rust-check]
-description = "Runs cargo check."
+args = ["check", "--workspace", "--all-targets", "--all-features"]
 category = "Development"
 command = "cargo"
-args = ["check", "--workspace", "--all-targets", "--all-features"]
+description = "Runs cargo check."
 
 [tasks.rust-clippy]
-description = "Runs cargo clippy."
-category = "Development"
-command = "cargo"
 args = [
     "clippy",
     "--workspace",
@@ -145,57 +143,69 @@ args = [
     "--all-features",
     "@@split(MY_CARGO_MAKE_CLIPPY_FIX_ARGS,;)",
 ]
-
-[tasks.rust-fmt]
-description = "Runs cargo fmt."
 category = "Development"
 command = "cargo"
+description = "Runs cargo clippy."
+
+[tasks.rust-fmt]
 args = ["+nightly", "fmt", "@@remove-empty(MY_CARGO_MAKE_RUSTFMT_CHECK_ARG)"]
+category = "Development"
+command = "cargo"
+description = "Runs cargo fmt."
 install_crate = false
 
 [tasks.rust-lint]
-description = "Lint Rust source files."
 category = "Development"
 dependencies = ["rust-fmt", "rust-check", "rust-clippy"]
+description = "Lint Rust source files."
 
 [tasks.python-ruff]
-private = true
-description = "Runs python ruff linter."
+args = ["run", "ruff", "check", "@@remove-empty(MY_CARGO_MAKE_RUFF_FIX_ARG)", "."]
 category = "Development"
 command = "pipenv"
-args = [
-    "run",
-    "ruff",
-    "check",
-    "@@remove-empty(MY_CARGO_MAKE_RUFF_FIX_ARG)",
-    ".",
-]
+description = "Runs python ruff linter."
+private = true
 
 [tasks.python-black]
-private = true
-description = "Runs python black formatter."
+args = ["run", "black", "@@remove-empty(MY_CARGO_MAKE_BLACK_CHECK_ARG)", "."]
 category = "Development"
 command = "pipenv"
-args = ["run", "black", "@@remove-empty(MY_CARGO_MAKE_BLACK_CHECK_ARG)", "."]
+description = "Runs python black formatter."
+private = true
 
 [tasks.python-lint]
-description = "Lint python source files."
 category = "Development"
 dependencies = ["python-ruff", "python-black"]
+description = "Lint python source files."
+
+[tasks.toml-fmt]
+args = [
+    "fmt",
+    "@@remove-empty(MY_CARGO_MAKE_TAPLO_FMT_CRLF_ARG)",
+    "@@remove-empty(MY_CARGO_MAKE_TAPLO_CHECK_ARG)",
+]
+category = "Development"
+command = "taplo"
+description = "Format toml files."
+install_crate.binary = "taplo"
+install_crate.crate_name = "taplo-cli"
+install_crate.test_arg = "--version"
+install_crate_args = ["--locked"]
+
+[tasks.toml-fmt.env.MY_CARGO_MAKE_TAPLO_FMT_CRLF_ARG]
+condition.platforms = ["windows"]
+value = "--option=crlf=true"
 
 [tasks.lint]
 # No need to run lint tasks in parallel as the overhead of fork in cargo-make is significant. In the
 # IDX environment, with everything cached running in parallel takes 15s, while without parallel, it
 # takes less than 10s.
-description = "Lint all source files."
 category = "Development"
+dependencies = ["license", "toml-fmt"]
+description = "Lint all source files."
 run_task.name = ["rust-lint", "python-lint"]
-dependencies = ["license"]
 
 [tasks.test]
-description = "Runs cargo nextest."
-category = "Development"
-command = "cargo"
 args = [
     "nextest",
     "run",
@@ -204,33 +214,25 @@ args = [
     "@@split(MY_CARGO_MAKE_NEXTEST_PROFILE_ARGS,;)",
     "@@split(MY_CARGO_MAKE_NEXTEST_USER_ARGS,;)",
 ]
-
-[tasks.doctest]
-description = "Runs Rust doc test."
 category = "Development"
 command = "cargo"
-args = [
-    "+nightly",
-    "test",
-    "--doc",
-    "--all-features",
-    "--workspace",
-    "--",
-    "--show-output",
-]
+description = "Runs cargo nextest."
+
+[tasks.doctest]
+args = ["+nightly", "test", "--doc", "--all-features", "--workspace", "--", "--show-output"]
+category = "Development"
+command = "cargo"
+description = "Runs Rust doc test."
 install_crate = false
 
 [tasks.doc]
-description = "Generates Rust doc."
+args = ["+nightly", "doc", "--workspace", "--all-features", "--no-deps", "${@}"]
 category = "Development"
 command = "cargo"
-args = ["+nightly", "doc", "--workspace", "--all-features", "--no-deps", "${@}"]
+description = "Generates Rust doc."
 install_crate = false
 
 [tasks.ci-coverage-lcov-info]
-description = "Runs code coverage and generate the lcov.info output."
-category = "CI"
-command = "cargo"
 args = [
     "llvm-cov",
     "nextest",
@@ -240,20 +242,20 @@ args = [
     "--output-path",
     "target/lcov.info",
 ]
+category = "CI"
+command = "cargo"
+description = "Runs code coverage and generate the lcov.info output."
 install_crate_args = ["--locked"]
 
 
 [tasks.ci-coverage-html]
-description = "Runs code coverage and generate the HTML output."
+args = ["llvm-cov", "nextest", "--html", "--all-features", "--all-targets"]
 category = "CI"
 command = "cargo"
-args = ["llvm-cov", "nextest", "--html", "--all-features", "--all-targets"]
+description = "Runs code coverage and generate the HTML output."
 install_crate_args = ["--locked"]
 
 [tasks.ci-coverage-summary-json]
-description = "Runs code coverage and generate the JSON summary."
-category = "CI"
-command = "cargo"
 args = [
     "llvm-cov",
     "nextest",
@@ -264,12 +266,12 @@ args = [
     "--output-path",
     "target/coverage.json",
 ]
+category = "CI"
+command = "cargo"
+description = "Runs code coverage and generate the JSON summary."
 install_crate_args = ["--locked"]
 
 [tasks.ci-coverage-badge]
-description = "Generate the code coverage badge."
-category = "CI"
-command = "cargo"
 args = [
     "run",
     "--all-features",
@@ -285,28 +287,27 @@ args = [
     "target/coverage_badge.json",
     "target/coverage.json",
 ]
+category = "CI"
+command = "cargo"
 dependencies = ["ci-coverage-summary-json"]
+description = "Generate the code coverage badge."
 
 [tasks.ci-coverage-badge.env.MY_CARGO_MAKE_COVERAGE_BADGE_LABEL]
-source = "${CARGO_MAKE_RUST_TARGET_OS}"
 default_value = "Unknown coverage"
 mapping.linux = "Linux coverage"
 mapping.windows = "Windows coverage"
+source = "${CARGO_MAKE_RUST_TARGET_OS}"
 
 [tasks.ci-coverage]
 # Must run the HTML coverage last. Otherwise other commands can clear this directory.
-run_task.name = [
-    "ci-coverage-badge",
-    "ci-coverage-lcov-info",
-    "ci-coverage-html",
-]
+run_task.name = ["ci-coverage-badge", "ci-coverage-lcov-info", "ci-coverage-html"]
 
 [tasks.buildtest]
-description = "Build the project and tests. Pass --check to avoid linter to modify files."
 category = "Development"
+description = "Build the project and tests. Pass --check to avoid linter to modify files."
 run_task = { name = ["lint", "test", "doctest"], fork = true }
 
 [tasks.ci-buildtest]
-description = "Build the project and tests with the CI configuration."
 category = "CI"
+description = "Build the project and tests with the CI configuration."
 run_task.name = ["buildtest"]
