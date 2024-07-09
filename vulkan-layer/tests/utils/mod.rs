@@ -429,7 +429,7 @@ static VULKAN_COMMANDS: Lazy<BTreeMap<VulkanCommandName, VulkanCommand>> = Lazy:
                     extern "system" fn enumerate_physical_device_groups(
                         _: vk::Instance,
                         _physical_device_group_count: *mut u32,
-                        _phyiscal_device_group_properties: *mut vk::PhysicalDeviceGroupProperties,
+                        _physical_device_group_properties: *mut vk::PhysicalDeviceGroupProperties,
                     ) -> vk::Result {
                         unimplemented!()
                     }

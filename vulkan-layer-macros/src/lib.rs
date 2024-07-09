@@ -97,7 +97,7 @@ pub fn auto_globalhooksinfo_impl(_: TokenStream, item: TokenStream) -> TokenStre
 /// * `InstanceInfo::hooked_commands` returns a list of the overridden methods that appear in the
 ///   implementation item.
 /// * `InstanceInfo::HooksType` and `InstanceInfo::HooksRefType` are defined as `Self` and `&Self`.
-/// * `InstanceInfo::hooks` retruns `self`.
+/// * `InstanceInfo::hooks` returns `self`.
 ///
 /// # Examples
 ///
