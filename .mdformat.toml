@@ -12,32 +12,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-[package]
-edition = "2021"
-name = "vulkan-layer-scripts"
-version = "0.1.0"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
-bindgen = "0.69.4"
-clap = { version = "4.5.8", features = ["derive"] }
-env_logger = "0.11.3"
-glob = "0.3.1"
-imara-diff = "0.1.6"
-log = "0.4.22"
-serde = { version = "1.0.203", features = ["derive"] }
-serde_json = "1.0.120"
-tempfile = "3.10.1"
-
-[[bin]]
-name = "ci"
-path = "ci.rs"
-
-[[bin]]
-name = "codegen"
-path = "codegen.rs"
-
-[[bin]]
-name = "list-files"
-path = "list-files.rs"
+end_of_line = "keep"
+wrap = 100

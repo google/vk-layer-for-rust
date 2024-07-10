@@ -6,6 +6,7 @@ name = "pypi"
 [packages]
 black = "*"
 ruff = "*"
+mdformat-gfm = "*"
 
 [dev-packages]
 

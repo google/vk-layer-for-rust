@@ -727,6 +727,7 @@ dependencies = [
  "bindgen",
  "clap",
  "env_logger",
+ "glob",
  "imara-diff",
  "log",
  "serde",

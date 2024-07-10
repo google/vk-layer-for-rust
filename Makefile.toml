@@ -47,6 +47,7 @@ if ${has_check_arg} or ${is_ci_target}
     set_env MY_CARGO_MAKE_ADDLICENSE_CHECK_ARG -check
     set_env MY_CARGO_MAKE_CODEGEN_CHECK_ARG --check
     set_env MY_CARGO_MAKE_TAPLO_CHECK_ARG --check
+    set_env MY_CARGO_MAKE_MDFORMAT_CHECK_ARG --check
 else
     set_env MY_CARGO_MAKE_CLIPPY_FIX_ARGS --fix;--allow-dirty;--allow-staged
     set_env MY_CARGO_MAKE_RUFF_FIX_ARG --fix
@@ -124,7 +125,7 @@ args = [
     "target/**",
     ".",
 ]
-category = "Development"
+category = "Format/Lint"
 command = "${MY_CARGO_MAKE_ADDLICENSE_PATH}"
 condition.fail_message = """
 on Windows, the -ignore argument of addlicense won't work until \
@@ -147,38 +148,38 @@ args = [
     "--all-features",
     "@@split(MY_CARGO_MAKE_CLIPPY_FIX_ARGS,;)",
 ]
-category = "Development"
+category = "Format/Lint"
 command = "cargo"
 description = "Runs cargo clippy."
 
 [tasks.rust-fmt]
 args = ["+nightly", "fmt", "@@remove-empty(MY_CARGO_MAKE_RUSTFMT_CHECK_ARG)"]
-category = "Development"
+category = "Format/Lint"
 command = "cargo"
 description = "Runs cargo fmt."
 install_crate = false
 
 [tasks.rust-lint]
-category = "Development"
+category = "Format/Lint"
 dependencies = ["rust-fmt", "rust-check", "rust-clippy"]
 description = "Lint Rust source files."
 
 [tasks.python-ruff]
 args = ["run", "ruff", "check", "@@remove-empty(MY_CARGO_MAKE_RUFF_FIX_ARG)", "."]
-category = "Development"
+category = "Format/Lint"
 command = "pipenv"
 description = "Runs python ruff linter."
 private = true
 
 [tasks.python-black]
 args = ["run", "black", "@@remove-empty(MY_CARGO_MAKE_BLACK_CHECK_ARG)", "."]
-category = "Development"
+category = "Format/Lint"
 command = "pipenv"
 description = "Runs python black formatter."
 private = true
 
 [tasks.python-lint]
-category = "Development"
+category = "Format/Lint"
 dependencies = ["python-ruff", "python-black"]
 description = "Lint python source files."
 
@@ -188,7 +189,7 @@ args = [
     "@@remove-empty(MY_CARGO_MAKE_TAPLO_FMT_CRLF_ARG)",
     "@@remove-empty(MY_CARGO_MAKE_TAPLO_CHECK_ARG)",
 ]
-category = "Development"
+category = "Format/Lint"
 command = "taplo"
 description = "Format toml files."
 install_crate.binary = "taplo"
@@ -202,20 +203,47 @@ value = "--option=crlf=true"
 
 [tasks.typos]
 args = ["@@split(MY_CARGO_MAKE_TYPOS_USER_ARGS,;)"]
+category = "Format/Lint"
 command = "typos"
+description = "Check spelling mistakes."
 install_crate.binary = "typos"
 install_crate.crate_name = "typos-cli"
 install_crate.test_arg = "--version"
 install_crate_args = ["--locked"]
 
+[tasks.mdformat]
+args = [
+    "run",
+    "-p",
+    "vulkan-layer-scripts",
+    "--bin",
+    "list-files",
+    "--release",
+    "--",
+    "--ignore=target/**",
+    "--ignore=third_party/**",
+    "--ignore=.git/**",
+    "--ignore=.ruff_cache/**",
+    "--ignore=**/__pycache__/**",
+    "--include=./**/*.md",
+    "--",
+    "pipenv",
+    "run",
+    "mdformat",
+    "@@remove-empty(MY_CARGO_MAKE_MDFORMAT_CHECK_ARG)",
+]
+category = "Format/Lint"
+command = "cargo"
+description = "Format the md files."
+
 [tasks.lint]
 # No need to run lint tasks in parallel as the overhead of fork in cargo-make is significant. In the
 # IDX environment, with everything cached running in parallel takes 15s, while without parallel, it
 # takes less than 10s.
-category = "Development"
+category = "Format/Lint"
 dependencies = ["license", "toml-fmt"]
 description = "Lint all source files."
-run_task.name = ["rust-lint", "python-lint"]
+run_task.name = ["rust-lint", "python-lint", "mdformat"]
 
 [tasks.test]
 args = [
