@@ -48,6 +48,7 @@ if ${has_check_arg} or ${is_ci_target}
     set_env MY_CARGO_MAKE_CODEGEN_CHECK_ARG --check
     set_env MY_CARGO_MAKE_TAPLO_CHECK_ARG --check
     set_env MY_CARGO_MAKE_MDFORMAT_CHECK_ARG --check
+    set_env MY_CARGO_MAKE_YAMLFMT_CHECK_ARGS -quiet;-lint
 else
     set_env MY_CARGO_MAKE_CLIPPY_FIX_ARGS --fix;--allow-dirty;--allow-staged
     set_env MY_CARGO_MAKE_RUFF_FIX_ARG --fix
@@ -104,8 +105,6 @@ description = "Runs the codegen."
 
 [tasks.detect-addlicense]
 private = true
-script_runner = "@duckscript"
-# TODO: Install addlicense if missing.
 script = '''
 echo Detecting the GOPATH environment...
 output = exec --fail-on-error go env GOPATH
@@ -114,7 +113,13 @@ echo GOPATH=${gopath}
 addlicense_path = join_path ${gopath} bin addlicense
 echo Path of addlicense is ${addlicense_path}
 set_env MY_CARGO_MAKE_ADDLICENSE_PATH ${addlicense_path}
+addlicense_installed = is_path_exists ${addlicense_path}
+if not ${addlicense_installed}
+    echo Install addlicense.
+    exec --fail-on-error go install github.com/google/addlicense@master
+end
 '''
+script_runner = "@duckscript"
 
 [tasks.license]
 args = [
@@ -236,6 +241,35 @@ category = "Format/Lint"
 command = "cargo"
 description = "Format the md files."
 
+[tasks.detect-yamlfmt]
+private = true
+script = '''
+echo Detecting the GOPATH environment...
+output = exec --fail-on-error go env GOPATH
+gopath = trim ${output.stdout}
+echo GOPATH=${gopath}
+yamlfmt_path = join_path ${gopath} bin yamlfmt
+echo Path of yamlfmt is ${yamlfmt_path}
+set_env MY_CARGO_MAKE_YAMLFMT_PATH ${yamlfmt_path}
+yamlfmt_installed = is_path_exists ${yamlfmt_path}
+if not ${yamlfmt_installed}
+    echo Install yamlfmt.
+    exec --fail-on-error go install github.com/google/yamlfmt/cmd/yamlfmt@latest
+end
+'''
+script_runner = "@duckscript"
+
+[tasks.yamlfmt]
+args = ["@@split(MY_CARGO_MAKE_YAMLFMT_CHECK_ARGS,;)", "-dstar", "**/*.{yaml,yml}"]
+category = "Format/Lint"
+command = "${MY_CARGO_MAKE_YAMLFMT_PATH}"
+condition.fail_message = """
+on Windows, yamlfmt doesn't work well with comments in tables. See
+https://github.com/google/yamlfmt/issues/192 for details."""
+condition.platforms = ["linux"]
+dependencies = ["detect-yamlfmt"]
+description = "Format YAML files."
+
 [tasks.lint]
 # No need to run lint tasks in parallel as the overhead of fork in cargo-make is significant. In the
 # IDX environment, with everything cached running in parallel takes 15s, while without parallel, it
@@ -243,7 +277,7 @@ description = "Format the md files."
 category = "Format/Lint"
 dependencies = ["license", "toml-fmt"]
 description = "Lint all source files."
-run_task.name = ["rust-lint", "python-lint", "mdformat"]
+run_task.name = ["rust-lint", "python-lint", "mdformat", "yamlfmt"]
 
 [tasks.test]
 args = [
