@@ -351,3 +351,10 @@ run_task = { name = ["typos", "lint", "test", "doctest"], fork = true }
 category = "CI"
 description = "Build the project and tests with the CI configuration."
 run_task.name = ["buildtest"]
+
+[tasks.ci-presubmit]
+category = "CI"
+description = "Runs the CI presubmit check."
+run_task.fork = true
+run_task.name = ["ci-buildtest", "ci-coverage", "codegen", "doc"]
+run_task.parallel = true
