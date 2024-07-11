@@ -49,6 +49,7 @@ jobs:
         uses: Swatinem/rust-cache@dd05243424bd5c0e585e4b55eb2d7615cdd32f1f
         with:
           key: ${{ runner.os }}
+          cache-all-crates: true
       - name: Install cargo nextest
         run: cargo install cargo-nextest --locked
       - name: Install cargo-make
@@ -85,6 +86,7 @@ jobs:
         uses: Swatinem/rust-cache@dd05243424bd5c0e585e4b55eb2d7615cdd32f1f
         with:
           key: ${{ runner.os }}
+          cache-all-crates: true
       - name: Install cargo nextest
         run: cargo install cargo-nextest --locked
       - name: Install cargo llvm cov
@@ -167,6 +169,7 @@ jobs:
         uses: Swatinem/rust-cache@dd05243424bd5c0e585e4b55eb2d7615cdd32f1f
         with:
           key: ${{ runner.os }}
+          cache-all-crates: true
       - name: Install cargo-make
         run: cargo install --no-default-features --locked cargo-make
       - run: cargo make codegen --check
@@ -189,6 +192,7 @@ jobs:
         uses: Swatinem/rust-cache@dd05243424bd5c0e585e4b55eb2d7615cdd32f1f
         with:
           key: ${{ runner.os }}
+          cache-all-crates: true
       - name: Install cargo-make
         run: cargo install --no-default-features --locked cargo-make
       - run: cargo make doc
