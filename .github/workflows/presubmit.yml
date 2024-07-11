@@ -27,17 +27,53 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: ["ubuntu-latest", "windows-latest"]
+        # config:
+        #   - llvm_path: ${{ env.GITHUB_WORKSPACE }}/../LLVM
+        #     os: ubuntu-latest
+        #   - llvm_path: "C:/Program Files/LLVM"
+        #     os: windows-latest
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
         with:
           submodules: recursive
+      - name: Setup LLVM install path
+        id: setup-llvm-install-path
+        run: |
+          if [ "$RUNNER_OS" == "Linux" ]; then
+            echo "LLVM_INSTALL_PATH=`realpath $GITHUB_WORKSPACE/../LLVM`" >> $GITHUB_OUTPUT
+          elif [ "$RUNNER_OS" == "Windows" ]; then
+            echo "LLVM_INSTALL_PATH=C:/Program Files/LLVM" >> $GITHUB_OUTPUT
+          else
+            echo "$RUNNER_OS not supported"
+            exit 1
+          fi
+        shell: bash
+      - name: Cache LLVM and Clang
+        id: cache-llvm
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.setup-llvm-install-path.outputs.LLVM_INSTALL_PATH }}
+          key: ${{ format('llvm-16.0.0-{0}', runner.os) }}
+      - name: Install LLVM and Clang
+        # KyleMayes/install-llvm-action@v1.8.3
+        uses: KyleMayes/install-llvm-action@c135b3937686fd69c2651507aabc9925a8f9eee8
+        with:
+          version: "16.0.0"
+          directory: ${{ steps.setup-llvm-install-path.outputs.LLVM_INSTALL_PATH }}
+          cached: ${{ steps.cache-llvm.outputs.cache-hit }}
+      - name: Install missing depedencis
+        run: sudo apt-get install libtinfo5
+        if: runner.os == 'Linux'
+      - name: Set LIBCLANG_PATH
+        run: echo "LIBCLANG_PATH=$((gcm clang).source -replace "clang.exe")" >> $env:GITHUB_ENV
+        if: runner.os == 'Windows'
       - name: Set up stable Rust toolchain
         # dtolnay/rust-toolchain@stable
         uses: dtolnay/rust-toolchain@4f366e621dc8fa63f557ca04b8f4361824a35a45
         with:
-          components: clippy
+          components: clippy, llvm-tools-preview
       - name: Set up nightly Rust toolchain
         # dtolnay/rust-toolchain@nightly
         uses: dtolnay/rust-toolchain@f2f3c4b315c5bb8415dbb043af44ec90f68ae503
@@ -54,6 +90,8 @@ jobs:
         run: cargo install cargo-nextest --locked
       - name: Install cargo-make
         run: cargo install --no-default-features --locked cargo-make
+      - name: Install cargo llvm cov
+        run: cargo install cargo-llvm-cov --locked
       - uses: actions/setup-python@v4
         with:
           python-version: "3.9.13"
@@ -64,37 +102,7 @@ jobs:
         run: pipenv install --ignore-pipfile
       - name: Install addlicense
         run: go install github.com/google/addlicense@master
-      - run: cargo make ci-buildtest
-
-  coverage:
-    name: Code coverage
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest]
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: recursive
-      - name: Set up stable Rust toolchain
-        # dtolnay/rust-toolchain@stable
-        uses: dtolnay/rust-toolchain@4f366e621dc8fa63f557ca04b8f4361824a35a45
-        with:
-          components: llvm-tools-preview
-      - name: Set up Rust dependency cache
-        # Swatinem/rust-cache@v2.5.1
-        uses: Swatinem/rust-cache@dd05243424bd5c0e585e4b55eb2d7615cdd32f1f
-        with:
-          key: ${{ runner.os }}
-          cache-all-crates: true
-      - name: Install cargo nextest
-        run: cargo install cargo-nextest --locked
-      - name: Install cargo llvm cov
-        run: cargo install cargo-llvm-cov --locked
-      - name: Install cargo-make
-        run: cargo install --no-default-features --locked cargo-make
-      - name: Run CI coverage tasks
-        run: cargo make ci-coverage
+      - run: cargo make ci-presubmit
       - name: Checkout base coverage
         uses: actions/checkout@v3
         with:
@@ -123,79 +131,6 @@ jobs:
             target/lcov.info
             target/llvm-cov
             target/coverage_badge.json
-
-  codegen:
-    name: Rust codegen
-    strategy:
-      fail-fast: false
-      matrix:
-        config:
-          - { os: ubuntu-latest, llvm_path: ./llvm }
-          - { os: windows-latest, llvm_path: "C:/Program Files/LLVM" }
-    runs-on: ${{ matrix.config.os }}
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: recursive
-      - name: Cache LLVM and Clang
-        id: cache-llvm
-        uses: actions/cache@v3
-        with:
-          path: ${{ matrix.config.llvm_path }}
-          key: ${{ format('llvm-16.0.0-{0}', runner.os) }}
-      - name: Install LLVM and Clang
-        # KyleMayes/install-llvm-action@v1.8.3
-        uses: KyleMayes/install-llvm-action@c135b3937686fd69c2651507aabc9925a8f9eee8
-        with:
-          version: "16.0.0"
-          cached: ${{ steps.cache-llvm.outputs.cache-hit }}
-      - name: Install missing depedencis
-        run: sudo apt-get install libtinfo5
-        if: matrix.config.os == 'ubuntu-latest'
-      - name: Set LIBCLANG_PATH
-        run: echo "LIBCLANG_PATH=$((gcm clang).source -replace "clang.exe")" >> $env:GITHUB_ENV
-        if: matrix.config.os == 'windows-latest'
-      - name: Set up nightly rustfmt
-        # dtolnay/rust-toolchain@nightly
-        uses: dtolnay/rust-toolchain@f2f3c4b315c5bb8415dbb043af44ec90f68ae503
-        with:
-          components: rustfmt
-      - name: Set up stable Rust toolchain
-        # dtolnay/rust-toolchain@stable
-        uses: dtolnay/rust-toolchain@4f366e621dc8fa63f557ca04b8f4361824a35a45
-      - run: rustup default stable
-      - name: Set up Rust dependency cache
-        # Swatinem/rust-cache@v2.5.1
-        uses: Swatinem/rust-cache@dd05243424bd5c0e585e4b55eb2d7615cdd32f1f
-        with:
-          key: ${{ runner.os }}
-          cache-all-crates: true
-      - name: Install cargo-make
-        run: cargo install --no-default-features --locked cargo-make
-      - run: cargo make codegen --check
-
-  doctest:
-    name: Rust doc test
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest]
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: recursive
-      - name: Set up nightly Rust toolchain
-        # dtolnay/rust-toolchain@nightly
-        uses: dtolnay/rust-toolchain@f2f3c4b315c5bb8415dbb043af44ec90f68ae503
-      - name: Set up Rust dependency cache
-        # Swatinem/rust-cache@v2.5.1
-        uses: Swatinem/rust-cache@dd05243424bd5c0e585e4b55eb2d7615cdd32f1f
-        with:
-          key: ${{ runner.os }}
-          cache-all-crates: true
-      - name: Install cargo-make
-        run: cargo install --no-default-features --locked cargo-make
-      - run: cargo make doc
       - uses: actions/upload-artifact@v3
         with:
           name: ${{ format('doc-{0}', runner.os) }}
