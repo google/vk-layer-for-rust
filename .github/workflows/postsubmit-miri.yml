@@ -16,10 +16,8 @@
 
 on:
   push:
-    branches: [ "main" ]
-
+    branches: ["main"]
 name: postsubmit miri
-
 jobs:
   miri:
     name: Rust Miri test

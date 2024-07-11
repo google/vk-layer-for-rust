@@ -18,9 +18,7 @@ on:
   pull_request:
     branches: ["main"]
   workflow_call: {}
-
 name: presubmit
-
 jobs:
   buildtest:
     name: Rust build and test

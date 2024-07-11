@@ -14,15 +14,12 @@
 
 on:
   push:
-    branches: [ "main" ]
-
+    branches: ["main"]
 name: postsubmit
-
 jobs:
   run_presubmit:
     name: Run presubmit
     uses: ./.github/workflows/presubmit.yml
-  
   upload_static_resources:
     name: Upload static resources
     needs: run_presubmit
