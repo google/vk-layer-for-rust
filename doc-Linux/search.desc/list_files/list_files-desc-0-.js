@@ -1,0 +1,1 @@
+searchState.loadedDescShard("list_files", 0, "Command to run on the matching files.\nReturns the argument unchanged.\nGlobs to exclude from search.\nGlobs to start search.\nCalls <code>U::from(self)</code>.")

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["ABOUT"],"fn":["build_patterns","included_paths","main"],"struct":["Cli"]};
