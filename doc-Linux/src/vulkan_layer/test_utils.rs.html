@@ -541,7 +541,7 @@
 //! Follow the following steps to write a unit test:
 //! 1. Use [`TestGlobal::builder`] to construct the static resources needed to mock one layer. Mocks
 //!    to static methods can be set with different builder functions.
-//! 2. Call [`TestGlobal::create_context`] to set up the scope for expections.
+//! 2. Call [`TestGlobal::create_context`] to set up the scope for expectations.
 //! 3. Use [`TestLayer`] as a layer implementation.
 
 </span><span class="kw">use crate</span>::{
@@ -733,7 +733,7 @@
 <span class="kw">impl</span>&lt;T: TestLayerMock&gt; MockInstanceInfo&lt;T&gt; {
     <span class="doccomment">/// Mock the drop behavior.
     ///
-    /// The expections can be set through the `f` argument. If this method is never called, the
+    /// The expectations can be set through the `f` argument. If this method is never called, the
     /// struct will be dropped as if the drop is not mocked, i.e. won't check how drop is called.
     </span><span class="kw">pub fn </span>with_mock_drop(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw">impl </span>FnOnce(<span class="kw-2">&amp;mut </span>MockDrop)) {
         <span class="kw">let </span><span class="kw-2">mut </span>mock_drop = <span class="self">self</span>.mock_drop.lock().unwrap();
@@ -769,7 +769,7 @@
 <span class="kw">impl</span>&lt;T: TestLayerMock&gt; MockDeviceInfo&lt;T&gt; {
     <span class="doccomment">/// Mock the drop behavior.
     ///
-    /// The expections can be set through the `f` argument. If this method is never called, the
+    /// The expectations can be set through the `f` argument. If this method is never called, the
     /// struct will be dropped as if the drop is not mocked, i.e. won't check how drop is called.
     </span><span class="kw">pub fn </span>with_mock_drop(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw">impl </span>FnOnce(<span class="kw-2">&amp;mut </span>MockDrop)) {
         <span class="kw">let </span><span class="kw-2">mut </span>mock_drop = <span class="self">self</span>.mock_drop.lock().unwrap();
@@ -926,7 +926,7 @@
 <span class="kw">impl</span>&lt;T: TestLayerTag&gt; MockTestLayer&lt;T&gt; {
     <span class="doccomment">/// Set the default behavior of the [`MockTestLayer`]: intercept no commands and a valid
     /// [`LayerManifest`].
-    </span><span class="kw">pub fn </span>set_default_expections(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+    </span><span class="kw">pub fn </span>set_default_expectations(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
         <span class="self">self</span>.expect_manifest()
             .return_const(LayerManifest::test_default());
         <span class="self">self</span>.expect_hooked_global_commands().return_const(<span class="macro">vec!</span>[]);
@@ -956,7 +956,7 @@
     /// [`InstanceInfo::hooked_commands`].
     ///
     /// Pre-initialized methods are almost always called, so it is usually needed to call
-    /// [`MockTestLayer::set_default_expections`] right before return to provide a meaningful
+    /// [`MockTestLayer::set_default_expectations`] right before return to provide a meaningful
     /// default behavior.
     </span><span class="kw">pub const fn </span>set_layer_mock_builder(
         <span class="self">self</span>,
@@ -970,8 +970,8 @@
 
     <span class="doccomment">/// Specify how [`Global&lt;TestLayer&lt;T&gt;&gt;`] should be created.
     ///
-    /// Can be used to customize the behavior and expections of layer behaviors after [`Global`] is
-    /// initialized, especially the global commands, e.g.
+    /// Can be used to customize the behavior and expectations of layer behaviors after [`Global`]
+    /// is initialized, especially the global commands, e.g.
     /// [`GlobalHooks::create_instance`][crate::GlobalHooks::create_instance].
     </span><span class="kw">pub const fn </span>set_layer_global_builder(
         <span class="self">self</span>,
@@ -1000,7 +1000,7 @@
         TestGlobalBuilder {
             layer_mock_builder: || {
                 <span class="kw">let </span><span class="kw-2">mut </span>mock = MockTestLayer::&lt;T&gt;::default();
-                mock.set_default_expections();
+                mock.set_default_expectations();
                 mock
             },
             layer_global_builder: Default::default,

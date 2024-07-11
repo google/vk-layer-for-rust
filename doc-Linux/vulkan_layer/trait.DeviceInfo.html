@@ -49,7 +49,7 @@ for the layer framework. This trait and <a href="trait.DeviceHooks.html" title="
 <span class="where">where
     Self: 'a</span></h4></section></summary><div class="docblock"><p>A type that can be dereferencing to <a href="trait.DeviceInfo.html#associatedtype.HooksType" title="associated type vulkan_layer::DeviceInfo::HooksType"><code>DeviceInfo::HooksType</code></a>. Usually just
 <code>&amp;DeviceInfo::HooksType</code>.</p>
-<p>This extra associated type allows the layer implemention to use a smart pointer like
+<p>This extra associated type allows the layer implementation to use a smart pointer like
 <a href="https://doc.rust-lang.org/nightly/alloc/sync/struct.Arc.html" title="struct alloc::sync::Arc"><code>Arc</code></a> or <a href="https://doc.rust-lang.org/nightly/std/sync/mutex/struct.MutexGuard.html" title="struct std::sync::mutex::MutexGuard"><code>MutexGuard</code></a> to hold the reference.</p>
 <h5 id="examples-1"><a class="doc-anchor" href="#examples-1">§</a>Examples</h5>
 <p>A layer implementation that returns a <a href="https://doc.rust-lang.org/nightly/alloc/sync/struct.Arc.html" title="struct alloc::sync::Arc"><code>Arc</code></a>.</p>
@@ -78,7 +78,7 @@ list of intercepted device functions.</p>
 Otherwise, those commands may or may not be intercepted.</p>
 <p>For Vulkan commands that have multiple names, e.g. <code>vkCreateSamplerYcbcrConversion</code> and
 <code>vkCreateSamplerYcbcrConversionKHR</code>, only the shortest name should be
-used(<a href="enum.LayerVulkanCommand.html#variant.CreateSamplerYcbcrConversion" title="variant vulkan_layer::LayerVulkanCommand::CreateSamplerYcbcrConversion"><code>VulkanCommand::CreateSamplerYcbcrConversion</code></a> in this example). The layer framwork
+used(<a href="enum.LayerVulkanCommand.html#variant.CreateSamplerYcbcrConversion" title="variant vulkan_layer::LayerVulkanCommand::CreateSamplerYcbcrConversion"><code>VulkanCommand::CreateSamplerYcbcrConversion</code></a> in this example). The layer framework
 automatically wires both entries to the layer implementation.</p>
 <h5 id="examples-2"><a class="doc-anchor" href="#examples-2">§</a>Examples</h5>
 <p>A layer that intercepts the <code>vkCreateImage</code> only if the ASTC LDR feature is enabled.</p>

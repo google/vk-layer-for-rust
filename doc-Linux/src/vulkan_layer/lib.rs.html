@@ -2314,7 +2314,7 @@
     customized_info: T::DeviceInfoContainer,
 }
 
-<span class="doccomment">/// A struct that implements all necessarly functions for a layer given a type that implements
+<span class="doccomment">/// A struct that implements all necessarily functions for a layer given a type that implements
 /// [`Layer`].
 ///
 /// The layer implementation should use [`Global::default`] to construct a [`Global`] object.
@@ -2914,7 +2914,7 @@
     }
 
     <span class="comment">// Introspection queries required by Android, so we need to expose them as public functions so
-    // that the user can futher expose them as functions exported by the dynamic link library.
+    // that the user can further expose them as functions exported by the dynamic link library.
 
     </span><span class="doccomment">/// The `vkEnumerateInstanceLayerProperties` entry point provided by the layer framework.
     ///
@@ -2933,7 +2933,7 @@
         <span class="kw">let </span>ret_properties = <span class="self">Self</span>::layer_properties();
         <span class="comment">// Safe, because the caller guarantees that `property_count` is a valid pointer to u32, and
         // if the value referenced by property_count is not 0, and properties is not NULL,
-        // properties must be a valid pointer to an array of propert_count vk::LayerProperties
+        // properties must be a valid pointer to an array of property_count vk::LayerProperties
         // structures. See details in
         // VUID-vkEnumerateInstanceLayerProperties-pPropertyCount-parameter and
         // VUID-vkEnumerateInstanceLayerProperties-pProperties-parameter.
@@ -2948,7 +2948,7 @@
 
     <span class="doccomment">/// The `vkEnumerateInstanceExtensionProperties` entry point provided by the layer framework.
     ///
-    /// Returns an empty list with `VK_SUCCESS` if the layer name matchies; returns
+    /// Returns an empty list with `VK_SUCCESS` if the layer name matches; returns
     /// `VK_ERROR_LAYER_NOT_PRESENT` with all the out pointers untouched, according to the
     /// [`LLP_LAYER_15`](&lt;https://github.com/KhronosGroup/Vulkan-Loader/blob/v1.3.261/docs/LoaderLayerInterface.md#:~:text=LLP_LAYER_15,Conventions%20and%20Rules&gt;)
     /// rule.

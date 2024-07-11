@@ -6,14 +6,14 @@
 <p>Can be used to customize the behavior of pre-initialized methods, like
 <a href="../trait.InstanceInfo.html#tymethod.hooked_commands" title="associated function vulkan_layer::InstanceInfo::hooked_commands"><code>InstanceInfo::hooked_commands</code></a>.</p>
 <p>Pre-initialized methods are almost always called, so it is usually needed to call
-<a href="struct.MockTestLayer.html#method.set_default_expections" title="method vulkan_layer::test_utils::MockTestLayer::set_default_expections"><code>MockTestLayer::set_default_expections</code></a> right before return to provide a meaningful
+<a href="struct.MockTestLayer.html#method.set_default_expectations" title="method vulkan_layer::test_utils::MockTestLayer::set_default_expectations"><code>MockTestLayer::set_default_expectations</code></a> right before return to provide a meaningful
 default behavior.</p>
 </div></details><details class="toggle method-toggle" open><summary><section id="method.set_layer_global_builder" class="method"><a class="src rightside" href="../../src/vulkan_layer/test_utils.rs.html#459-467">source</a><h4 class="code-header">pub const fn <a href="#method.set_layer_global_builder" class="fn">set_layer_global_builder</a>(
     self,
     layer_global_builder: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.fn.html">fn</a>() -&gt; <a class="struct" href="../struct.Global.html" title="struct vulkan_layer::Global">Global</a>&lt;<a class="struct" href="struct.TestLayer.html" title="struct vulkan_layer::test_utils::TestLayer">TestLayer</a>&lt;T&gt;&gt;,
 ) -&gt; Self</h4></section></summary><div class="docblock"><p>Specify how <a href="../struct.Global.html" title="struct vulkan_layer::Global"><code>Global&lt;TestLayer&lt;T&gt;&gt;</code></a> should be created.</p>
-<p>Can be used to customize the behavior and expections of layer behaviors after <a href="../struct.Global.html" title="struct vulkan_layer::Global"><code>Global</code></a> is
-initialized, especially the global commands, e.g.
+<p>Can be used to customize the behavior and expectations of layer behaviors after <a href="../struct.Global.html" title="struct vulkan_layer::Global"><code>Global</code></a>
+is initialized, especially the global commands, e.g.
 <a href="../trait.GlobalHooks.html#method.create_instance" title="method vulkan_layer::GlobalHooks::create_instance"><code>GlobalHooks::create_instance</code></a>.</p>
 </div></details><details class="toggle method-toggle" open><summary><section id="method.build" class="method"><a class="src rightside" href="../../src/vulkan_layer/test_utils.rs.html#472-477">source</a><h4 class="code-header">pub const fn <a href="#method.build" class="fn">build</a>(&amp;self) -&gt; <a class="struct" href="struct.TestGlobal.html" title="struct vulkan_layer::test_utils::TestGlobal">TestGlobal</a>&lt;T&gt;</h4></section></summary><div class="docblock"><p>Construct the <a href="struct.TestGlobal.html" title="struct vulkan_layer::test_utils::TestGlobal"><code>TestGlobal&lt;T&gt;</code></a>.</p>
 <p>This is a const function, and can be directly used to initialize a static variable.</p>

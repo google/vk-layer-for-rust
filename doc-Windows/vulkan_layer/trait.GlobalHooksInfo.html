@@ -51,7 +51,7 @@ for the layer framework. This trait and <a href="trait.GlobalHooks.html" title="
 <span class="where">where
     Self: 'a</span></h4></section></summary><div class="docblock"><p>A type that can be dereferencing to <a href="trait.GlobalHooksInfo.html#associatedtype.HooksType" title="associated type vulkan_layer::GlobalHooksInfo::HooksType"><code>GlobalHooksInfo::HooksType</code></a>. Usually just
 <code>&amp;GlobalHooksInfo::HooksType</code>.</p>
-<p>This extra associated type allows the layer implemention to use a smart pointer like
+<p>This extra associated type allows the layer implementation to use a smart pointer like
 <a href="https://doc.rust-lang.org/nightly/alloc/sync/struct.Arc.html" title="struct alloc::sync::Arc"><code>Arc</code></a> or <a href="https://doc.rust-lang.org/nightly/std/sync/mutex/struct.MutexGuard.html" title="struct std::sync::mutex::MutexGuard"><code>MutexGuard</code></a> to hold the reference.</p>
 <h5 id="examples-1"><a class="doc-anchor" href="#examples-1">§</a>Examples</h5>
 <p>A layer implementation that returns a <a href="https://doc.rust-lang.org/nightly/alloc/sync/struct.Arc.html" title="struct alloc::sync::Arc"><code>Arc</code></a>.</p>

@@ -241,7 +241,7 @@
         <span class="comment">// Safe because the VkInstance is valid, and a valid C string pointer is passed to the
         // `p_name` parameter.
         </span><span class="kw">let </span>fp = <span class="kw">unsafe </span>{ get_instance_proc_addr(instance.handle(), name.as_ptr()) };
-        <span class="comment">// It's safe to cast a funtion pointer to void*.
+        <span class="comment">// It's safe to cast a function pointer to void*.
         </span><span class="kw">unsafe </span>{ std::mem::transmute(fp) }
     }
 }
@@ -254,7 +254,7 @@
         <span class="comment">// Safe because the VkDevice is valid, and a valid C string pointer is passed to the
         // `p_name` parameter.
         </span><span class="kw">let </span>fp = <span class="kw">unsafe </span>{ get_device_proc_addr(device.handle(), name.as_ptr()) };
-        <span class="comment">// It's safe to cast a funtion pointer to void*.
+        <span class="comment">// It's safe to cast a function pointer to void*.
         </span><span class="kw">unsafe </span>{ std::mem::transmute(fp) }
     }
 }
