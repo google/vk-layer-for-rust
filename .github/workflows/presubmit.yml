@@ -26,11 +26,6 @@ jobs:
       fail-fast: true
       matrix:
         os: ["ubuntu-latest", "windows-latest"]
-        # config:
-        #   - llvm_path: ${{ env.GITHUB_WORKSPACE }}/../LLVM
-        #     os: ubuntu-latest
-        #   - llvm_path: "C:/Program Files/LLVM"
-        #     os: windows-latest
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3

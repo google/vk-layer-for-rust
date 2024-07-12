@@ -127,8 +127,9 @@ others are presubmit.
 
 #### Unit tests and integration tests
 
-`cargo-nextest` is the recommended way to run the test. Run `cargo nextest run` to run all tests.
-This is how CI runs the tests. All tests are supposed to only run in a separate process.
+`cargo-nextest` is the recommended way to run the test. Run `cargo nextest run` or `cargo make test`
+to run all tests. This is how CI runs the tests. All tests are supposed to only run in a separate
+process.
 
 Vanilla `cargo test` is not supported, because that will run tests in the same binary in the same
 process. However, `cargo +nightly test -Z panic-abort-tests` is Ok because it will
@@ -136,6 +137,12 @@ process. However, `cargo +nightly test -Z panic-abort-tests` is Ok because it wi
 is supposed to be built with `panic="abort"`.
 
 #### Documentation tests
+
+```bash
+cargo make doctest
+```
+
+or
 
 ```bash
 cargo +nightly test --doc --all-features --workspace -- --show-output
@@ -149,21 +156,33 @@ functions or modules are expected high test coverage.
 [`cargo-llvm-cov`](https://github.com/taiki-e/cargo-llvm-cov)
 [with `cargo-nextest`](https://nexte.st/book/test-coverage.html#llvm-cov) is used to generate the
 code coverage info. To generate the `lcov` coverage file locally under `target/lcov.info`, run
-`cargo llvm-cov nextest --lcov --output-path target/lcov.info`.
+
+```bash
+cargo make coverage --lcov --output-path target/lcov.info
+```
+
+```bash
+cargo llvm-cov nextest --all-features --all-targets --lcov --output-path target/lcov.info
+```
 
 #### Miri tests
 
 When writing unsafe code or changing the "trivially-destructible" behavior of the global resources,
 Miri tests should be used to catch undefined behaviors and resource leak. It is recommended to run
-Miri tests on Linux. Follow [these steps](https://github.com/rust-lang/miri#using-miri) to install
-Miri. Use the following command to run the Miri test on Linux:
+Miri tests on Linux.
+
+To run miri tests, simply execute `cargo make miri`, which should install all the missing
+dependencies and run the tests.
+
+To manually run the miri tests, follow [these steps](https://github.com/rust-lang/miri#using-miri)
+to install Miri. Use the following command to run the Miri test on Linux:
 
 ```bash
 MIRIFLAGS="-Zmiri-tree-borrows" cargo +nightly miri nextest run --all-targets --all-features -j8 --no-fail-fast
 ```
 
 Miri tests are usually very slow, use the
-[test filter](https://nexte.st/book/filter-expressions.html) to run a specific test.
+[test filter](https://nexte.st/book/filter-expressions.html) to run specific tests.
 
 ```bash
 MIRIFLAGS="-Zmiri-tree-borrows" cargo +nightly miri nextest run --all-targets --all-features --no-fail-fast -E'test(test_should_return_fp_when_called_with_get_instance_proc_addr_name)'
@@ -174,6 +193,12 @@ MIRIFLAGS="-Zmiri-tree-borrows" cargo +nightly miri nextest run --all-targets --
 All public intefaces must have documents. Otherwise the presubmit will fail. After a new PR is
 merged, the document will be automatically regenerated and published. Use the badge in
 [`README.md`](README.md) to browse the document. To generate the document locally, run
+
+```bash
+cargo make doc --open
+```
+
+or
 
 ```bash
 cargo +nightly doc --workspace --all-features --no-deps --open

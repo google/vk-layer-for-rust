@@ -36,10 +36,7 @@ jobs:
       - name: Set up Rust dependency cache
         # Swatinem/rust-cache@v2.5.1
         uses: Swatinem/rust-cache@dd05243424bd5c0e585e4b55eb2d7615cdd32f1f
-      - name: Install cargo nextest
-        run: cargo install cargo-nextest --locked
+      - name: Install cargo-make
+        run: cargo install --no-default-features --locked cargo-make
       - name: Run tests with Miri
-        # Run 2 tests in parallel
-        run: cargo +nightly miri nextest run --all-targets --all-features --no-fail-fast --failure-output immediate-final -j2
-        env:
-          MIRIFLAGS: -Zmiri-tree-borrows
+        run: cargo make miri
