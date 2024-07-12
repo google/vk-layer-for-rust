@@ -84,6 +84,7 @@ script_runner = "@duckscript"
 args = ["llvm-cov", "nextest", "--all-features", "--all-targets", "${@}"]
 category = "Development"
 command = "cargo"
+dependencies = ["nextest-detection"]
 install_crate_args = ["--locked"]
 
 [tasks.codegen]
@@ -158,11 +159,11 @@ command = "cargo"
 description = "Runs cargo clippy."
 
 [tasks.rust-fmt]
-args = ["+nightly", "fmt", "@@remove-empty(MY_CARGO_MAKE_RUSTFMT_CHECK_ARG)"]
+args = ["fmt", "@@remove-empty(MY_CARGO_MAKE_RUSTFMT_CHECK_ARG)"]
 category = "Format/Lint"
 command = "cargo"
 description = "Runs cargo fmt."
-install_crate = false
+toolchain = "nightly"
 
 [tasks.rust-lint]
 category = "Format/Lint"
@@ -279,6 +280,12 @@ dependencies = ["license", "toml-fmt"]
 description = "Lint all source files."
 run_task.name = ["rust-lint", "python-lint", "mdformat", "yamlfmt"]
 
+[tasks.nextest-detection]
+args = ["nextest", "--version"]
+command = "cargo"
+install_crate_args = ["--locked"]
+private = true
+
 [tasks.test]
 args = [
     "nextest",
@@ -290,6 +297,7 @@ args = [
 ]
 category = "Development"
 command = "cargo"
+dependencies = ["nextest-detection"]
 description = "Runs cargo nextest."
 
 [tasks.doctest]
@@ -306,6 +314,33 @@ command = "cargo"
 description = "Generates Rust doc."
 install_crate = false
 
+[tasks.install-rust-src-nightly]
+install_crate = { rustup_component_name = "rust-src" }
+private = true
+toolchain = "nightly"
+
+[tasks.miri]
+args = [
+    "miri",
+    "nextest",
+    "run",
+    "--all-targets",
+    "--all-features",
+    "--no-fail-fast",
+    "--failure-output",
+    "immediate-final",
+    "${@}",
+]
+category = "Development"
+command = "cargo"
+dependencies = ["nextest-detection", "install-rust-src-nightly"]
+description = "Runs tests with miri."
+env = { MIRIFLAGS = "-Zmiri-tree-borrows" }
+install_crate.binary = "cargo"
+install_crate.rustup_component_name = "miri"
+install_crate.test_arg = ["miri", "--version"]
+toolchain = "nightly"
+
 [tasks.ci-coverage-lcov-info]
 args = [
     "llvm-cov",
@@ -318,14 +353,15 @@ args = [
 ]
 category = "CI"
 command = "cargo"
+dependencies = ["nextest-detection"]
 description = "Runs code coverage and generate the lcov.info output."
 install_crate_args = ["--locked"]
-
 
 [tasks.ci-coverage-html]
 args = ["llvm-cov", "nextest", "--html", "--all-features", "--all-targets"]
 category = "CI"
 command = "cargo"
+dependencies = ["nextest-detection"]
 description = "Runs code coverage and generate the HTML output."
 install_crate_args = ["--locked"]
 
@@ -342,6 +378,7 @@ args = [
 ]
 category = "CI"
 command = "cargo"
+dependencies = ["nextest-detection"]
 description = "Runs code coverage and generate the JSON summary."
 install_crate_args = ["--locked"]
 
