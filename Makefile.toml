@@ -123,20 +123,25 @@ end
 script_runner = "@duckscript"
 
 [tasks.license]
+# We shouldn't use the -ignore parameter, as that doesn't work on Windows:
+# https://github.com/google/addlicense/pull/157.
 args = [
-    "@@remove-empty(MY_CARGO_MAKE_ADDLICENSE_CHECK_ARG)",
-    "-ignore",
-    "third_party/**",
-    "-ignore",
-    "target/**",
+    "run",
+    "-p",
+    "vulkan-layer-scripts",
+    "--bin",
+    "list-files",
+    "--release",
+    "--",
+    "--use-gitignore",
+    "--ignore=**/third_party",
     ".",
+    "--",
+    "${MY_CARGO_MAKE_ADDLICENSE_PATH}",
+    "@@remove-empty(MY_CARGO_MAKE_ADDLICENSE_CHECK_ARG)",
 ]
 category = "Format/Lint"
-command = "${MY_CARGO_MAKE_ADDLICENSE_PATH}"
-condition.fail_message = """
-on Windows, the -ignore argument of addlicense won't work until \
-https://github.com/google/addlicense/pull/157 is merged"""
-condition.platforms = ["linux"]
+command = "cargo"
 dependencies = ["detect-addlicense"]
 description = "Add license to source files."
 
@@ -226,12 +231,10 @@ args = [
     "list-files",
     "--release",
     "--",
-    "--ignore=target/**",
-    "--ignore=third_party/**",
-    "--ignore=.git/**",
-    "--ignore=.ruff_cache/**",
-    "--ignore=**/__pycache__/**",
-    "--include=./**/*.md",
+    "--use-gitignore",
+    "--ignore=**/third_party",
+    "--include=*.md",
+    ".",
     "--",
     "pipenv",
     "run",
@@ -290,6 +293,7 @@ private = true
 args = [
     "nextest",
     "run",
+    "--workspace",
     "--all-targets",
     "--all-features",
     "@@split(MY_CARGO_MAKE_NEXTEST_PROFILE_ARGS,;)",
