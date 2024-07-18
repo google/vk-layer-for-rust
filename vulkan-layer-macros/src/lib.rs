@@ -103,6 +103,7 @@ pub fn auto_globalhooksinfo_impl(_: TokenStream, item: TokenStream) -> TokenStre
 ///
 /// ```
 /// use ash::vk;
+/// use std::mem::MaybeUninit;
 /// use vulkan_layer::{
 ///     auto_instanceinfo_impl, InstanceHooks, InstanceInfo, LayerResult, LayerVulkanCommand,
 /// };
@@ -115,7 +116,7 @@ pub fn auto_globalhooksinfo_impl(_: TokenStream, item: TokenStream) -> TokenStre
 ///     fn get_physical_device_features(
 ///         &self,
 ///         _physical_device: vk::PhysicalDevice,
-///         _p_features: &mut vk::PhysicalDeviceFeatures,
+///         _p_features: &mut MaybeUninit<vk::PhysicalDeviceFeatures>,
 ///     ) -> LayerResult<()> {
 ///         LayerResult::Unhandled
 ///     }

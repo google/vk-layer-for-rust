@@ -26,12 +26,15 @@ use std::{
 };
 
 use super::{
-    get_device_proc_addr_loader, get_instance_proc_addr_loader, ApiVersion, Feature,
-    TryFromExtensionError, VulkanCommand,
+    bool_iterator_from_raw_parts, get_device_proc_addr_loader, get_instance_proc_addr_loader,
+    maybe_slice_from_raw_parts, maybe_uninit_slice_from_raw_parts_mut,
+    uninit_slice_from_raw_parts_mut, ApiVersion, Feature, TryFromExtensionError, VulkanCommand,
 };
 use crate::{
-    fill_vk_out_array, DeviceHooks, DeviceInfo, Global, InstanceHooks, InstanceInfo, Layer,
-    LayerResult, LayerVulkanCommand,
+    fill_vk_out_array,
+    vk_utils::{ptr_as_uninit_mut, slice_from_raw_parts},
+    DeviceHooks, DeviceInfo, Global, InstanceHooks, InstanceInfo, Layer, LayerResult,
+    LayerVulkanCommand,
 };
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Debug)]
@@ -7875,7 +7878,10 @@ impl<T: Layer> Global<T> {
             .customized_info
             .borrow()
             .hooks()
-            .get_physical_device_features(physical_device, unsafe { p_features.as_mut() }.unwrap());
+            .get_physical_device_features(
+                physical_device,
+                unsafe { ptr_as_uninit_mut(p_features) }.unwrap(),
+            );
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -7899,7 +7905,7 @@ impl<T: Layer> Global<T> {
             .get_physical_device_format_properties(
                 physical_device,
                 format,
-                unsafe { p_format_properties.as_mut() }.unwrap(),
+                unsafe { ptr_as_uninit_mut(p_format_properties) }.unwrap(),
             );
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -7936,7 +7942,7 @@ impl<T: Layer> Global<T> {
                 tiling,
                 usage,
                 flags,
-                unsafe { p_image_format_properties.as_mut() }.unwrap(),
+                unsafe { ptr_as_uninit_mut(p_image_format_properties) }.unwrap(),
             );
         match layer_result {
             LayerResult::Handled(res) => match res {
@@ -7970,7 +7976,7 @@ impl<T: Layer> Global<T> {
             .hooks()
             .get_physical_device_properties(
                 physical_device,
-                unsafe { p_properties.as_mut() }.unwrap(),
+                unsafe { ptr_as_uninit_mut(p_properties) }.unwrap(),
             );
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -7988,22 +7994,18 @@ impl<T: Layer> Global<T> {
         // vkGetPhysicalDeviceQueueFamilyProperties
         let instance_info = global.get_instance_info(physical_device).unwrap();
         let dispatch_table = &instance_info.dispatch_table.core.fp_v1_0();
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = instance_info
             .customized_info
             .borrow()
             .hooks()
             .get_physical_device_queue_family_properties(
                 physical_device,
-                if p_queue_family_properties.is_null() {
-                    None
-                } else {
-                    Some(unsafe {
-                        std::slice::from_raw_parts_mut(
-                            p_queue_family_properties,
-                            *unsafe { p_queue_family_property_count.as_ref() }.unwrap() as usize,
-                        )
-                    })
+                unsafe { ptr_as_uninit_mut(p_queue_family_property_count) }.unwrap(),
+                unsafe {
+                    maybe_uninit_slice_from_raw_parts_mut(
+                        p_queue_family_properties,
+                        p_queue_family_property_count,
+                    )
                 },
             );
         match layer_result {
@@ -8031,7 +8033,7 @@ impl<T: Layer> Global<T> {
             .hooks()
             .get_physical_device_memory_properties(
                 physical_device,
-                unsafe { p_memory_properties.as_mut() }.unwrap(),
+                unsafe { ptr_as_uninit_mut(p_memory_properties) }.unwrap(),
             );
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -8057,7 +8059,6 @@ impl<T: Layer> Global<T> {
         // vkGetPhysicalDeviceSparseImageFormatProperties
         let instance_info = global.get_instance_info(physical_device).unwrap();
         let dispatch_table = &instance_info.dispatch_table.core.fp_v1_0();
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = instance_info
             .customized_info
             .borrow()
@@ -8069,16 +8070,8 @@ impl<T: Layer> Global<T> {
                 samples,
                 usage,
                 tiling,
-                if p_properties.is_null() {
-                    None
-                } else {
-                    Some(unsafe {
-                        std::slice::from_raw_parts_mut(
-                            p_properties,
-                            *unsafe { p_property_count.as_ref() }.unwrap() as usize,
-                        )
-                    })
-                },
+                unsafe { ptr_as_uninit_mut(p_property_count) }.unwrap(),
+                unsafe { maybe_uninit_slice_from_raw_parts_mut(p_properties, p_property_count) },
             );
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -8110,7 +8103,7 @@ impl<T: Layer> Global<T> {
             .hooks()
             .get_physical_device_features2(
                 physical_device,
-                unsafe { p_features.as_mut() }.unwrap(),
+                unsafe { ptr_as_uninit_mut(p_features) }.unwrap(),
             );
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -8133,7 +8126,7 @@ impl<T: Layer> Global<T> {
             .hooks()
             .get_physical_device_properties2(
                 physical_device,
-                unsafe { p_properties.as_mut() }.unwrap(),
+                unsafe { ptr_as_uninit_mut(p_properties) }.unwrap(),
             );
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -8158,7 +8151,7 @@ impl<T: Layer> Global<T> {
             .get_physical_device_format_properties2(
                 physical_device,
                 format,
-                unsafe { p_format_properties.as_mut() }.unwrap(),
+                unsafe { ptr_as_uninit_mut(p_format_properties) }.unwrap(),
             );
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -8187,7 +8180,7 @@ impl<T: Layer> Global<T> {
             .get_physical_device_image_format_properties2(
                 physical_device,
                 unsafe { p_image_format_info.as_ref() }.unwrap(),
-                unsafe { p_image_format_properties.as_mut() }.unwrap(),
+                unsafe { ptr_as_uninit_mut(p_image_format_properties) }.unwrap(),
             );
         match layer_result {
             LayerResult::Handled(res) => match res {
@@ -8212,22 +8205,18 @@ impl<T: Layer> Global<T> {
         // vkGetPhysicalDeviceQueueFamilyProperties2
         let instance_info = global.get_instance_info(physical_device).unwrap();
         let dispatch_table = &instance_info.dispatch_table.core.fp_v1_1();
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = instance_info
             .customized_info
             .borrow()
             .hooks()
             .get_physical_device_queue_family_properties2(
                 physical_device,
-                if p_queue_family_properties.is_null() {
-                    None
-                } else {
-                    Some(unsafe {
-                        std::slice::from_raw_parts_mut(
-                            p_queue_family_properties,
-                            *unsafe { p_queue_family_property_count.as_ref() }.unwrap() as usize,
-                        )
-                    })
+                unsafe { ptr_as_uninit_mut(p_queue_family_property_count) }.unwrap(),
+                unsafe {
+                    maybe_uninit_slice_from_raw_parts_mut(
+                        p_queue_family_properties,
+                        p_queue_family_property_count,
+                    )
                 },
             );
         match layer_result {
@@ -8255,7 +8244,7 @@ impl<T: Layer> Global<T> {
             .hooks()
             .get_physical_device_memory_properties2(
                 physical_device,
-                unsafe { p_memory_properties.as_mut() }.unwrap(),
+                unsafe { ptr_as_uninit_mut(p_memory_properties) }.unwrap(),
             );
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -8277,7 +8266,6 @@ impl<T: Layer> Global<T> {
         // vkGetPhysicalDeviceSparseImageFormatProperties2
         let instance_info = global.get_instance_info(physical_device).unwrap();
         let dispatch_table = &instance_info.dispatch_table.core.fp_v1_1();
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = instance_info
             .customized_info
             .borrow()
@@ -8285,16 +8273,8 @@ impl<T: Layer> Global<T> {
             .get_physical_device_sparse_image_format_properties2(
                 physical_device,
                 unsafe { p_format_info.as_ref() }.unwrap(),
-                if p_properties.is_null() {
-                    None
-                } else {
-                    Some(unsafe {
-                        std::slice::from_raw_parts_mut(
-                            p_properties,
-                            *unsafe { p_property_count.as_ref() }.unwrap() as usize,
-                        )
-                    })
-                },
+                unsafe { ptr_as_uninit_mut(p_property_count) }.unwrap(),
+                unsafe { maybe_uninit_slice_from_raw_parts_mut(p_properties, p_property_count) },
             );
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -8324,7 +8304,7 @@ impl<T: Layer> Global<T> {
             .get_physical_device_external_buffer_properties(
                 physical_device,
                 unsafe { p_external_buffer_info.as_ref() }.unwrap(),
-                unsafe { p_external_buffer_properties.as_mut() }.unwrap(),
+                unsafe { ptr_as_uninit_mut(p_external_buffer_properties) }.unwrap(),
             );
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -8353,7 +8333,7 @@ impl<T: Layer> Global<T> {
             .get_physical_device_external_fence_properties(
                 physical_device,
                 unsafe { p_external_fence_info.as_ref() }.unwrap(),
-                unsafe { p_external_fence_properties.as_mut() }.unwrap(),
+                unsafe { ptr_as_uninit_mut(p_external_fence_properties) }.unwrap(),
             );
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -8382,7 +8362,7 @@ impl<T: Layer> Global<T> {
             .get_physical_device_external_semaphore_properties(
                 physical_device,
                 unsafe { p_external_semaphore_info.as_ref() }.unwrap(),
-                unsafe { p_external_semaphore_properties.as_mut() }.unwrap(),
+                unsafe { ptr_as_uninit_mut(p_external_semaphore_properties) }.unwrap(),
             );
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -8404,23 +8384,14 @@ impl<T: Layer> Global<T> {
         // vkGetPhysicalDeviceToolProperties
         let instance_info = global.get_instance_info(physical_device).unwrap();
         let dispatch_table = &instance_info.dispatch_table.core.fp_v1_3();
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = instance_info
             .customized_info
             .borrow()
             .hooks()
             .get_physical_device_tool_properties(
                 physical_device,
-                if p_tool_properties.is_null() {
-                    None
-                } else {
-                    Some(unsafe {
-                        std::slice::from_raw_parts_mut(
-                            p_tool_properties,
-                            *unsafe { p_tool_count.as_ref() }.unwrap() as usize,
-                        )
-                    })
-                },
+                unsafe { ptr_as_uninit_mut(p_tool_count) }.unwrap(),
+                unsafe { maybe_uninit_slice_from_raw_parts_mut(p_tool_properties, p_tool_count) },
             );
         match layer_result {
             LayerResult::Handled(res) => match res {
@@ -8507,7 +8478,7 @@ impl<T: Layer> Global<T> {
             .get_physical_device_surface_capabilities_khr(
                 physical_device,
                 surface,
-                unsafe { p_surface_capabilities.as_mut() }.unwrap(),
+                unsafe { ptr_as_uninit_mut(p_surface_capabilities) }.unwrap(),
             );
         match layer_result {
             LayerResult::Handled(res) => match res {
@@ -8533,7 +8504,6 @@ impl<T: Layer> Global<T> {
         // vkGetPhysicalDeviceSurfaceFormatsKHR
         let instance_info = global.get_instance_info(physical_device).unwrap();
         let dispatch_table = &instance_info.dispatch_table.khr_surface;
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = instance_info
             .customized_info
             .borrow()
@@ -8541,15 +8511,9 @@ impl<T: Layer> Global<T> {
             .get_physical_device_surface_formats_khr(
                 physical_device,
                 surface,
-                if p_surface_formats.is_null() {
-                    None
-                } else {
-                    Some(unsafe {
-                        std::slice::from_raw_parts_mut(
-                            p_surface_formats,
-                            *unsafe { p_surface_format_count.as_ref() }.unwrap() as usize,
-                        )
-                    })
+                unsafe { ptr_as_uninit_mut(p_surface_format_count) }.unwrap(),
+                unsafe {
+                    maybe_uninit_slice_from_raw_parts_mut(p_surface_formats, p_surface_format_count)
                 },
             );
         match layer_result {
@@ -8613,7 +8577,6 @@ impl<T: Layer> Global<T> {
         // vkGetPhysicalDevicePresentRectanglesKHR
         let instance_info = global.get_instance_info(physical_device).unwrap();
         let dispatch_table = &instance_info.dispatch_table.khr_swapchain;
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = instance_info
             .customized_info
             .borrow()
@@ -8621,16 +8584,8 @@ impl<T: Layer> Global<T> {
             .get_physical_device_present_rectangles_khr(
                 physical_device,
                 surface,
-                if p_rects.is_null() {
-                    None
-                } else {
-                    Some(unsafe {
-                        std::slice::from_raw_parts_mut(
-                            p_rects,
-                            *unsafe { p_rect_count.as_ref() }.unwrap() as usize,
-                        )
-                    })
-                },
+                unsafe { ptr_as_uninit_mut(p_rect_count) }.unwrap(),
+                unsafe { maybe_uninit_slice_from_raw_parts_mut(p_rects, p_rect_count) },
             );
         match layer_result {
             LayerResult::Handled(res) => match res {
@@ -8656,23 +8611,14 @@ impl<T: Layer> Global<T> {
         // vkGetPhysicalDeviceDisplayPropertiesKHR
         let instance_info = global.get_instance_info(physical_device).unwrap();
         let dispatch_table = &instance_info.dispatch_table.khr_display;
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = instance_info
             .customized_info
             .borrow()
             .hooks()
             .get_physical_device_display_properties_khr(
                 physical_device,
-                if p_properties.is_null() {
-                    None
-                } else {
-                    Some(unsafe {
-                        std::slice::from_raw_parts_mut(
-                            p_properties,
-                            *unsafe { p_property_count.as_ref() }.unwrap() as usize,
-                        )
-                    })
-                },
+                unsafe { ptr_as_uninit_mut(p_property_count) }.unwrap(),
+                unsafe { maybe_uninit_slice_from_raw_parts_mut(p_properties, p_property_count) },
             );
         match layer_result {
             LayerResult::Handled(res) => match res {
@@ -8697,23 +8643,14 @@ impl<T: Layer> Global<T> {
         // vkGetPhysicalDeviceDisplayPlanePropertiesKHR
         let instance_info = global.get_instance_info(physical_device).unwrap();
         let dispatch_table = &instance_info.dispatch_table.khr_display;
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = instance_info
             .customized_info
             .borrow()
             .hooks()
             .get_physical_device_display_plane_properties_khr(
                 physical_device,
-                if p_properties.is_null() {
-                    None
-                } else {
-                    Some(unsafe {
-                        std::slice::from_raw_parts_mut(
-                            p_properties,
-                            *unsafe { p_property_count.as_ref() }.unwrap() as usize,
-                        )
-                    })
-                },
+                unsafe { ptr_as_uninit_mut(p_property_count) }.unwrap(),
+                unsafe { maybe_uninit_slice_from_raw_parts_mut(p_properties, p_property_count) },
             );
         match layer_result {
             LayerResult::Handled(res) => match res {
@@ -8771,7 +8708,6 @@ impl<T: Layer> Global<T> {
         // vkGetDisplayModePropertiesKHR
         let instance_info = global.get_instance_info(physical_device).unwrap();
         let dispatch_table = &instance_info.dispatch_table.khr_display;
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = instance_info
             .customized_info
             .borrow()
@@ -8779,16 +8715,8 @@ impl<T: Layer> Global<T> {
             .get_display_mode_properties_khr(
                 physical_device,
                 display,
-                if p_properties.is_null() {
-                    None
-                } else {
-                    Some(unsafe {
-                        std::slice::from_raw_parts_mut(
-                            p_properties,
-                            *unsafe { p_property_count.as_ref() }.unwrap() as usize,
-                        )
-                    })
-                },
+                unsafe { ptr_as_uninit_mut(p_property_count) }.unwrap(),
+                unsafe { maybe_uninit_slice_from_raw_parts_mut(p_properties, p_property_count) },
             );
         match layer_result {
             LayerResult::Handled(res) => match res {
@@ -8863,7 +8791,7 @@ impl<T: Layer> Global<T> {
                 physical_device,
                 mode,
                 plane_index,
-                unsafe { p_capabilities.as_mut() }.unwrap(),
+                unsafe { ptr_as_uninit_mut(p_capabilities) }.unwrap(),
             );
         match layer_result {
             LayerResult::Handled(res) => match res {
@@ -8967,7 +8895,7 @@ impl<T: Layer> Global<T> {
             .get_physical_device_xlib_presentation_support_khr(
                 physical_device,
                 queue_family_index,
-                unsafe { dpy.as_mut() }.unwrap(),
+                unsafe { ptr_as_uninit_mut(dpy) }.unwrap(),
                 visual_id,
             );
         match layer_result {
@@ -9040,7 +8968,7 @@ impl<T: Layer> Global<T> {
             .get_physical_device_xcb_presentation_support_khr(
                 physical_device,
                 queue_family_index,
-                unsafe { connection.as_mut() }.unwrap(),
+                connection,
                 visual_id,
             );
         match layer_result {
@@ -9112,7 +9040,7 @@ impl<T: Layer> Global<T> {
             .get_physical_device_wayland_presentation_support_khr(
                 physical_device,
                 queue_family_index,
-                unsafe { display.as_mut() }.unwrap(),
+                display,
             );
         match layer_result {
             LayerResult::Handled(res) => {
@@ -9249,7 +9177,7 @@ impl<T: Layer> Global<T> {
             .get_physical_device_video_capabilities_khr(
                 physical_device,
                 unsafe { p_video_profile.as_ref() }.unwrap(),
-                unsafe { p_capabilities.as_mut() }.unwrap(),
+                unsafe { ptr_as_uninit_mut(p_capabilities) }.unwrap(),
             );
         match layer_result {
             LayerResult::Handled(res) => match res {
@@ -9275,7 +9203,6 @@ impl<T: Layer> Global<T> {
         // vkGetPhysicalDeviceVideoFormatPropertiesKHR
         let instance_info = global.get_instance_info(physical_device).unwrap();
         let dispatch_table = &instance_info.dispatch_table.khr_video_queue;
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = instance_info
             .customized_info
             .borrow()
@@ -9283,15 +9210,12 @@ impl<T: Layer> Global<T> {
             .get_physical_device_video_format_properties_khr(
                 physical_device,
                 unsafe { p_video_format_info.as_ref() }.unwrap(),
-                if p_video_format_properties.is_null() {
-                    None
-                } else {
-                    Some(unsafe {
-                        std::slice::from_raw_parts_mut(
-                            p_video_format_properties,
-                            *unsafe { p_video_format_property_count.as_ref() }.unwrap() as usize,
-                        )
-                    })
+                unsafe { ptr_as_uninit_mut(p_video_format_property_count) }.unwrap(),
+                unsafe {
+                    maybe_uninit_slice_from_raw_parts_mut(
+                        p_video_format_properties,
+                        p_video_format_property_count,
+                    )
                 },
             );
         match layer_result {
@@ -9320,8 +9244,6 @@ impl<T: Layer> Global<T> {
         // vkEnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHR
         let instance_info = global.get_instance_info(physical_device).unwrap();
         let dispatch_table = &instance_info.dispatch_table.khr_performance_query;
-        #[allow(clippy::unnecessary_cast)]
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = instance_info
             .customized_info
             .borrow()
@@ -9329,25 +9251,10 @@ impl<T: Layer> Global<T> {
             .enumerate_physical_device_queue_family_performance_query_counters_khr(
                 physical_device,
                 queue_family_index,
-                if p_counters.is_null() {
-                    None
-                } else {
-                    Some(unsafe {
-                        std::slice::from_raw_parts_mut(
-                            p_counters,
-                            *unsafe { p_counter_count.as_ref() }.unwrap() as usize,
-                        )
-                    })
-                },
-                if p_counter_descriptions.is_null() {
-                    None
-                } else {
-                    Some(unsafe {
-                        std::slice::from_raw_parts_mut(
-                            p_counter_descriptions,
-                            *unsafe { p_counter_count.as_ref() }.unwrap() as usize,
-                        )
-                    })
+                unsafe { ptr_as_uninit_mut(p_counter_count) }.unwrap(),
+                unsafe { maybe_uninit_slice_from_raw_parts_mut(p_counters, p_counter_count) },
+                unsafe {
+                    maybe_uninit_slice_from_raw_parts_mut(p_counter_descriptions, p_counter_count)
                 },
             );
         match layer_result {
@@ -9413,7 +9320,7 @@ impl<T: Layer> Global<T> {
             .get_physical_device_surface_capabilities2_khr(
                 physical_device,
                 unsafe { p_surface_info.as_ref() }.unwrap(),
-                unsafe { p_surface_capabilities.as_mut() }.unwrap(),
+                unsafe { ptr_as_uninit_mut(p_surface_capabilities) }.unwrap(),
             );
         match layer_result {
             LayerResult::Handled(res) => match res {
@@ -9439,7 +9346,6 @@ impl<T: Layer> Global<T> {
         // vkGetPhysicalDeviceSurfaceFormats2KHR
         let instance_info = global.get_instance_info(physical_device).unwrap();
         let dispatch_table = &instance_info.dispatch_table.khr_get_surface_capabilities2;
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = instance_info
             .customized_info
             .borrow()
@@ -9447,15 +9353,9 @@ impl<T: Layer> Global<T> {
             .get_physical_device_surface_formats2_khr(
                 physical_device,
                 unsafe { p_surface_info.as_ref() }.unwrap(),
-                if p_surface_formats.is_null() {
-                    None
-                } else {
-                    Some(unsafe {
-                        std::slice::from_raw_parts_mut(
-                            p_surface_formats,
-                            *unsafe { p_surface_format_count.as_ref() }.unwrap() as usize,
-                        )
-                    })
+                unsafe { ptr_as_uninit_mut(p_surface_format_count) }.unwrap(),
+                unsafe {
+                    maybe_uninit_slice_from_raw_parts_mut(p_surface_formats, p_surface_format_count)
                 },
             );
         match layer_result {
@@ -9482,23 +9382,14 @@ impl<T: Layer> Global<T> {
         // vkGetPhysicalDeviceDisplayProperties2KHR
         let instance_info = global.get_instance_info(physical_device).unwrap();
         let dispatch_table = &instance_info.dispatch_table.khr_get_display_properties2;
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = instance_info
             .customized_info
             .borrow()
             .hooks()
             .get_physical_device_display_properties2_khr(
                 physical_device,
-                if p_properties.is_null() {
-                    None
-                } else {
-                    Some(unsafe {
-                        std::slice::from_raw_parts_mut(
-                            p_properties,
-                            *unsafe { p_property_count.as_ref() }.unwrap() as usize,
-                        )
-                    })
-                },
+                unsafe { ptr_as_uninit_mut(p_property_count) }.unwrap(),
+                unsafe { maybe_uninit_slice_from_raw_parts_mut(p_properties, p_property_count) },
             );
         match layer_result {
             LayerResult::Handled(res) => match res {
@@ -9523,23 +9414,14 @@ impl<T: Layer> Global<T> {
         // vkGetPhysicalDeviceDisplayPlaneProperties2KHR
         let instance_info = global.get_instance_info(physical_device).unwrap();
         let dispatch_table = &instance_info.dispatch_table.khr_get_display_properties2;
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = instance_info
             .customized_info
             .borrow()
             .hooks()
             .get_physical_device_display_plane_properties2_khr(
                 physical_device,
-                if p_properties.is_null() {
-                    None
-                } else {
-                    Some(unsafe {
-                        std::slice::from_raw_parts_mut(
-                            p_properties,
-                            *unsafe { p_property_count.as_ref() }.unwrap() as usize,
-                        )
-                    })
-                },
+                unsafe { ptr_as_uninit_mut(p_property_count) }.unwrap(),
+                unsafe { maybe_uninit_slice_from_raw_parts_mut(p_properties, p_property_count) },
             );
         match layer_result {
             LayerResult::Handled(res) => match res {
@@ -9565,7 +9447,6 @@ impl<T: Layer> Global<T> {
         // vkGetDisplayModeProperties2KHR
         let instance_info = global.get_instance_info(physical_device).unwrap();
         let dispatch_table = &instance_info.dispatch_table.khr_get_display_properties2;
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = instance_info
             .customized_info
             .borrow()
@@ -9573,16 +9454,8 @@ impl<T: Layer> Global<T> {
             .get_display_mode_properties2_khr(
                 physical_device,
                 display,
-                if p_properties.is_null() {
-                    None
-                } else {
-                    Some(unsafe {
-                        std::slice::from_raw_parts_mut(
-                            p_properties,
-                            *unsafe { p_property_count.as_ref() }.unwrap() as usize,
-                        )
-                    })
-                },
+                unsafe { ptr_as_uninit_mut(p_property_count) }.unwrap(),
+                unsafe { maybe_uninit_slice_from_raw_parts_mut(p_properties, p_property_count) },
             );
         match layer_result {
             LayerResult::Handled(res) => match res {
@@ -9615,7 +9488,7 @@ impl<T: Layer> Global<T> {
             .get_display_plane_capabilities2_khr(
                 physical_device,
                 unsafe { p_display_plane_info.as_ref() }.unwrap(),
-                unsafe { p_capabilities.as_mut() }.unwrap(),
+                unsafe { ptr_as_uninit_mut(p_capabilities) }.unwrap(),
             );
         match layer_result {
             LayerResult::Handled(res) => match res {
@@ -9640,22 +9513,18 @@ impl<T: Layer> Global<T> {
         // vkGetPhysicalDeviceFragmentShadingRatesKHR
         let instance_info = global.get_instance_info(physical_device).unwrap();
         let dispatch_table = &instance_info.dispatch_table.khr_fragment_shading_rate;
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = instance_info
             .customized_info
             .borrow()
             .hooks()
             .get_physical_device_fragment_shading_rates_khr(
                 physical_device,
-                if p_fragment_shading_rates.is_null() {
-                    None
-                } else {
-                    Some(unsafe {
-                        std::slice::from_raw_parts_mut(
-                            p_fragment_shading_rates,
-                            *unsafe { p_fragment_shading_rate_count.as_ref() }.unwrap() as usize,
-                        )
-                    })
+                unsafe { ptr_as_uninit_mut(p_fragment_shading_rate_count) }.unwrap(),
+                unsafe {
+                    maybe_uninit_slice_from_raw_parts_mut(
+                        p_fragment_shading_rates,
+                        p_fragment_shading_rate_count,
+                    )
                 },
             );
         match layer_result {
@@ -9833,7 +9702,7 @@ impl<T: Layer> Global<T> {
                 usage,
                 flags,
                 external_handle_type,
-                unsafe { p_external_image_format_properties.as_mut() }.unwrap(),
+                unsafe { ptr_as_uninit_mut(p_external_image_format_properties) }.unwrap(),
             );
         match layer_result {
             LayerResult::Handled(res) => match res {
@@ -9925,7 +9794,11 @@ impl<T: Layer> Global<T> {
             .customized_info
             .borrow()
             .hooks()
-            .acquire_xlib_display_ext(physical_device, unsafe { dpy.as_mut() }.unwrap(), display);
+            .acquire_xlib_display_ext(
+                physical_device,
+                unsafe { ptr_as_uninit_mut(dpy) }.unwrap(),
+                display,
+            );
         match layer_result {
             LayerResult::Handled(res) => match res {
                 Ok(()) => vk::Result::SUCCESS,
@@ -9952,7 +9825,7 @@ impl<T: Layer> Global<T> {
             .hooks()
             .get_rand_r_output_display_ext(
                 physical_device,
-                unsafe { dpy.as_mut() }.unwrap(),
+                unsafe { ptr_as_uninit_mut(dpy) }.unwrap(),
                 rr_output,
             );
         match layer_result {
@@ -9989,7 +9862,7 @@ impl<T: Layer> Global<T> {
             .get_physical_device_surface_capabilities2_ext(
                 physical_device,
                 surface,
-                unsafe { p_surface_capabilities.as_mut() }.unwrap(),
+                unsafe { ptr_as_uninit_mut(p_surface_capabilities) }.unwrap(),
             );
         match layer_result {
             LayerResult::Handled(res) => match res {
@@ -10178,7 +10051,7 @@ impl<T: Layer> Global<T> {
             .get_physical_device_multisample_properties_ext(
                 physical_device,
                 samples,
-                unsafe { p_multisample_properties.as_mut() }.unwrap(),
+                unsafe { ptr_as_uninit_mut(p_multisample_properties) }.unwrap(),
             );
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -10305,23 +10178,14 @@ impl<T: Layer> Global<T> {
         // vkGetPhysicalDeviceCooperativeMatrixPropertiesNV
         let instance_info = global.get_instance_info(physical_device).unwrap();
         let dispatch_table = &instance_info.dispatch_table.nv_cooperative_matrix;
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = instance_info
             .customized_info
             .borrow()
             .hooks()
             .get_physical_device_cooperative_matrix_properties_nv(
                 physical_device,
-                if p_properties.is_null() {
-                    None
-                } else {
-                    Some(unsafe {
-                        std::slice::from_raw_parts_mut(
-                            p_properties,
-                            *unsafe { p_property_count.as_ref() }.unwrap() as usize,
-                        )
-                    })
-                },
+                unsafe { ptr_as_uninit_mut(p_property_count) }.unwrap(),
+                unsafe { maybe_uninit_slice_from_raw_parts_mut(p_properties, p_property_count) },
             );
         match layer_result {
             LayerResult::Handled(res) => match res {
@@ -10346,22 +10210,15 @@ impl<T: Layer> Global<T> {
         // vkGetPhysicalDeviceSupportedFramebufferMixedSamplesCombinationsNV
         let instance_info = global.get_instance_info(physical_device).unwrap();
         let dispatch_table = &instance_info.dispatch_table.nv_coverage_reduction_mode;
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = instance_info
             .customized_info
             .borrow()
             .hooks()
             .get_physical_device_supported_framebuffer_mixed_samples_combinations_nv(
                 physical_device,
-                if p_combinations.is_null() {
-                    None
-                } else {
-                    Some(unsafe {
-                        std::slice::from_raw_parts_mut(
-                            p_combinations,
-                            *unsafe { p_combination_count.as_ref() }.unwrap() as usize,
-                        )
-                    })
+                unsafe { ptr_as_uninit_mut(p_combination_count) }.unwrap(),
+                unsafe {
+                    maybe_uninit_slice_from_raw_parts_mut(p_combinations, p_combination_count)
                 },
             );
         match layer_result {
@@ -10610,7 +10467,7 @@ impl<T: Layer> Global<T> {
             .get_physical_device_direct_fb_presentation_support_ext(
                 physical_device,
                 queue_family_index,
-                unsafe { dfb.as_mut() }.unwrap(),
+                unsafe { ptr_as_uninit_mut(dfb) }.unwrap(),
             );
         match layer_result {
             LayerResult::Handled(res) => {
@@ -10680,7 +10537,7 @@ impl<T: Layer> Global<T> {
             .get_physical_device_screen_presentation_support_qnx(
                 physical_device,
                 queue_family_index,
-                unsafe { window.as_mut() }.unwrap(),
+                window,
             );
         match layer_result {
             LayerResult::Handled(res) => {
@@ -10709,7 +10566,6 @@ impl<T: Layer> Global<T> {
         // vkGetPhysicalDeviceOpticalFlowImageFormatsNV
         let instance_info = global.get_instance_info(physical_device).unwrap();
         let dispatch_table = &instance_info.dispatch_table.nv_optical_flow;
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = instance_info
             .customized_info
             .borrow()
@@ -10717,15 +10573,9 @@ impl<T: Layer> Global<T> {
             .get_physical_device_optical_flow_image_formats_nv(
                 physical_device,
                 unsafe { p_optical_flow_image_format_info.as_ref() }.unwrap(),
-                if p_image_format_properties.is_null() {
-                    None
-                } else {
-                    Some(unsafe {
-                        std::slice::from_raw_parts_mut(
-                            p_image_format_properties,
-                            *unsafe { p_format_count.as_ref() }.unwrap() as usize,
-                        )
-                    })
+                unsafe { ptr_as_uninit_mut(p_format_count) }.unwrap(),
+                unsafe {
+                    maybe_uninit_slice_from_raw_parts_mut(p_image_format_properties, p_format_count)
                 },
             );
         match layer_result {
@@ -10777,10 +10627,9 @@ impl<T: Layer> Global<T> {
         // vkQueueSubmit
         let device_info = global.get_device_info(queue).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info.customized_info.borrow().hooks().queue_submit(
             queue,
-            unsafe { std::slice::from_raw_parts(p_submits, submit_count as usize) },
+            unsafe { slice_from_raw_parts(p_submits, submit_count) },
             fence,
         );
         match layer_result {
@@ -10934,13 +10783,12 @@ impl<T: Layer> Global<T> {
         // vkFlushMappedMemoryRanges
         let device_info = global.get_device_info(device).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .flush_mapped_memory_ranges(unsafe {
-                std::slice::from_raw_parts(p_memory_ranges, memory_range_count as usize)
+                slice_from_raw_parts(p_memory_ranges, memory_range_count)
             });
         match layer_result {
             LayerResult::Handled(res) => match res {
@@ -10965,13 +10813,12 @@ impl<T: Layer> Global<T> {
         // vkInvalidateMappedMemoryRanges
         let device_info = global.get_device_info(device).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .invalidate_mapped_memory_ranges(unsafe {
-                std::slice::from_raw_parts(p_memory_ranges, memory_range_count as usize)
+                slice_from_raw_parts(p_memory_ranges, memory_range_count)
             });
         match layer_result {
             LayerResult::Handled(res) => match res {
@@ -11079,7 +10926,7 @@ impl<T: Layer> Global<T> {
             .hooks()
             .get_buffer_memory_requirements(
                 buffer,
-                unsafe { p_memory_requirements.as_mut() }.unwrap(),
+                unsafe { ptr_as_uninit_mut(p_memory_requirements) }.unwrap(),
             );
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -11107,7 +10954,7 @@ impl<T: Layer> Global<T> {
             .hooks()
             .get_image_memory_requirements(
                 image,
-                unsafe { p_memory_requirements.as_mut() }.unwrap(),
+                unsafe { ptr_as_uninit_mut(p_memory_requirements) }.unwrap(),
             );
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -11126,23 +10973,18 @@ impl<T: Layer> Global<T> {
         // vkGetImageSparseMemoryRequirements
         let device_info = global.get_device_info(device).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .get_image_sparse_memory_requirements(
                 image,
-                if p_sparse_memory_requirements.is_null() {
-                    None
-                } else {
-                    Some(unsafe {
-                        std::slice::from_raw_parts_mut(
-                            p_sparse_memory_requirements,
-                            *unsafe { p_sparse_memory_requirement_count.as_ref() }.unwrap()
-                                as usize,
-                        )
-                    })
+                unsafe { ptr_as_uninit_mut(p_sparse_memory_requirement_count) }.unwrap(),
+                unsafe {
+                    maybe_uninit_slice_from_raw_parts_mut(
+                        p_sparse_memory_requirements,
+                        p_sparse_memory_requirement_count,
+                    )
                 },
             );
         match layer_result {
@@ -11167,14 +11009,13 @@ impl<T: Layer> Global<T> {
         // vkQueueBindSparse
         let device_info = global.get_device_info(queue).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .queue_bind_sparse(
                 queue,
-                unsafe { std::slice::from_raw_parts(p_bind_info, bind_info_count as usize) },
+                unsafe { slice_from_raw_parts(p_bind_info, bind_info_count) },
                 fence,
             );
         match layer_result {
@@ -11247,12 +11088,11 @@ impl<T: Layer> Global<T> {
         // vkResetFences
         let device_info = global.get_device_info(device).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
-            .reset_fences(unsafe { std::slice::from_raw_parts(p_fences, fence_count as usize) });
+            .reset_fences(unsafe { slice_from_raw_parts(p_fences, fence_count) });
         match layer_result {
             LayerResult::Handled(res) => match res {
                 Ok(()) => vk::Result::SUCCESS,
@@ -11292,13 +11132,12 @@ impl<T: Layer> Global<T> {
         // vkWaitForFences
         let device_info = global.get_device_info(device).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .wait_for_fences(
-                unsafe { std::slice::from_raw_parts(p_fences, fence_count as usize) },
+                unsafe { slice_from_raw_parts(p_fences, fence_count) },
                 wait_all == vk::TRUE,
                 timeout,
             );
@@ -11533,7 +11372,6 @@ impl<T: Layer> Global<T> {
         // vkGetQueryPoolResults
         let device_info = global.get_device_info(device).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
@@ -11542,7 +11380,7 @@ impl<T: Layer> Global<T> {
                 query_pool,
                 first_query,
                 query_count,
-                unsafe { std::slice::from_raw_parts_mut(p_data as *mut u8, data_size as usize) },
+                unsafe { uninit_slice_from_raw_parts_mut(p_data as *mut u8, data_size) },
                 stride,
                 flags,
             );
@@ -11735,7 +11573,7 @@ impl<T: Layer> Global<T> {
             .get_image_subresource_layout(
                 image,
                 unsafe { p_subresource.as_ref() }.unwrap(),
-                unsafe { p_layout.as_mut() }.unwrap(),
+                unsafe { ptr_as_uninit_mut(p_layout) }.unwrap(),
             );
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -11926,13 +11764,14 @@ impl<T: Layer> Global<T> {
             .customized_info
             .borrow()
             .hooks()
-            .get_pipeline_cache_data(pipeline_cache);
+            .get_pipeline_cache_data(
+                pipeline_cache,
+                unsafe { ptr_as_uninit_mut(p_data_size) }.unwrap(),
+                unsafe { maybe_uninit_slice_from_raw_parts_mut(p_data as *mut u8, p_data_size) },
+            );
         match layer_result {
             LayerResult::Handled(res) => match res {
-                Ok(res) => {
-                    let p_data = p_data as *mut u8;
-                    unsafe { fill_vk_out_array(&res, NonNull::new(p_data_size).unwrap(), p_data) }
-                }
+                Ok(()) => vk::Result::SUCCESS,
                 Err(e) => e,
             },
             LayerResult::Unhandled => unsafe {
@@ -11955,13 +11794,12 @@ impl<T: Layer> Global<T> {
         // vkMergePipelineCaches
         let device_info = global.get_device_info(device).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .merge_pipeline_caches(dst_cache, unsafe {
-                std::slice::from_raw_parts(p_src_caches, src_cache_count as usize)
+                slice_from_raw_parts(p_src_caches, src_cache_count)
             });
         match layer_result {
             LayerResult::Handled(res) => match res {
@@ -11990,14 +11828,13 @@ impl<T: Layer> Global<T> {
         // vkCreateGraphicsPipelines
         let device_info = global.get_device_info(device).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .create_graphics_pipelines(
                 pipeline_cache,
-                unsafe { std::slice::from_raw_parts(p_create_infos, create_info_count as usize) },
+                unsafe { slice_from_raw_parts(p_create_infos, create_info_count) },
                 unsafe { p_allocator.as_ref() },
             );
         match layer_result {
@@ -12038,14 +11875,13 @@ impl<T: Layer> Global<T> {
         // vkCreateComputePipelines
         let device_info = global.get_device_info(device).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .create_compute_pipelines(
                 pipeline_cache,
-                unsafe { std::slice::from_raw_parts(p_create_infos, create_info_count as usize) },
+                unsafe { slice_from_raw_parts(p_create_infos, create_info_count) },
                 unsafe { p_allocator.as_ref() },
             );
         match layer_result {
@@ -12392,13 +12228,12 @@ impl<T: Layer> Global<T> {
         // vkFreeDescriptorSets
         let device_info = global.get_device_info(device).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .free_descriptor_sets(descriptor_pool, unsafe {
-                std::slice::from_raw_parts(p_descriptor_sets, descriptor_set_count as usize)
+                slice_from_raw_parts(p_descriptor_sets, descriptor_set_count)
             });
         match layer_result {
             LayerResult::Handled(res) => match res {
@@ -12426,19 +12261,13 @@ impl<T: Layer> Global<T> {
         // vkUpdateDescriptorSets
         let device_info = global.get_device_info(device).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        #[allow(clippy::unnecessary_cast)]
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .update_descriptor_sets(
-                unsafe {
-                    std::slice::from_raw_parts(p_descriptor_writes, descriptor_write_count as usize)
-                },
-                unsafe {
-                    std::slice::from_raw_parts(p_descriptor_copies, descriptor_copy_count as usize)
-                },
+                unsafe { slice_from_raw_parts(p_descriptor_writes, descriptor_write_count) },
+                unsafe { slice_from_raw_parts(p_descriptor_copies, descriptor_copy_count) },
             );
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -12578,7 +12407,10 @@ impl<T: Layer> Global<T> {
             .customized_info
             .borrow()
             .hooks()
-            .get_render_area_granularity(render_pass, unsafe { p_granularity.as_mut() }.unwrap());
+            .get_render_area_granularity(
+                render_pass,
+                unsafe { ptr_as_uninit_mut(p_granularity) }.unwrap(),
+            );
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -12716,13 +12548,12 @@ impl<T: Layer> Global<T> {
         // vkFreeCommandBuffers
         let device_info = global.get_device_info(device).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .free_command_buffers(command_pool, unsafe {
-                std::slice::from_raw_parts(p_command_buffers, command_buffer_count as usize)
+                slice_from_raw_parts(p_command_buffers, command_buffer_count)
             });
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -12833,13 +12664,12 @@ impl<T: Layer> Global<T> {
         // vkCmdSetViewport
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .cmd_set_viewport(command_buffer, first_viewport, unsafe {
-                std::slice::from_raw_parts(p_viewports, viewport_count as usize)
+                slice_from_raw_parts(p_viewports, viewport_count)
             });
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -12863,13 +12693,12 @@ impl<T: Layer> Global<T> {
         // vkCmdSetScissor
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .cmd_set_scissor(command_buffer, first_scissor, unsafe {
-                std::slice::from_raw_parts(p_scissors, scissor_count as usize)
+                slice_from_raw_parts(p_scissors, scissor_count)
             });
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -12940,12 +12769,11 @@ impl<T: Layer> Global<T> {
         // vkCmdSetBlendConstants
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        let blend_constants = unsafe { blend_constants.as_ref() }.unwrap();
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
-            .cmd_set_blend_constants(command_buffer, blend_constants);
+            .cmd_set_blend_constants(command_buffer, unsafe { blend_constants.as_ref() }.unwrap());
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -13059,8 +12887,6 @@ impl<T: Layer> Global<T> {
         // vkCmdBindDescriptorSets
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        #[allow(clippy::unnecessary_cast)]
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
@@ -13070,12 +12896,8 @@ impl<T: Layer> Global<T> {
                 pipeline_bind_point,
                 layout,
                 first_set,
-                unsafe {
-                    std::slice::from_raw_parts(p_descriptor_sets, descriptor_set_count as usize)
-                },
-                unsafe {
-                    std::slice::from_raw_parts(p_dynamic_offsets, dynamic_offset_count as usize)
-                },
+                unsafe { slice_from_raw_parts(p_descriptor_sets, descriptor_set_count) },
+                unsafe { slice_from_raw_parts(p_dynamic_offsets, dynamic_offset_count) },
             );
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -13126,8 +12948,6 @@ impl<T: Layer> Global<T> {
         // vkCmdBindVertexBuffers
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        #[allow(clippy::unnecessary_cast)]
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
@@ -13135,8 +12955,8 @@ impl<T: Layer> Global<T> {
             .cmd_bind_vertex_buffers(
                 command_buffer,
                 first_binding,
-                unsafe { std::slice::from_raw_parts(p_buffers, binding_count as usize) },
-                unsafe { std::slice::from_raw_parts(p_offsets, binding_count as usize) },
+                unsafe { slice_from_raw_parts(p_buffers, binding_count) },
+                unsafe { slice_from_raw_parts(p_offsets, binding_count) },
             );
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -13338,13 +13158,12 @@ impl<T: Layer> Global<T> {
         // vkCmdCopyBuffer
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .cmd_copy_buffer(command_buffer, src_buffer, dst_buffer, unsafe {
-                std::slice::from_raw_parts(p_regions, region_count as usize)
+                slice_from_raw_parts(p_regions, region_count)
             });
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -13372,14 +13191,13 @@ impl<T: Layer> Global<T> {
         // vkCmdCopyImage
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info.customized_info.borrow().hooks().cmd_copy_image(
             command_buffer,
             src_image,
             src_image_layout,
             dst_image,
             dst_image_layout,
-            unsafe { std::slice::from_raw_parts(p_regions, region_count as usize) },
+            unsafe { slice_from_raw_parts(p_regions, region_count) },
         );
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -13410,14 +13228,13 @@ impl<T: Layer> Global<T> {
         // vkCmdBlitImage
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info.customized_info.borrow().hooks().cmd_blit_image(
             command_buffer,
             src_image,
             src_image_layout,
             dst_image,
             dst_image_layout,
-            unsafe { std::slice::from_raw_parts(p_regions, region_count as usize) },
+            unsafe { slice_from_raw_parts(p_regions, region_count) },
             filter,
         );
         match layer_result {
@@ -13448,7 +13265,6 @@ impl<T: Layer> Global<T> {
         // vkCmdCopyBufferToImage
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
@@ -13458,7 +13274,7 @@ impl<T: Layer> Global<T> {
                 src_buffer,
                 dst_image,
                 dst_image_layout,
-                unsafe { std::slice::from_raw_parts(p_regions, region_count as usize) },
+                unsafe { slice_from_raw_parts(p_regions, region_count) },
             );
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -13486,7 +13302,6 @@ impl<T: Layer> Global<T> {
         // vkCmdCopyImageToBuffer
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
@@ -13496,7 +13311,7 @@ impl<T: Layer> Global<T> {
                 src_image,
                 src_image_layout,
                 dst_buffer,
-                unsafe { std::slice::from_raw_parts(p_regions, region_count as usize) },
+                unsafe { slice_from_raw_parts(p_regions, region_count) },
             );
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -13523,13 +13338,12 @@ impl<T: Layer> Global<T> {
         // vkCmdUpdateBuffer
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .cmd_update_buffer(command_buffer, dst_buffer, dst_offset, unsafe {
-                std::slice::from_raw_parts(p_data as *const u8, data_size as usize)
+                slice_from_raw_parts(p_data as *const u8, data_size)
             });
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -13579,7 +13393,6 @@ impl<T: Layer> Global<T> {
         // vkCmdClearColorImage
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
@@ -13589,7 +13402,7 @@ impl<T: Layer> Global<T> {
                 image,
                 image_layout,
                 unsafe { p_color.as_ref() }.unwrap(),
-                unsafe { std::slice::from_raw_parts(p_ranges, range_count as usize) },
+                unsafe { slice_from_raw_parts(p_ranges, range_count) },
             );
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -13617,7 +13430,6 @@ impl<T: Layer> Global<T> {
         // vkCmdClearDepthStencilImage
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
@@ -13627,7 +13439,7 @@ impl<T: Layer> Global<T> {
                 image,
                 image_layout,
                 unsafe { p_depth_stencil.as_ref() }.unwrap(),
-                unsafe { std::slice::from_raw_parts(p_ranges, range_count as usize) },
+                unsafe { slice_from_raw_parts(p_ranges, range_count) },
             );
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -13654,16 +13466,14 @@ impl<T: Layer> Global<T> {
         // vkCmdClearAttachments
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        #[allow(clippy::unnecessary_cast)]
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .cmd_clear_attachments(
                 command_buffer,
-                unsafe { std::slice::from_raw_parts(p_attachments, attachment_count as usize) },
-                unsafe { std::slice::from_raw_parts(p_rects, rect_count as usize) },
+                unsafe { slice_from_raw_parts(p_attachments, attachment_count) },
+                unsafe { slice_from_raw_parts(p_rects, rect_count) },
             );
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -13691,7 +13501,6 @@ impl<T: Layer> Global<T> {
         // vkCmdResolveImage
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
@@ -13702,7 +13511,7 @@ impl<T: Layer> Global<T> {
                 src_image_layout,
                 dst_image,
                 dst_image_layout,
-                unsafe { std::slice::from_raw_parts(p_regions, region_count as usize) },
+                unsafe { slice_from_raw_parts(p_regions, region_count) },
             );
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -13778,33 +13587,21 @@ impl<T: Layer> Global<T> {
         // vkCmdWaitEvents
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        #[allow(clippy::unnecessary_cast)]
-        #[allow(clippy::unnecessary_cast)]
-        #[allow(clippy::unnecessary_cast)]
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .cmd_wait_events(
                 command_buffer,
-                unsafe { std::slice::from_raw_parts(p_events, event_count as usize) },
+                unsafe { slice_from_raw_parts(p_events, event_count) },
                 src_stage_mask,
                 dst_stage_mask,
+                unsafe { slice_from_raw_parts(p_memory_barriers, memory_barrier_count) },
                 unsafe {
-                    std::slice::from_raw_parts(p_memory_barriers, memory_barrier_count as usize)
+                    slice_from_raw_parts(p_buffer_memory_barriers, buffer_memory_barrier_count)
                 },
                 unsafe {
-                    std::slice::from_raw_parts(
-                        p_buffer_memory_barriers,
-                        buffer_memory_barrier_count as usize,
-                    )
-                },
-                unsafe {
-                    std::slice::from_raw_parts(
-                        p_image_memory_barriers,
-                        image_memory_barrier_count as usize,
-                    )
+                    slice_from_raw_parts(p_image_memory_barriers, image_memory_barrier_count)
                 },
             );
         match layer_result {
@@ -13842,9 +13639,6 @@ impl<T: Layer> Global<T> {
         // vkCmdPipelineBarrier
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        #[allow(clippy::unnecessary_cast)]
-        #[allow(clippy::unnecessary_cast)]
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
@@ -13854,20 +13648,12 @@ impl<T: Layer> Global<T> {
                 src_stage_mask,
                 dst_stage_mask,
                 dependency_flags,
+                unsafe { slice_from_raw_parts(p_memory_barriers, memory_barrier_count) },
                 unsafe {
-                    std::slice::from_raw_parts(p_memory_barriers, memory_barrier_count as usize)
+                    slice_from_raw_parts(p_buffer_memory_barriers, buffer_memory_barrier_count)
                 },
                 unsafe {
-                    std::slice::from_raw_parts(
-                        p_buffer_memory_barriers,
-                        buffer_memory_barrier_count as usize,
-                    )
-                },
-                unsafe {
-                    std::slice::from_raw_parts(
-                        p_image_memory_barriers,
-                        image_memory_barrier_count as usize,
-                    )
+                    slice_from_raw_parts(p_image_memory_barriers, image_memory_barrier_count)
                 },
             );
         match layer_result {
@@ -14041,13 +13827,12 @@ impl<T: Layer> Global<T> {
         // vkCmdPushConstants
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .cmd_push_constants(command_buffer, layout, stage_flags, offset, unsafe {
-                std::slice::from_raw_parts(p_values as *const u8, size as usize)
+                slice_from_raw_parts(p_values as *const u8, size)
             });
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -14138,13 +13923,12 @@ impl<T: Layer> Global<T> {
         // vkCmdExecuteCommands
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_0();
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .cmd_execute_commands(command_buffer, unsafe {
-                std::slice::from_raw_parts(p_command_buffers, command_buffer_count as usize)
+                slice_from_raw_parts(p_command_buffers, command_buffer_count)
             });
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -14166,14 +13950,11 @@ impl<T: Layer> Global<T> {
         // vkBindBufferMemory2
         let device_info = global.get_device_info(device).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_1();
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
-            .bind_buffer_memory2(unsafe {
-                std::slice::from_raw_parts(p_bind_infos, bind_info_count as usize)
-            });
+            .bind_buffer_memory2(unsafe { slice_from_raw_parts(p_bind_infos, bind_info_count) });
         match layer_result {
             LayerResult::Handled(res) => match res {
                 Ok(()) => vk::Result::SUCCESS,
@@ -14193,14 +13974,11 @@ impl<T: Layer> Global<T> {
         // vkBindImageMemory2
         let device_info = global.get_device_info(device).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_1();
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
-            .bind_image_memory2(unsafe {
-                std::slice::from_raw_parts(p_bind_infos, bind_info_count as usize)
-            });
+            .bind_image_memory2(unsafe { slice_from_raw_parts(p_bind_infos, bind_info_count) });
         match layer_result {
             LayerResult::Handled(res) => match res {
                 Ok(()) => vk::Result::SUCCESS,
@@ -14319,7 +14097,7 @@ impl<T: Layer> Global<T> {
             .hooks()
             .get_image_memory_requirements2(
                 unsafe { p_info.as_ref() }.unwrap(),
-                unsafe { p_memory_requirements.as_mut() }.unwrap(),
+                unsafe { ptr_as_uninit_mut(p_memory_requirements) }.unwrap(),
             );
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -14347,7 +14125,7 @@ impl<T: Layer> Global<T> {
             .hooks()
             .get_buffer_memory_requirements2(
                 unsafe { p_info.as_ref() }.unwrap(),
-                unsafe { p_memory_requirements.as_mut() }.unwrap(),
+                unsafe { ptr_as_uninit_mut(p_memory_requirements) }.unwrap(),
             );
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -14370,23 +14148,18 @@ impl<T: Layer> Global<T> {
         // vkGetImageSparseMemoryRequirements2
         let device_info = global.get_device_info(device).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_1();
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .get_image_sparse_memory_requirements2(
                 unsafe { p_info.as_ref() }.unwrap(),
-                if p_sparse_memory_requirements.is_null() {
-                    None
-                } else {
-                    Some(unsafe {
-                        std::slice::from_raw_parts_mut(
-                            p_sparse_memory_requirements,
-                            *unsafe { p_sparse_memory_requirement_count.as_ref() }.unwrap()
-                                as usize,
-                        )
-                    })
+                unsafe { ptr_as_uninit_mut(p_sparse_memory_requirement_count) }.unwrap(),
+                unsafe {
+                    maybe_uninit_slice_from_raw_parts_mut(
+                        p_sparse_memory_requirements,
+                        p_sparse_memory_requirement_count,
+                    )
                 },
             );
         match layer_result {
@@ -14585,7 +14358,7 @@ impl<T: Layer> Global<T> {
             .update_descriptor_set_with_template(
                 descriptor_set,
                 descriptor_update_template,
-                unsafe { p_data.as_ref() }.unwrap(),
+                p_data,
             );
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -14614,7 +14387,7 @@ impl<T: Layer> Global<T> {
             .hooks()
             .get_descriptor_set_layout_support(
                 unsafe { p_create_info.as_ref() }.unwrap(),
-                unsafe { p_support.as_mut() }.unwrap(),
+                unsafe { ptr_as_uninit_mut(p_support) }.unwrap(),
             );
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -15148,16 +14921,14 @@ impl<T: Layer> Global<T> {
         // vkCmdWaitEvents2
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_3();
-        #[allow(clippy::unnecessary_cast)]
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .cmd_wait_events2(
                 command_buffer,
-                unsafe { std::slice::from_raw_parts(p_events, event_count as usize) },
-                unsafe { std::slice::from_raw_parts(p_dependency_infos, event_count as usize) },
+                unsafe { slice_from_raw_parts(p_events, event_count) },
+                unsafe { slice_from_raw_parts(p_dependency_infos, event_count) },
             );
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -15226,10 +14997,9 @@ impl<T: Layer> Global<T> {
         // vkQueueSubmit2
         let device_info = global.get_device_info(queue).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_3();
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info.customized_info.borrow().hooks().queue_submit2(
             queue,
-            unsafe { std::slice::from_raw_parts(p_submits, submit_count as usize) },
+            unsafe { slice_from_raw_parts(p_submits, submit_count) },
             fence,
         );
         match layer_result {
@@ -15493,13 +15263,12 @@ impl<T: Layer> Global<T> {
         // vkCmdSetViewportWithCount
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_3();
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .cmd_set_viewport_with_count(command_buffer, unsafe {
-                std::slice::from_raw_parts(p_viewports, viewport_count as usize)
+                slice_from_raw_parts(p_viewports, viewport_count)
             });
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -15521,13 +15290,12 @@ impl<T: Layer> Global<T> {
         // vkCmdSetScissorWithCount
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_3();
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .cmd_set_scissor_with_count(command_buffer, unsafe {
-                std::slice::from_raw_parts(p_scissors, scissor_count as usize)
+                slice_from_raw_parts(p_scissors, scissor_count)
             });
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -15553,10 +15321,6 @@ impl<T: Layer> Global<T> {
         // vkCmdBindVertexBuffers2
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_3();
-        #[allow(clippy::unnecessary_cast)]
-        #[allow(clippy::unnecessary_cast)]
-        #[allow(clippy::unnecessary_cast)]
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
@@ -15564,18 +15328,10 @@ impl<T: Layer> Global<T> {
             .cmd_bind_vertex_buffers2(
                 command_buffer,
                 first_binding,
-                unsafe { std::slice::from_raw_parts(p_buffers, binding_count as usize) },
-                unsafe { std::slice::from_raw_parts(p_offsets, binding_count as usize) },
-                if p_sizes.is_null() {
-                    None
-                } else {
-                    Some(unsafe { std::slice::from_raw_parts(p_sizes, binding_count as usize) })
-                },
-                if p_strides.is_null() {
-                    None
-                } else {
-                    Some(unsafe { std::slice::from_raw_parts(p_strides, binding_count as usize) })
-                },
+                unsafe { slice_from_raw_parts(p_buffers, binding_count) },
+                unsafe { slice_from_raw_parts(p_offsets, binding_count) },
+                unsafe { maybe_slice_from_raw_parts(p_sizes, binding_count) },
+                unsafe { maybe_slice_from_raw_parts(p_strides, binding_count) },
             );
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -15817,7 +15573,7 @@ impl<T: Layer> Global<T> {
             .hooks()
             .get_device_buffer_memory_requirements(
                 unsafe { p_info.as_ref() }.unwrap(),
-                unsafe { p_memory_requirements.as_mut() }.unwrap(),
+                unsafe { ptr_as_uninit_mut(p_memory_requirements) }.unwrap(),
             );
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -15845,7 +15601,7 @@ impl<T: Layer> Global<T> {
             .hooks()
             .get_device_image_memory_requirements(
                 unsafe { p_info.as_ref() }.unwrap(),
-                unsafe { p_memory_requirements.as_mut() }.unwrap(),
+                unsafe { ptr_as_uninit_mut(p_memory_requirements) }.unwrap(),
             );
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -15868,23 +15624,18 @@ impl<T: Layer> Global<T> {
         // vkGetDeviceImageSparseMemoryRequirements
         let device_info = global.get_device_info(device).unwrap();
         let dispatch_table = &device_info.dispatch_table.core.fp_v1_3();
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .get_device_image_sparse_memory_requirements(
                 unsafe { p_info.as_ref() }.unwrap(),
-                if p_sparse_memory_requirements.is_null() {
-                    None
-                } else {
-                    Some(unsafe {
-                        std::slice::from_raw_parts_mut(
-                            p_sparse_memory_requirements,
-                            *unsafe { p_sparse_memory_requirement_count.as_ref() }.unwrap()
-                                as usize,
-                        )
-                    })
+                unsafe { ptr_as_uninit_mut(p_sparse_memory_requirement_count) }.unwrap(),
+                unsafe {
+                    maybe_uninit_slice_from_raw_parts_mut(
+                        p_sparse_memory_requirements,
+                        p_sparse_memory_requirement_count,
+                    )
                 },
             );
         match layer_result {
@@ -16064,7 +15815,7 @@ impl<T: Layer> Global<T> {
             .borrow()
             .hooks()
             .get_device_group_present_capabilities_khr(
-                unsafe { p_device_group_present_capabilities.as_mut() }.unwrap(),
+                unsafe { ptr_as_uninit_mut(p_device_group_present_capabilities) }.unwrap(),
             );
         match layer_result {
             LayerResult::Handled(res) => match res {
@@ -16146,13 +15897,12 @@ impl<T: Layer> Global<T> {
         // vkCreateSharedSwapchainsKHR
         let device_info = global.get_device_info(device).unwrap();
         let dispatch_table = &device_info.dispatch_table.khr_display_swapchain;
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .create_shared_swapchains_khr(
-                unsafe { std::slice::from_raw_parts(p_create_infos, swapchain_count as usize) },
+                unsafe { slice_from_raw_parts(p_create_infos, swapchain_count) },
                 unsafe { p_allocator.as_ref() },
             );
         match layer_result {
@@ -16246,22 +15996,18 @@ impl<T: Layer> Global<T> {
         // vkGetVideoSessionMemoryRequirementsKHR
         let device_info = global.get_device_info(device).unwrap();
         let dispatch_table = &device_info.dispatch_table.khr_video_queue;
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .get_video_session_memory_requirements_khr(
                 video_session,
-                if p_memory_requirements.is_null() {
-                    None
-                } else {
-                    Some(unsafe {
-                        std::slice::from_raw_parts_mut(
-                            p_memory_requirements,
-                            *unsafe { p_memory_requirements_count.as_ref() }.unwrap() as usize,
-                        )
-                    })
+                unsafe { ptr_as_uninit_mut(p_memory_requirements_count) }.unwrap(),
+                unsafe {
+                    maybe_uninit_slice_from_raw_parts_mut(
+                        p_memory_requirements,
+                        p_memory_requirements_count,
+                    )
                 },
             );
         match layer_result {
@@ -16289,16 +16035,12 @@ impl<T: Layer> Global<T> {
         // vkBindVideoSessionMemoryKHR
         let device_info = global.get_device_info(device).unwrap();
         let dispatch_table = &device_info.dispatch_table.khr_video_queue;
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .bind_video_session_memory_khr(video_session, unsafe {
-                std::slice::from_raw_parts(
-                    p_bind_session_memory_infos,
-                    bind_session_memory_info_count as usize,
-                )
+                slice_from_raw_parts(p_bind_session_memory_infos, bind_session_memory_info_count)
             });
         match layer_result {
             LayerResult::Handled(res) => match res {
@@ -16543,7 +16285,7 @@ impl<T: Layer> Global<T> {
             .get_memory_win32_handle_properties_khr(
                 handle_type,
                 handle,
-                unsafe { p_memory_win32_handle_properties.as_mut() }.unwrap(),
+                unsafe { ptr_as_uninit_mut(p_memory_win32_handle_properties) }.unwrap(),
             );
         match layer_result {
             LayerResult::Handled(res) => match res {
@@ -16604,7 +16346,7 @@ impl<T: Layer> Global<T> {
             .get_memory_fd_properties_khr(
                 handle_type,
                 fd,
-                unsafe { p_memory_fd_properties.as_mut() }.unwrap(),
+                unsafe { ptr_as_uninit_mut(p_memory_fd_properties) }.unwrap(),
             );
         match layer_result {
             LayerResult::Handled(res) => match res {
@@ -16742,7 +16484,6 @@ impl<T: Layer> Global<T> {
         // vkCmdPushDescriptorSetKHR
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.khr_push_descriptor;
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
@@ -16752,9 +16493,7 @@ impl<T: Layer> Global<T> {
                 pipeline_bind_point,
                 layout,
                 set,
-                unsafe {
-                    std::slice::from_raw_parts(p_descriptor_writes, descriptor_write_count as usize)
-                },
+                unsafe { slice_from_raw_parts(p_descriptor_writes, descriptor_write_count) },
             );
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -16790,7 +16529,7 @@ impl<T: Layer> Global<T> {
                 descriptor_update_template,
                 layout,
                 set,
-                unsafe { p_data.as_ref() }.unwrap(),
+                p_data,
             );
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -16986,7 +16725,6 @@ impl<T: Layer> Global<T> {
         // vkCmdSetFragmentShadingRateKHR
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.khr_fragment_shading_rate;
-        let combiner_ops = unsafe { combiner_ops.as_ref() }.unwrap();
         let layer_result = device_info
             .customized_info
             .borrow()
@@ -16994,7 +16732,7 @@ impl<T: Layer> Global<T> {
             .cmd_set_fragment_shading_rate_khr(
                 command_buffer,
                 unsafe { p_fragment_size.as_ref() }.unwrap(),
-                combiner_ops,
+                unsafe { combiner_ops.as_ref() }.unwrap(),
             );
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -17162,23 +16900,14 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info
             .dispatch_table
             .khr_pipeline_executable_properties;
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .get_pipeline_executable_properties_khr(
                 unsafe { p_pipeline_info.as_ref() }.unwrap(),
-                if p_properties.is_null() {
-                    None
-                } else {
-                    Some(unsafe {
-                        std::slice::from_raw_parts_mut(
-                            p_properties,
-                            *unsafe { p_executable_count.as_ref() }.unwrap() as usize,
-                        )
-                    })
-                },
+                unsafe { ptr_as_uninit_mut(p_executable_count) }.unwrap(),
+                unsafe { maybe_uninit_slice_from_raw_parts_mut(p_properties, p_executable_count) },
             );
         match layer_result {
             LayerResult::Handled(res) => match res {
@@ -17207,23 +16936,14 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info
             .dispatch_table
             .khr_pipeline_executable_properties;
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .get_pipeline_executable_statistics_khr(
                 unsafe { p_executable_info.as_ref() }.unwrap(),
-                if p_statistics.is_null() {
-                    None
-                } else {
-                    Some(unsafe {
-                        std::slice::from_raw_parts_mut(
-                            p_statistics,
-                            *unsafe { p_statistic_count.as_ref() }.unwrap() as usize,
-                        )
-                    })
-                },
+                unsafe { ptr_as_uninit_mut(p_statistic_count) }.unwrap(),
+                unsafe { maybe_uninit_slice_from_raw_parts_mut(p_statistics, p_statistic_count) },
             );
         match layer_result {
             LayerResult::Handled(res) => match res {
@@ -17252,22 +16972,18 @@ impl<T: Layer> Global<T> {
         let dispatch_table = &device_info
             .dispatch_table
             .khr_pipeline_executable_properties;
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .get_pipeline_executable_internal_representations_khr(
                 unsafe { p_executable_info.as_ref() }.unwrap(),
-                if p_internal_representations.is_null() {
-                    None
-                } else {
-                    Some(unsafe {
-                        std::slice::from_raw_parts_mut(
-                            p_internal_representations,
-                            *unsafe { p_internal_representation_count.as_ref() }.unwrap() as usize,
-                        )
-                    })
+                unsafe { ptr_as_uninit_mut(p_internal_representation_count) }.unwrap(),
+                unsafe {
+                    maybe_uninit_slice_from_raw_parts_mut(
+                        p_internal_representations,
+                        p_internal_representation_count,
+                    )
                 },
             );
         match layer_result {
@@ -17343,22 +17059,18 @@ impl<T: Layer> Global<T> {
         // vkGetQueueCheckpointData2NV
         let device_info = global.get_device_info(queue).unwrap();
         let dispatch_table = &device_info.dispatch_table.khr_synchronization2;
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .get_queue_checkpoint_data2_nv(
                 queue,
-                if p_checkpoint_data.is_null() {
-                    None
-                } else {
-                    Some(unsafe {
-                        std::slice::from_raw_parts_mut(
-                            p_checkpoint_data,
-                            *unsafe { p_checkpoint_data_count.as_ref() }.unwrap() as usize,
-                        )
-                    })
+                unsafe { ptr_as_uninit_mut(p_checkpoint_data_count) }.unwrap(),
+                unsafe {
+                    maybe_uninit_slice_from_raw_parts_mut(
+                        p_checkpoint_data,
+                        p_checkpoint_data_count,
+                    )
                 },
             );
         match layer_result {
@@ -17471,16 +17183,13 @@ impl<T: Layer> Global<T> {
         // vkQueueSignalReleaseImageANDROID
         let device_info = global.get_device_info(queue).unwrap();
         let dispatch_table = &device_info.dispatch_table.android_native_buffer;
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .queue_signal_release_image_android(
                 queue,
-                unsafe {
-                    std::slice::from_raw_parts(p_wait_semaphores, wait_semaphore_count as usize)
-                },
+                unsafe { slice_from_raw_parts(p_wait_semaphores, wait_semaphore_count) },
                 image,
             );
         match layer_result {
@@ -17522,7 +17231,7 @@ impl<T: Layer> Global<T> {
                 format,
                 image_usage,
                 swapchain_image_usage,
-                unsafe { gralloc_consumer_usage.as_mut() }.unwrap(),
+                unsafe { ptr_as_uninit_mut(gralloc_consumer_usage) }.unwrap(),
             );
         match layer_result {
             LayerResult::Handled(res) => match res {
@@ -17662,9 +17371,6 @@ impl<T: Layer> Global<T> {
         // vkCmdBindTransformFeedbackBuffersEXT
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.ext_transform_feedback;
-        #[allow(clippy::unnecessary_cast)]
-        #[allow(clippy::unnecessary_cast)]
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
@@ -17672,13 +17378,9 @@ impl<T: Layer> Global<T> {
             .cmd_bind_transform_feedback_buffers_ext(
                 command_buffer,
                 first_binding,
-                unsafe { std::slice::from_raw_parts(p_buffers, binding_count as usize) },
-                unsafe { std::slice::from_raw_parts(p_offsets, binding_count as usize) },
-                if p_sizes.is_null() {
-                    None
-                } else {
-                    Some(unsafe { std::slice::from_raw_parts(p_sizes, binding_count as usize) })
-                },
+                unsafe { slice_from_raw_parts(p_buffers, binding_count) },
+                unsafe { slice_from_raw_parts(p_offsets, binding_count) },
+                unsafe { maybe_slice_from_raw_parts(p_sizes, binding_count) },
             );
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -17705,8 +17407,6 @@ impl<T: Layer> Global<T> {
         // vkCmdBeginTransformFeedbackEXT
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.ext_transform_feedback;
-        #[allow(clippy::unnecessary_cast)]
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
@@ -17714,18 +17414,9 @@ impl<T: Layer> Global<T> {
             .cmd_begin_transform_feedback_ext(
                 command_buffer,
                 first_counter_buffer,
+                unsafe { slice_from_raw_parts(p_counter_buffers, counter_buffer_count) },
                 unsafe {
-                    std::slice::from_raw_parts(p_counter_buffers, counter_buffer_count as usize)
-                },
-                if p_counter_buffer_offsets.is_null() {
-                    None
-                } else {
-                    Some(unsafe {
-                        std::slice::from_raw_parts(
-                            p_counter_buffer_offsets,
-                            counter_buffer_count as usize,
-                        )
-                    })
+                    maybe_slice_from_raw_parts(p_counter_buffer_offsets, counter_buffer_count)
                 },
             );
         match layer_result {
@@ -17752,8 +17443,6 @@ impl<T: Layer> Global<T> {
         // vkCmdEndTransformFeedbackEXT
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.ext_transform_feedback;
-        #[allow(clippy::unnecessary_cast)]
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
@@ -17761,18 +17450,9 @@ impl<T: Layer> Global<T> {
             .cmd_end_transform_feedback_ext(
                 command_buffer,
                 first_counter_buffer,
+                unsafe { slice_from_raw_parts(p_counter_buffers, counter_buffer_count) },
                 unsafe {
-                    std::slice::from_raw_parts(p_counter_buffers, counter_buffer_count as usize)
-                },
-                if p_counter_buffer_offsets.is_null() {
-                    None
-                } else {
-                    Some(unsafe {
-                        std::slice::from_raw_parts(
-                            p_counter_buffer_offsets,
-                            counter_buffer_count as usize,
-                        )
-                    })
+                    maybe_slice_from_raw_parts(p_counter_buffer_offsets, counter_buffer_count)
                 },
             );
         match layer_result {
@@ -18040,7 +17720,10 @@ impl<T: Layer> Global<T> {
             .customized_info
             .borrow()
             .hooks()
-            .get_image_view_address_nvx(image_view, unsafe { p_properties.as_mut() }.unwrap());
+            .get_image_view_address_nvx(
+                image_view,
+                unsafe { ptr_as_uninit_mut(p_properties) }.unwrap(),
+            );
         match layer_result {
             LayerResult::Handled(res) => match res {
                 Ok(()) => vk::Result::SUCCESS,
@@ -18067,13 +17750,16 @@ impl<T: Layer> Global<T> {
             .customized_info
             .borrow()
             .hooks()
-            .get_shader_info_amd(pipeline, shader_stage, info_type);
+            .get_shader_info_amd(
+                pipeline,
+                shader_stage,
+                info_type,
+                unsafe { ptr_as_uninit_mut(p_info_size) }.unwrap(),
+                unsafe { maybe_uninit_slice_from_raw_parts_mut(p_info as *mut u8, p_info_size) },
+            );
         match layer_result {
             LayerResult::Handled(res) => match res {
-                Ok(res) => {
-                    let p_info = p_info as *mut u8;
-                    unsafe { fill_vk_out_array(&res, NonNull::new(p_info_size).unwrap(), p_info) }
-                }
+                Ok(()) => vk::Result::SUCCESS,
                 Err(e) => e,
             },
             LayerResult::Unhandled => unsafe {
@@ -18169,13 +17855,12 @@ impl<T: Layer> Global<T> {
         // vkCmdSetViewportWScalingNV
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.nv_clip_space_w_scaling;
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .cmd_set_viewport_w_scaling_nv(command_buffer, first_viewport, unsafe {
-                std::slice::from_raw_parts(p_viewport_w_scalings, viewport_count as usize)
+                slice_from_raw_parts(p_viewport_w_scalings, viewport_count)
             });
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -18335,7 +18020,7 @@ impl<T: Layer> Global<T> {
             .hooks()
             .get_refresh_cycle_duration_google(
                 swapchain,
-                unsafe { p_display_timing_properties.as_mut() }.unwrap(),
+                unsafe { ptr_as_uninit_mut(p_display_timing_properties) }.unwrap(),
             );
         match layer_result {
             LayerResult::Handled(res) => match res {
@@ -18361,22 +18046,18 @@ impl<T: Layer> Global<T> {
         // vkGetPastPresentationTimingGOOGLE
         let device_info = global.get_device_info(device).unwrap();
         let dispatch_table = &device_info.dispatch_table.google_display_timing;
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .get_past_presentation_timing_google(
                 swapchain,
-                if p_presentation_timings.is_null() {
-                    None
-                } else {
-                    Some(unsafe {
-                        std::slice::from_raw_parts_mut(
-                            p_presentation_timings,
-                            *unsafe { p_presentation_timing_count.as_ref() }.unwrap() as usize,
-                        )
-                    })
+                unsafe { ptr_as_uninit_mut(p_presentation_timing_count) }.unwrap(),
+                unsafe {
+                    maybe_uninit_slice_from_raw_parts_mut(
+                        p_presentation_timings,
+                        p_presentation_timing_count,
+                    )
                 },
             );
         match layer_result {
@@ -18404,13 +18085,12 @@ impl<T: Layer> Global<T> {
         // vkCmdSetDiscardRectangleEXT
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.ext_discard_rectangles;
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .cmd_set_discard_rectangle_ext(command_buffer, first_discard_rectangle, unsafe {
-                std::slice::from_raw_parts(p_discard_rectangles, discard_rectangle_count as usize)
+                slice_from_raw_parts(p_discard_rectangles, discard_rectangle_count)
             });
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -18434,15 +18114,13 @@ impl<T: Layer> Global<T> {
         // vkSetHdrMetadataEXT
         let device_info = global.get_device_info(device).unwrap();
         let dispatch_table = &device_info.dispatch_table.ext_hdr_metadata;
-        #[allow(clippy::unnecessary_cast)]
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .set_hdr_metadata_ext(
-                unsafe { std::slice::from_raw_parts(p_swapchains, swapchain_count as usize) },
-                unsafe { std::slice::from_raw_parts(p_metadata, swapchain_count as usize) },
+                unsafe { slice_from_raw_parts(p_swapchains, swapchain_count) },
+                unsafe { slice_from_raw_parts(p_metadata, swapchain_count) },
             );
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -18638,8 +18316,8 @@ impl<T: Layer> Global<T> {
             .borrow()
             .hooks()
             .get_android_hardware_buffer_properties_android(
-                unsafe { buffer.as_ref() }.unwrap(),
-                unsafe { p_properties.as_mut() }.unwrap(),
+                buffer,
+                unsafe { ptr_as_uninit_mut(p_properties) }.unwrap(),
             );
         match layer_result {
             LayerResult::Handled(res) => match res {
@@ -18727,7 +18405,7 @@ impl<T: Layer> Global<T> {
             .hooks()
             .get_image_drm_format_modifier_properties_ext(
                 image,
-                unsafe { p_properties.as_mut() }.unwrap(),
+                unsafe { ptr_as_uninit_mut(p_properties) }.unwrap(),
             );
         match layer_result {
             LayerResult::Handled(res) => match res {
@@ -18809,13 +18487,12 @@ impl<T: Layer> Global<T> {
         // vkMergeValidationCachesEXT
         let device_info = global.get_device_info(device).unwrap();
         let dispatch_table = &device_info.dispatch_table.ext_validation_cache;
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .merge_validation_caches_ext(dst_cache, unsafe {
-                std::slice::from_raw_parts(p_src_caches, src_cache_count as usize)
+                slice_from_raw_parts(p_src_caches, src_cache_count)
             });
         match layer_result {
             LayerResult::Handled(res) => match res {
@@ -18846,13 +18523,14 @@ impl<T: Layer> Global<T> {
             .customized_info
             .borrow()
             .hooks()
-            .get_validation_cache_data_ext(validation_cache);
+            .get_validation_cache_data_ext(
+                validation_cache,
+                unsafe { ptr_as_uninit_mut(p_data_size) }.unwrap(),
+                unsafe { maybe_uninit_slice_from_raw_parts_mut(p_data as *mut u8, p_data_size) },
+            );
         match layer_result {
             LayerResult::Handled(res) => match res {
-                Ok(res) => {
-                    let p_data = p_data as *mut u8;
-                    unsafe { fill_vk_out_array(&res, NonNull::new(p_data_size).unwrap(), p_data) }
-                }
+                Ok(()) => vk::Result::SUCCESS,
                 Err(e) => e,
             },
             LayerResult::Unhandled => unsafe {
@@ -18900,13 +18578,12 @@ impl<T: Layer> Global<T> {
         // vkCmdSetViewportShadingRatePaletteNV
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.nv_shading_rate_image;
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .cmd_set_viewport_shading_rate_palette_nv(command_buffer, first_viewport, unsafe {
-                std::slice::from_raw_parts(p_shading_rate_palettes, viewport_count as usize)
+                slice_from_raw_parts(p_shading_rate_palettes, viewport_count)
             });
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -18930,16 +18607,12 @@ impl<T: Layer> Global<T> {
         // vkCmdSetCoarseSampleOrderNV
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.nv_shading_rate_image;
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .cmd_set_coarse_sample_order_nv(command_buffer, sample_order_type, unsafe {
-                std::slice::from_raw_parts(
-                    p_custom_sample_orders,
-                    custom_sample_order_count as usize,
-                )
+                slice_from_raw_parts(p_custom_sample_orders, custom_sample_order_count)
             });
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -19030,7 +18703,7 @@ impl<T: Layer> Global<T> {
             .hooks()
             .get_acceleration_structure_memory_requirements_nv(
                 unsafe { p_info.as_ref() }.unwrap(),
-                unsafe { p_memory_requirements.as_mut() }.unwrap(),
+                unsafe { ptr_as_uninit_mut(p_memory_requirements) }.unwrap(),
             );
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -19052,13 +18725,12 @@ impl<T: Layer> Global<T> {
         // vkBindAccelerationStructureMemoryNV
         let device_info = global.get_device_info(device).unwrap();
         let dispatch_table = &device_info.dispatch_table.nv_ray_tracing;
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .bind_acceleration_structure_memory_nv(unsafe {
-                std::slice::from_raw_parts(p_bind_infos, bind_info_count as usize)
+                slice_from_raw_parts(p_bind_infos, bind_info_count)
             });
         match layer_result {
             LayerResult::Handled(res) => match res {
@@ -19220,14 +18892,13 @@ impl<T: Layer> Global<T> {
         // vkCreateRayTracingPipelinesNV
         let device_info = global.get_device_info(device).unwrap();
         let dispatch_table = &device_info.dispatch_table.nv_ray_tracing;
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .create_ray_tracing_pipelines_nv(
                 pipeline_cache,
-                unsafe { std::slice::from_raw_parts(p_create_infos, create_info_count as usize) },
+                unsafe { slice_from_raw_parts(p_create_infos, create_info_count) },
                 unsafe { p_allocator.as_ref() },
             );
         match layer_result {
@@ -19272,15 +18943,12 @@ impl<T: Layer> Global<T> {
             .customized_info
             .borrow()
             .hooks()
-            .get_ray_tracing_shader_group_handles_khr(pipeline, first_group, group_count);
+            .get_ray_tracing_shader_group_handles_khr(pipeline, first_group, group_count, unsafe {
+                uninit_slice_from_raw_parts_mut(p_data as *mut u8, data_size)
+            });
         match layer_result {
             LayerResult::Handled(res) => match res {
-                Ok(res) => {
-                    let p_data = p_data as *mut u8;
-                    unsafe { std::slice::from_raw_parts_mut(p_data, data_size) }
-                        .copy_from_slice(&res);
-                    vk::Result::SUCCESS
-                }
+                Ok(()) => vk::Result::SUCCESS,
                 Err(e) => e,
             },
             LayerResult::Unhandled => unsafe {
@@ -19309,15 +18977,12 @@ impl<T: Layer> Global<T> {
             .customized_info
             .borrow()
             .hooks()
-            .get_acceleration_structure_handle_nv(acceleration_structure);
+            .get_acceleration_structure_handle_nv(acceleration_structure, unsafe {
+                uninit_slice_from_raw_parts_mut(p_data as *mut u8, data_size)
+            });
         match layer_result {
             LayerResult::Handled(res) => match res {
-                Ok(res) => {
-                    let p_data = p_data as *mut u8;
-                    unsafe { std::slice::from_raw_parts_mut(p_data, data_size) }
-                        .copy_from_slice(&res);
-                    vk::Result::SUCCESS
-                }
+                Ok(()) => vk::Result::SUCCESS,
                 Err(e) => e,
             },
             LayerResult::Unhandled => unsafe {
@@ -19342,7 +19007,6 @@ impl<T: Layer> Global<T> {
         // vkCmdWriteAccelerationStructuresPropertiesNV
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.nv_ray_tracing;
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
@@ -19350,10 +19014,7 @@ impl<T: Layer> Global<T> {
             .cmd_write_acceleration_structures_properties_nv(
                 command_buffer,
                 unsafe {
-                    std::slice::from_raw_parts(
-                        p_acceleration_structures,
-                        acceleration_structure_count as usize,
-                    )
+                    slice_from_raw_parts(p_acceleration_structures, acceleration_structure_count)
                 },
                 query_type,
                 query_pool,
@@ -19413,8 +19074,8 @@ impl<T: Layer> Global<T> {
             .hooks()
             .get_memory_host_pointer_properties_ext(
                 handle_type,
-                unsafe { p_host_pointer.as_ref() }.unwrap(),
-                unsafe { p_memory_host_pointer_properties.as_mut() }.unwrap(),
+                p_host_pointer,
+                unsafe { ptr_as_uninit_mut(p_memory_host_pointer_properties) }.unwrap(),
             );
         match layer_result {
             LayerResult::Handled(res) => match res {
@@ -19477,15 +19138,13 @@ impl<T: Layer> Global<T> {
         // vkGetCalibratedTimestampsEXT
         let device_info = global.get_device_info(device).unwrap();
         let dispatch_table = &device_info.dispatch_table.ext_calibrated_timestamps;
-        #[allow(clippy::unnecessary_cast)]
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .get_calibrated_timestamps_ext(
-                unsafe { std::slice::from_raw_parts(p_timestamp_infos, timestamp_count as usize) },
-                unsafe { std::slice::from_raw_parts_mut(p_timestamps, timestamp_count as usize) },
+                unsafe { slice_from_raw_parts(p_timestamp_infos, timestamp_count) },
+                unsafe { uninit_slice_from_raw_parts_mut(p_timestamps, timestamp_count) },
             );
         match layer_result {
             LayerResult::Handled(res) => match res {
@@ -19607,13 +19266,12 @@ impl<T: Layer> Global<T> {
         // vkCmdSetExclusiveScissorNV
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.nv_scissor_exclusive;
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .cmd_set_exclusive_scissor_nv(command_buffer, first_exclusive_scissor, unsafe {
-                std::slice::from_raw_parts(p_exclusive_scissors, exclusive_scissor_count as usize)
+                slice_from_raw_parts(p_exclusive_scissors, exclusive_scissor_count)
             });
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -19639,10 +19297,7 @@ impl<T: Layer> Global<T> {
             .customized_info
             .borrow()
             .hooks()
-            .cmd_set_checkpoint_nv(
-                command_buffer,
-                unsafe { p_checkpoint_marker.as_ref() }.unwrap(),
-            );
+            .cmd_set_checkpoint_nv(command_buffer, p_checkpoint_marker);
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -19659,22 +19314,18 @@ impl<T: Layer> Global<T> {
         // vkGetQueueCheckpointDataNV
         let device_info = global.get_device_info(queue).unwrap();
         let dispatch_table = &device_info.dispatch_table.nv_device_diagnostic_checkpoints;
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .get_queue_checkpoint_data_nv(
                 queue,
-                if p_checkpoint_data.is_null() {
-                    None
-                } else {
-                    Some(unsafe {
-                        std::slice::from_raw_parts_mut(
-                            p_checkpoint_data,
-                            *unsafe { p_checkpoint_data_count.as_ref() }.unwrap() as usize,
-                        )
-                    })
+                unsafe { ptr_as_uninit_mut(p_checkpoint_data_count) }.unwrap(),
+                unsafe {
+                    maybe_uninit_slice_from_raw_parts_mut(
+                        p_checkpoint_data,
+                        p_checkpoint_data_count,
+                    )
                 },
             );
         match layer_result {
@@ -19899,7 +19550,10 @@ impl<T: Layer> Global<T> {
             .customized_info
             .borrow()
             .hooks()
-            .get_performance_parameter_intel(parameter, unsafe { p_value.as_mut() }.unwrap());
+            .get_performance_parameter_intel(
+                parameter,
+                unsafe { ptr_as_uninit_mut(p_value) }.unwrap(),
+            );
         match layer_result {
             LayerResult::Handled(res) => match res {
                 Ok(()) => vk::Result::SUCCESS,
@@ -20073,7 +19727,7 @@ impl<T: Layer> Global<T> {
             .hooks()
             .get_generated_commands_memory_requirements_nv(
                 unsafe { p_info.as_ref() }.unwrap(),
-                unsafe { p_memory_requirements.as_mut() }.unwrap(),
+                unsafe { ptr_as_uninit_mut(p_memory_requirements) }.unwrap(),
             );
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -20248,7 +19902,7 @@ impl<T: Layer> Global<T> {
             .customized_info
             .borrow()
             .hooks()
-            .export_metal_objects_ext(unsafe { p_metal_objects_info.as_mut() }.unwrap());
+            .export_metal_objects_ext(unsafe { ptr_as_uninit_mut(p_metal_objects_info) }.unwrap());
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -20323,13 +19977,11 @@ impl<T: Layer> Global<T> {
             .customized_info
             .borrow()
             .hooks()
-            .get_descriptor_ext(unsafe { p_descriptor_info.as_ref() }.unwrap());
+            .get_descriptor_ext(unsafe { p_descriptor_info.as_ref() }.unwrap(), unsafe {
+                uninit_slice_from_raw_parts_mut(p_descriptor as *mut u8, data_size)
+            });
         match layer_result {
-            LayerResult::Handled(res) => {
-                let p_descriptor = p_descriptor as *mut u8;
-                unsafe { std::slice::from_raw_parts_mut(p_descriptor, data_size) }
-                    .copy_from_slice(&res);
-            }
+            LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
                 (dispatch_table.get_descriptor_ext)(
                     device,
@@ -20349,13 +20001,12 @@ impl<T: Layer> Global<T> {
         // vkCmdBindDescriptorBuffersEXT
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.ext_descriptor_buffer;
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .cmd_bind_descriptor_buffers_ext(command_buffer, unsafe {
-                std::slice::from_raw_parts(p_binding_infos, buffer_count as usize)
+                slice_from_raw_parts(p_binding_infos, buffer_count)
             });
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -20381,8 +20032,6 @@ impl<T: Layer> Global<T> {
         // vkCmdSetDescriptorBufferOffsetsEXT
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.ext_descriptor_buffer;
-        #[allow(clippy::unnecessary_cast)]
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
@@ -20392,8 +20041,8 @@ impl<T: Layer> Global<T> {
                 pipeline_bind_point,
                 layout,
                 first_set,
-                unsafe { std::slice::from_raw_parts(p_buffer_indices, set_count as usize) },
-                unsafe { std::slice::from_raw_parts(p_offsets, set_count as usize) },
+                unsafe { slice_from_raw_parts(p_buffer_indices, set_count) },
+                unsafe { slice_from_raw_parts(p_offsets, set_count) },
             );
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -20457,7 +20106,7 @@ impl<T: Layer> Global<T> {
             .hooks()
             .get_buffer_opaque_capture_descriptor_data_ext(
                 unsafe { p_info.as_ref() }.unwrap(),
-                unsafe { p_data.as_mut() }.unwrap(),
+                p_data,
             );
         match layer_result {
             LayerResult::Handled(res) => match res {
@@ -20486,7 +20135,7 @@ impl<T: Layer> Global<T> {
             .hooks()
             .get_image_opaque_capture_descriptor_data_ext(
                 unsafe { p_info.as_ref() }.unwrap(),
-                unsafe { p_data.as_mut() }.unwrap(),
+                p_data,
             );
         match layer_result {
             LayerResult::Handled(res) => match res {
@@ -20515,7 +20164,7 @@ impl<T: Layer> Global<T> {
             .hooks()
             .get_image_view_opaque_capture_descriptor_data_ext(
                 unsafe { p_info.as_ref() }.unwrap(),
-                unsafe { p_data.as_mut() }.unwrap(),
+                p_data,
             );
         match layer_result {
             LayerResult::Handled(res) => match res {
@@ -20544,7 +20193,7 @@ impl<T: Layer> Global<T> {
             .hooks()
             .get_sampler_opaque_capture_descriptor_data_ext(
                 unsafe { p_info.as_ref() }.unwrap(),
-                unsafe { p_data.as_mut() }.unwrap(),
+                p_data,
             );
         match layer_result {
             LayerResult::Handled(res) => match res {
@@ -20573,7 +20222,7 @@ impl<T: Layer> Global<T> {
             .hooks()
             .get_acceleration_structure_opaque_capture_descriptor_data_ext(
                 unsafe { p_info.as_ref() }.unwrap(),
-                unsafe { p_data.as_mut() }.unwrap(),
+                p_data,
             );
         match layer_result {
             LayerResult::Handled(res) => match res {
@@ -20596,12 +20245,15 @@ impl<T: Layer> Global<T> {
         // vkCmdSetFragmentShadingRateEnumNV
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.nv_fragment_shading_rate_enums;
-        let combiner_ops = unsafe { combiner_ops.as_ref() }.unwrap();
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
-            .cmd_set_fragment_shading_rate_enum_nv(command_buffer, shading_rate, combiner_ops);
+            .cmd_set_fragment_shading_rate_enum_nv(
+                command_buffer,
+                shading_rate,
+                unsafe { combiner_ops.as_ref() }.unwrap(),
+            );
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -20630,7 +20282,7 @@ impl<T: Layer> Global<T> {
             .get_image_subresource_layout2_ext(
                 image,
                 unsafe { p_subresource.as_ref() }.unwrap(),
-                unsafe { p_layout.as_mut() }.unwrap(),
+                unsafe { ptr_as_uninit_mut(p_layout) }.unwrap(),
             );
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -20655,8 +20307,6 @@ impl<T: Layer> Global<T> {
         // vkCmdSetVertexInputEXT
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.ext_vertex_input_dynamic_state;
-        #[allow(clippy::unnecessary_cast)]
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
@@ -20664,15 +20314,15 @@ impl<T: Layer> Global<T> {
             .cmd_set_vertex_input_ext(
                 command_buffer,
                 unsafe {
-                    std::slice::from_raw_parts(
+                    slice_from_raw_parts(
                         p_vertex_binding_descriptions,
-                        vertex_binding_description_count as usize,
+                        vertex_binding_description_count,
                     )
                 },
                 unsafe {
-                    std::slice::from_raw_parts(
+                    slice_from_raw_parts(
                         p_vertex_attribute_descriptions,
-                        vertex_attribute_description_count as usize,
+                        vertex_attribute_description_count,
                     )
                 },
             );
@@ -20739,7 +20389,7 @@ impl<T: Layer> Global<T> {
             .get_memory_zircon_handle_properties_fuchsia(
                 handle_type,
                 zircon_handle,
-                unsafe { p_memory_zircon_handle_properties.as_mut() }.unwrap(),
+                unsafe { ptr_as_uninit_mut(p_memory_zircon_handle_properties) }.unwrap(),
             );
         match layer_result {
             LayerResult::Handled(res) => match res {
@@ -20950,7 +20600,7 @@ impl<T: Layer> Global<T> {
             .hooks()
             .get_buffer_collection_properties_fuchsia(
                 collection,
-                unsafe { p_properties.as_mut() }.unwrap(),
+                unsafe { ptr_as_uninit_mut(p_properties) }.unwrap(),
             );
         match layer_result {
             LayerResult::Handled(res) => match res {
@@ -20981,7 +20631,7 @@ impl<T: Layer> Global<T> {
             .hooks()
             .get_device_subpass_shading_max_workgroup_size_huawei(
                 renderpass,
-                unsafe { p_max_workgroup_size.as_mut() }.unwrap(),
+                unsafe { ptr_as_uninit_mut(p_max_workgroup_size) }.unwrap(),
             );
         match layer_result {
             LayerResult::Handled(res) => match res {
@@ -21087,7 +20737,7 @@ impl<T: Layer> Global<T> {
             .hooks()
             .get_pipeline_properties_ext(
                 unsafe { p_pipeline_info.as_ref() }.unwrap(),
-                unsafe { p_pipeline_properties.as_mut() }.unwrap(),
+                unsafe { ptr_as_uninit_mut(p_pipeline_properties) }.unwrap(),
             );
         match layer_result {
             LayerResult::Handled(res) => match res {
@@ -21155,19 +20805,13 @@ impl<T: Layer> Global<T> {
         // vkCmdSetColorWriteEnableEXT
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.ext_color_write_enable;
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
-            .cmd_set_color_write_enable_ext(
-                command_buffer,
-                unsafe {
-                    std::slice::from_raw_parts(p_color_write_enables, attachment_count as usize)
-                }
-                .iter()
-                .map(|v| *v == vk::TRUE),
-            );
+            .cmd_set_color_write_enable_ext(command_buffer, unsafe {
+                bool_iterator_from_raw_parts(p_color_write_enables, attachment_count)
+            });
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -21191,14 +20835,13 @@ impl<T: Layer> Global<T> {
         // vkCmdDrawMultiEXT
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.ext_multi_draw;
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .cmd_draw_multi_ext(
                 command_buffer,
-                unsafe { std::slice::from_raw_parts(p_vertex_info, draw_count as usize) },
+                unsafe { slice_from_raw_parts(p_vertex_info, draw_count) },
                 instance_count,
                 first_instance,
                 stride,
@@ -21230,14 +20873,13 @@ impl<T: Layer> Global<T> {
         // vkCmdDrawMultiIndexedEXT
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.ext_multi_draw;
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .cmd_draw_multi_indexed_ext(
                 command_buffer,
-                unsafe { std::slice::from_raw_parts(p_index_info, draw_count as usize) },
+                unsafe { slice_from_raw_parts(p_index_info, draw_count) },
                 instance_count,
                 first_instance,
                 stride,
@@ -21318,13 +20960,12 @@ impl<T: Layer> Global<T> {
         // vkCmdBuildMicromapsEXT
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.ext_opacity_micromap;
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .cmd_build_micromaps_ext(command_buffer, unsafe {
-                std::slice::from_raw_parts(p_infos, info_count as usize)
+                slice_from_raw_parts(p_infos, info_count)
             });
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -21343,13 +20984,12 @@ impl<T: Layer> Global<T> {
         // vkBuildMicromapsEXT
         let device_info = global.get_device_info(device).unwrap();
         let dispatch_table = &device_info.dispatch_table.ext_opacity_micromap;
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .build_micromaps_ext(deferred_operation, unsafe {
-                std::slice::from_raw_parts(p_infos, info_count as usize)
+                slice_from_raw_parts(p_infos, info_count)
             });
         match layer_result {
             LayerResult::Handled(res) => match res {
@@ -21451,16 +21091,14 @@ impl<T: Layer> Global<T> {
         // vkWriteMicromapsPropertiesEXT
         let device_info = global.get_device_info(device).unwrap();
         let dispatch_table = &device_info.dispatch_table.ext_opacity_micromap;
-        #[allow(clippy::unnecessary_cast)]
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .write_micromaps_properties_ext(
-                unsafe { std::slice::from_raw_parts(p_micromaps, micromap_count as usize) },
+                unsafe { slice_from_raw_parts(p_micromaps, micromap_count) },
                 query_type,
-                unsafe { std::slice::from_raw_parts_mut(p_data as *mut u8, data_size as usize) },
+                unsafe { uninit_slice_from_raw_parts_mut(p_data as *mut u8, data_size) },
                 stride,
             );
         match layer_result {
@@ -21553,14 +21191,13 @@ impl<T: Layer> Global<T> {
         // vkCmdWriteMicromapsPropertiesEXT
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.ext_opacity_micromap;
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .cmd_write_micromaps_properties_ext(
                 command_buffer,
-                unsafe { std::slice::from_raw_parts(p_micromaps, micromap_count as usize) },
+                unsafe { slice_from_raw_parts(p_micromaps, micromap_count) },
                 query_type,
                 query_pool,
                 first_query,
@@ -21623,7 +21260,7 @@ impl<T: Layer> Global<T> {
             .get_micromap_build_sizes_ext(
                 build_type,
                 unsafe { p_build_info.as_ref() }.unwrap(),
-                unsafe { p_size_info.as_mut() }.unwrap(),
+                unsafe { ptr_as_uninit_mut(p_size_info) }.unwrap(),
             );
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -21673,7 +21310,7 @@ impl<T: Layer> Global<T> {
             .hooks()
             .get_descriptor_set_layout_host_mapping_info_valve(
                 unsafe { p_binding_reference.as_ref() }.unwrap(),
-                unsafe { p_host_mapping.as_mut() }.unwrap(),
+                unsafe { ptr_as_uninit_mut(p_host_mapping) }.unwrap(),
             );
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -21753,7 +21390,6 @@ impl<T: Layer> Global<T> {
         // vkCmdCopyMemoryToImageIndirectNV
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.nv_copy_memory_indirect;
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
@@ -21764,7 +21400,7 @@ impl<T: Layer> Global<T> {
                 stride,
                 dst_image,
                 dst_image_layout,
-                unsafe { std::slice::from_raw_parts(p_image_subresources, copy_count as usize) },
+                unsafe { slice_from_raw_parts(p_image_subresources, copy_count) },
             );
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -21790,16 +21426,12 @@ impl<T: Layer> Global<T> {
         // vkCmdDecompressMemoryNV
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.nv_memory_decompression;
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .cmd_decompress_memory_nv(command_buffer, unsafe {
-                std::slice::from_raw_parts(
-                    p_decompress_memory_regions,
-                    decompress_region_count as usize,
-                )
+                slice_from_raw_parts(p_decompress_memory_regions, decompress_region_count)
             });
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -21939,13 +21571,12 @@ impl<T: Layer> Global<T> {
         // vkCmdSetSampleMaskEXT
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.ext_extended_dynamic_state3;
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .cmd_set_sample_mask_ext(command_buffer, samples, unsafe {
-                std::slice::from_raw_parts(p_sample_mask, ((samples.as_raw() + 31) / 32) as usize)
+                slice_from_raw_parts(p_sample_mask, (samples.as_raw() + 31) / 32)
             });
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -22033,20 +21664,13 @@ impl<T: Layer> Global<T> {
         // vkCmdSetColorBlendEnableEXT
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.ext_extended_dynamic_state3;
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
-            .cmd_set_color_blend_enable_ext(
-                command_buffer,
-                first_attachment,
-                unsafe {
-                    std::slice::from_raw_parts(p_color_blend_enables, attachment_count as usize)
-                }
-                .iter()
-                .map(|v| *v == vk::TRUE),
-            );
+            .cmd_set_color_blend_enable_ext(command_buffer, first_attachment, unsafe {
+                bool_iterator_from_raw_parts(p_color_blend_enables, attachment_count)
+            });
         match layer_result {
             LayerResult::Handled(res) => res,
             LayerResult::Unhandled => unsafe {
@@ -22069,13 +21693,12 @@ impl<T: Layer> Global<T> {
         // vkCmdSetColorBlendEquationEXT
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.ext_extended_dynamic_state3;
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .cmd_set_color_blend_equation_ext(command_buffer, first_attachment, unsafe {
-                std::slice::from_raw_parts(p_color_blend_equations, attachment_count as usize)
+                slice_from_raw_parts(p_color_blend_equations, attachment_count)
             });
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -22099,13 +21722,12 @@ impl<T: Layer> Global<T> {
         // vkCmdSetColorWriteMaskEXT
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.ext_extended_dynamic_state3;
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .cmd_set_color_write_mask_ext(command_buffer, first_attachment, unsafe {
-                std::slice::from_raw_parts(p_color_write_masks, attachment_count as usize)
+                slice_from_raw_parts(p_color_write_masks, attachment_count)
             });
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -22250,13 +21872,12 @@ impl<T: Layer> Global<T> {
         // vkCmdSetColorBlendAdvancedEXT
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.ext_extended_dynamic_state3;
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .cmd_set_color_blend_advanced_ext(command_buffer, first_attachment, unsafe {
-                std::slice::from_raw_parts(p_color_blend_advanced, attachment_count as usize)
+                slice_from_raw_parts(p_color_blend_advanced, attachment_count)
             });
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -22401,13 +22022,12 @@ impl<T: Layer> Global<T> {
         // vkCmdSetViewportSwizzleNV
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.ext_extended_dynamic_state3;
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .cmd_set_viewport_swizzle_nv(command_buffer, first_viewport, unsafe {
-                std::slice::from_raw_parts(p_viewport_swizzles, viewport_count as usize)
+                slice_from_raw_parts(p_viewport_swizzles, viewport_count)
             });
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -22528,16 +22148,12 @@ impl<T: Layer> Global<T> {
         // vkCmdSetCoverageModulationTableNV
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.ext_extended_dynamic_state3;
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .cmd_set_coverage_modulation_table_nv(command_buffer, unsafe {
-                std::slice::from_raw_parts(
-                    p_coverage_modulation_table,
-                    coverage_modulation_table_count as usize,
-                )
+                slice_from_raw_parts(p_coverage_modulation_table, coverage_modulation_table_count)
             });
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -22640,7 +22256,7 @@ impl<T: Layer> Global<T> {
             .hooks()
             .get_shader_module_identifier_ext(
                 shader_module,
-                unsafe { p_identifier.as_mut() }.unwrap(),
+                unsafe { ptr_as_uninit_mut(p_identifier) }.unwrap(),
             );
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -22668,7 +22284,7 @@ impl<T: Layer> Global<T> {
             .hooks()
             .get_shader_module_create_info_identifier_ext(
                 unsafe { p_create_info.as_ref() }.unwrap(),
-                unsafe { p_identifier.as_mut() }.unwrap(),
+                unsafe { ptr_as_uninit_mut(p_identifier) }.unwrap(),
             );
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -22808,23 +22424,14 @@ impl<T: Layer> Global<T> {
         // vkGetFramebufferTilePropertiesQCOM
         let device_info = global.get_device_info(device).unwrap();
         let dispatch_table = &device_info.dispatch_table.qcom_tile_properties;
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .get_framebuffer_tile_properties_qcom(
                 framebuffer,
-                if p_properties.is_null() {
-                    None
-                } else {
-                    Some(unsafe {
-                        std::slice::from_raw_parts_mut(
-                            p_properties,
-                            *unsafe { p_properties_count.as_ref() }.unwrap() as usize,
-                        )
-                    })
-                },
+                unsafe { ptr_as_uninit_mut(p_properties_count) }.unwrap(),
+                unsafe { maybe_uninit_slice_from_raw_parts_mut(p_properties, p_properties_count) },
             );
         match layer_result {
             LayerResult::Handled(res) => match res {
@@ -22856,7 +22463,7 @@ impl<T: Layer> Global<T> {
             .hooks()
             .get_dynamic_rendering_tile_properties_qcom(
                 unsafe { p_rendering_info.as_ref() }.unwrap(),
-                unsafe { p_properties.as_mut() }.unwrap(),
+                unsafe { ptr_as_uninit_mut(p_properties) }.unwrap(),
             );
         match layer_result {
             LayerResult::Handled(res) => match res {
@@ -23037,21 +22644,16 @@ impl<T: Layer> Global<T> {
         // vkWriteAccelerationStructuresPropertiesKHR
         let device_info = global.get_device_info(device).unwrap();
         let dispatch_table = &device_info.dispatch_table.khr_acceleration_structure;
-        #[allow(clippy::unnecessary_cast)]
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
             .hooks()
             .write_acceleration_structures_properties_khr(
                 unsafe {
-                    std::slice::from_raw_parts(
-                        p_acceleration_structures,
-                        acceleration_structure_count as usize,
-                    )
+                    slice_from_raw_parts(p_acceleration_structures, acceleration_structure_count)
                 },
                 query_type,
-                unsafe { std::slice::from_raw_parts_mut(p_data as *mut u8, data_size as usize) },
+                unsafe { uninit_slice_from_raw_parts_mut(p_data as *mut u8, data_size) },
                 stride,
             );
         match layer_result {
@@ -23179,7 +22781,6 @@ impl<T: Layer> Global<T> {
         // vkCmdWriteAccelerationStructuresPropertiesKHR
         let device_info = global.get_device_info(command_buffer).unwrap();
         let dispatch_table = &device_info.dispatch_table.khr_acceleration_structure;
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
@@ -23187,10 +22788,7 @@ impl<T: Layer> Global<T> {
             .cmd_write_acceleration_structures_properties_khr(
                 command_buffer,
                 unsafe {
-                    std::slice::from_raw_parts(
-                        p_acceleration_structures,
-                        acceleration_structure_count as usize,
-                    )
+                    slice_from_raw_parts(p_acceleration_structures, acceleration_structure_count)
                 },
                 query_type,
                 query_pool,
@@ -23250,7 +22848,6 @@ impl<T: Layer> Global<T> {
         // vkGetAccelerationStructureBuildSizesKHR
         let device_info = global.get_device_info(device).unwrap();
         let dispatch_table = &device_info.dispatch_table.khr_acceleration_structure;
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
@@ -23258,17 +22855,13 @@ impl<T: Layer> Global<T> {
             .get_acceleration_structure_build_sizes_khr(
                 build_type,
                 unsafe { p_build_info.as_ref() }.unwrap(),
-                if p_max_primitive_counts.is_null() {
-                    None
-                } else {
-                    Some(unsafe {
-                        std::slice::from_raw_parts(
-                            p_max_primitive_counts,
-                            unsafe { p_build_info.as_ref() }.unwrap().geometry_count as usize,
-                        )
-                    })
+                unsafe {
+                    maybe_slice_from_raw_parts(
+                        p_max_primitive_counts,
+                        unsafe { p_build_info.as_ref() }.unwrap().geometry_count,
+                    )
                 },
-                unsafe { p_size_info.as_mut() }.unwrap(),
+                unsafe { ptr_as_uninit_mut(p_size_info) }.unwrap(),
             );
         match layer_result {
             LayerResult::Handled(res) => res,
@@ -23340,7 +22933,6 @@ impl<T: Layer> Global<T> {
         // vkCreateRayTracingPipelinesKHR
         let device_info = global.get_device_info(device).unwrap();
         let dispatch_table = &device_info.dispatch_table.khr_ray_tracing_pipeline;
-        #[allow(clippy::unnecessary_cast)]
         let layer_result = device_info
             .customized_info
             .borrow()
@@ -23348,7 +22940,7 @@ impl<T: Layer> Global<T> {
             .create_ray_tracing_pipelines_khr(
                 deferred_operation,
                 pipeline_cache,
-                unsafe { std::slice::from_raw_parts(p_create_infos, create_info_count as usize) },
+                unsafe { slice_from_raw_parts(p_create_infos, create_info_count) },
                 unsafe { p_allocator.as_ref() },
             );
         match layer_result {
@@ -23398,15 +22990,11 @@ impl<T: Layer> Global<T> {
                 pipeline,
                 first_group,
                 group_count,
+                unsafe { uninit_slice_from_raw_parts_mut(p_data as *mut u8, data_size) },
             );
         match layer_result {
             LayerResult::Handled(res) => match res {
-                Ok(res) => {
-                    let p_data = p_data as *mut u8;
-                    unsafe { std::slice::from_raw_parts_mut(p_data, data_size) }
-                        .copy_from_slice(&res);
-                    vk::Result::SUCCESS
-                }
+                Ok(()) => vk::Result::SUCCESS,
                 Err(e) => e,
             },
             LayerResult::Unhandled => unsafe {

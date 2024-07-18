@@ -979,9 +979,7 @@ impl<T: Layers> ArcDelInstanceContextExt<T> for ArcDel<InstanceContext<T>> {
             &mut dyn for<'a> FnMut(vk::DeviceCreateInfoBuilder<'a>),
         ),
     ) -> VkResult<Del<DeviceContext<T>>> {
-        // TODO: change back to MaybeUninit::uninit() once we use a more sound interface which uses
-        // the uninit crate for the layer trait.
-        let mut device = MaybeUninit::<vk::Device>::zeroed();
+        let mut device = MaybeUninit::<vk::Device>::uninit();
         let res = unsafe { self.create_device(create_info_builder, device.as_mut_ptr()) };
         let device = unsafe { res.assume_init_on_success(device) }?;
         let device = unsafe { ash::Device::load(self.instance.fp_v1_0(), device) };

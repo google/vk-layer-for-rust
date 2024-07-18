@@ -13,6 +13,8 @@
 # limitations under the License.
 
 from __future__ import annotations
+from abc import ABC, abstractmethod
+import unittest
 from generator import OutputGenerator
 import reg
 import sys
@@ -23,14 +25,18 @@ from vk_xml_util import (
     camel_case_to_snake_case,
     snake_case_to_upper_camel_case,
     RustParam,
+    RustType,
     decayed_type_to_rust_type,
     UnhandledCommand,
     generate_unhandled_command_comments,
+    VkXmlType,
     VkXmlLenKind,
     VkXmlParam,
-    opaque_type_map,
     VulkanAliases,
     write_preamble,
+    TestUtils,
+    RustMethod,
+    VkXmlToRustMethodInfo,
 )
 from dataclasses import dataclass, field
 
@@ -290,102 +296,11 @@ class RustFfiFunction(NamedTuple):
 class VulkanCommand(NamedTuple):
     vk_xml_command: VkXmlCommand
     rust_fn: RustFfiFunction
+    rust_method: RustMethod
 
     def __find_param_by_name(self, name: str) -> Optional[tuple[VkXmlParam, RustParam]]:
         all_params = zip(self.vk_xml_command.parameters, self.rust_fn.parameters)
         return next((param for param in all_params if param[0].name == name), None)
-
-    def __generate_ptr_param_expr(self, param_index: int) -> tuple[list[str], str]:
-        assert param_index < len(self.vk_xml_command.parameters), "Parameter index out of range."
-        xml_param = self.vk_xml_command.parameters[param_index]
-        rust_param = self.rust_fn.parameters[param_index]
-        assert xml_param.type.points_to is not None, "Can only handle pointer type parameter."
-        if xml_param.type.len == VkXmlLenKind.VARIABLE:
-            ptr_to_slice_fn = "std::slice::from_raw_parts"
-            if not xml_param.type.points_to.is_const:
-                ptr_to_slice_fn = "std::slice::from_raw_parts_mut"
-            assert xml_param.len_var is not None, "Must has a len variable"
-            len_exp: str = None
-            if (
-                xml_param.len_var == "(samples + 31) / 32"
-                and self.vk_xml_command.name == "vkCmdSetSampleMaskEXT"
-            ):
-                len_exp = "((samples.as_raw() + 31) / 32)"
-            elif "->" in xml_param.len_var:
-                # handle cases similar to pAllocateInfo->descriptorSetCount in
-                # vkAllocateDescriptorSets
-                len_var_components = xml_param.len_var.split("->")
-                assert len(len_var_components) == 2, f"Unknown len: {xml_param.len_var}"
-                len_param = self.__find_param_by_name(len_var_components[0])
-                assert len_param is not None, "Can't find the length parameter."
-                len_xml_param, len_rust_param = len_param
-                assert not len_xml_param.type.is_optional, (
-                    f"When handling length parameter, {len_var_components[0]} in "
-                    f"{xml_param.len_var} is optional. This is currently not supported."
-                )
-                len_exp = f"unsafe {{ {len_rust_param.name}.as_ref() }}"
-                len_exp = f"{len_exp}.unwrap().{camel_case_to_snake_case(len_var_components[1])}"
-            else:
-                len_param = self.__find_param_by_name(xml_param.len_var)
-                assert len_param is not None, (
-                    f"Can't find len var {xml_param.len_var} for "
-                    f"{xml_param.name} in {self.vk_xml_command.name}"
-                )
-                len_xml_param, len_rust_param = len_param
-                len_param_rust_type = len_rust_param.type
-                if len_param_rust_type.name in ["u32", "usize", "vk::DeviceSize"]:
-                    assert not len_param_rust_type.is_optional, (
-                        f"Primitive length {len_rust_param.name} in {self.vk_xml_command.name} "
-                        "can't be optional."
-                    )
-                    len_exp = len_rust_param.name
-                elif (
-                    len_param_rust_type.points_to is not None
-                    and len_param_rust_type.points_to.name in ["u32", "usize", "vk::DeviceSize"]
-                ):
-                    len_param_xml_type = len_xml_param.type
-                    assert not len_param_xml_type.is_optional, (
-                        f"Pointer length {len_xml_param.name} in {self.vk_xml_command.name} can't "
-                        "be optional."
-                    )
-                    len_exp = f"*unsafe {{ {len_rust_param.name}.as_ref() }}.unwrap()"
-                else:
-                    assert (
-                        False
-                    ), f"Unknown type for length variable: {len_param_rust_type.to_string()}"
-            data_ptr_expr = rust_param.name
-            if xml_param.type.points_to.name == "void":
-                mut_mod = "const" if xml_param.type.points_to.is_const else "mut"
-                data_ptr_expr = f"{rust_param.name} as *{mut_mod} u8"
-            res = f"unsafe {{ {ptr_to_slice_fn}({data_ptr_expr}, {len_exp} as usize) }}"
-            # ABI change array.
-            if rust_param.type.points_to.name == "vk::Bool32":
-                res = f"{res}.iter().map(|v| *v == vk::TRUE)"
-            if xml_param.type.is_optional:
-                res = f"if {rust_param.name}.is_null() {{ None }} else {{ Some({res}) }}"
-            return (["#[allow(clippy::unnecessary_cast)]"], res)
-        elif xml_param.type.len == VkXmlLenKind.NULL_TERMINATED:
-            param_is_c_string = (
-                xml_param.type.points_to is not None
-                and xml_param.type.points_to.name == "char"
-                and xml_param.type.points_to.is_const
-            )
-            assert param_is_c_string, "Null terminated param must be a C string."
-            assert not xml_param.type.is_optional, (
-                f"{xml_param.name} in {self.vk_xml_command.name} is an optional C string. "
-                "Unsupported."
-            )
-            return ([], f"unsafe {{ CStr::from_ptr({rust_param.name}) }}.to_str().unwrap()")
-        elif xml_param.type.len is None:
-            to_ref_fn = "as_ref" if xml_param.type.points_to.is_const else "as_mut"
-            res = f"unsafe {{ {rust_param.name}.{to_ref_fn}() }}"
-
-            if not xml_param.type.is_optional:
-                res = f"{res}.unwrap()"
-
-            return ([], res)
-        else:
-            assert False, f"Unknown len type: {xml_param.type.len}"
 
     # Return lines of code to assign the variable of ret_var to the FFI return parameter correctly,
     # e.g. assign the result of create_image to the p_image pointer of the FFI parameter.
@@ -531,114 +446,63 @@ class VulkanCommand(NamedTuple):
                 f"{dispatch_info.get_dispatch_table_field_name()};"
             ),
         ]
-        len_params = set(
-            (param.len_var for param in self.vk_xml_command.parameters if param.len_var is not None)
-        )
-        all_params: list[tuple[VkXmlParam, RustParam]] = list(
-            zip(self.vk_xml_command.parameters, self.rust_fn.parameters)
-        )
-        params: list[tuple[int, VkXmlParam, RustParam]] = []
 
-        for i, param in enumerate(all_params):
-            xml_param, _ = param
-            if xml_param.name in len_params:
-                continue
-            if (
-                i == 0
-                and xml_param.type.name is not None
-                and xml_param.type.name in ["VkInstance", "VkDevice"]
-            ):
-                continue
-            params.append((i, *param))
-
-        ret_param: Optional[tuple[int, VkXmlParam, RustParam]] = None
-        if self.vk_xml_command.return_type in ["VkResult", "void"]:
-            # Find the last not length parameter:
-            reversed_params = params.copy()
-            reversed_params.reverse()
-            last_not_len_param = next(
-                (param for _, param, _ in reversed_params if param.name not in len_params), None
-            )
-            is_returned = False
-            if (
-                last_not_len_param is not None
-                and not last_not_len_param.type.decayed_type().is_struct()
-            ):
-                param_type = last_not_len_param.type
-                is_returned = param_type.points_to is not None and not param_type.points_to.is_const
-                # pointers to opaque type won't be part of the return value while array types are
-                # always returned.
-                is_returned = is_returned and (
-                    param_type.points_to.name not in opaque_type_map
-                    or param_type.len == VkXmlLenKind.VARIABLE
-                )
-            if is_returned:
-                # The last parameter is a return value.
-                ret_param = params.pop()
+        vk_xml_to_rust_method_info = VkXmlToRustMethodInfo.from_vk_xml_command(self.vk_xml_command)
 
         intercept_params: list[str] = []
-        for i, xml_param, rust_param in params:
-            arg_exp: str = None
-            if len(xml_param.type.dimensions) > 0:
-                lines.append(
-                    f"let {rust_param.name} = unsafe {{ {rust_param.name}.as_ref() }}.unwrap();"
-                )
-            if xml_param.type.name is not None:
-                arg_exp = rust_param.name
-                if xml_param.type.name == "VkBool32":
-                    arg_exp = f"{arg_exp} == vk::TRUE"
-            elif xml_param.type.points_to is not None:
-                leading_lines, arg_exp = self.__generate_ptr_param_expr(i)
-                lines += leading_lines
-            else:
-                assert False, "Should have exhausted all parameter types."
+        param_transformer = ParamTransformer.create()
+        for param in vk_xml_to_rust_method_info.parameters:
+            rust_param = param.rust_method_param
+            xml_param = param.main_source_vk_xml_param
+            assert param_transformer.type_matches(
+                rust_param.type, xml_param.type, self.vk_xml_command
+            ), (
+                f"Failed to transform parameter {xml_param.name}, {rust_param.name} in "
+                f"{self.vk_xml_command.name}."
+            )
+            arg_exp = param_transformer.transform(rust_param, xml_param, self.vk_xml_command)
             intercept_params.append(arg_exp)
 
+        param_names = [param.name for param in self.vk_xml_command.parameters]
+
         def generate_ret_expr(ret_var: str) -> list[str]:
-            return [ret_var]
-
-        if self.vk_xml_command.return_type == "VkResult":
-            if ret_param is not None:
-
-                def generate_ret_expr(ret_var):  # noqa: F811
-                    assign_to_ret_param_lines = self.__generate_assign_to_ret_param_lines(
-                        "res", ret_param[0], last_expr_type="vk::Result"
-                    )
-                    return (
-                        [
-                            f"match {ret_var} {{",
-                            "    Ok(res) => {",
-                        ]
-                        + [8 * " " + line for line in assign_to_ret_param_lines]
-                        + [
-                            "    }",
-                            "    Err(e) => e,",
-                            "}",
-                        ]
-                    )
-
-            else:
-
-                def generate_ret_expr(ret_var) -> list[str]:
+            return_info = vk_xml_to_rust_method_info.return_info
+            if self.vk_xml_command.return_type == "VkResult":
+                if len(return_info.main_source_vk_xml_params) == 0:
                     return [
                         f"match {ret_var} {{",
                         "    Ok(()) => vk::Result::SUCCESS,",
                         "    Err(e) => e,",
                         "}",
                     ]
-
-        elif self.vk_xml_command.return_type == "void":
-            if ret_param is not None:
-
-                def generate_ret_expr(ret_var) -> list[str]:
-                    return self.__generate_assign_to_ret_param_lines(ret_var, ret_param[0])
-
-        elif self.vk_xml_command.return_type == "VkBool32":
-
-            def generate_ret_expr(ret_var):
+                assert len(return_info.main_source_vk_xml_params) == 1
+                param_index = param_names.index(return_info.main_source_vk_xml_params[0].name)
+                assign_to_ret_param_lines = self.__generate_assign_to_ret_param_lines(
+                    "res", param_index, last_expr_type="vk::Result"
+                )
+                return (
+                    [
+                        f"match {ret_var} {{",
+                        "    Ok(res) => {",
+                    ]
+                    + [8 * " " + line for line in assign_to_ret_param_lines]
+                    + [
+                        "    }",
+                        "    Err(e) => e,",
+                        "}",
+                    ]
+                )
+            elif self.vk_xml_command.return_type == "void":
+                if len(return_info.main_source_vk_xml_params) != 0:
+                    assert len(return_info.main_source_vk_xml_params) == 1
+                    param_index = param_names.index(return_info.main_source_vk_xml_params[0].name)
+                    return self.__generate_assign_to_ret_param_lines(ret_var, param_index)
+            elif self.vk_xml_command.return_type == "VkBool32":
                 return [f"if {ret_var} {{ vk::TRUE }} else {{ vk::FALSE }}"]
 
-        param_names = [param.name for param in self.rust_fn.parameters]
+            return [ret_var]
+
+        rust_ffi_param_names = [param.name for param in self.rust_fn.parameters]
         lines += (
             [
                 (
@@ -654,7 +518,7 @@ class VulkanCommand(NamedTuple):
                 "    }",
                 (
                     f"    LayerResult::Unhandled => unsafe {{ (dispatch_table.{self.rust_fn.name})("
-                    f"{', '.join(param_names)}) }},"
+                    f"{', '.join(rust_ffi_param_names)}) }},"
                 ),
                 "}",
             ]
@@ -709,12 +573,15 @@ class GlobalSimpleInterceptGenerator(OutputGenerator):
                     "use smallvec::smallvec;",
                     "",
                     (
-                        "use crate::{DeviceInfo, fill_vk_out_array, Global, InstanceInfo, Layer,"
-                        " LayerResult, LayerVulkanCommand, InstanceHooks, DeviceHooks};"
+                        "use crate::{DeviceInfo, fill_vk_out_array, Global, InstanceInfo, Layer, "
+                        "LayerResult, LayerVulkanCommand, InstanceHooks, DeviceHooks, "
+                        "vk_utils::{slice_from_raw_parts, ptr_as_uninit_mut}};"
                     ),
                     (
                         "use super::{get_instance_proc_addr_loader, get_device_proc_addr_loader, "
-                        "VulkanCommand, TryFromExtensionError, ApiVersion, Feature};"
+                        "VulkanCommand, TryFromExtensionError, ApiVersion, Feature, "
+                        "bool_iterator_from_raw_parts, maybe_slice_from_raw_parts, "
+                        "maybe_uninit_slice_from_raw_parts_mut, uninit_slice_from_raw_parts_mut};"
                     ),
                     "",
                 ]
@@ -926,7 +793,11 @@ class GlobalSimpleInterceptGenerator(OutputGenerator):
 
         vk_xml_cmd = VkXmlCommand.from_cmd_info(cmdinfo, self.types)
         rust_ffi_function = RustFfiFunction.from_vk_xml_command(vk_xml_cmd)
-        vulkan_command = VulkanCommand(vk_xml_command=vk_xml_cmd, rust_fn=rust_ffi_function)
+        vulkan_command = VulkanCommand(
+            vk_xml_command=vk_xml_cmd,
+            rust_fn=rust_ffi_function,
+            rust_method=RustMethod.from_vk_xml_command(vk_xml_cmd),
+        )
 
         self.command_aliases.add_alias(name, alias)
 
@@ -969,3 +840,735 @@ class GlobalSimpleInterceptGenerator(OutputGenerator):
     def genGroup(self, groupinfo: reg.GroupInfo, groupName: str, alias):
         super().genGroup(groupinfo, groupName, alias)
         self.types[groupName] = groupinfo
+
+
+class ParamTransformer(ABC):
+    @abstractmethod
+    def type_matches(
+        self, rust_type: RustType, vk_xml_type: VkXmlType, vk_xml_command: VkXmlCommand
+    ) -> bool:
+        raise NotImplementedError
+
+    @abstractmethod
+    def transform(
+        self, rust_param: RustParam, vk_xml_param: VkXmlParam, vk_xml_command: VkXmlCommand
+    ) -> str:
+        raise NotImplementedError
+
+    @staticmethod
+    def create() -> ParamTransformer:
+        return ComposedParamTransformer(
+            [
+                ArrayParamTransformer(),
+                BoolParamTransformer(),
+                PrimitiveParamTransformer(),
+                NoLenPtrParamTransformer(),
+                NullTerminatedLenPtrParamTransformer(),
+                VoidDataSliceParamTransformer(),
+                BoolSliceParamTransformer(),
+                GeneralSliceParamTransformer(),
+            ]
+        )
+
+    @staticmethod
+    def get_ptr_to_slice_fn(vk_xml_type: VkXmlType) -> str:
+        element_xml_type = vk_xml_type.points_to
+        assert element_xml_type is not None
+        if vk_xml_type.is_optional:
+            if element_xml_type.is_const:
+                return "maybe_slice_from_raw_parts"
+            else:
+                return "maybe_uninit_slice_from_raw_parts_mut"
+        else:
+            if element_xml_type.is_const:
+                return "slice_from_raw_parts"
+            else:
+                return "uninit_slice_from_raw_parts_mut"
+
+
+class BoolParamTransformer(ParamTransformer):
+    def type_matches(
+        self, rust_type: RustType, vk_xml_type: VkXmlType, vk_xml_command: VkXmlCommand
+    ) -> bool:
+        return rust_type.name == "bool" and vk_xml_type.name == "VkBool32"
+
+    def transform(
+        self, rust_param: RustParam, vk_xml_param: VkXmlParam, vk_xml_command: VkXmlCommand
+    ) -> str:
+        input_var = RustParam.param_name_from_vk_xml_param_for_ffi(vk_xml_param.name)
+        return f"{input_var} == vk::TRUE"
+
+
+class ArrayParamTransformer(ParamTransformer):
+    def type_matches(
+        self, rust_type: RustType, vk_xml_type: VkXmlType, vk_xml_command: VkXmlCommand
+    ) -> bool:
+        if len(vk_xml_type.dimensions) == 0:
+            return False
+        if rust_type.refers_to is None:
+            return False
+        if rust_type.refers_to.array_info is None:
+            return False
+        if rust_type.refers_to.array_info.length != vk_xml_type.dimensions[0]:
+            return False
+        return True
+
+    def transform(
+        self, rust_param: RustParam, vk_xml_param: VkXmlParam, vk_xml_command: VkXmlCommand
+    ) -> str:
+        assert not vk_xml_param.type.is_optional
+        assert vk_xml_param.type.is_const
+        assert vk_xml_param.name is not None
+        rust_ffi_param_name = RustParam.param_name_from_vk_xml_param_for_ffi(vk_xml_param.name)
+        return f"unsafe {{ {rust_ffi_param_name}.as_ref() }}.unwrap()"
+
+
+class PrimitiveParamTransformer(ParamTransformer):
+    def type_matches(
+        self, rust_type: RustType, vk_xml_type: VkXmlType, vk_xml_command: VkXmlCommand
+    ) -> bool:
+        return rust_type.name is not None
+
+    def transform(
+        self, rust_param: RustParam, vk_xml_param: VkXmlParam, vk_xml_command: VkXmlCommand
+    ) -> str:
+        return RustParam.param_name_from_vk_xml_param_for_ffi(vk_xml_param.name)
+
+
+class NoLenPtrParamTransformer(ParamTransformer):
+    def type_matches(
+        self, rust_type: RustType, vk_xml_type: VkXmlType, vk_xml_command: VkXmlCommand
+    ) -> bool:
+        return vk_xml_type.points_to is not None and vk_xml_type.len is None
+
+    def transform(
+        self, rust_param: RustParam, vk_xml_param: VkXmlParam, vk_xml_command: VkXmlCommand
+    ) -> str:
+        assert vk_xml_param.type.points_to is not None
+        ffi_param_var = RustParam.param_name_from_vk_xml_param_for_ffi(vk_xml_param.name)
+        if rust_param.type.points_to is not None:
+            # In Rust, this parameter is still a pointer type, no transformation will be applied
+            return ffi_param_var
+
+        def get_ptr_to_opt_ref_expr() -> str:
+            if vk_xml_param.type.points_to.is_const:
+                return f"unsafe {{ {ffi_param_var}.as_ref() }}"
+            return f"unsafe {{ ptr_as_uninit_mut({ffi_param_var}) }}"
+
+        ptr_to_opt_ref_expr = get_ptr_to_opt_ref_expr()
+        if vk_xml_param.type.is_optional:
+            return ptr_to_opt_ref_expr
+        else:
+            return f"{ptr_to_opt_ref_expr}.unwrap()"
+
+
+class NullTerminatedLenPtrParamTransformer(ParamTransformer):
+    def type_matches(
+        self, rust_type: RustType, vk_xml_type: VkXmlType, vk_xml_command: VkXmlCommand
+    ) -> bool:
+        return (
+            vk_xml_type.len == VkXmlLenKind.NULL_TERMINATED
+            and vk_xml_type.points_to is not None
+            and vk_xml_type.points_to.name == "char"
+            and vk_xml_type.points_to.is_const
+            and not vk_xml_type.is_optional
+            and rust_type.refers_to is not None
+            and rust_type.refers_to.name == "str"
+            and rust_type.refers_to.is_const
+        )
+
+    def transform(
+        self, rust_param: RustParam, vk_xml_param: VkXmlParam, vk_xml_command: VkXmlCommand
+    ) -> str:
+        rust_ffi_param_name = RustParam.param_name_from_vk_xml_param_for_ffi(vk_xml_param.name)
+        return f"unsafe {{ CStr::from_ptr({rust_ffi_param_name}) }}.to_str().unwrap()"
+
+
+class BoolSliceParamTransformer(ParamTransformer):
+    def type_matches(
+        self, rust_type: RustType, vk_xml_type: VkXmlType, vk_xml_command: VkXmlCommand
+    ) -> bool:
+        return (
+            vk_xml_type.len == VkXmlLenKind.VARIABLE
+            and vk_xml_type.points_to is not None
+            and vk_xml_type.points_to.name == "VkBool32"
+            and vk_xml_type.points_to.is_const
+            and not vk_xml_type.is_optional
+        )
+
+    def transform(
+        self, rust_param: RustParam, vk_xml_param: VkXmlParam, vk_xml_command: VkXmlCommand
+    ) -> str:
+        rust_ffi_param_name = RustParam.param_name_from_vk_xml_param_for_ffi(vk_xml_param.name)
+        vk_xml_params_by_name = {param.name: param for param in vk_xml_command.parameters}
+        len_xml_param = vk_xml_params_by_name.get(vk_xml_param.len_var, None)
+        assert len_xml_param is not None
+        assert "->" not in vk_xml_param.len_var
+        assert len_xml_param.type.name in ["uint32_t", "size_t", "VkDeviceSize"]
+        rust_ffi_len_name = RustParam.param_name_from_vk_xml_param_for_ffi(vk_xml_param.len_var)
+        return (
+            f"unsafe {{ bool_iterator_from_raw_parts({rust_ffi_param_name}, {rust_ffi_len_name}) }}"
+        )
+
+
+class VoidDataSliceParamTransformer(ParamTransformer):
+    def type_matches(
+        self, rust_type: RustType, vk_xml_type: VkXmlType, vk_xml_command: VkXmlCommand
+    ) -> bool:
+        if vk_xml_type.len != VkXmlLenKind.VARIABLE:
+            return False
+        if vk_xml_type.points_to is None:
+            return False
+        if vk_xml_type.points_to.name != "void":
+            return False
+        return True
+
+    def transform(
+        self, rust_param: RustParam, vk_xml_param: VkXmlParam, vk_xml_command: VkXmlCommand
+    ) -> str:
+        params_by_name = {param.name: param for param in vk_xml_command.parameters}
+        len_var_xml_param = params_by_name.get(vk_xml_param.len_var)
+        assert len_var_xml_param is not None
+        assert not len_var_xml_param.type.is_optional
+        ptr_to_slice_fn = ParamTransformer.get_ptr_to_slice_fn(vk_xml_param.type)
+        rust_ffi_len_var_name = RustParam.param_name_from_vk_xml_param_for_ffi(
+            len_var_xml_param.name
+        )
+        len_expr: str = rust_ffi_len_var_name
+        if vk_xml_param.type.is_optional and not vk_xml_param.type.points_to.is_const:
+            assert len_var_xml_param.type.points_to is not None
+            assert len_var_xml_param.type.points_to.name in [
+                "uint32_t",
+                "size_t",
+            ], f"Unsuppored length parameter {len_var_xml_param.name} in {vk_xml_command.name}"
+        else:
+            assert len_var_xml_param.type.name in ["uint32_t", "size_t", "VkDeviceSize"]
+            len_expr = f"{rust_ffi_len_var_name}"
+
+        rust_ffi_param_name = RustParam.param_name_from_vk_xml_param_for_ffi(vk_xml_param.name)
+        data_ptr_type = "*const u8" if vk_xml_param.type.points_to.is_const else "*mut u8"
+        return (
+            f"unsafe {{ {ptr_to_slice_fn}({rust_ffi_param_name} as {data_ptr_type}, {len_expr}) }}"
+        )
+
+
+class GeneralSliceParamTransformer(ParamTransformer):
+    def type_matches(
+        self, rust_type: RustType, vk_xml_type: VkXmlType, vk_xml_command: VkXmlCommand
+    ) -> bool:
+        if vk_xml_type.len != VkXmlLenKind.VARIABLE:
+            return False
+        if vk_xml_type.points_to is None:
+            return False
+        return True
+
+    def transform(
+        self, rust_param: RustParam, vk_xml_param: VkXmlParam, vk_xml_command: VkXmlCommand
+    ) -> str:
+        rust_ffi_param_name = RustParam.param_name_from_vk_xml_param_for_ffi(vk_xml_param.name)
+        assert vk_xml_param.type.points_to.name is not None
+
+        params_by_name = {param.name: param for param in vk_xml_command.parameters}
+
+        def generate_len_expr():
+            if (
+                vk_xml_param.len_var == "(samples + 31) / 32"
+                and vk_xml_command.name == "vkCmdSetSampleMaskEXT"
+            ):
+                return "(samples.as_raw() + 31) / 32"
+
+            if vk_xml_param.type.is_optional and not vk_xml_param.type.points_to.is_const:
+                # handle mutable optional slice
+                # Only supported with a mutable pointer type length variable.
+                assert vk_xml_param.len_var in params_by_name
+                len_var_xml_param = params_by_name[vk_xml_param.len_var]
+                assert len_var_xml_param.type.points_to is not None
+                assert len_var_xml_param.type.points_to.name in [
+                    "size_t",
+                    "uint32_t",
+                ], f"Unsupported length type: {len_var_xml_param.name} in {vk_xml_command.name}"
+                return RustParam.param_name_from_vk_xml_param_for_ffi(len_var_xml_param.name)
+
+            if "->" in vk_xml_param.len_var:
+                # handle pBuildInfo->geometryCount in vkGetAccelerationStructureBuildSizesKHR.
+                len_var_components = vk_xml_param.len_var.split("->")
+                assert len(len_var_components) == 2, f"Unknown len: {vk_xml_param.len_var}"
+                len_xml_param = params_by_name.get(len_var_components[0])
+                assert len_xml_param is not None, "Can't find the length parameter."
+                assert not len_xml_param.type.is_optional, (
+                    f"When handling length parameter, {len_var_components[0]} in "
+                    f"{vk_xml_param.len_var} is optional. This is currently not supported."
+                )
+                assert len_xml_param.type.points_to is not None
+                assert len_xml_param.type.points_to.is_const
+                len_var = RustParam.param_name_from_vk_xml_param_for_ffi(len_var_components[0])
+                # Safe, because len_var is a const pointer and it's not optional, so it must point
+                # to an initialized object.
+                len_expr = f"unsafe {{ {len_var}.as_ref() }}"
+                field_name = RustParam.param_name_from_vk_xml_param_for_ffi(len_var_components[1])
+                return f"{len_expr}.unwrap().{field_name}"
+
+            assert vk_xml_param.len_var in params_by_name
+            len_var_xml_param = params_by_name[vk_xml_param.len_var]
+            rust_ffi_len_var_name = RustParam.param_name_from_vk_xml_param_for_ffi(
+                len_var_xml_param.name
+            )
+
+            if len_var_xml_param.type.name in ["uint32_t"]:
+                return rust_ffi_len_var_name
+
+            if len_var_xml_param.type.points_to.name in ["uint32_t"]:
+                assert not len_var_xml_param.type.is_optional
+                return f"*unsafe {{ {rust_ffi_len_var_name}.as_ref() }}.unwrap()"
+
+            assert False, f"Unsupported length variable type: {len_var_xml_param.type}"
+
+        len_expr = generate_len_expr()
+        ptr_to_slice_fn = ParamTransformer.get_ptr_to_slice_fn(vk_xml_param.type)
+        return f"unsafe {{ {ptr_to_slice_fn}({rust_ffi_param_name}, {len_expr}) }}"
+
+
+class ComposedParamTransformer(ParamTransformer):
+    def __init__(self, transformers: list[ParamTransformer]):
+        super().__init__()
+        self.transformers = transformers
+
+    def type_matches(
+        self, rust_type: RustType, vk_xml_type: VkXmlType, vk_xml_command: VkXmlCommand
+    ) -> bool:
+        return any(
+            transformer.type_matches(rust_type, vk_xml_type, vk_xml_command)
+            for transformer in self.transformers
+        )
+
+    def transform(
+        self, rust_param: RustParam, vk_xml_param: VkXmlParam, vk_xml_command: VkXmlCommand
+    ) -> str:
+        transformer = next(
+            (
+                transformer
+                for transformer in self.transformers
+                if transformer.type_matches(rust_param.type, vk_xml_param.type, vk_xml_command)
+            ),
+            None,
+        )
+        assert transformer is not None
+        return transformer.transform(rust_param, vk_xml_param, vk_xml_command)
+
+
+class TestSimpleInterceptGenerator(unittest.TestCase):
+    def test_bool_param_transformer(self):
+        vk_xml_command = TestUtils.get_vk_xml_command("vkCmdSetRepresentativeFragmentTestEnableNV")
+        rust_method = RustMethod.from_vk_xml_command(vk_xml_command)
+        param_transformers: list[ParamTransformer] = [
+            BoolParamTransformer(),
+            ParamTransformer.create(),
+        ]
+        for param_transformer in param_transformers:
+            self.assertTrue(
+                param_transformer.type_matches(
+                    rust_method.parameters[1].type,
+                    vk_xml_command.parameters[1].type,
+                    vk_xml_command,
+                )
+            )
+            self.assertEqual(
+                param_transformer.transform(
+                    rust_method.parameters[1], vk_xml_command.parameters[1], vk_xml_command
+                ),
+                "representative_fragment_test_enable == vk::TRUE",
+            )
+
+    def test_array_param_transformer(self):
+        vk_xml_command = TestUtils.get_vk_xml_command("vkCmdSetBlendConstants")
+        rust_method = RustMethod.from_vk_xml_command(vk_xml_command)
+        param_transformers: list[ParamTransformer] = [
+            ArrayParamTransformer(),
+            ParamTransformer.create(),
+        ]
+        for param_transformer in param_transformers:
+            self.assertTrue(
+                param_transformer.type_matches(
+                    rust_method.parameters[1].type,
+                    vk_xml_command.parameters[1].type,
+                    vk_xml_command,
+                )
+            )
+            self.assertEqual(
+                param_transformer.transform(
+                    rust_method.parameters[1], vk_xml_command.parameters[1], vk_xml_command
+                ),
+                "unsafe { blend_constants.as_ref() }.unwrap()",
+            )
+
+    def test_primitive_param_transformer(self):
+        vk_xml_command = TestUtils.get_vk_xml_command("vkCmdDraw")
+        rust_method = RustMethod.from_vk_xml_command(vk_xml_command)
+        param_transformers: list[ParamTransformer] = [
+            PrimitiveParamTransformer(),
+            ParamTransformer.create(),
+        ]
+        for param_transformer in param_transformers:
+            self.assertTrue(
+                param_transformer.type_matches(
+                    rust_method.parameters[0].type,
+                    vk_xml_command.parameters[0].type,
+                    vk_xml_command,
+                )
+            )
+            self.assertEqual(
+                param_transformer.transform(
+                    rust_method.parameters[0], vk_xml_command.parameters[0], vk_xml_command
+                ),
+                "command_buffer",
+            )
+            self.assertTrue(
+                param_transformer.type_matches(
+                    rust_method.parameters[1].type,
+                    vk_xml_command.parameters[1].type,
+                    vk_xml_command,
+                )
+            )
+            self.assertEqual(
+                param_transformer.transform(
+                    rust_method.parameters[1], vk_xml_command.parameters[1], vk_xml_command
+                ),
+                "vertex_count",
+            )
+
+    def test_primitive_param_transformer_keyword_argument(self):
+        vk_xml_command = TestUtils.get_vk_xml_command("vkGetPhysicalDeviceImageFormatProperties")
+        rust_method = RustMethod.from_vk_xml_command(vk_xml_command)
+        param_transformers: list[ParamTransformer] = [
+            PrimitiveParamTransformer(),
+            ParamTransformer.create(),
+        ]
+        for param_transformer in param_transformers:
+            self.assertTrue(
+                param_transformer.type_matches(
+                    rust_method.parameters[2].type,
+                    vk_xml_command.parameters[2].type,
+                    vk_xml_command,
+                )
+            )
+            self.assertEqual(
+                param_transformer.transform(
+                    rust_method.parameters[2], vk_xml_command.parameters[2], vk_xml_command
+                ),
+                "_type",
+            )
+
+    def test_c_expr_length_var_ptr_param_transformer(self):
+        vk_xml_command = TestUtils.get_vk_xml_command("vkGetAccelerationStructureBuildSizesKHR")
+        rust_method = RustMethod.from_vk_xml_command(vk_xml_command)
+        param_transformers: list[ParamTransformer] = [
+            GeneralSliceParamTransformer(),
+            ParamTransformer.create(),
+        ]
+        for param_transformer in param_transformers:
+            self.assertTrue(
+                param_transformer.type_matches(
+                    rust_method.parameters[2].type,
+                    vk_xml_command.parameters[3].type,
+                    vk_xml_command,
+                )
+            )
+            self.assertEqual(
+                param_transformer.transform(
+                    rust_method.parameters[2], vk_xml_command.parameters[3], vk_xml_command
+                ),
+                (
+                    "unsafe { maybe_slice_from_raw_parts(p_max_primitive_counts, unsafe { "
+                    "p_build_info.as_ref() }.unwrap().geometry_count) }"
+                ),
+            )
+
+    def test_no_length_not_optional_const_ptr_param_transformer(self):
+        vk_xml_command = TestUtils.get_vk_xml_command("vkCreateImage")
+        rust_method = RustMethod.from_vk_xml_command(vk_xml_command)
+        param_transformers: list[ParamTransformer] = [
+            NoLenPtrParamTransformer(),
+            ParamTransformer.create(),
+        ]
+        for param_transformer in param_transformers:
+            self.assertTrue(
+                param_transformer.type_matches(
+                    rust_method.parameters[0].type,
+                    vk_xml_command.parameters[1].type,
+                    vk_xml_command,
+                )
+            )
+            self.assertEqual(
+                param_transformer.transform(
+                    rust_method.parameters[0], vk_xml_command.parameters[1], vk_xml_command
+                ),
+                "unsafe { p_create_info.as_ref() }.unwrap()",
+            )
+
+    def test_no_length_optional_const_ptr_param_transformer(self):
+        vk_xml_command = TestUtils.get_vk_xml_command("vkCreateImage")
+        rust_method = RustMethod.from_vk_xml_command(vk_xml_command)
+        param_transformers: list[ParamTransformer] = [
+            NoLenPtrParamTransformer(),
+            ParamTransformer.create(),
+        ]
+        for param_transformer in param_transformers:
+            self.assertTrue(
+                param_transformer.type_matches(
+                    rust_method.parameters[1].type,
+                    vk_xml_command.parameters[2].type,
+                    vk_xml_command,
+                )
+            )
+            self.assertEqual(
+                param_transformer.transform(
+                    rust_method.parameters[1], vk_xml_command.parameters[2], vk_xml_command
+                ),
+                "unsafe { p_allocator.as_ref() }",
+            )
+
+    def test_null_terminated_length_const_ptr_param_transformer(self):
+        vk_xml_command = TestUtils.get_vk_xml_command("vkDebugReportMessageEXT")
+        rust_method = RustMethod.from_vk_xml_command(vk_xml_command)
+        param_transformers: list[ParamTransformer] = [
+            NullTerminatedLenPtrParamTransformer(),
+            ParamTransformer.create(),
+        ]
+        for param_transformer in param_transformers:
+            self.assertTrue(
+                param_transformer.type_matches(
+                    rust_method.parameters[5].type,
+                    vk_xml_command.parameters[6].type,
+                    vk_xml_command,
+                )
+            )
+            self.assertEqual(
+                param_transformer.transform(
+                    rust_method.parameters[5], vk_xml_command.parameters[6], vk_xml_command
+                ),
+                "unsafe { CStr::from_ptr(p_layer_prefix) }.to_str().unwrap()",
+            )
+
+    def test_boolean_slice_param_transformer(self):
+        vk_xml_command = TestUtils.get_vk_xml_command("vkCmdSetColorWriteEnableEXT")
+        rust_method = RustMethod.from_vk_xml_command(vk_xml_command)
+        param_transformers: list[ParamTransformer] = [
+            BoolSliceParamTransformer(),
+            ParamTransformer.create(),
+        ]
+        for param_transformer in param_transformers:
+            self.assertTrue(
+                param_transformer.type_matches(
+                    rust_method.parameters[1].type,
+                    vk_xml_command.parameters[2].type,
+                    vk_xml_command,
+                )
+            )
+            self.assertEqual(
+                param_transformer.transform(
+                    rust_method.parameters[1], vk_xml_command.parameters[2], vk_xml_command
+                ),
+                "unsafe { bool_iterator_from_raw_parts(p_color_write_enables, attachment_count) }",
+            )
+
+    def test_const_void_data_slice_param_transformer(self):
+        vk_xml_command = TestUtils.get_vk_xml_command("vkCmdUpdateBuffer")
+        rust_method = RustMethod.from_vk_xml_command(vk_xml_command)
+        param_transformers: list[ParamTransformer] = [
+            VoidDataSliceParamTransformer(),
+            ParamTransformer.create(),
+        ]
+        for param_transformer in param_transformers:
+            self.assertTrue(
+                param_transformer.type_matches(
+                    rust_method.parameters[3].type,
+                    vk_xml_command.parameters[4].type,
+                    vk_xml_command,
+                )
+            )
+            self.assertEqual(
+                param_transformer.transform(
+                    rust_method.parameters[3], vk_xml_command.parameters[4], vk_xml_command
+                ),
+                "unsafe { slice_from_raw_parts(p_data as *const u8, data_size) }",
+            )
+
+    def test_mutable_void_data_slice_param_transformer(self):
+        vk_xml_command = TestUtils.get_vk_xml_command("vkGetQueryPoolResults")
+        rust_method = RustMethod.from_vk_xml_command(vk_xml_command)
+        param_transformers: list[ParamTransformer] = [
+            VoidDataSliceParamTransformer(),
+            ParamTransformer.create(),
+        ]
+        for param_transformer in param_transformers:
+            self.assertTrue(
+                param_transformer.type_matches(
+                    rust_method.parameters[3].type,
+                    vk_xml_command.parameters[5].type,
+                    vk_xml_command,
+                )
+            )
+            self.assertEqual(
+                param_transformer.transform(
+                    rust_method.parameters[3], vk_xml_command.parameters[5], vk_xml_command
+                ),
+                "unsafe { uninit_slice_from_raw_parts_mut(p_data as *mut u8, data_size) }",
+            )
+
+    def test_required_const_slice_param_transformer(self):
+        vk_xml_command = TestUtils.get_vk_xml_command("vkQueueSubmit")
+        rust_method = RustMethod.from_vk_xml_command(vk_xml_command)
+        param_transformers: list[ParamTransformer] = [
+            GeneralSliceParamTransformer(),
+            ParamTransformer.create(),
+        ]
+        for param_transformer in param_transformers:
+            self.assertTrue(
+                param_transformer.type_matches(
+                    rust_method.parameters[1].type,
+                    vk_xml_command.parameters[2].type,
+                    vk_xml_command,
+                )
+            )
+            self.assertEqual(
+                param_transformer.transform(
+                    rust_method.parameters[1], vk_xml_command.parameters[2], vk_xml_command
+                ),
+                "unsafe { slice_from_raw_parts(p_submits, submit_count) }",
+            )
+
+    def test_required_mutable_slice_param_transformer(self):
+        vk_xml_command = TestUtils.get_vk_xml_command("vkGetCalibratedTimestampsEXT")
+        rust_method = RustMethod.from_vk_xml_command(vk_xml_command)
+        param_transformers: list[ParamTransformer] = [
+            GeneralSliceParamTransformer(),
+            ParamTransformer.create(),
+        ]
+        for param_transformer in param_transformers:
+            self.assertTrue(
+                param_transformer.type_matches(
+                    rust_method.parameters[1].type,
+                    vk_xml_command.parameters[3].type,
+                    vk_xml_command,
+                )
+            )
+            self.assertEqual(
+                param_transformer.transform(
+                    rust_method.parameters[1], vk_xml_command.parameters[3], vk_xml_command
+                ),
+                "unsafe { uninit_slice_from_raw_parts_mut(p_timestamps, timestamp_count) }",
+            )
+
+    def test_optional_mutable_slice_param_transformer(self):
+        vk_xml_command = TestUtils.get_vk_xml_command(
+            "vkEnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHR"
+        )
+        rust_method = RustMethod.from_vk_xml_command(vk_xml_command)
+        param_transformers: list[ParamTransformer] = [
+            GeneralSliceParamTransformer(),
+            ParamTransformer.create(),
+        ]
+        for param_transformer in param_transformers:
+            self.assertTrue(
+                param_transformer.type_matches(
+                    rust_method.parameters[2].type,
+                    vk_xml_command.parameters[3].type,
+                    vk_xml_command,
+                )
+            )
+            self.assertEqual(
+                param_transformer.transform(
+                    rust_method.parameters[2], vk_xml_command.parameters[3], vk_xml_command
+                ),
+                "unsafe { maybe_uninit_slice_from_raw_parts_mut(p_counters, p_counter_count) }",
+            )
+
+    def test_cmd_set_sample_mask_ext_param_transformer(self):
+        vk_xml_command = TestUtils.get_vk_xml_command("vkCmdSetSampleMaskEXT")
+        rust_method = RustMethod.from_vk_xml_command(vk_xml_command)
+        param_transformers: list[ParamTransformer] = [
+            GeneralSliceParamTransformer(),
+            ParamTransformer.create(),
+        ]
+        for param_transformer in param_transformers:
+            self.assertTrue(
+                param_transformer.type_matches(
+                    rust_method.parameters[2].type,
+                    vk_xml_command.parameters[2].type,
+                    vk_xml_command,
+                )
+            )
+            self.assertEqual(
+                param_transformer.transform(
+                    rust_method.parameters[2], vk_xml_command.parameters[2], vk_xml_command
+                ),
+                "unsafe { slice_from_raw_parts(p_sample_mask, (samples.as_raw() + 31) / 32) }",
+            )
+
+    def test_no_length_not_optional_mutable_ptr_param_transformer(self):
+        vk_xml_command = TestUtils.get_vk_xml_command("vkGetPhysicalDeviceFeatures2")
+        rust_method = RustMethod.from_vk_xml_command(vk_xml_command)
+        param_transformers: list[ParamTransformer] = [
+            NoLenPtrParamTransformer(),
+            ParamTransformer.create(),
+        ]
+        for param_transformer in param_transformers:
+            self.assertTrue(
+                param_transformer.type_matches(
+                    rust_method.parameters[1].type,
+                    vk_xml_command.parameters[1].type,
+                    vk_xml_command,
+                )
+            )
+            self.assertEqual(
+                param_transformer.transform(
+                    rust_method.parameters[1], vk_xml_command.parameters[1], vk_xml_command
+                ),
+                "unsafe { ptr_as_uninit_mut(p_features) }.unwrap()",
+            )
+
+    def test_no_length_not_optional_mutable_opaque_type_ptr_param_transformer(self):
+        vk_xml_command = TestUtils.get_vk_xml_command(
+            "vkGetPhysicalDeviceXcbPresentationSupportKHR"
+        )
+        rust_method = RustMethod.from_vk_xml_command(vk_xml_command)
+        param_transformers: list[ParamTransformer] = [
+            NoLenPtrParamTransformer(),
+            ParamTransformer.create(),
+        ]
+        for param_transformer in param_transformers:
+            self.assertTrue(
+                param_transformer.type_matches(
+                    rust_method.parameters[2].type,
+                    vk_xml_command.parameters[2].type,
+                    vk_xml_command,
+                )
+            )
+            self.assertEqual(
+                param_transformer.transform(
+                    rust_method.parameters[2], vk_xml_command.parameters[2], vk_xml_command
+                ),
+                "connection",
+            )
+
+    def test_optional_mutable_void_slice_param_transformer(self):
+        vk_xml_command = TestUtils.get_vk_xml_command("vkGetPipelineCacheData")
+        rust_method = RustMethod.from_vk_xml_command(vk_xml_command)
+        param_transformers: list[ParamTransformer] = [
+            VoidDataSliceParamTransformer(),
+            ParamTransformer.create(),
+        ]
+        for param_transformer in param_transformers:
+            self.assertTrue(
+                param_transformer.type_matches(
+                    rust_method.parameters[2].type,
+                    vk_xml_command.parameters[3].type,
+                    vk_xml_command,
+                )
+            )
+            self.assertEqual(
+                param_transformer.transform(
+                    rust_method.parameters[2], vk_xml_command.parameters[3], vk_xml_command
+                ),
+                "unsafe { maybe_uninit_slice_from_raw_parts_mut(p_data as *mut u8, p_data_size) }",
+            )

@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::mem::MaybeUninit;
+
 use mockall::mock;
 
 use crate::{InstanceHooks, LayerResult, VkLayerDeviceLink};
@@ -33,7 +35,7 @@ mock! {
             _p_create_info: &vk::DeviceCreateInfo,
             _layer_device_link: &VkLayerDeviceLink,
             _p_allocator: Option<&'a vk::AllocationCallbacks>,
-            _p_device: &mut vk::Device,
+            _p_device: &mut MaybeUninit<vk::Device>,
         ) -> LayerResult<VkResult<()>>;
     }
 }

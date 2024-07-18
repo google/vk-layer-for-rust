@@ -14,8 +14,10 @@
 
 from __future__ import annotations
 from enum import Enum, IntEnum
+from functools import cache
 import logging
 import os
+from pathlib import Path
 import re
 import reg
 from typing import Callable, ClassVar, NamedTuple, Optional, Generator
@@ -24,6 +26,7 @@ from xml.etree.ElementTree import Element
 from dataclasses import dataclass, field
 import dataclasses
 import datetime
+import unittest
 
 
 class VulkanAliases:
@@ -464,6 +467,10 @@ class RustType(NamedTuple):
         element_type: RustType
         length: int
 
+    class TemplateInfo(NamedTuple):
+        template_name: str
+        template_params: list[RustType]
+
     is_const: bool = True
     is_optional: bool = False
     is_root: bool = True
@@ -474,6 +481,7 @@ class RustType(NamedTuple):
     points_to: Optional[RustType] = None
     slice_of: Optional[RustType] = None
     array_info: Optional[ArrayInfo] = None
+    template_info: Optional[TemplateInfo] = None
     name: Optional[str] = None
 
     @staticmethod
@@ -543,6 +551,18 @@ class RustType(NamedTuple):
             else:
                 element_rust_type = RustType.from_vk_xml_type(element_vk_xml_type)
             element_rust_type = element_rust_type._replace(is_root=False)
+            # For mutable pointer parameters in vk.xml, they can be uninitialized (e.g.
+            # pPhysicalDevices in vkEnumeratePhysicalDevices), which makes it invalid to use the
+            # slice type (&mut [T]) to be the Rust interface type. The Rust slice type requires the
+            # underlying data be initialized. We use &mut [MaybeUninit<T>] here instead.
+            if not element_vk_xml_type.is_const:
+                element_rust_type = RustType(
+                    template_info=RustType.TemplateInfo(
+                        template_name="MaybeUninit", template_params=[element_rust_type]
+                    ),
+                    is_const=False,
+                    is_root=False,
+                )
             return RustType(
                 is_const=vk_xml_type.is_const,
                 is_optional=vk_xml_type.is_optional,
@@ -559,25 +579,35 @@ class RustType(NamedTuple):
                 points_to=RustType.from_vk_xml_type(vk_xml_type.points_to)._replace(is_root=False),
             )
         else:
-            # TODO: change to the Out<'_, T> type from the uninit crate. For mutable pointer
-            # parameters in vk.xml, they can be uninitialized (e.g. pDevice in vkCreateDevice), which
-            # makes it invalid to use the reference type (&mut T) to be the Rust interface type. The
-            # Rust reference type requires the underlying data be initialized. Note that this also
-            # applies to input arrays: &mut [T] is not the correct type. Out<'_, [T]> should
-            # be used.
+            refers_to = RustType.from_vk_xml_type(vk_xml_type.points_to)._replace(is_root=False)
+            if not vk_xml_type.points_to.is_const:
+                # For mutable pointer parameters in vk.xml, they can be uninitialized (e.g. pDevice
+                # in vkCreateDevice), which makes it invalid to use the reference type (&mut T) to
+                # be the Rust interface type. The Rust reference type requires the underlying data
+                # be initialized. We use &mut MaybeUninit<T> here.
+                refers_to = RustType(
+                    is_const=vk_xml_type.points_to.is_const,
+                    is_optional=False,
+                    template_info=RustType.TemplateInfo(
+                        template_name="MaybeUninit", template_params=[refers_to]
+                    ),
+                    is_root=False,
+                )
             return RustType(
                 is_const=vk_xml_type.is_const,
                 is_optional=vk_xml_type.is_optional,
-                refers_to=RustType.from_vk_xml_type(vk_xml_type.points_to)._replace(is_root=False),
+                refers_to=refers_to,
             )
 
     @staticmethod
     def from_vk_xml_type_for_ffi(vk_xml_type: VkXmlType) -> RustType:
         if len(vk_xml_type.dimensions) > 0:
             return RustType(
+                is_const=True,
+                is_optional=vk_xml_type.is_optional,
                 points_to=RustType.__handle_array_type(
                     vk_xml_type, RustType.from_vk_xml_type_for_ffi
-                )._replace(is_root=False)
+                )._replace(is_root=False),
             )
 
         if vk_xml_type.name is not None:
@@ -612,6 +642,14 @@ class RustType(NamedTuple):
                 return f"Option<{inner}>"
             else:
                 return inner
+
+        if self.template_info is not None:
+            template_info = self.template_info
+            template_params: list[str] = [
+                param.to_string() for param in template_info.template_params
+            ]
+            template_params: str = ", ".join(template_params)
+            return wrap_option(f"{template_info.template_name}<{template_params}>")
 
         inner_type = self.points_to or self.slice_of or self.refers_to
         if self.array_info is not None:
@@ -652,15 +690,203 @@ class RustParam(NamedTuple):
         )
 
     @staticmethod
+    def param_name_from_vk_xml_param_for_ffi(vk_xml_param_name: str) -> str:
+        return escape_rust_keywords(camel_case_to_snake_case(vk_xml_param_name))
+
+    @staticmethod
     def from_vk_xml_param_for_ffi(vk_xml_param: VkXmlParam) -> RustParam:
         return RustParam(
-            name=escape_rust_keywords(camel_case_to_snake_case(vk_xml_param.name)),
+            name=RustParam.param_name_from_vk_xml_param_for_ffi(vk_xml_param.name),
             type=RustType.from_vk_xml_type_for_ffi(vk_xml_param.type),
         )
 
     def to_string(self) -> str:
         param_type = self.type.to_string()
         return f"{self.name}: {param_type}"
+
+
+class VkXmlToRustMethodInfo(NamedTuple):
+    return_info: Return
+    rust_method_name: str
+    parameters: list[Param]
+    vk_xml_cmd: VkXmlCommand
+
+    class Return(NamedTuple):
+        main_source_vk_xml_params: list[VkXmlParam]
+        rust_method_return_type: str
+
+    class Param(NamedTuple):
+        main_source_vk_xml_param: VkXmlParam
+        rust_method_param: RustParam
+
+    @staticmethod
+    def from_vk_xml_command(vk_xml_cmd: VkXmlCommand) -> VkXmlToRustMethodInfo:
+        vk_xml_params = vk_xml_cmd.parameters.copy()
+
+        def handle_return_info() -> VkXmlToRustMethodInfo.Return:
+            """
+            Create the return info and remove the return parameters from the rust_params list
+            """
+            return_c_type = vk_xml_cmd.return_type
+            if return_c_type == "VkBool32":
+                # We use bool instead of vk::Bool32 for VkBool32 in our layer trait interfaces.
+                return VkXmlToRustMethodInfo.Return(
+                    main_source_vk_xml_params=[], rust_method_return_type="LayerResult<bool>"
+                )
+            if return_c_type not in ["void", "VkResult"]:
+                # Handle return types that can't be combined with extra out parameters, e.g.
+                # vkGetBufferOpaqueCaptureAddress which returns uint64_t.
+                rust_method_return_type = f"LayerResult<{decayed_type_to_rust_type(return_c_type)}>"
+                return VkXmlToRustMethodInfo.Return(
+                    main_source_vk_xml_params=[],
+                    rust_method_return_type=rust_method_return_type,
+                )
+
+            assert return_c_type in ["VkResult", "void"]
+            assert len(vk_xml_params) > 0, "Unexpected command with 0 parameters."
+            # TODO: add support to multiple out parameters.
+            last_param_type = vk_xml_cmd.parameters[-1].type
+
+            def get_rust_method_return_type(inner_type: str) -> str:
+                if return_c_type == "VkResult":
+                    return f"LayerResult<VkResult<{inner_type}>>"
+                assert return_c_type == "void"
+                return f"LayerResult<{inner_type}>"
+
+            return_info = VkXmlToRustMethodInfo.Return(
+                main_source_vk_xml_params=[],
+                rust_method_return_type=get_rust_method_return_type("()"),
+            )
+            if last_param_type.decayed_type().is_struct():
+                # For struct type, we don't treat it as a return type given the complication of
+                # pNext chain of the return parameter, and possible input fields.
+                return return_info
+
+            if vk_xml_cmd.name == "vkCreateDevice":
+                # We don't treat VkDevice just as a return value, because the layer is supposed
+                # to pass through the passed in pDevice parameter.
+                return return_info
+
+            if last_param_type.points_to is None:
+                # If the last parameter is not a pointer, it's not an out parameter, and won't be
+                # included in the return type
+                return return_info
+
+            # The last parameter is a C pointer.
+
+            if last_param_type.points_to.is_const:
+                # The last parameter is not a mutable pointer, so it's not an out parameter.
+                return return_info
+
+            last_rust_method_type = RustType.from_vk_xml_type(last_param_type)
+
+            if last_param_type.len is None:
+                # If the last parameter is a mutable pointer of a simple type. It's part of the
+                # return type. If the last parameter is void*, it's possible that the spec is
+                # missing the len attribute(e.g. vkGetSamplerOpaqueCaptureDescriptorDataEXT), but we
+                # are sure, so we don't transform the parameter type, and it won't be part of the
+                # return type.
+                if last_param_type.points_to.name == "void":
+                    return return_info
+                else:
+                    assert last_param_type.points_to is not None
+                    assert last_rust_method_type.refers_to is not None
+                    assert last_rust_method_type.refers_to.template_info is not None
+                    assert (
+                        last_rust_method_type.refers_to.template_info.template_name == "MaybeUninit"
+                    )
+                    rust_return_type = (
+                        last_rust_method_type.refers_to.template_info.template_params[0]
+                    )
+                    return VkXmlToRustMethodInfo.Return(
+                        main_source_vk_xml_params=[vk_xml_params.pop(-1)],
+                        rust_method_return_type=get_rust_method_return_type(
+                            rust_return_type.to_string()
+                        ),
+                    )
+
+            # The last parameter is a C array.
+
+            if last_param_type.points_to.name == "void":
+                # For an array of void, we don't return a Vec, as the return value can be large, and
+                # we should use the passed-in memory as the storage.
+                return return_info
+
+            # TODO: If the len_var is a const parameter, we should still pass the slice as the
+            # interface. In this case, if we return a Vec and remove this parameter, we don't know
+            # the length to use to call into the Vulkan API.
+            # TODO: returning Vec<_> could cause extra copy here compared to directly passing a
+            # mutable slice to the layer trait. Even worse, the layer won't be able to access the
+            # length of the passed in write buffer. Restrict the use of Vec<_> to only return
+            # handles
+            parameter_names = [param.name for param in vk_xml_params]
+            if vk_xml_params[-1].len_var in parameter_names:
+                len_param_index = parameter_names.index(vk_xml_params[-1].len_var)
+                vk_xml_params.pop(len_param_index)
+            assert last_rust_method_type.slice_of is not None
+            assert (
+                last_rust_method_type.slice_of.template_info is not None
+            ), "Mutable slice must be MaybeUninit as a parameter"
+            assert last_rust_method_type.slice_of.template_info.template_name == "MaybeUninit"
+            element_type = last_rust_method_type.slice_of.template_info.template_params[0]
+            return VkXmlToRustMethodInfo.Return(
+                main_source_vk_xml_params=[vk_xml_params.pop(-1)],
+                rust_method_return_type=get_rust_method_return_type(
+                    f"Vec<{element_type.to_string()}>"
+                ),
+            )
+
+        def handle_parameters() -> list[VkXmlToRustMethodInfo.Param]:
+            """
+            Create the VkXmlToRustMethodInfo.Param list after the return parameters are removed.
+
+            Some parameters may not appear in the final Rust method interface, because they are
+            included in another parameter type (e.g. in get_ray_tracing_shader_group_handles_khr
+            p_data is a slice. data_size is the length of p_data, which is included in the length of
+            the slice).
+            """
+            len_params = [param.len_var for param in vk_xml_params if param.len_var is not None]
+            res: list[VkXmlToRustMethodInfo.Param] = []
+            for i, param in enumerate(vk_xml_params):
+                # Remove the leading VkInstance or VkDevice parameter, since it should be included in
+                # &self.
+                if i == 0 and param.type.name is not None:
+                    if param.type.name in ["VkInstance", "VkDevice"]:
+                        continue
+                # Any non-pointer length parameters are removed, as they are always included in the
+                # correspondent slice parameter
+                if param.name in len_params and param.type.name is not None:
+                    continue
+
+                res.append(
+                    VkXmlToRustMethodInfo.Param(
+                        main_source_vk_xml_param=param,
+                        rust_method_param=RustParam.from_vk_xml_param(param),
+                    )
+                )
+            return res
+
+        return_info = handle_return_info()
+        rust_params = handle_parameters()
+
+        if vk_xml_cmd.name == "vkCreateDevice":
+            # Also pass the current VkLayerDeviceLink and the pDevice to the layer.
+            rust_params.insert(
+                2,
+                VkXmlToRustMethodInfo.Param(
+                    main_source_vk_xml_param=vk_xml_params[1],
+                    rust_method_param=RustParam(
+                        name="_layer_device_link",
+                        type=RustType(refers_to=RustType(name="VkLayerDeviceLink", is_root=False)),
+                    ),
+                ),
+            )
+        return VkXmlToRustMethodInfo(
+            return_info=return_info,
+            rust_method_name=camel_case_to_snake_case(vk_xml_cmd.name.removeprefix("vk")),
+            parameters=rust_params,
+            vk_xml_cmd=vk_xml_cmd,
+        )
 
 
 class RustMethod(NamedTuple):
@@ -671,73 +897,11 @@ class RustMethod(NamedTuple):
 
     @staticmethod
     def from_vk_xml_command(vk_xml_cmd: VkXmlCommand) -> RustMethod:
-        vk_xml_params = vk_xml_cmd.parameters
-        len_params = [param.len_var for param in vk_xml_params if param.len_var is not None]
-        not_len_xml_params = [param for param in vk_xml_params if param.name not in len_params]
-        rust_params: list[RustParam] = [
-            RustParam.from_vk_xml_param(vk_xml_param) for vk_xml_param in not_len_xml_params
-        ]
-        if vk_xml_cmd.name == "vkCreateDevice":
-            # Also pass the current VkLayerDeviceLink and the pDevice to the layer.
-            rust_params.insert(
-                2,
-                RustParam(
-                    name="_layer_device_link",
-                    type=RustType(refers_to=RustType(name="VkLayerDeviceLink", is_root=False)),
-                ),
-            )
-        assert len(rust_params) > 0, "Unexpected command with 0 parameters."
-
-        # Remove the leading vk::Instance or vk::Device parameter, since it should be included in
-        # &self.
-        if rust_params[0].type.name in ["vk::Device", "vk::Instance"]:
-            rust_params = rust_params[1:]
-
-        rust_return_type = None
-        return_c_type = vk_xml_cmd.return_type
-        if return_c_type in ["VkResult", "void"]:
-            rust_return_type = "()"
-            # TODO: move the return parameter detection into VkXmlParam and support multiple out
-            # parameters. In addition, we can share the return parameter test logic across different
-            # generator class.
-            if len(rust_params) > 0:
-                last_param_type = rust_params[-1].type
-                if not_len_xml_params[-1].type.decayed_type().is_struct():
-                    # For struct type, we don't treat it as a return type given the complication of
-                    # pNext chain of the return parameter, and possible input fields.
-                    pass
-                elif vk_xml_cmd.name == "vkCreateDevice":
-                    # We don't treat VkDevice just as a return value, because the layer is supposed
-                    # to pass through the passed in pDevice parameter.
-                    pass
-                elif (
-                    last_param_type.refers_to is not None and not last_param_type.refers_to.is_const
-                ):
-                    last_param = rust_params.pop()
-                    rust_return_type = last_param.type.refers_to.to_string()
-                elif last_param_type.slice_of is not None and not last_param_type.slice_of.is_const:
-                    last_param = rust_params.pop()
-                    # TODO: returning Vec<_> could cause extra copy here compared to directly
-                    # passing a mutable slice to the layer trait. Even worse, the layer won't be
-                    # able to access the length of the passed in write buffer.
-                    rust_return_type = f"Vec<{last_param.type.slice_of.to_string()}>"
-
-            if return_c_type == "VkResult":
-                rust_return_type = f"VkResult<{rust_return_type}>"
-            else:
-                assert return_c_type == "void"
-        else:
-            if return_c_type == "VkBool32":
-                rust_return_type = "bool"
-            else:
-                rust_return_type = decayed_type_to_rust_type(return_c_type)
-
-        rust_return_type = f"LayerResult<{rust_return_type}>"
-
+        vk_xml_to_rust_method_info = VkXmlToRustMethodInfo.from_vk_xml_command(vk_xml_cmd)
         return RustMethod(
-            name=camel_case_to_snake_case(vk_xml_cmd.name.removeprefix("vk")),
-            return_type=rust_return_type,
-            parameters=rust_params,
+            name=vk_xml_to_rust_method_info.rust_method_name,
+            return_type=vk_xml_to_rust_method_info.return_info.rust_method_return_type,
+            parameters=[param.rust_method_param for param in vk_xml_to_rust_method_info.parameters],
             vk_xml_cmd=vk_xml_cmd,
         )
 
@@ -756,6 +920,8 @@ class RustMethod(NamedTuple):
         used_type_params: list[TypeParam] = []
         type_params = generate_type_params(used_type_params)
 
+        # TODO: move this logic to RustMethod generation process so that the Rust type
+        # representation is more natural
         def param_to_string(param: RustParam) -> str:
             if param.type.slice_of is not None and param.type.slice_of.name == "bool":
                 type_param = next(type_params)
@@ -786,3 +952,119 @@ def generate_unhandled_command_comments(
     lines = ["// Unhandled commands:"]
     lines += [f"// * {cmd.name}: {cmd.reason}" for cmd in unhandled_commands]
     return "".join([" " * indent + line + "\n" for line in lines])
+
+
+class TestUtils:
+
+    @dataclass
+    class __VkXml:
+        cmd_dict: dict[str, reg.CmdInfo] = field(default_factory=dict)
+        type_infos: dict[str, reg.TypeInfo | reg.GroupInfo] = field(default_factory=dict)
+
+    @staticmethod
+    @cache
+    def __get_vk_xml() -> TestUtils.__VkXml:
+        vk_xml_path = (
+            Path(__file__).absolute().parents[1]
+            / "third_party"
+            / "Vulkan-Headers"
+            / "registry"
+            / "vk.xml"
+        )
+        tree = ElementTree.parse(str(vk_xml_path))
+        registry = reg.Registry()
+        registry.loadElementTree(tree)
+        return TestUtils.__VkXml(cmd_dict=registry.cmddict, type_infos=registry.typedict)
+
+    @staticmethod
+    def get_vk_xml_command(command_name: str) -> VkXmlCommand:
+        vk_xml = TestUtils.__get_vk_xml()
+        return VkXmlCommand.from_cmd_info(vk_xml.cmd_dict[command_name], vk_xml.type_infos)
+
+
+class TestRustMethod(unittest.TestCase):
+    def test_get_image_sparse_memory_requirements2(self):
+        vk_xml_command = TestUtils.get_vk_xml_command("vkGetImageSparseMemoryRequirements2")
+        rust_method = RustMethod.from_vk_xml_command(vk_xml_command)
+        self.assertEqual(rust_method.return_type, "LayerResult<()>")
+        self.assertEqual(
+            rust_method.parameters[0].type.to_string(), "&vk::ImageSparseMemoryRequirementsInfo2"
+        )
+        self.assertEqual(rust_method.parameters[1].type.to_string(), "&mut MaybeUninit<u32>")
+        self.assertEqual(
+            rust_method.parameters[2].type.to_string(),
+            "Option<&mut [MaybeUninit<vk::SparseImageMemoryRequirements2>]>",
+        )
+
+    def test_allocate_descriptor_sets(self):
+        vk_xml_command = TestUtils.get_vk_xml_command("vkAllocateDescriptorSets")
+        rust_method = RustMethod.from_vk_xml_command(vk_xml_command)
+        self.assertEqual(
+            rust_method.parameters[0].type.to_string(), "&vk::DescriptorSetAllocateInfo"
+        )
+        self.assertEqual(rust_method.return_type, "LayerResult<VkResult<Vec<vk::DescriptorSet>>>")
+
+    def test_get_device_queue(self):
+        vk_xml_command = TestUtils.get_vk_xml_command("vkGetDeviceQueue")
+        rust_method = RustMethod.from_vk_xml_command(vk_xml_command)
+        self.assertEqual(len(rust_method.parameters), 2)
+        self.assertEqual(rust_method.return_type, "LayerResult<vk::Queue>")
+
+    def test_queue_submit(self):
+        vk_xml_command = TestUtils.get_vk_xml_command("vkQueueSubmit")
+        rust_method = RustMethod.from_vk_xml_command(vk_xml_command)
+        self.assertEqual(rust_method.parameters[0].type.to_string(), "vk::Queue")
+        self.assertEqual(rust_method.parameters[1].type.to_string(), "&[vk::SubmitInfo]")
+        self.assertEqual(rust_method.parameters[2].type.to_string(), "vk::Fence")
+
+    def test_get_ray_tracing_shader_group_handles_khr(self):
+        vk_xml_command = TestUtils.get_vk_xml_command("vkGetRayTracingShaderGroupHandlesKHR")
+        rust_method = RustMethod.from_vk_xml_command(vk_xml_command)
+        self.assertEqual(rust_method.parameters[0].type.to_string(), "vk::Pipeline")
+        self.assertEqual(rust_method.parameters[1].type.to_string(), "u32")
+        self.assertEqual(rust_method.parameters[2].type.to_string(), "u32")
+        self.assertEqual(rust_method.parameters[3].type.to_string(), "&mut [MaybeUninit<u8>]")
+        self.assertEqual(rust_method.return_type, "LayerResult<VkResult<()>>")
+
+    def test_get_sampler_opaque_capture_descriptor_data_ext(self):
+        vk_xml_command = TestUtils.get_vk_xml_command("vkGetSamplerOpaqueCaptureDescriptorDataEXT")
+        rust_method = RustMethod.from_vk_xml_command(vk_xml_command)
+        self.assertEqual(
+            rust_method.parameters[0].type.to_string(), "&vk::SamplerCaptureDescriptorDataInfoEXT"
+        )
+        self.assertEqual(rust_method.parameters[1].type.to_string(), "*mut c_void")
+
+    def test_ffi_cmd_set_blend_constants(self):
+        vk_xml_command = TestUtils.get_vk_xml_command("vkCmdSetBlendConstants")
+        blend_constants_ffi_param = RustParam.from_vk_xml_param_for_ffi(
+            vk_xml_command.parameters[1]
+        )
+        self.assertEqual(blend_constants_ffi_param.to_string(), "blend_constants: *const [f32; 4]")
+
+    def test_enumerate_physical_device_queue_family_performance_query_counters_khr(self):
+        vk_xml_command = TestUtils.get_vk_xml_command(
+            "vkEnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHR"
+        )
+        rust_method = RustMethod.from_vk_xml_command(vk_xml_command)
+        self.assertEqual(rust_method.parameters[2].type.to_string(), "&mut MaybeUninit<u32>")
+        self.assertEqual(
+            rust_method.parameters[3].type.to_string(),
+            "Option<&mut [MaybeUninit<vk::PerformanceCounterKHR>]>",
+        )
+        self.assertEqual(
+            rust_method.parameters[4].type.to_string(),
+            "Option<&mut [MaybeUninit<vk::PerformanceCounterDescriptionKHR>]>",
+        )
+
+    def test_map_memory(self):
+        vk_xml_command = TestUtils.get_vk_xml_command("vkMapMemory")
+        rust_method = RustMethod.from_vk_xml_command(vk_xml_command)
+        self.assertEqual(len(rust_method.parameters), 4)
+        self.assertEqual(rust_method.return_type, "LayerResult<VkResult<Option<*mut c_void>>>")
+
+    def test_get_physical_device_surface_support_khr(self):
+        vk_xml_command = TestUtils.get_vk_xml_command("vkGetPhysicalDeviceSurfaceSupportKHR")
+        vk_xml_to_rust_method_info = VkXmlToRustMethodInfo.from_vk_xml_command(vk_xml_command)
+        return_info = vk_xml_to_rust_method_info.return_info
+        self.assertEqual(len(return_info.main_source_vk_xml_params), 1)
+        self.assertEqual(return_info.main_source_vk_xml_params[0].name, "pSupported")

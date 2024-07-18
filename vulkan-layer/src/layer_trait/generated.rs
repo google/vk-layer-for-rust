@@ -15,7 +15,10 @@
 #![allow(missing_docs)]
 // This file is generated from the Vulkan XML API registry.
 #![allow(clippy::too_many_arguments)]
-use std::ffi::{c_int, c_void};
+use std::{
+    ffi::{c_int, c_void},
+    mem::MaybeUninit,
+};
 
 use ash::{prelude::VkResult, vk};
 
@@ -1496,21 +1499,24 @@ pub trait DeviceHooks: Send + Sync {
     fn get_buffer_memory_requirements(
         &self,
         _buffer: vk::Buffer,
-        _p_memory_requirements: &mut vk::MemoryRequirements,
+        _p_memory_requirements: &mut MaybeUninit<vk::MemoryRequirements>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_image_memory_requirements(
         &self,
         _image: vk::Image,
-        _p_memory_requirements: &mut vk::MemoryRequirements,
+        _p_memory_requirements: &mut MaybeUninit<vk::MemoryRequirements>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_image_sparse_memory_requirements(
         &self,
         _image: vk::Image,
-        _p_sparse_memory_requirements: Option<&mut [vk::SparseImageMemoryRequirements]>,
+        _p_sparse_memory_requirement_count: &mut MaybeUninit<u32>,
+        _p_sparse_memory_requirements: Option<
+            &mut [MaybeUninit<vk::SparseImageMemoryRequirements>],
+        >,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -1606,7 +1612,7 @@ pub trait DeviceHooks: Send + Sync {
         _query_pool: vk::QueryPool,
         _first_query: u32,
         _query_count: u32,
-        _p_data: &mut [u8],
+        _p_data: &mut [MaybeUninit<u8>],
         _stride: vk::DeviceSize,
         _flags: vk::QueryResultFlags,
     ) -> LayerResult<VkResult<()>> {
@@ -1658,7 +1664,7 @@ pub trait DeviceHooks: Send + Sync {
         &self,
         _image: vk::Image,
         _p_subresource: &vk::ImageSubresource,
-        _p_layout: &mut vk::SubresourceLayout,
+        _p_layout: &mut MaybeUninit<vk::SubresourceLayout>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -1707,7 +1713,9 @@ pub trait DeviceHooks: Send + Sync {
     fn get_pipeline_cache_data(
         &self,
         _pipeline_cache: vk::PipelineCache,
-    ) -> LayerResult<VkResult<Vec<u8>>> {
+        _p_data_size: &mut MaybeUninit<usize>,
+        _p_data: Option<&mut [MaybeUninit<u8>]>,
+    ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn merge_pipeline_caches(
@@ -1854,7 +1862,7 @@ pub trait DeviceHooks: Send + Sync {
     fn get_render_area_granularity(
         &self,
         _render_pass: vk::RenderPass,
-        _p_granularity: &mut vk::Extent2D,
+        _p_granularity: &mut MaybeUninit<vk::Extent2D>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -2350,21 +2358,24 @@ pub trait DeviceHooks: Send + Sync {
     fn get_image_memory_requirements2(
         &self,
         _p_info: &vk::ImageMemoryRequirementsInfo2,
-        _p_memory_requirements: &mut vk::MemoryRequirements2,
+        _p_memory_requirements: &mut MaybeUninit<vk::MemoryRequirements2>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_buffer_memory_requirements2(
         &self,
         _p_info: &vk::BufferMemoryRequirementsInfo2,
-        _p_memory_requirements: &mut vk::MemoryRequirements2,
+        _p_memory_requirements: &mut MaybeUninit<vk::MemoryRequirements2>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_image_sparse_memory_requirements2(
         &self,
         _p_info: &vk::ImageSparseMemoryRequirementsInfo2,
-        _p_sparse_memory_requirements: Option<&mut [vk::SparseImageMemoryRequirements2]>,
+        _p_sparse_memory_requirement_count: &mut MaybeUninit<u32>,
+        _p_sparse_memory_requirements: Option<
+            &mut [MaybeUninit<vk::SparseImageMemoryRequirements2>],
+        >,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -2417,7 +2428,7 @@ pub trait DeviceHooks: Send + Sync {
     fn get_descriptor_set_layout_support(
         &self,
         _p_create_info: &vk::DescriptorSetLayoutCreateInfo,
-        _p_support: &mut vk::DescriptorSetLayoutSupport,
+        _p_support: &mut MaybeUninit<vk::DescriptorSetLayoutSupport>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -2764,21 +2775,24 @@ pub trait DeviceHooks: Send + Sync {
     fn get_device_buffer_memory_requirements(
         &self,
         _p_info: &vk::DeviceBufferMemoryRequirements,
-        _p_memory_requirements: &mut vk::MemoryRequirements2,
+        _p_memory_requirements: &mut MaybeUninit<vk::MemoryRequirements2>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_device_image_memory_requirements(
         &self,
         _p_info: &vk::DeviceImageMemoryRequirements,
-        _p_memory_requirements: &mut vk::MemoryRequirements2,
+        _p_memory_requirements: &mut MaybeUninit<vk::MemoryRequirements2>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_device_image_sparse_memory_requirements(
         &self,
         _p_info: &vk::DeviceImageMemoryRequirements,
-        _p_sparse_memory_requirements: Option<&mut [vk::SparseImageMemoryRequirements2]>,
+        _p_sparse_memory_requirement_count: &mut MaybeUninit<u32>,
+        _p_sparse_memory_requirements: Option<
+            &mut [MaybeUninit<vk::SparseImageMemoryRequirements2>],
+        >,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -2820,7 +2834,9 @@ pub trait DeviceHooks: Send + Sync {
     }
     fn get_device_group_present_capabilities_khr(
         &self,
-        _p_device_group_present_capabilities: &mut vk::DeviceGroupPresentCapabilitiesKHR,
+        _p_device_group_present_capabilities: &mut MaybeUninit<
+            vk::DeviceGroupPresentCapabilitiesKHR,
+        >,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
@@ -2860,7 +2876,8 @@ pub trait DeviceHooks: Send + Sync {
     fn get_video_session_memory_requirements_khr(
         &self,
         _video_session: vk::VideoSessionKHR,
-        _p_memory_requirements: Option<&mut [vk::VideoSessionMemoryRequirementsKHR]>,
+        _p_memory_requirements_count: &mut MaybeUninit<u32>,
+        _p_memory_requirements: Option<&mut [MaybeUninit<vk::VideoSessionMemoryRequirementsKHR>]>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
@@ -2930,7 +2947,7 @@ pub trait DeviceHooks: Send + Sync {
         &self,
         _handle_type: vk::ExternalMemoryHandleTypeFlags,
         _handle: vk::HANDLE,
-        _p_memory_win32_handle_properties: &mut vk::MemoryWin32HandlePropertiesKHR,
+        _p_memory_win32_handle_properties: &mut MaybeUninit<vk::MemoryWin32HandlePropertiesKHR>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
@@ -2944,7 +2961,7 @@ pub trait DeviceHooks: Send + Sync {
         &self,
         _handle_type: vk::ExternalMemoryHandleTypeFlags,
         _fd: c_int,
-        _p_memory_fd_properties: &mut vk::MemoryFdPropertiesKHR,
+        _p_memory_fd_properties: &mut MaybeUninit<vk::MemoryFdPropertiesKHR>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
@@ -3078,21 +3095,26 @@ pub trait DeviceHooks: Send + Sync {
     fn get_pipeline_executable_properties_khr(
         &self,
         _p_pipeline_info: &vk::PipelineInfoKHR,
-        _p_properties: Option<&mut [vk::PipelineExecutablePropertiesKHR]>,
+        _p_executable_count: &mut MaybeUninit<u32>,
+        _p_properties: Option<&mut [MaybeUninit<vk::PipelineExecutablePropertiesKHR>]>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_pipeline_executable_statistics_khr(
         &self,
         _p_executable_info: &vk::PipelineExecutableInfoKHR,
-        _p_statistics: Option<&mut [vk::PipelineExecutableStatisticKHR]>,
+        _p_statistic_count: &mut MaybeUninit<u32>,
+        _p_statistics: Option<&mut [MaybeUninit<vk::PipelineExecutableStatisticKHR>]>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_pipeline_executable_internal_representations_khr(
         &self,
         _p_executable_info: &vk::PipelineExecutableInfoKHR,
-        _p_internal_representations: Option<&mut [vk::PipelineExecutableInternalRepresentationKHR]>,
+        _p_internal_representation_count: &mut MaybeUninit<u32>,
+        _p_internal_representations: Option<
+            &mut [MaybeUninit<vk::PipelineExecutableInternalRepresentationKHR>],
+        >,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
@@ -3116,7 +3138,8 @@ pub trait DeviceHooks: Send + Sync {
     fn get_queue_checkpoint_data2_nv(
         &self,
         _queue: vk::Queue,
-        _p_checkpoint_data: Option<&mut [vk::CheckpointData2NV]>,
+        _p_checkpoint_data_count: &mut MaybeUninit<u32>,
+        _p_checkpoint_data: Option<&mut [MaybeUninit<vk::CheckpointData2NV>]>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -3156,7 +3179,7 @@ pub trait DeviceHooks: Send + Sync {
         _format: vk::Format,
         _image_usage: vk::ImageUsageFlags,
         _swapchain_image_usage: vk::SwapchainImageUsageFlagsANDROID,
-        _gralloc_consumer_usage: &mut u64,
+        _gralloc_consumer_usage: &mut MaybeUninit<u64>,
     ) -> LayerResult<VkResult<u64>> {
         LayerResult::Unhandled
     }
@@ -3289,7 +3312,7 @@ pub trait DeviceHooks: Send + Sync {
     fn get_image_view_address_nvx(
         &self,
         _image_view: vk::ImageView,
-        _p_properties: &mut vk::ImageViewAddressPropertiesNVX,
+        _p_properties: &mut MaybeUninit<vk::ImageViewAddressPropertiesNVX>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
@@ -3298,7 +3321,9 @@ pub trait DeviceHooks: Send + Sync {
         _pipeline: vk::Pipeline,
         _shader_stage: vk::ShaderStageFlags,
         _info_type: vk::ShaderInfoTypeAMD,
-    ) -> LayerResult<VkResult<Vec<u8>>> {
+        _p_info_size: &mut MaybeUninit<usize>,
+        _p_info: Option<&mut [MaybeUninit<u8>]>,
+    ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_memory_win32_handle_nv(
@@ -3361,14 +3386,15 @@ pub trait DeviceHooks: Send + Sync {
     fn get_refresh_cycle_duration_google(
         &self,
         _swapchain: vk::SwapchainKHR,
-        _p_display_timing_properties: &mut vk::RefreshCycleDurationGOOGLE,
+        _p_display_timing_properties: &mut MaybeUninit<vk::RefreshCycleDurationGOOGLE>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_past_presentation_timing_google(
         &self,
         _swapchain: vk::SwapchainKHR,
-        _p_presentation_timings: Option<&mut [vk::PastPresentationTimingGOOGLE]>,
+        _p_presentation_timing_count: &mut MaybeUninit<u32>,
+        _p_presentation_timings: Option<&mut [MaybeUninit<vk::PastPresentationTimingGOOGLE>]>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
@@ -3436,7 +3462,7 @@ pub trait DeviceHooks: Send + Sync {
     fn get_android_hardware_buffer_properties_android(
         &self,
         _buffer: *const vk::AHardwareBuffer,
-        _p_properties: &mut vk::AndroidHardwareBufferPropertiesANDROID,
+        _p_properties: &mut MaybeUninit<vk::AndroidHardwareBufferPropertiesANDROID>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
@@ -3456,7 +3482,7 @@ pub trait DeviceHooks: Send + Sync {
     fn get_image_drm_format_modifier_properties_ext(
         &self,
         _image: vk::Image,
-        _p_properties: &mut vk::ImageDrmFormatModifierPropertiesEXT,
+        _p_properties: &mut MaybeUninit<vk::ImageDrmFormatModifierPropertiesEXT>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
@@ -3484,7 +3510,9 @@ pub trait DeviceHooks: Send + Sync {
     fn get_validation_cache_data_ext(
         &self,
         _validation_cache: vk::ValidationCacheEXT,
-    ) -> LayerResult<VkResult<Vec<u8>>> {
+        _p_data_size: &mut MaybeUninit<usize>,
+        _p_data: Option<&mut [MaybeUninit<u8>]>,
+    ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn cmd_bind_shading_rate_image_nv(
@@ -3528,7 +3556,7 @@ pub trait DeviceHooks: Send + Sync {
     fn get_acceleration_structure_memory_requirements_nv(
         &self,
         _p_info: &vk::AccelerationStructureMemoryRequirementsInfoNV,
-        _p_memory_requirements: &mut vk::MemoryRequirements2KHR,
+        _p_memory_requirements: &mut MaybeUninit<vk::MemoryRequirements2KHR>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -3594,13 +3622,15 @@ pub trait DeviceHooks: Send + Sync {
         _pipeline: vk::Pipeline,
         _first_group: u32,
         _group_count: u32,
-    ) -> LayerResult<VkResult<Vec<u8>>> {
+        _p_data: &mut [MaybeUninit<u8>],
+    ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_acceleration_structure_handle_nv(
         &self,
         _acceleration_structure: vk::AccelerationStructureNV,
-    ) -> LayerResult<VkResult<Vec<u8>>> {
+        _p_data: &mut [MaybeUninit<u8>],
+    ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn cmd_write_acceleration_structures_properties_nv(
@@ -3624,7 +3654,7 @@ pub trait DeviceHooks: Send + Sync {
         &self,
         _handle_type: vk::ExternalMemoryHandleTypeFlags,
         _p_host_pointer: *const c_void,
-        _p_memory_host_pointer_properties: &mut vk::MemoryHostPointerPropertiesEXT,
+        _p_memory_host_pointer_properties: &mut MaybeUninit<vk::MemoryHostPointerPropertiesEXT>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
@@ -3641,7 +3671,7 @@ pub trait DeviceHooks: Send + Sync {
     fn get_calibrated_timestamps_ext(
         &self,
         _p_timestamp_infos: &[vk::CalibratedTimestampInfoEXT],
-        _p_timestamps: &mut [u64],
+        _p_timestamps: &mut [MaybeUninit<u64>],
     ) -> LayerResult<VkResult<u64>> {
         LayerResult::Unhandled
     }
@@ -3693,7 +3723,8 @@ pub trait DeviceHooks: Send + Sync {
     fn get_queue_checkpoint_data_nv(
         &self,
         _queue: vk::Queue,
-        _p_checkpoint_data: Option<&mut [vk::CheckpointDataNV]>,
+        _p_checkpoint_data_count: &mut MaybeUninit<u32>,
+        _p_checkpoint_data: Option<&mut [MaybeUninit<vk::CheckpointDataNV>]>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -3749,7 +3780,7 @@ pub trait DeviceHooks: Send + Sync {
     fn get_performance_parameter_intel(
         &self,
         _parameter: vk::PerformanceParameterTypeINTEL,
-        _p_value: &mut vk::PerformanceValueINTEL,
+        _p_value: &mut MaybeUninit<vk::PerformanceValueINTEL>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
@@ -3795,7 +3826,7 @@ pub trait DeviceHooks: Send + Sync {
     fn get_generated_commands_memory_requirements_nv(
         &self,
         _p_info: &vk::GeneratedCommandsMemoryRequirementsInfoNV,
-        _p_memory_requirements: &mut vk::MemoryRequirements2,
+        _p_memory_requirements: &mut MaybeUninit<vk::MemoryRequirements2>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -3839,7 +3870,7 @@ pub trait DeviceHooks: Send + Sync {
     }
     fn export_metal_objects_ext(
         &self,
-        _p_metal_objects_info: &mut vk::ExportMetalObjectsInfoEXT,
+        _p_metal_objects_info: &mut MaybeUninit<vk::ExportMetalObjectsInfoEXT>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -3859,7 +3890,8 @@ pub trait DeviceHooks: Send + Sync {
     fn get_descriptor_ext(
         &self,
         _p_descriptor_info: &vk::DescriptorGetInfoEXT,
-    ) -> LayerResult<Vec<u8>> {
+        _p_descriptor: &mut [MaybeUninit<u8>],
+    ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn cmd_bind_descriptor_buffers_ext(
@@ -3936,7 +3968,7 @@ pub trait DeviceHooks: Send + Sync {
         &self,
         _image: vk::Image,
         _p_subresource: &vk::ImageSubresource2EXT,
-        _p_layout: &mut vk::SubresourceLayout2EXT,
+        _p_layout: &mut MaybeUninit<vk::SubresourceLayout2EXT>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -3958,7 +3990,9 @@ pub trait DeviceHooks: Send + Sync {
         &self,
         _handle_type: vk::ExternalMemoryHandleTypeFlags,
         _zircon_handle: vk::zx_handle_t,
-        _p_memory_zircon_handle_properties: &mut vk::MemoryZirconHandlePropertiesFUCHSIA,
+        _p_memory_zircon_handle_properties: &mut MaybeUninit<
+            vk::MemoryZirconHandlePropertiesFUCHSIA,
+        >,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
@@ -4005,14 +4039,14 @@ pub trait DeviceHooks: Send + Sync {
     fn get_buffer_collection_properties_fuchsia(
         &self,
         _collection: vk::BufferCollectionFUCHSIA,
-        _p_properties: &mut vk::BufferCollectionPropertiesFUCHSIA,
+        _p_properties: &mut MaybeUninit<vk::BufferCollectionPropertiesFUCHSIA>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_device_subpass_shading_max_workgroup_size_huawei(
         &self,
         _renderpass: vk::RenderPass,
-        _p_max_workgroup_size: &mut vk::Extent2D,
+        _p_max_workgroup_size: &mut MaybeUninit<vk::Extent2D>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
@@ -4036,7 +4070,7 @@ pub trait DeviceHooks: Send + Sync {
     fn get_pipeline_properties_ext(
         &self,
         _p_pipeline_info: &vk::PipelineInfoEXT,
-        _p_pipeline_properties: &mut vk::BaseOutStructure,
+        _p_pipeline_properties: &mut MaybeUninit<vk::BaseOutStructure>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
@@ -4135,7 +4169,7 @@ pub trait DeviceHooks: Send + Sync {
         &self,
         _p_micromaps: &[vk::MicromapEXT],
         _query_type: vk::QueryType,
-        _p_data: &mut [u8],
+        _p_data: &mut [MaybeUninit<u8>],
         _stride: usize,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
@@ -4181,7 +4215,7 @@ pub trait DeviceHooks: Send + Sync {
         &self,
         _build_type: vk::AccelerationStructureBuildTypeKHR,
         _p_build_info: &vk::MicromapBuildInfoEXT,
-        _p_size_info: &mut vk::MicromapBuildSizesInfoEXT,
+        _p_size_info: &mut MaybeUninit<vk::MicromapBuildSizesInfoEXT>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -4195,7 +4229,7 @@ pub trait DeviceHooks: Send + Sync {
     fn get_descriptor_set_layout_host_mapping_info_valve(
         &self,
         _p_binding_reference: &vk::DescriptorSetBindingReferenceVALVE,
-        _p_host_mapping: &mut vk::DescriptorSetLayoutHostMappingInfoVALVE,
+        _p_host_mapping: &mut MaybeUninit<vk::DescriptorSetLayoutHostMappingInfoVALVE>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -4467,14 +4501,14 @@ pub trait DeviceHooks: Send + Sync {
     fn get_shader_module_identifier_ext(
         &self,
         _shader_module: vk::ShaderModule,
-        _p_identifier: &mut vk::ShaderModuleIdentifierEXT,
+        _p_identifier: &mut MaybeUninit<vk::ShaderModuleIdentifierEXT>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_shader_module_create_info_identifier_ext(
         &self,
         _p_create_info: &vk::ShaderModuleCreateInfo,
-        _p_identifier: &mut vk::ShaderModuleIdentifierEXT,
+        _p_identifier: &mut MaybeUninit<vk::ShaderModuleIdentifierEXT>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -4512,14 +4546,15 @@ pub trait DeviceHooks: Send + Sync {
     fn get_framebuffer_tile_properties_qcom(
         &self,
         _framebuffer: vk::Framebuffer,
-        _p_properties: Option<&mut [vk::TilePropertiesQCOM]>,
+        _p_properties_count: &mut MaybeUninit<u32>,
+        _p_properties: Option<&mut [MaybeUninit<vk::TilePropertiesQCOM>]>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_dynamic_rendering_tile_properties_qcom(
         &self,
         _p_rendering_info: &vk::RenderingInfo,
-        _p_properties: &mut vk::TilePropertiesQCOM,
+        _p_properties: &mut MaybeUninit<vk::TilePropertiesQCOM>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
@@ -4562,7 +4597,7 @@ pub trait DeviceHooks: Send + Sync {
         &self,
         _p_acceleration_structures: &[vk::AccelerationStructureKHR],
         _query_type: vk::QueryType,
-        _p_data: &mut [u8],
+        _p_data: &mut [MaybeUninit<u8>],
         _stride: usize,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
@@ -4615,7 +4650,7 @@ pub trait DeviceHooks: Send + Sync {
         _build_type: vk::AccelerationStructureBuildTypeKHR,
         _p_build_info: &vk::AccelerationStructureBuildGeometryInfoKHR,
         _p_max_primitive_counts: Option<&[u32]>,
-        _p_size_info: &mut vk::AccelerationStructureBuildSizesInfoKHR,
+        _p_size_info: &mut MaybeUninit<vk::AccelerationStructureBuildSizesInfoKHR>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -4646,7 +4681,8 @@ pub trait DeviceHooks: Send + Sync {
         _pipeline: vk::Pipeline,
         _first_group: u32,
         _group_count: u32,
-    ) -> LayerResult<VkResult<Vec<u8>>> {
+        _p_data: &mut [MaybeUninit<u8>],
+    ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn cmd_trace_rays_indirect_khr(
@@ -4712,7 +4748,7 @@ pub trait InstanceHooks: Send + Sync {
     fn get_physical_device_features(
         &self,
         _physical_device: vk::PhysicalDevice,
-        _p_features: &mut vk::PhysicalDeviceFeatures,
+        _p_features: &mut MaybeUninit<vk::PhysicalDeviceFeatures>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -4720,7 +4756,7 @@ pub trait InstanceHooks: Send + Sync {
         &self,
         _physical_device: vk::PhysicalDevice,
         _format: vk::Format,
-        _p_format_properties: &mut vk::FormatProperties,
+        _p_format_properties: &mut MaybeUninit<vk::FormatProperties>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -4732,28 +4768,29 @@ pub trait InstanceHooks: Send + Sync {
         _tiling: vk::ImageTiling,
         _usage: vk::ImageUsageFlags,
         _flags: vk::ImageCreateFlags,
-        _p_image_format_properties: &mut vk::ImageFormatProperties,
+        _p_image_format_properties: &mut MaybeUninit<vk::ImageFormatProperties>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_physical_device_properties(
         &self,
         _physical_device: vk::PhysicalDevice,
-        _p_properties: &mut vk::PhysicalDeviceProperties,
+        _p_properties: &mut MaybeUninit<vk::PhysicalDeviceProperties>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_physical_device_queue_family_properties(
         &self,
         _physical_device: vk::PhysicalDevice,
-        _p_queue_family_properties: Option<&mut [vk::QueueFamilyProperties]>,
+        _p_queue_family_property_count: &mut MaybeUninit<u32>,
+        _p_queue_family_properties: Option<&mut [MaybeUninit<vk::QueueFamilyProperties>]>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_physical_device_memory_properties(
         &self,
         _physical_device: vk::PhysicalDevice,
-        _p_memory_properties: &mut vk::PhysicalDeviceMemoryProperties,
+        _p_memory_properties: &mut MaybeUninit<vk::PhysicalDeviceMemoryProperties>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -4766,7 +4803,7 @@ pub trait InstanceHooks: Send + Sync {
         _p_create_info: &vk::DeviceCreateInfo,
         _layer_device_link: &VkLayerDeviceLink,
         _p_allocator: Option<&vk::AllocationCallbacks>,
-        _p_device: &mut vk::Device,
+        _p_device: &mut MaybeUninit<vk::Device>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
@@ -4778,21 +4815,22 @@ pub trait InstanceHooks: Send + Sync {
         _samples: vk::SampleCountFlags,
         _usage: vk::ImageUsageFlags,
         _tiling: vk::ImageTiling,
-        _p_properties: Option<&mut [vk::SparseImageFormatProperties]>,
+        _p_property_count: &mut MaybeUninit<u32>,
+        _p_properties: Option<&mut [MaybeUninit<vk::SparseImageFormatProperties>]>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_physical_device_features2(
         &self,
         _physical_device: vk::PhysicalDevice,
-        _p_features: &mut vk::PhysicalDeviceFeatures2,
+        _p_features: &mut MaybeUninit<vk::PhysicalDeviceFeatures2>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_physical_device_properties2(
         &self,
         _physical_device: vk::PhysicalDevice,
-        _p_properties: &mut vk::PhysicalDeviceProperties2,
+        _p_properties: &mut MaybeUninit<vk::PhysicalDeviceProperties2>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -4800,7 +4838,7 @@ pub trait InstanceHooks: Send + Sync {
         &self,
         _physical_device: vk::PhysicalDevice,
         _format: vk::Format,
-        _p_format_properties: &mut vk::FormatProperties2,
+        _p_format_properties: &mut MaybeUninit<vk::FormatProperties2>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -4808,21 +4846,22 @@ pub trait InstanceHooks: Send + Sync {
         &self,
         _physical_device: vk::PhysicalDevice,
         _p_image_format_info: &vk::PhysicalDeviceImageFormatInfo2,
-        _p_image_format_properties: &mut vk::ImageFormatProperties2,
+        _p_image_format_properties: &mut MaybeUninit<vk::ImageFormatProperties2>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_physical_device_queue_family_properties2(
         &self,
         _physical_device: vk::PhysicalDevice,
-        _p_queue_family_properties: Option<&mut [vk::QueueFamilyProperties2]>,
+        _p_queue_family_property_count: &mut MaybeUninit<u32>,
+        _p_queue_family_properties: Option<&mut [MaybeUninit<vk::QueueFamilyProperties2>]>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_physical_device_memory_properties2(
         &self,
         _physical_device: vk::PhysicalDevice,
-        _p_memory_properties: &mut vk::PhysicalDeviceMemoryProperties2,
+        _p_memory_properties: &mut MaybeUninit<vk::PhysicalDeviceMemoryProperties2>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -4830,7 +4869,8 @@ pub trait InstanceHooks: Send + Sync {
         &self,
         _physical_device: vk::PhysicalDevice,
         _p_format_info: &vk::PhysicalDeviceSparseImageFormatInfo2,
-        _p_properties: Option<&mut [vk::SparseImageFormatProperties2]>,
+        _p_property_count: &mut MaybeUninit<u32>,
+        _p_properties: Option<&mut [MaybeUninit<vk::SparseImageFormatProperties2>]>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -4838,7 +4878,7 @@ pub trait InstanceHooks: Send + Sync {
         &self,
         _physical_device: vk::PhysicalDevice,
         _p_external_buffer_info: &vk::PhysicalDeviceExternalBufferInfo,
-        _p_external_buffer_properties: &mut vk::ExternalBufferProperties,
+        _p_external_buffer_properties: &mut MaybeUninit<vk::ExternalBufferProperties>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -4846,7 +4886,7 @@ pub trait InstanceHooks: Send + Sync {
         &self,
         _physical_device: vk::PhysicalDevice,
         _p_external_fence_info: &vk::PhysicalDeviceExternalFenceInfo,
-        _p_external_fence_properties: &mut vk::ExternalFenceProperties,
+        _p_external_fence_properties: &mut MaybeUninit<vk::ExternalFenceProperties>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -4854,14 +4894,15 @@ pub trait InstanceHooks: Send + Sync {
         &self,
         _physical_device: vk::PhysicalDevice,
         _p_external_semaphore_info: &vk::PhysicalDeviceExternalSemaphoreInfo,
-        _p_external_semaphore_properties: &mut vk::ExternalSemaphoreProperties,
+        _p_external_semaphore_properties: &mut MaybeUninit<vk::ExternalSemaphoreProperties>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
     fn get_physical_device_tool_properties(
         &self,
         _physical_device: vk::PhysicalDevice,
-        _p_tool_properties: Option<&mut [vk::PhysicalDeviceToolProperties]>,
+        _p_tool_count: &mut MaybeUninit<u32>,
+        _p_tool_properties: Option<&mut [MaybeUninit<vk::PhysicalDeviceToolProperties>]>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
@@ -4884,7 +4925,7 @@ pub trait InstanceHooks: Send + Sync {
         &self,
         _physical_device: vk::PhysicalDevice,
         _surface: vk::SurfaceKHR,
-        _p_surface_capabilities: &mut vk::SurfaceCapabilitiesKHR,
+        _p_surface_capabilities: &mut MaybeUninit<vk::SurfaceCapabilitiesKHR>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
@@ -4892,7 +4933,8 @@ pub trait InstanceHooks: Send + Sync {
         &self,
         _physical_device: vk::PhysicalDevice,
         _surface: vk::SurfaceKHR,
-        _p_surface_formats: Option<&mut [vk::SurfaceFormatKHR]>,
+        _p_surface_format_count: &mut MaybeUninit<u32>,
+        _p_surface_formats: Option<&mut [MaybeUninit<vk::SurfaceFormatKHR>]>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
@@ -4907,21 +4949,24 @@ pub trait InstanceHooks: Send + Sync {
         &self,
         _physical_device: vk::PhysicalDevice,
         _surface: vk::SurfaceKHR,
-        _p_rects: Option<&mut [vk::Rect2D]>,
+        _p_rect_count: &mut MaybeUninit<u32>,
+        _p_rects: Option<&mut [MaybeUninit<vk::Rect2D>]>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_physical_device_display_properties_khr(
         &self,
         _physical_device: vk::PhysicalDevice,
-        _p_properties: Option<&mut [vk::DisplayPropertiesKHR]>,
+        _p_property_count: &mut MaybeUninit<u32>,
+        _p_properties: Option<&mut [MaybeUninit<vk::DisplayPropertiesKHR>]>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_physical_device_display_plane_properties_khr(
         &self,
         _physical_device: vk::PhysicalDevice,
-        _p_properties: Option<&mut [vk::DisplayPlanePropertiesKHR]>,
+        _p_property_count: &mut MaybeUninit<u32>,
+        _p_properties: Option<&mut [MaybeUninit<vk::DisplayPlanePropertiesKHR>]>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
@@ -4936,7 +4981,8 @@ pub trait InstanceHooks: Send + Sync {
         &self,
         _physical_device: vk::PhysicalDevice,
         _display: vk::DisplayKHR,
-        _p_properties: Option<&mut [vk::DisplayModePropertiesKHR]>,
+        _p_property_count: &mut MaybeUninit<u32>,
+        _p_properties: Option<&mut [MaybeUninit<vk::DisplayModePropertiesKHR>]>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
@@ -4954,7 +5000,7 @@ pub trait InstanceHooks: Send + Sync {
         _physical_device: vk::PhysicalDevice,
         _mode: vk::DisplayModeKHR,
         _plane_index: u32,
-        _p_capabilities: &mut vk::DisplayPlaneCapabilitiesKHR,
+        _p_capabilities: &mut MaybeUninit<vk::DisplayPlaneCapabilitiesKHR>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
@@ -4976,7 +5022,7 @@ pub trait InstanceHooks: Send + Sync {
         &self,
         _physical_device: vk::PhysicalDevice,
         _queue_family_index: u32,
-        _dpy: &mut vk::Display,
+        _dpy: &mut MaybeUninit<vk::Display>,
         _visual_id: vk::VisualID,
     ) -> LayerResult<bool> {
         LayerResult::Unhandled
@@ -5037,7 +5083,7 @@ pub trait InstanceHooks: Send + Sync {
         &self,
         _physical_device: vk::PhysicalDevice,
         _p_video_profile: &vk::VideoProfileInfoKHR,
-        _p_capabilities: &mut vk::VideoCapabilitiesKHR,
+        _p_capabilities: &mut MaybeUninit<vk::VideoCapabilitiesKHR>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
@@ -5045,7 +5091,8 @@ pub trait InstanceHooks: Send + Sync {
         &self,
         _physical_device: vk::PhysicalDevice,
         _p_video_format_info: &vk::PhysicalDeviceVideoFormatInfoKHR,
-        _p_video_format_properties: Option<&mut [vk::VideoFormatPropertiesKHR]>,
+        _p_video_format_property_count: &mut MaybeUninit<u32>,
+        _p_video_format_properties: Option<&mut [MaybeUninit<vk::VideoFormatPropertiesKHR>]>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
@@ -5053,8 +5100,9 @@ pub trait InstanceHooks: Send + Sync {
         &self,
         _physical_device: vk::PhysicalDevice,
         _queue_family_index: u32,
-        _p_counters: Option<&mut [vk::PerformanceCounterKHR]>,
-        _p_counter_descriptions: Option<&mut [vk::PerformanceCounterDescriptionKHR]>,
+        _p_counter_count: &mut MaybeUninit<u32>,
+        _p_counters: Option<&mut [MaybeUninit<vk::PerformanceCounterKHR>]>,
+        _p_counter_descriptions: Option<&mut [MaybeUninit<vk::PerformanceCounterDescriptionKHR>]>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
@@ -5069,7 +5117,7 @@ pub trait InstanceHooks: Send + Sync {
         &self,
         _physical_device: vk::PhysicalDevice,
         _p_surface_info: &vk::PhysicalDeviceSurfaceInfo2KHR,
-        _p_surface_capabilities: &mut vk::SurfaceCapabilities2KHR,
+        _p_surface_capabilities: &mut MaybeUninit<vk::SurfaceCapabilities2KHR>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
@@ -5077,21 +5125,24 @@ pub trait InstanceHooks: Send + Sync {
         &self,
         _physical_device: vk::PhysicalDevice,
         _p_surface_info: &vk::PhysicalDeviceSurfaceInfo2KHR,
-        _p_surface_formats: Option<&mut [vk::SurfaceFormat2KHR]>,
+        _p_surface_format_count: &mut MaybeUninit<u32>,
+        _p_surface_formats: Option<&mut [MaybeUninit<vk::SurfaceFormat2KHR>]>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_physical_device_display_properties2_khr(
         &self,
         _physical_device: vk::PhysicalDevice,
-        _p_properties: Option<&mut [vk::DisplayProperties2KHR]>,
+        _p_property_count: &mut MaybeUninit<u32>,
+        _p_properties: Option<&mut [MaybeUninit<vk::DisplayProperties2KHR>]>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_physical_device_display_plane_properties2_khr(
         &self,
         _physical_device: vk::PhysicalDevice,
-        _p_properties: Option<&mut [vk::DisplayPlaneProperties2KHR]>,
+        _p_property_count: &mut MaybeUninit<u32>,
+        _p_properties: Option<&mut [MaybeUninit<vk::DisplayPlaneProperties2KHR>]>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
@@ -5099,7 +5150,8 @@ pub trait InstanceHooks: Send + Sync {
         &self,
         _physical_device: vk::PhysicalDevice,
         _display: vk::DisplayKHR,
-        _p_properties: Option<&mut [vk::DisplayModeProperties2KHR]>,
+        _p_property_count: &mut MaybeUninit<u32>,
+        _p_properties: Option<&mut [MaybeUninit<vk::DisplayModeProperties2KHR>]>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
@@ -5107,14 +5159,17 @@ pub trait InstanceHooks: Send + Sync {
         &self,
         _physical_device: vk::PhysicalDevice,
         _p_display_plane_info: &vk::DisplayPlaneInfo2KHR,
-        _p_capabilities: &mut vk::DisplayPlaneCapabilities2KHR,
+        _p_capabilities: &mut MaybeUninit<vk::DisplayPlaneCapabilities2KHR>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_physical_device_fragment_shading_rates_khr(
         &self,
         _physical_device: vk::PhysicalDevice,
-        _p_fragment_shading_rates: Option<&mut [vk::PhysicalDeviceFragmentShadingRateKHR]>,
+        _p_fragment_shading_rate_count: &mut MaybeUninit<u32>,
+        _p_fragment_shading_rates: Option<
+            &mut [MaybeUninit<vk::PhysicalDeviceFragmentShadingRateKHR>],
+        >,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
@@ -5160,7 +5215,7 @@ pub trait InstanceHooks: Send + Sync {
         _usage: vk::ImageUsageFlags,
         _flags: vk::ImageCreateFlags,
         _external_handle_type: vk::ExternalMemoryHandleTypeFlagsNV,
-        _p_external_image_format_properties: &mut vk::ExternalImageFormatPropertiesNV,
+        _p_external_image_format_properties: &mut MaybeUninit<vk::ExternalImageFormatPropertiesNV>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
@@ -5181,7 +5236,7 @@ pub trait InstanceHooks: Send + Sync {
     fn acquire_xlib_display_ext(
         &self,
         _physical_device: vk::PhysicalDevice,
-        _dpy: &mut vk::Display,
+        _dpy: &mut MaybeUninit<vk::Display>,
         _display: vk::DisplayKHR,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
@@ -5189,7 +5244,7 @@ pub trait InstanceHooks: Send + Sync {
     fn get_rand_r_output_display_ext(
         &self,
         _physical_device: vk::PhysicalDevice,
-        _dpy: &mut vk::Display,
+        _dpy: &mut MaybeUninit<vk::Display>,
         _rr_output: vk::RROutput,
     ) -> LayerResult<VkResult<vk::DisplayKHR>> {
         LayerResult::Unhandled
@@ -5198,7 +5253,7 @@ pub trait InstanceHooks: Send + Sync {
         &self,
         _physical_device: vk::PhysicalDevice,
         _surface: vk::SurfaceKHR,
-        _p_surface_capabilities: &mut vk::SurfaceCapabilities2EXT,
+        _p_surface_capabilities: &mut MaybeUninit<vk::SurfaceCapabilities2EXT>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
@@ -5242,7 +5297,7 @@ pub trait InstanceHooks: Send + Sync {
         &self,
         _physical_device: vk::PhysicalDevice,
         _samples: vk::SampleCountFlags,
-        _p_multisample_properties: &mut vk::MultisamplePropertiesEXT,
+        _p_multisample_properties: &mut MaybeUninit<vk::MultisamplePropertiesEXT>,
     ) -> LayerResult<()> {
         LayerResult::Unhandled
     }
@@ -5269,14 +5324,16 @@ pub trait InstanceHooks: Send + Sync {
     fn get_physical_device_cooperative_matrix_properties_nv(
         &self,
         _physical_device: vk::PhysicalDevice,
-        _p_properties: Option<&mut [vk::CooperativeMatrixPropertiesNV]>,
+        _p_property_count: &mut MaybeUninit<u32>,
+        _p_properties: Option<&mut [MaybeUninit<vk::CooperativeMatrixPropertiesNV>]>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
     fn get_physical_device_supported_framebuffer_mixed_samples_combinations_nv(
         &self,
         _physical_device: vk::PhysicalDevice,
-        _p_combinations: Option<&mut [vk::FramebufferMixedSamplesCombinationNV]>,
+        _p_combination_count: &mut MaybeUninit<u32>,
+        _p_combinations: Option<&mut [MaybeUninit<vk::FramebufferMixedSamplesCombinationNV>]>,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }
@@ -5335,7 +5392,7 @@ pub trait InstanceHooks: Send + Sync {
         &self,
         _physical_device: vk::PhysicalDevice,
         _queue_family_index: u32,
-        _dfb: &mut vk::IDirectFB,
+        _dfb: &mut MaybeUninit<vk::IDirectFB>,
     ) -> LayerResult<bool> {
         LayerResult::Unhandled
     }
@@ -5358,7 +5415,10 @@ pub trait InstanceHooks: Send + Sync {
         &self,
         _physical_device: vk::PhysicalDevice,
         _p_optical_flow_image_format_info: &vk::OpticalFlowImageFormatInfoNV,
-        _p_image_format_properties: Option<&mut [vk::OpticalFlowImageFormatPropertiesNV]>,
+        _p_format_count: &mut MaybeUninit<u32>,
+        _p_image_format_properties: Option<
+            &mut [MaybeUninit<vk::OpticalFlowImageFormatPropertiesNV>],
+        >,
     ) -> LayerResult<VkResult<()>> {
         LayerResult::Unhandled
     }

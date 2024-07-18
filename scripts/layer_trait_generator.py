@@ -45,7 +45,7 @@ class LayerTraitGenerator(OutputGenerator):
         self.outFile.write(
             "\n".join(
                 [
-                    "use std::ffi::{c_int, c_void};",
+                    "use std::{ffi::{c_int, c_void}, mem::MaybeUninit};",
                     "",
                     "use ash::{vk, prelude::VkResult};",
                     "",
