@@ -172,7 +172,7 @@ impl<T: CheckEmpty + Display> Display for CollectionRefMut<'_, T> {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use super::*;
 
     #[test]

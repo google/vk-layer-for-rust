@@ -454,7 +454,7 @@ pub use layer_trait::{
 };
 use unstable_api::{ApiVersion, IsCommandEnabled, LazyCollection};
 pub use vk_utils::{fill_vk_out_array, VulkanBaseInStructChain, VulkanBaseOutStructChain};
-use vk_utils::{slice_from_raw_parts, slice_to_owned_strings};
+use vk_utils::{ptr_as_uninit_mut, slice_from_raw_parts, slice_to_owned_strings};
 pub use vulkan_layer_macros::{
     auto_deviceinfo_impl, auto_globalhooksinfo_impl, auto_instanceinfo_impl,
     declare_introspection_queries,
@@ -979,7 +979,7 @@ impl<T: Layer> Global<T> {
                     &create_info,
                     layer_link,
                     unsafe { p_allocator.as_ref() },
-                    unsafe { p_device.as_mut() }.unwrap(),
+                    unsafe { ptr_as_uninit_mut(p_device) }.unwrap(),
                 )
         } else {
             LayerResult::Unhandled
@@ -1616,7 +1616,7 @@ pub struct StubDeviceInfo;
 impl DeviceHooks for StubDeviceInfo {}
 
 #[cfg(test)]
-mod test {
+mod tests {
     use once_cell::sync::Lazy;
 
     use crate::test_utils::LayerManifestExt;

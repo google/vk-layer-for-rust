@@ -1854,7 +1854,7 @@ mod create_destroy_device {
             &vk::DeviceCreateInfo,
             &VkLayerDeviceLink,
             &Option<&vk::AllocationCallbacks>,
-            &vk::Device,
+            &MaybeUninit<vk::Device>,
         ) -> bool {
             let next_layer_link = next_layer_link.map(|layer_link| VkLayerDeviceLink {
                 pNext: null_mut(),
@@ -2037,9 +2037,7 @@ mod create_destroy_device {
         let _ctx = TEST_GLOBAL2.create_context();
         let instance_ctx = vk::InstanceCreateInfo::builder()
             .default_instance::<(TestLayer<Tag<0>>, TestLayer<Tag<1>>)>();
-        // TODO: change back to MaybeUninit::uninit() once we use a more sound interface which uses
-        // the uninit crate for the layer trait.
-        let mut device = MaybeUninit::<vk::Device>::zeroed();
+        let mut device = MaybeUninit::<vk::Device>::uninit();
         TestLayer::<Tag<1>>::global_instance()
             .layer_info
             .get_instance_info(instance_ctx.instance.handle())
@@ -2049,7 +2047,7 @@ mod create_destroy_device {
             .once()
             .withf_st({
                 let device_ptr = device.as_ptr();
-                move |_, _, _, _, p_device| p_device as *const _ == device_ptr
+                move |_, _, _, _, p_device| p_device.as_ptr() == device_ptr
             })
             .return_const(LayerResult::Unhandled);
         let res = unsafe {

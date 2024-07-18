@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::{collections::BTreeSet, ffi::CStr, fmt::Debug, ptr::NonNull};
+use std::{collections::BTreeSet, ffi::CStr, fmt::Debug, mem::MaybeUninit, ptr::NonNull};
 
 use ash::vk;
 use num_traits::Zero;
@@ -186,11 +186,16 @@ impl<'a, T: IntoIterator<Item = &'a Feature>> IsCommandEnabled for T {
 /// Follow the safety requirements for [`std::slice::from_raw_parts`] with one major difference: if
 /// `len` is `0`, `data` can be a null pointer, unlike [`std::slice::from_raw_parts`].
 #[deny(unsafe_op_in_unsafe_fn)]
-pub(crate) unsafe fn slice_from_raw_parts<'a, T>(data: *const T, len: u32) -> &'a [T] {
+pub(crate) unsafe fn slice_from_raw_parts<'a, T>(
+    data: *const T,
+    len: impl TryInto<usize, Error = impl Debug>,
+) -> &'a [T] {
+    let len: usize = len
+        .try_into()
+        .expect("length must be able to cast to usize");
     if len == 0 {
         return &[];
     }
-    let len = len.try_into().unwrap();
     // Safety: since `len` isn't 0 at this point, the caller guarantees that the safety requirement
     // for `std::slice::from_raw_parts` is met.
     unsafe { std::slice::from_raw_parts(data, len) }
@@ -351,8 +356,29 @@ where
     }
 }
 
+/// Returns `None` if the pointer is null, or else returns a unique reference to the value wrapped
+/// in `Some`. In contrast to `as_mut`, this does not require that the value has to be initialized.
+///
+/// Polyfill of
+/// [`as_uninit_mut`](https://doc.rust-lang.org/std/primitive.pointer.html#method.as_uninit_mut) for
+/// stable Rust.
+///
+/// # Safety
+///
+/// Refers to
+/// [`as_uninit_mut`](https://doc.rust-lang.org/std/primitive.pointer.html#method.as_uninit_mut).
+#[deny(unsafe_op_in_unsafe_fn)]
+pub(crate) unsafe fn ptr_as_uninit_mut<'a, T>(p_data: *mut T) -> Option<&'a mut MaybeUninit<T>> {
+    // SAFETY: same as https://doc.rust-lang.org/std/primitive.pointer.html#method.as_uninit_mut.
+    if p_data.is_null() {
+        None
+    } else {
+        Some(unsafe { &mut *(p_data as *mut MaybeUninit<T>) })
+    }
+}
+
 #[cfg(test)]
-mod test {
+mod tests {
     use super::*;
 
     #[test]
@@ -497,5 +523,23 @@ mod test {
         );
         assert_eq!(count as usize, data.len());
         assert_eq!(out_array, [1, 2, 10, 10]);
+    }
+
+    #[test]
+    fn test_ptr_as_uninit_mut_null_ptr() {
+        let ptr: *mut u8 = std::ptr::null_mut();
+        assert!(unsafe { ptr_as_uninit_mut(ptr) }.is_none());
+    }
+
+    #[test]
+    fn test_ptr_as_uninit_mut_uninit_value() {
+        let expected_value: u8 = 28;
+        let mut uninit_data = MaybeUninit::<u8>::uninit();
+        // Miri will test if we read into uninitialized data.
+        let result_uninit = unsafe { ptr_as_uninit_mut(uninit_data.as_mut_ptr()) }
+            .expect("not null pointer should result in Some");
+        assert_eq!(result_uninit.as_mut_ptr(), uninit_data.as_mut_ptr());
+        result_uninit.write(expected_value);
+        assert_eq!(unsafe { uninit_data.assume_init() }, expected_value);
     }
 }

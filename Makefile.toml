@@ -290,6 +290,7 @@ install_crate_args = ["--locked"]
 private = true
 
 [tasks.test]
+# TODO: also run python tests
 args = [
     "nextest",
     "run",
