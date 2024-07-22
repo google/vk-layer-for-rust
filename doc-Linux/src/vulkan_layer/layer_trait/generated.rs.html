@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `vulkan-layer/src/layer_trait/generated.rs`."><title>generated.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="vulkan_layer" data-themes="" data-resource-suffix="" data-rustdoc-version="1.81.0-nightly (d9284afea 2024-07-14)" data-channel="nightly" data-search-js="search-d234aafac6c221dd.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `vulkan-layer/src/layer_trait/generated.rs`."><title>generated.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-c5d6553a23f1e5a6.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="vulkan_layer" data-themes="" data-resource-suffix="" data-rustdoc-version="1.81.0-nightly (506985649 2024-07-20)" data-channel="nightly" data-search-js="search-d234aafac6c221dd.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-d2fab2bf619172d3.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -5363,6 +5363,66 @@
 <a href="#5363" id="5363">5363</a>
 <a href="#5364" id="5364">5364</a>
 <a href="#5365" id="5365">5365</a>
+<a href="#5366" id="5366">5366</a>
+<a href="#5367" id="5367">5367</a>
+<a href="#5368" id="5368">5368</a>
+<a href="#5369" id="5369">5369</a>
+<a href="#5370" id="5370">5370</a>
+<a href="#5371" id="5371">5371</a>
+<a href="#5372" id="5372">5372</a>
+<a href="#5373" id="5373">5373</a>
+<a href="#5374" id="5374">5374</a>
+<a href="#5375" id="5375">5375</a>
+<a href="#5376" id="5376">5376</a>
+<a href="#5377" id="5377">5377</a>
+<a href="#5378" id="5378">5378</a>
+<a href="#5379" id="5379">5379</a>
+<a href="#5380" id="5380">5380</a>
+<a href="#5381" id="5381">5381</a>
+<a href="#5382" id="5382">5382</a>
+<a href="#5383" id="5383">5383</a>
+<a href="#5384" id="5384">5384</a>
+<a href="#5385" id="5385">5385</a>
+<a href="#5386" id="5386">5386</a>
+<a href="#5387" id="5387">5387</a>
+<a href="#5388" id="5388">5388</a>
+<a href="#5389" id="5389">5389</a>
+<a href="#5390" id="5390">5390</a>
+<a href="#5391" id="5391">5391</a>
+<a href="#5392" id="5392">5392</a>
+<a href="#5393" id="5393">5393</a>
+<a href="#5394" id="5394">5394</a>
+<a href="#5395" id="5395">5395</a>
+<a href="#5396" id="5396">5396</a>
+<a href="#5397" id="5397">5397</a>
+<a href="#5398" id="5398">5398</a>
+<a href="#5399" id="5399">5399</a>
+<a href="#5400" id="5400">5400</a>
+<a href="#5401" id="5401">5401</a>
+<a href="#5402" id="5402">5402</a>
+<a href="#5403" id="5403">5403</a>
+<a href="#5404" id="5404">5404</a>
+<a href="#5405" id="5405">5405</a>
+<a href="#5406" id="5406">5406</a>
+<a href="#5407" id="5407">5407</a>
+<a href="#5408" id="5408">5408</a>
+<a href="#5409" id="5409">5409</a>
+<a href="#5410" id="5410">5410</a>
+<a href="#5411" id="5411">5411</a>
+<a href="#5412" id="5412">5412</a>
+<a href="#5413" id="5413">5413</a>
+<a href="#5414" id="5414">5414</a>
+<a href="#5415" id="5415">5415</a>
+<a href="#5416" id="5416">5416</a>
+<a href="#5417" id="5417">5417</a>
+<a href="#5418" id="5418">5418</a>
+<a href="#5419" id="5419">5419</a>
+<a href="#5420" id="5420">5420</a>
+<a href="#5421" id="5421">5421</a>
+<a href="#5422" id="5422">5422</a>
+<a href="#5423" id="5423">5423</a>
+<a href="#5424" id="5424">5424</a>
+<a href="#5425" id="5425">5425</a>
 </pre></div><pre class="rust"><code><span class="comment">// Copyright 2024 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -5380,7 +5440,10 @@
 </span><span class="attr">#![allow(missing_docs)]
 </span><span class="comment">// This file is generated from the Vulkan XML API registry.
 </span><span class="attr">#![allow(clippy::too_many_arguments)]
-</span><span class="kw">use </span>std::ffi::{c_int, c_void};
+</span><span class="kw">use </span>std::{
+    ffi::{c_int, c_void},
+    mem::MaybeUninit,
+};
 
 <span class="kw">use </span>ash::{prelude::VkResult, vk};
 
@@ -6861,21 +6924,24 @@
     <span class="kw">fn </span>get_buffer_memory_requirements(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _buffer: vk::Buffer,
-        _p_memory_requirements: <span class="kw-2">&amp;mut </span>vk::MemoryRequirements,
+        _p_memory_requirements: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;vk::MemoryRequirements&gt;,
     ) -&gt; LayerResult&lt;()&gt; {
         LayerResult::Unhandled
     }
     <span class="kw">fn </span>get_image_memory_requirements(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _image: vk::Image,
-        _p_memory_requirements: <span class="kw-2">&amp;mut </span>vk::MemoryRequirements,
+        _p_memory_requirements: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;vk::MemoryRequirements&gt;,
     ) -&gt; LayerResult&lt;()&gt; {
         LayerResult::Unhandled
     }
     <span class="kw">fn </span>get_image_sparse_memory_requirements(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _image: vk::Image,
-        _p_sparse_memory_requirements: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[vk::SparseImageMemoryRequirements]&gt;,
+        _p_sparse_memory_requirement_count: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;u32&gt;,
+        _p_sparse_memory_requirements: <span class="prelude-ty">Option</span>&lt;
+            <span class="kw-2">&amp;mut </span>[MaybeUninit&lt;vk::SparseImageMemoryRequirements&gt;],
+        &gt;,
     ) -&gt; LayerResult&lt;()&gt; {
         LayerResult::Unhandled
     }
@@ -6971,7 +7037,7 @@
         _query_pool: vk::QueryPool,
         _first_query: u32,
         _query_count: u32,
-        _p_data: <span class="kw-2">&amp;mut </span>[u8],
+        _p_data: <span class="kw-2">&amp;mut </span>[MaybeUninit&lt;u8&gt;],
         _stride: vk::DeviceSize,
         _flags: vk::QueryResultFlags,
     ) -&gt; LayerResult&lt;VkResult&lt;()&gt;&gt; {
@@ -7023,7 +7089,7 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _image: vk::Image,
         _p_subresource: <span class="kw-2">&amp;</span>vk::ImageSubresource,
-        _p_layout: <span class="kw-2">&amp;mut </span>vk::SubresourceLayout,
+        _p_layout: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;vk::SubresourceLayout&gt;,
     ) -&gt; LayerResult&lt;()&gt; {
         LayerResult::Unhandled
     }
@@ -7072,7 +7138,9 @@
     <span class="kw">fn </span>get_pipeline_cache_data(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _pipeline_cache: vk::PipelineCache,
-    ) -&gt; LayerResult&lt;VkResult&lt;Vec&lt;u8&gt;&gt;&gt; {
+        _p_data_size: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;usize&gt;,
+        _p_data: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[MaybeUninit&lt;u8&gt;]&gt;,
+    ) -&gt; LayerResult&lt;VkResult&lt;()&gt;&gt; {
         LayerResult::Unhandled
     }
     <span class="kw">fn </span>merge_pipeline_caches(
@@ -7219,7 +7287,7 @@
     <span class="kw">fn </span>get_render_area_granularity(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _render_pass: vk::RenderPass,
-        _p_granularity: <span class="kw-2">&amp;mut </span>vk::Extent2D,
+        _p_granularity: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;vk::Extent2D&gt;,
     ) -&gt; LayerResult&lt;()&gt; {
         LayerResult::Unhandled
     }
@@ -7715,21 +7783,24 @@
     <span class="kw">fn </span>get_image_memory_requirements2(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _p_info: <span class="kw-2">&amp;</span>vk::ImageMemoryRequirementsInfo2,
-        _p_memory_requirements: <span class="kw-2">&amp;mut </span>vk::MemoryRequirements2,
+        _p_memory_requirements: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;vk::MemoryRequirements2&gt;,
     ) -&gt; LayerResult&lt;()&gt; {
         LayerResult::Unhandled
     }
     <span class="kw">fn </span>get_buffer_memory_requirements2(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _p_info: <span class="kw-2">&amp;</span>vk::BufferMemoryRequirementsInfo2,
-        _p_memory_requirements: <span class="kw-2">&amp;mut </span>vk::MemoryRequirements2,
+        _p_memory_requirements: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;vk::MemoryRequirements2&gt;,
     ) -&gt; LayerResult&lt;()&gt; {
         LayerResult::Unhandled
     }
     <span class="kw">fn </span>get_image_sparse_memory_requirements2(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _p_info: <span class="kw-2">&amp;</span>vk::ImageSparseMemoryRequirementsInfo2,
-        _p_sparse_memory_requirements: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[vk::SparseImageMemoryRequirements2]&gt;,
+        _p_sparse_memory_requirement_count: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;u32&gt;,
+        _p_sparse_memory_requirements: <span class="prelude-ty">Option</span>&lt;
+            <span class="kw-2">&amp;mut </span>[MaybeUninit&lt;vk::SparseImageMemoryRequirements2&gt;],
+        &gt;,
     ) -&gt; LayerResult&lt;()&gt; {
         LayerResult::Unhandled
     }
@@ -7782,7 +7853,7 @@
     <span class="kw">fn </span>get_descriptor_set_layout_support(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _p_create_info: <span class="kw-2">&amp;</span>vk::DescriptorSetLayoutCreateInfo,
-        _p_support: <span class="kw-2">&amp;mut </span>vk::DescriptorSetLayoutSupport,
+        _p_support: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;vk::DescriptorSetLayoutSupport&gt;,
     ) -&gt; LayerResult&lt;()&gt; {
         LayerResult::Unhandled
     }
@@ -8129,21 +8200,24 @@
     <span class="kw">fn </span>get_device_buffer_memory_requirements(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _p_info: <span class="kw-2">&amp;</span>vk::DeviceBufferMemoryRequirements,
-        _p_memory_requirements: <span class="kw-2">&amp;mut </span>vk::MemoryRequirements2,
+        _p_memory_requirements: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;vk::MemoryRequirements2&gt;,
     ) -&gt; LayerResult&lt;()&gt; {
         LayerResult::Unhandled
     }
     <span class="kw">fn </span>get_device_image_memory_requirements(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _p_info: <span class="kw-2">&amp;</span>vk::DeviceImageMemoryRequirements,
-        _p_memory_requirements: <span class="kw-2">&amp;mut </span>vk::MemoryRequirements2,
+        _p_memory_requirements: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;vk::MemoryRequirements2&gt;,
     ) -&gt; LayerResult&lt;()&gt; {
         LayerResult::Unhandled
     }
     <span class="kw">fn </span>get_device_image_sparse_memory_requirements(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _p_info: <span class="kw-2">&amp;</span>vk::DeviceImageMemoryRequirements,
-        _p_sparse_memory_requirements: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[vk::SparseImageMemoryRequirements2]&gt;,
+        _p_sparse_memory_requirement_count: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;u32&gt;,
+        _p_sparse_memory_requirements: <span class="prelude-ty">Option</span>&lt;
+            <span class="kw-2">&amp;mut </span>[MaybeUninit&lt;vk::SparseImageMemoryRequirements2&gt;],
+        &gt;,
     ) -&gt; LayerResult&lt;()&gt; {
         LayerResult::Unhandled
     }
@@ -8185,7 +8259,9 @@
     }
     <span class="kw">fn </span>get_device_group_present_capabilities_khr(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        _p_device_group_present_capabilities: <span class="kw-2">&amp;mut </span>vk::DeviceGroupPresentCapabilitiesKHR,
+        _p_device_group_present_capabilities: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;
+            vk::DeviceGroupPresentCapabilitiesKHR,
+        &gt;,
     ) -&gt; LayerResult&lt;VkResult&lt;()&gt;&gt; {
         LayerResult::Unhandled
     }
@@ -8225,7 +8301,8 @@
     <span class="kw">fn </span>get_video_session_memory_requirements_khr(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _video_session: vk::VideoSessionKHR,
-        _p_memory_requirements: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[vk::VideoSessionMemoryRequirementsKHR]&gt;,
+        _p_memory_requirements_count: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;u32&gt;,
+        _p_memory_requirements: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[MaybeUninit&lt;vk::VideoSessionMemoryRequirementsKHR&gt;]&gt;,
     ) -&gt; LayerResult&lt;VkResult&lt;()&gt;&gt; {
         LayerResult::Unhandled
     }
@@ -8295,7 +8372,7 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _handle_type: vk::ExternalMemoryHandleTypeFlags,
         _handle: vk::HANDLE,
-        _p_memory_win32_handle_properties: <span class="kw-2">&amp;mut </span>vk::MemoryWin32HandlePropertiesKHR,
+        _p_memory_win32_handle_properties: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;vk::MemoryWin32HandlePropertiesKHR&gt;,
     ) -&gt; LayerResult&lt;VkResult&lt;()&gt;&gt; {
         LayerResult::Unhandled
     }
@@ -8309,7 +8386,7 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _handle_type: vk::ExternalMemoryHandleTypeFlags,
         _fd: c_int,
-        _p_memory_fd_properties: <span class="kw-2">&amp;mut </span>vk::MemoryFdPropertiesKHR,
+        _p_memory_fd_properties: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;vk::MemoryFdPropertiesKHR&gt;,
     ) -&gt; LayerResult&lt;VkResult&lt;()&gt;&gt; {
         LayerResult::Unhandled
     }
@@ -8443,21 +8520,26 @@
     <span class="kw">fn </span>get_pipeline_executable_properties_khr(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _p_pipeline_info: <span class="kw-2">&amp;</span>vk::PipelineInfoKHR,
-        _p_properties: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[vk::PipelineExecutablePropertiesKHR]&gt;,
+        _p_executable_count: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;u32&gt;,
+        _p_properties: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[MaybeUninit&lt;vk::PipelineExecutablePropertiesKHR&gt;]&gt;,
     ) -&gt; LayerResult&lt;VkResult&lt;()&gt;&gt; {
         LayerResult::Unhandled
     }
     <span class="kw">fn </span>get_pipeline_executable_statistics_khr(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _p_executable_info: <span class="kw-2">&amp;</span>vk::PipelineExecutableInfoKHR,
-        _p_statistics: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[vk::PipelineExecutableStatisticKHR]&gt;,
+        _p_statistic_count: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;u32&gt;,
+        _p_statistics: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[MaybeUninit&lt;vk::PipelineExecutableStatisticKHR&gt;]&gt;,
     ) -&gt; LayerResult&lt;VkResult&lt;()&gt;&gt; {
         LayerResult::Unhandled
     }
     <span class="kw">fn </span>get_pipeline_executable_internal_representations_khr(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _p_executable_info: <span class="kw-2">&amp;</span>vk::PipelineExecutableInfoKHR,
-        _p_internal_representations: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[vk::PipelineExecutableInternalRepresentationKHR]&gt;,
+        _p_internal_representation_count: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;u32&gt;,
+        _p_internal_representations: <span class="prelude-ty">Option</span>&lt;
+            <span class="kw-2">&amp;mut </span>[MaybeUninit&lt;vk::PipelineExecutableInternalRepresentationKHR&gt;],
+        &gt;,
     ) -&gt; LayerResult&lt;VkResult&lt;()&gt;&gt; {
         LayerResult::Unhandled
     }
@@ -8481,7 +8563,8 @@
     <span class="kw">fn </span>get_queue_checkpoint_data2_nv(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _queue: vk::Queue,
-        _p_checkpoint_data: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[vk::CheckpointData2NV]&gt;,
+        _p_checkpoint_data_count: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;u32&gt;,
+        _p_checkpoint_data: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[MaybeUninit&lt;vk::CheckpointData2NV&gt;]&gt;,
     ) -&gt; LayerResult&lt;()&gt; {
         LayerResult::Unhandled
     }
@@ -8521,7 +8604,7 @@
         _format: vk::Format,
         _image_usage: vk::ImageUsageFlags,
         _swapchain_image_usage: vk::SwapchainImageUsageFlagsANDROID,
-        _gralloc_consumer_usage: <span class="kw-2">&amp;mut </span>u64,
+        _gralloc_consumer_usage: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;u64&gt;,
     ) -&gt; LayerResult&lt;VkResult&lt;u64&gt;&gt; {
         LayerResult::Unhandled
     }
@@ -8654,7 +8737,7 @@
     <span class="kw">fn </span>get_image_view_address_nvx(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _image_view: vk::ImageView,
-        _p_properties: <span class="kw-2">&amp;mut </span>vk::ImageViewAddressPropertiesNVX,
+        _p_properties: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;vk::ImageViewAddressPropertiesNVX&gt;,
     ) -&gt; LayerResult&lt;VkResult&lt;()&gt;&gt; {
         LayerResult::Unhandled
     }
@@ -8663,7 +8746,9 @@
         _pipeline: vk::Pipeline,
         _shader_stage: vk::ShaderStageFlags,
         _info_type: vk::ShaderInfoTypeAMD,
-    ) -&gt; LayerResult&lt;VkResult&lt;Vec&lt;u8&gt;&gt;&gt; {
+        _p_info_size: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;usize&gt;,
+        _p_info: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[MaybeUninit&lt;u8&gt;]&gt;,
+    ) -&gt; LayerResult&lt;VkResult&lt;()&gt;&gt; {
         LayerResult::Unhandled
     }
     <span class="kw">fn </span>get_memory_win32_handle_nv(
@@ -8726,14 +8811,15 @@
     <span class="kw">fn </span>get_refresh_cycle_duration_google(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _swapchain: vk::SwapchainKHR,
-        _p_display_timing_properties: <span class="kw-2">&amp;mut </span>vk::RefreshCycleDurationGOOGLE,
+        _p_display_timing_properties: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;vk::RefreshCycleDurationGOOGLE&gt;,
     ) -&gt; LayerResult&lt;VkResult&lt;()&gt;&gt; {
         LayerResult::Unhandled
     }
     <span class="kw">fn </span>get_past_presentation_timing_google(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _swapchain: vk::SwapchainKHR,
-        _p_presentation_timings: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[vk::PastPresentationTimingGOOGLE]&gt;,
+        _p_presentation_timing_count: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;u32&gt;,
+        _p_presentation_timings: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[MaybeUninit&lt;vk::PastPresentationTimingGOOGLE&gt;]&gt;,
     ) -&gt; LayerResult&lt;VkResult&lt;()&gt;&gt; {
         LayerResult::Unhandled
     }
@@ -8801,7 +8887,7 @@
     <span class="kw">fn </span>get_android_hardware_buffer_properties_android(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _buffer: <span class="kw-2">*const </span>vk::AHardwareBuffer,
-        _p_properties: <span class="kw-2">&amp;mut </span>vk::AndroidHardwareBufferPropertiesANDROID,
+        _p_properties: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;vk::AndroidHardwareBufferPropertiesANDROID&gt;,
     ) -&gt; LayerResult&lt;VkResult&lt;()&gt;&gt; {
         LayerResult::Unhandled
     }
@@ -8821,7 +8907,7 @@
     <span class="kw">fn </span>get_image_drm_format_modifier_properties_ext(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _image: vk::Image,
-        _p_properties: <span class="kw-2">&amp;mut </span>vk::ImageDrmFormatModifierPropertiesEXT,
+        _p_properties: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;vk::ImageDrmFormatModifierPropertiesEXT&gt;,
     ) -&gt; LayerResult&lt;VkResult&lt;()&gt;&gt; {
         LayerResult::Unhandled
     }
@@ -8849,7 +8935,9 @@
     <span class="kw">fn </span>get_validation_cache_data_ext(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _validation_cache: vk::ValidationCacheEXT,
-    ) -&gt; LayerResult&lt;VkResult&lt;Vec&lt;u8&gt;&gt;&gt; {
+        _p_data_size: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;usize&gt;,
+        _p_data: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[MaybeUninit&lt;u8&gt;]&gt;,
+    ) -&gt; LayerResult&lt;VkResult&lt;()&gt;&gt; {
         LayerResult::Unhandled
     }
     <span class="kw">fn </span>cmd_bind_shading_rate_image_nv(
@@ -8893,7 +8981,7 @@
     <span class="kw">fn </span>get_acceleration_structure_memory_requirements_nv(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _p_info: <span class="kw-2">&amp;</span>vk::AccelerationStructureMemoryRequirementsInfoNV,
-        _p_memory_requirements: <span class="kw-2">&amp;mut </span>vk::MemoryRequirements2KHR,
+        _p_memory_requirements: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;vk::MemoryRequirements2KHR&gt;,
     ) -&gt; LayerResult&lt;()&gt; {
         LayerResult::Unhandled
     }
@@ -8959,13 +9047,15 @@
         _pipeline: vk::Pipeline,
         _first_group: u32,
         _group_count: u32,
-    ) -&gt; LayerResult&lt;VkResult&lt;Vec&lt;u8&gt;&gt;&gt; {
+        _p_data: <span class="kw-2">&amp;mut </span>[MaybeUninit&lt;u8&gt;],
+    ) -&gt; LayerResult&lt;VkResult&lt;()&gt;&gt; {
         LayerResult::Unhandled
     }
     <span class="kw">fn </span>get_acceleration_structure_handle_nv(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _acceleration_structure: vk::AccelerationStructureNV,
-    ) -&gt; LayerResult&lt;VkResult&lt;Vec&lt;u8&gt;&gt;&gt; {
+        _p_data: <span class="kw-2">&amp;mut </span>[MaybeUninit&lt;u8&gt;],
+    ) -&gt; LayerResult&lt;VkResult&lt;()&gt;&gt; {
         LayerResult::Unhandled
     }
     <span class="kw">fn </span>cmd_write_acceleration_structures_properties_nv(
@@ -8989,7 +9079,7 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _handle_type: vk::ExternalMemoryHandleTypeFlags,
         _p_host_pointer: <span class="kw-2">*const </span>c_void,
-        _p_memory_host_pointer_properties: <span class="kw-2">&amp;mut </span>vk::MemoryHostPointerPropertiesEXT,
+        _p_memory_host_pointer_properties: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;vk::MemoryHostPointerPropertiesEXT&gt;,
     ) -&gt; LayerResult&lt;VkResult&lt;()&gt;&gt; {
         LayerResult::Unhandled
     }
@@ -9006,7 +9096,7 @@
     <span class="kw">fn </span>get_calibrated_timestamps_ext(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _p_timestamp_infos: <span class="kw-2">&amp;</span>[vk::CalibratedTimestampInfoEXT],
-        _p_timestamps: <span class="kw-2">&amp;mut </span>[u64],
+        _p_timestamps: <span class="kw-2">&amp;mut </span>[MaybeUninit&lt;u64&gt;],
     ) -&gt; LayerResult&lt;VkResult&lt;u64&gt;&gt; {
         LayerResult::Unhandled
     }
@@ -9058,7 +9148,8 @@
     <span class="kw">fn </span>get_queue_checkpoint_data_nv(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _queue: vk::Queue,
-        _p_checkpoint_data: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[vk::CheckpointDataNV]&gt;,
+        _p_checkpoint_data_count: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;u32&gt;,
+        _p_checkpoint_data: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[MaybeUninit&lt;vk::CheckpointDataNV&gt;]&gt;,
     ) -&gt; LayerResult&lt;()&gt; {
         LayerResult::Unhandled
     }
@@ -9114,7 +9205,7 @@
     <span class="kw">fn </span>get_performance_parameter_intel(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _parameter: vk::PerformanceParameterTypeINTEL,
-        _p_value: <span class="kw-2">&amp;mut </span>vk::PerformanceValueINTEL,
+        _p_value: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;vk::PerformanceValueINTEL&gt;,
     ) -&gt; LayerResult&lt;VkResult&lt;()&gt;&gt; {
         LayerResult::Unhandled
     }
@@ -9160,7 +9251,7 @@
     <span class="kw">fn </span>get_generated_commands_memory_requirements_nv(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _p_info: <span class="kw-2">&amp;</span>vk::GeneratedCommandsMemoryRequirementsInfoNV,
-        _p_memory_requirements: <span class="kw-2">&amp;mut </span>vk::MemoryRequirements2,
+        _p_memory_requirements: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;vk::MemoryRequirements2&gt;,
     ) -&gt; LayerResult&lt;()&gt; {
         LayerResult::Unhandled
     }
@@ -9204,7 +9295,7 @@
     }
     <span class="kw">fn </span>export_metal_objects_ext(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        _p_metal_objects_info: <span class="kw-2">&amp;mut </span>vk::ExportMetalObjectsInfoEXT,
+        _p_metal_objects_info: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;vk::ExportMetalObjectsInfoEXT&gt;,
     ) -&gt; LayerResult&lt;()&gt; {
         LayerResult::Unhandled
     }
@@ -9224,7 +9315,8 @@
     <span class="kw">fn </span>get_descriptor_ext(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _p_descriptor_info: <span class="kw-2">&amp;</span>vk::DescriptorGetInfoEXT,
-    ) -&gt; LayerResult&lt;Vec&lt;u8&gt;&gt; {
+        _p_descriptor: <span class="kw-2">&amp;mut </span>[MaybeUninit&lt;u8&gt;],
+    ) -&gt; LayerResult&lt;()&gt; {
         LayerResult::Unhandled
     }
     <span class="kw">fn </span>cmd_bind_descriptor_buffers_ext(
@@ -9301,7 +9393,7 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _image: vk::Image,
         _p_subresource: <span class="kw-2">&amp;</span>vk::ImageSubresource2EXT,
-        _p_layout: <span class="kw-2">&amp;mut </span>vk::SubresourceLayout2EXT,
+        _p_layout: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;vk::SubresourceLayout2EXT&gt;,
     ) -&gt; LayerResult&lt;()&gt; {
         LayerResult::Unhandled
     }
@@ -9323,7 +9415,9 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _handle_type: vk::ExternalMemoryHandleTypeFlags,
         _zircon_handle: vk::zx_handle_t,
-        _p_memory_zircon_handle_properties: <span class="kw-2">&amp;mut </span>vk::MemoryZirconHandlePropertiesFUCHSIA,
+        _p_memory_zircon_handle_properties: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;
+            vk::MemoryZirconHandlePropertiesFUCHSIA,
+        &gt;,
     ) -&gt; LayerResult&lt;VkResult&lt;()&gt;&gt; {
         LayerResult::Unhandled
     }
@@ -9370,14 +9464,14 @@
     <span class="kw">fn </span>get_buffer_collection_properties_fuchsia(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _collection: vk::BufferCollectionFUCHSIA,
-        _p_properties: <span class="kw-2">&amp;mut </span>vk::BufferCollectionPropertiesFUCHSIA,
+        _p_properties: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;vk::BufferCollectionPropertiesFUCHSIA&gt;,
     ) -&gt; LayerResult&lt;VkResult&lt;()&gt;&gt; {
         LayerResult::Unhandled
     }
     <span class="kw">fn </span>get_device_subpass_shading_max_workgroup_size_huawei(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _renderpass: vk::RenderPass,
-        _p_max_workgroup_size: <span class="kw-2">&amp;mut </span>vk::Extent2D,
+        _p_max_workgroup_size: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;vk::Extent2D&gt;,
     ) -&gt; LayerResult&lt;VkResult&lt;()&gt;&gt; {
         LayerResult::Unhandled
     }
@@ -9401,7 +9495,7 @@
     <span class="kw">fn </span>get_pipeline_properties_ext(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _p_pipeline_info: <span class="kw-2">&amp;</span>vk::PipelineInfoEXT,
-        _p_pipeline_properties: <span class="kw-2">&amp;mut </span>vk::BaseOutStructure,
+        _p_pipeline_properties: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;vk::BaseOutStructure&gt;,
     ) -&gt; LayerResult&lt;VkResult&lt;()&gt;&gt; {
         LayerResult::Unhandled
     }
@@ -9500,7 +9594,7 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _p_micromaps: <span class="kw-2">&amp;</span>[vk::MicromapEXT],
         _query_type: vk::QueryType,
-        _p_data: <span class="kw-2">&amp;mut </span>[u8],
+        _p_data: <span class="kw-2">&amp;mut </span>[MaybeUninit&lt;u8&gt;],
         _stride: usize,
     ) -&gt; LayerResult&lt;VkResult&lt;()&gt;&gt; {
         LayerResult::Unhandled
@@ -9546,7 +9640,7 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _build_type: vk::AccelerationStructureBuildTypeKHR,
         _p_build_info: <span class="kw-2">&amp;</span>vk::MicromapBuildInfoEXT,
-        _p_size_info: <span class="kw-2">&amp;mut </span>vk::MicromapBuildSizesInfoEXT,
+        _p_size_info: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;vk::MicromapBuildSizesInfoEXT&gt;,
     ) -&gt; LayerResult&lt;()&gt; {
         LayerResult::Unhandled
     }
@@ -9560,7 +9654,7 @@
     <span class="kw">fn </span>get_descriptor_set_layout_host_mapping_info_valve(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _p_binding_reference: <span class="kw-2">&amp;</span>vk::DescriptorSetBindingReferenceVALVE,
-        _p_host_mapping: <span class="kw-2">&amp;mut </span>vk::DescriptorSetLayoutHostMappingInfoVALVE,
+        _p_host_mapping: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;vk::DescriptorSetLayoutHostMappingInfoVALVE&gt;,
     ) -&gt; LayerResult&lt;()&gt; {
         LayerResult::Unhandled
     }
@@ -9832,14 +9926,14 @@
     <span class="kw">fn </span>get_shader_module_identifier_ext(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _shader_module: vk::ShaderModule,
-        _p_identifier: <span class="kw-2">&amp;mut </span>vk::ShaderModuleIdentifierEXT,
+        _p_identifier: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;vk::ShaderModuleIdentifierEXT&gt;,
     ) -&gt; LayerResult&lt;()&gt; {
         LayerResult::Unhandled
     }
     <span class="kw">fn </span>get_shader_module_create_info_identifier_ext(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _p_create_info: <span class="kw-2">&amp;</span>vk::ShaderModuleCreateInfo,
-        _p_identifier: <span class="kw-2">&amp;mut </span>vk::ShaderModuleIdentifierEXT,
+        _p_identifier: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;vk::ShaderModuleIdentifierEXT&gt;,
     ) -&gt; LayerResult&lt;()&gt; {
         LayerResult::Unhandled
     }
@@ -9877,14 +9971,15 @@
     <span class="kw">fn </span>get_framebuffer_tile_properties_qcom(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _framebuffer: vk::Framebuffer,
-        _p_properties: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[vk::TilePropertiesQCOM]&gt;,
+        _p_properties_count: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;u32&gt;,
+        _p_properties: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[MaybeUninit&lt;vk::TilePropertiesQCOM&gt;]&gt;,
     ) -&gt; LayerResult&lt;VkResult&lt;()&gt;&gt; {
         LayerResult::Unhandled
     }
     <span class="kw">fn </span>get_dynamic_rendering_tile_properties_qcom(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _p_rendering_info: <span class="kw-2">&amp;</span>vk::RenderingInfo,
-        _p_properties: <span class="kw-2">&amp;mut </span>vk::TilePropertiesQCOM,
+        _p_properties: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;vk::TilePropertiesQCOM&gt;,
     ) -&gt; LayerResult&lt;VkResult&lt;()&gt;&gt; {
         LayerResult::Unhandled
     }
@@ -9927,7 +10022,7 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _p_acceleration_structures: <span class="kw-2">&amp;</span>[vk::AccelerationStructureKHR],
         _query_type: vk::QueryType,
-        _p_data: <span class="kw-2">&amp;mut </span>[u8],
+        _p_data: <span class="kw-2">&amp;mut </span>[MaybeUninit&lt;u8&gt;],
         _stride: usize,
     ) -&gt; LayerResult&lt;VkResult&lt;()&gt;&gt; {
         LayerResult::Unhandled
@@ -9980,7 +10075,7 @@
         _build_type: vk::AccelerationStructureBuildTypeKHR,
         _p_build_info: <span class="kw-2">&amp;</span>vk::AccelerationStructureBuildGeometryInfoKHR,
         _p_max_primitive_counts: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>[u32]&gt;,
-        _p_size_info: <span class="kw-2">&amp;mut </span>vk::AccelerationStructureBuildSizesInfoKHR,
+        _p_size_info: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;vk::AccelerationStructureBuildSizesInfoKHR&gt;,
     ) -&gt; LayerResult&lt;()&gt; {
         LayerResult::Unhandled
     }
@@ -10011,7 +10106,8 @@
         _pipeline: vk::Pipeline,
         _first_group: u32,
         _group_count: u32,
-    ) -&gt; LayerResult&lt;VkResult&lt;Vec&lt;u8&gt;&gt;&gt; {
+        _p_data: <span class="kw-2">&amp;mut </span>[MaybeUninit&lt;u8&gt;],
+    ) -&gt; LayerResult&lt;VkResult&lt;()&gt;&gt; {
         LayerResult::Unhandled
     }
     <span class="kw">fn </span>cmd_trace_rays_indirect_khr(
@@ -10077,7 +10173,7 @@
     <span class="kw">fn </span>get_physical_device_features(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _physical_device: vk::PhysicalDevice,
-        _p_features: <span class="kw-2">&amp;mut </span>vk::PhysicalDeviceFeatures,
+        _p_features: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;vk::PhysicalDeviceFeatures&gt;,
     ) -&gt; LayerResult&lt;()&gt; {
         LayerResult::Unhandled
     }
@@ -10085,7 +10181,7 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _physical_device: vk::PhysicalDevice,
         _format: vk::Format,
-        _p_format_properties: <span class="kw-2">&amp;mut </span>vk::FormatProperties,
+        _p_format_properties: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;vk::FormatProperties&gt;,
     ) -&gt; LayerResult&lt;()&gt; {
         LayerResult::Unhandled
     }
@@ -10097,28 +10193,29 @@
         _tiling: vk::ImageTiling,
         _usage: vk::ImageUsageFlags,
         _flags: vk::ImageCreateFlags,
-        _p_image_format_properties: <span class="kw-2">&amp;mut </span>vk::ImageFormatProperties,
+        _p_image_format_properties: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;vk::ImageFormatProperties&gt;,
     ) -&gt; LayerResult&lt;VkResult&lt;()&gt;&gt; {
         LayerResult::Unhandled
     }
     <span class="kw">fn </span>get_physical_device_properties(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _physical_device: vk::PhysicalDevice,
-        _p_properties: <span class="kw-2">&amp;mut </span>vk::PhysicalDeviceProperties,
+        _p_properties: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;vk::PhysicalDeviceProperties&gt;,
     ) -&gt; LayerResult&lt;()&gt; {
         LayerResult::Unhandled
     }
     <span class="kw">fn </span>get_physical_device_queue_family_properties(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _physical_device: vk::PhysicalDevice,
-        _p_queue_family_properties: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[vk::QueueFamilyProperties]&gt;,
+        _p_queue_family_property_count: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;u32&gt;,
+        _p_queue_family_properties: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[MaybeUninit&lt;vk::QueueFamilyProperties&gt;]&gt;,
     ) -&gt; LayerResult&lt;()&gt; {
         LayerResult::Unhandled
     }
     <span class="kw">fn </span>get_physical_device_memory_properties(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _physical_device: vk::PhysicalDevice,
-        _p_memory_properties: <span class="kw-2">&amp;mut </span>vk::PhysicalDeviceMemoryProperties,
+        _p_memory_properties: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;vk::PhysicalDeviceMemoryProperties&gt;,
     ) -&gt; LayerResult&lt;()&gt; {
         LayerResult::Unhandled
     }
@@ -10131,7 +10228,7 @@
         _p_create_info: <span class="kw-2">&amp;</span>vk::DeviceCreateInfo,
         _layer_device_link: <span class="kw-2">&amp;</span>VkLayerDeviceLink,
         _p_allocator: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>vk::AllocationCallbacks&gt;,
-        _p_device: <span class="kw-2">&amp;mut </span>vk::Device,
+        _p_device: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;vk::Device&gt;,
     ) -&gt; LayerResult&lt;VkResult&lt;()&gt;&gt; {
         LayerResult::Unhandled
     }
@@ -10143,21 +10240,22 @@
         _samples: vk::SampleCountFlags,
         _usage: vk::ImageUsageFlags,
         _tiling: vk::ImageTiling,
-        _p_properties: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[vk::SparseImageFormatProperties]&gt;,
+        _p_property_count: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;u32&gt;,
+        _p_properties: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[MaybeUninit&lt;vk::SparseImageFormatProperties&gt;]&gt;,
     ) -&gt; LayerResult&lt;()&gt; {
         LayerResult::Unhandled
     }
     <span class="kw">fn </span>get_physical_device_features2(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _physical_device: vk::PhysicalDevice,
-        _p_features: <span class="kw-2">&amp;mut </span>vk::PhysicalDeviceFeatures2,
+        _p_features: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;vk::PhysicalDeviceFeatures2&gt;,
     ) -&gt; LayerResult&lt;()&gt; {
         LayerResult::Unhandled
     }
     <span class="kw">fn </span>get_physical_device_properties2(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _physical_device: vk::PhysicalDevice,
-        _p_properties: <span class="kw-2">&amp;mut </span>vk::PhysicalDeviceProperties2,
+        _p_properties: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;vk::PhysicalDeviceProperties2&gt;,
     ) -&gt; LayerResult&lt;()&gt; {
         LayerResult::Unhandled
     }
@@ -10165,7 +10263,7 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _physical_device: vk::PhysicalDevice,
         _format: vk::Format,
-        _p_format_properties: <span class="kw-2">&amp;mut </span>vk::FormatProperties2,
+        _p_format_properties: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;vk::FormatProperties2&gt;,
     ) -&gt; LayerResult&lt;()&gt; {
         LayerResult::Unhandled
     }
@@ -10173,21 +10271,22 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _physical_device: vk::PhysicalDevice,
         _p_image_format_info: <span class="kw-2">&amp;</span>vk::PhysicalDeviceImageFormatInfo2,
-        _p_image_format_properties: <span class="kw-2">&amp;mut </span>vk::ImageFormatProperties2,
+        _p_image_format_properties: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;vk::ImageFormatProperties2&gt;,
     ) -&gt; LayerResult&lt;VkResult&lt;()&gt;&gt; {
         LayerResult::Unhandled
     }
     <span class="kw">fn </span>get_physical_device_queue_family_properties2(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _physical_device: vk::PhysicalDevice,
-        _p_queue_family_properties: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[vk::QueueFamilyProperties2]&gt;,
+        _p_queue_family_property_count: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;u32&gt;,
+        _p_queue_family_properties: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[MaybeUninit&lt;vk::QueueFamilyProperties2&gt;]&gt;,
     ) -&gt; LayerResult&lt;()&gt; {
         LayerResult::Unhandled
     }
     <span class="kw">fn </span>get_physical_device_memory_properties2(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _physical_device: vk::PhysicalDevice,
-        _p_memory_properties: <span class="kw-2">&amp;mut </span>vk::PhysicalDeviceMemoryProperties2,
+        _p_memory_properties: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;vk::PhysicalDeviceMemoryProperties2&gt;,
     ) -&gt; LayerResult&lt;()&gt; {
         LayerResult::Unhandled
     }
@@ -10195,7 +10294,8 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _physical_device: vk::PhysicalDevice,
         _p_format_info: <span class="kw-2">&amp;</span>vk::PhysicalDeviceSparseImageFormatInfo2,
-        _p_properties: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[vk::SparseImageFormatProperties2]&gt;,
+        _p_property_count: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;u32&gt;,
+        _p_properties: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[MaybeUninit&lt;vk::SparseImageFormatProperties2&gt;]&gt;,
     ) -&gt; LayerResult&lt;()&gt; {
         LayerResult::Unhandled
     }
@@ -10203,7 +10303,7 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _physical_device: vk::PhysicalDevice,
         _p_external_buffer_info: <span class="kw-2">&amp;</span>vk::PhysicalDeviceExternalBufferInfo,
-        _p_external_buffer_properties: <span class="kw-2">&amp;mut </span>vk::ExternalBufferProperties,
+        _p_external_buffer_properties: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;vk::ExternalBufferProperties&gt;,
     ) -&gt; LayerResult&lt;()&gt; {
         LayerResult::Unhandled
     }
@@ -10211,7 +10311,7 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _physical_device: vk::PhysicalDevice,
         _p_external_fence_info: <span class="kw-2">&amp;</span>vk::PhysicalDeviceExternalFenceInfo,
-        _p_external_fence_properties: <span class="kw-2">&amp;mut </span>vk::ExternalFenceProperties,
+        _p_external_fence_properties: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;vk::ExternalFenceProperties&gt;,
     ) -&gt; LayerResult&lt;()&gt; {
         LayerResult::Unhandled
     }
@@ -10219,14 +10319,15 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _physical_device: vk::PhysicalDevice,
         _p_external_semaphore_info: <span class="kw-2">&amp;</span>vk::PhysicalDeviceExternalSemaphoreInfo,
-        _p_external_semaphore_properties: <span class="kw-2">&amp;mut </span>vk::ExternalSemaphoreProperties,
+        _p_external_semaphore_properties: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;vk::ExternalSemaphoreProperties&gt;,
     ) -&gt; LayerResult&lt;()&gt; {
         LayerResult::Unhandled
     }
     <span class="kw">fn </span>get_physical_device_tool_properties(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _physical_device: vk::PhysicalDevice,
-        _p_tool_properties: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[vk::PhysicalDeviceToolProperties]&gt;,
+        _p_tool_count: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;u32&gt;,
+        _p_tool_properties: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[MaybeUninit&lt;vk::PhysicalDeviceToolProperties&gt;]&gt;,
     ) -&gt; LayerResult&lt;VkResult&lt;()&gt;&gt; {
         LayerResult::Unhandled
     }
@@ -10249,7 +10350,7 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _physical_device: vk::PhysicalDevice,
         _surface: vk::SurfaceKHR,
-        _p_surface_capabilities: <span class="kw-2">&amp;mut </span>vk::SurfaceCapabilitiesKHR,
+        _p_surface_capabilities: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;vk::SurfaceCapabilitiesKHR&gt;,
     ) -&gt; LayerResult&lt;VkResult&lt;()&gt;&gt; {
         LayerResult::Unhandled
     }
@@ -10257,7 +10358,8 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _physical_device: vk::PhysicalDevice,
         _surface: vk::SurfaceKHR,
-        _p_surface_formats: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[vk::SurfaceFormatKHR]&gt;,
+        _p_surface_format_count: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;u32&gt;,
+        _p_surface_formats: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[MaybeUninit&lt;vk::SurfaceFormatKHR&gt;]&gt;,
     ) -&gt; LayerResult&lt;VkResult&lt;()&gt;&gt; {
         LayerResult::Unhandled
     }
@@ -10272,21 +10374,24 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _physical_device: vk::PhysicalDevice,
         _surface: vk::SurfaceKHR,
-        _p_rects: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[vk::Rect2D]&gt;,
+        _p_rect_count: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;u32&gt;,
+        _p_rects: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[MaybeUninit&lt;vk::Rect2D&gt;]&gt;,
     ) -&gt; LayerResult&lt;VkResult&lt;()&gt;&gt; {
         LayerResult::Unhandled
     }
     <span class="kw">fn </span>get_physical_device_display_properties_khr(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _physical_device: vk::PhysicalDevice,
-        _p_properties: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[vk::DisplayPropertiesKHR]&gt;,
+        _p_property_count: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;u32&gt;,
+        _p_properties: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[MaybeUninit&lt;vk::DisplayPropertiesKHR&gt;]&gt;,
     ) -&gt; LayerResult&lt;VkResult&lt;()&gt;&gt; {
         LayerResult::Unhandled
     }
     <span class="kw">fn </span>get_physical_device_display_plane_properties_khr(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _physical_device: vk::PhysicalDevice,
-        _p_properties: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[vk::DisplayPlanePropertiesKHR]&gt;,
+        _p_property_count: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;u32&gt;,
+        _p_properties: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[MaybeUninit&lt;vk::DisplayPlanePropertiesKHR&gt;]&gt;,
     ) -&gt; LayerResult&lt;VkResult&lt;()&gt;&gt; {
         LayerResult::Unhandled
     }
@@ -10301,7 +10406,8 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _physical_device: vk::PhysicalDevice,
         _display: vk::DisplayKHR,
-        _p_properties: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[vk::DisplayModePropertiesKHR]&gt;,
+        _p_property_count: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;u32&gt;,
+        _p_properties: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[MaybeUninit&lt;vk::DisplayModePropertiesKHR&gt;]&gt;,
     ) -&gt; LayerResult&lt;VkResult&lt;()&gt;&gt; {
         LayerResult::Unhandled
     }
@@ -10319,7 +10425,7 @@
         _physical_device: vk::PhysicalDevice,
         _mode: vk::DisplayModeKHR,
         _plane_index: u32,
-        _p_capabilities: <span class="kw-2">&amp;mut </span>vk::DisplayPlaneCapabilitiesKHR,
+        _p_capabilities: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;vk::DisplayPlaneCapabilitiesKHR&gt;,
     ) -&gt; LayerResult&lt;VkResult&lt;()&gt;&gt; {
         LayerResult::Unhandled
     }
@@ -10341,7 +10447,7 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _physical_device: vk::PhysicalDevice,
         _queue_family_index: u32,
-        _dpy: <span class="kw-2">&amp;mut </span>vk::Display,
+        _dpy: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;vk::Display&gt;,
         _visual_id: vk::VisualID,
     ) -&gt; LayerResult&lt;bool&gt; {
         LayerResult::Unhandled
@@ -10402,7 +10508,7 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _physical_device: vk::PhysicalDevice,
         _p_video_profile: <span class="kw-2">&amp;</span>vk::VideoProfileInfoKHR,
-        _p_capabilities: <span class="kw-2">&amp;mut </span>vk::VideoCapabilitiesKHR,
+        _p_capabilities: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;vk::VideoCapabilitiesKHR&gt;,
     ) -&gt; LayerResult&lt;VkResult&lt;()&gt;&gt; {
         LayerResult::Unhandled
     }
@@ -10410,7 +10516,8 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _physical_device: vk::PhysicalDevice,
         _p_video_format_info: <span class="kw-2">&amp;</span>vk::PhysicalDeviceVideoFormatInfoKHR,
-        _p_video_format_properties: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[vk::VideoFormatPropertiesKHR]&gt;,
+        _p_video_format_property_count: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;u32&gt;,
+        _p_video_format_properties: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[MaybeUninit&lt;vk::VideoFormatPropertiesKHR&gt;]&gt;,
     ) -&gt; LayerResult&lt;VkResult&lt;()&gt;&gt; {
         LayerResult::Unhandled
     }
@@ -10418,8 +10525,9 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _physical_device: vk::PhysicalDevice,
         _queue_family_index: u32,
-        _p_counters: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[vk::PerformanceCounterKHR]&gt;,
-        _p_counter_descriptions: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[vk::PerformanceCounterDescriptionKHR]&gt;,
+        _p_counter_count: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;u32&gt;,
+        _p_counters: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[MaybeUninit&lt;vk::PerformanceCounterKHR&gt;]&gt;,
+        _p_counter_descriptions: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[MaybeUninit&lt;vk::PerformanceCounterDescriptionKHR&gt;]&gt;,
     ) -&gt; LayerResult&lt;VkResult&lt;()&gt;&gt; {
         LayerResult::Unhandled
     }
@@ -10434,7 +10542,7 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _physical_device: vk::PhysicalDevice,
         _p_surface_info: <span class="kw-2">&amp;</span>vk::PhysicalDeviceSurfaceInfo2KHR,
-        _p_surface_capabilities: <span class="kw-2">&amp;mut </span>vk::SurfaceCapabilities2KHR,
+        _p_surface_capabilities: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;vk::SurfaceCapabilities2KHR&gt;,
     ) -&gt; LayerResult&lt;VkResult&lt;()&gt;&gt; {
         LayerResult::Unhandled
     }
@@ -10442,21 +10550,24 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _physical_device: vk::PhysicalDevice,
         _p_surface_info: <span class="kw-2">&amp;</span>vk::PhysicalDeviceSurfaceInfo2KHR,
-        _p_surface_formats: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[vk::SurfaceFormat2KHR]&gt;,
+        _p_surface_format_count: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;u32&gt;,
+        _p_surface_formats: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[MaybeUninit&lt;vk::SurfaceFormat2KHR&gt;]&gt;,
     ) -&gt; LayerResult&lt;VkResult&lt;()&gt;&gt; {
         LayerResult::Unhandled
     }
     <span class="kw">fn </span>get_physical_device_display_properties2_khr(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _physical_device: vk::PhysicalDevice,
-        _p_properties: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[vk::DisplayProperties2KHR]&gt;,
+        _p_property_count: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;u32&gt;,
+        _p_properties: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[MaybeUninit&lt;vk::DisplayProperties2KHR&gt;]&gt;,
     ) -&gt; LayerResult&lt;VkResult&lt;()&gt;&gt; {
         LayerResult::Unhandled
     }
     <span class="kw">fn </span>get_physical_device_display_plane_properties2_khr(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _physical_device: vk::PhysicalDevice,
-        _p_properties: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[vk::DisplayPlaneProperties2KHR]&gt;,
+        _p_property_count: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;u32&gt;,
+        _p_properties: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[MaybeUninit&lt;vk::DisplayPlaneProperties2KHR&gt;]&gt;,
     ) -&gt; LayerResult&lt;VkResult&lt;()&gt;&gt; {
         LayerResult::Unhandled
     }
@@ -10464,7 +10575,8 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _physical_device: vk::PhysicalDevice,
         _display: vk::DisplayKHR,
-        _p_properties: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[vk::DisplayModeProperties2KHR]&gt;,
+        _p_property_count: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;u32&gt;,
+        _p_properties: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[MaybeUninit&lt;vk::DisplayModeProperties2KHR&gt;]&gt;,
     ) -&gt; LayerResult&lt;VkResult&lt;()&gt;&gt; {
         LayerResult::Unhandled
     }
@@ -10472,14 +10584,17 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _physical_device: vk::PhysicalDevice,
         _p_display_plane_info: <span class="kw-2">&amp;</span>vk::DisplayPlaneInfo2KHR,
-        _p_capabilities: <span class="kw-2">&amp;mut </span>vk::DisplayPlaneCapabilities2KHR,
+        _p_capabilities: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;vk::DisplayPlaneCapabilities2KHR&gt;,
     ) -&gt; LayerResult&lt;VkResult&lt;()&gt;&gt; {
         LayerResult::Unhandled
     }
     <span class="kw">fn </span>get_physical_device_fragment_shading_rates_khr(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _physical_device: vk::PhysicalDevice,
-        _p_fragment_shading_rates: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[vk::PhysicalDeviceFragmentShadingRateKHR]&gt;,
+        _p_fragment_shading_rate_count: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;u32&gt;,
+        _p_fragment_shading_rates: <span class="prelude-ty">Option</span>&lt;
+            <span class="kw-2">&amp;mut </span>[MaybeUninit&lt;vk::PhysicalDeviceFragmentShadingRateKHR&gt;],
+        &gt;,
     ) -&gt; LayerResult&lt;VkResult&lt;()&gt;&gt; {
         LayerResult::Unhandled
     }
@@ -10525,7 +10640,7 @@
         _usage: vk::ImageUsageFlags,
         _flags: vk::ImageCreateFlags,
         _external_handle_type: vk::ExternalMemoryHandleTypeFlagsNV,
-        _p_external_image_format_properties: <span class="kw-2">&amp;mut </span>vk::ExternalImageFormatPropertiesNV,
+        _p_external_image_format_properties: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;vk::ExternalImageFormatPropertiesNV&gt;,
     ) -&gt; LayerResult&lt;VkResult&lt;()&gt;&gt; {
         LayerResult::Unhandled
     }
@@ -10546,7 +10661,7 @@
     <span class="kw">fn </span>acquire_xlib_display_ext(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _physical_device: vk::PhysicalDevice,
-        _dpy: <span class="kw-2">&amp;mut </span>vk::Display,
+        _dpy: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;vk::Display&gt;,
         _display: vk::DisplayKHR,
     ) -&gt; LayerResult&lt;VkResult&lt;()&gt;&gt; {
         LayerResult::Unhandled
@@ -10554,7 +10669,7 @@
     <span class="kw">fn </span>get_rand_r_output_display_ext(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _physical_device: vk::PhysicalDevice,
-        _dpy: <span class="kw-2">&amp;mut </span>vk::Display,
+        _dpy: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;vk::Display&gt;,
         _rr_output: vk::RROutput,
     ) -&gt; LayerResult&lt;VkResult&lt;vk::DisplayKHR&gt;&gt; {
         LayerResult::Unhandled
@@ -10563,7 +10678,7 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _physical_device: vk::PhysicalDevice,
         _surface: vk::SurfaceKHR,
-        _p_surface_capabilities: <span class="kw-2">&amp;mut </span>vk::SurfaceCapabilities2EXT,
+        _p_surface_capabilities: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;vk::SurfaceCapabilities2EXT&gt;,
     ) -&gt; LayerResult&lt;VkResult&lt;()&gt;&gt; {
         LayerResult::Unhandled
     }
@@ -10607,7 +10722,7 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _physical_device: vk::PhysicalDevice,
         _samples: vk::SampleCountFlags,
-        _p_multisample_properties: <span class="kw-2">&amp;mut </span>vk::MultisamplePropertiesEXT,
+        _p_multisample_properties: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;vk::MultisamplePropertiesEXT&gt;,
     ) -&gt; LayerResult&lt;()&gt; {
         LayerResult::Unhandled
     }
@@ -10634,14 +10749,16 @@
     <span class="kw">fn </span>get_physical_device_cooperative_matrix_properties_nv(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _physical_device: vk::PhysicalDevice,
-        _p_properties: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[vk::CooperativeMatrixPropertiesNV]&gt;,
+        _p_property_count: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;u32&gt;,
+        _p_properties: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[MaybeUninit&lt;vk::CooperativeMatrixPropertiesNV&gt;]&gt;,
     ) -&gt; LayerResult&lt;VkResult&lt;()&gt;&gt; {
         LayerResult::Unhandled
     }
     <span class="kw">fn </span>get_physical_device_supported_framebuffer_mixed_samples_combinations_nv(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _physical_device: vk::PhysicalDevice,
-        _p_combinations: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[vk::FramebufferMixedSamplesCombinationNV]&gt;,
+        _p_combination_count: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;u32&gt;,
+        _p_combinations: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[MaybeUninit&lt;vk::FramebufferMixedSamplesCombinationNV&gt;]&gt;,
     ) -&gt; LayerResult&lt;VkResult&lt;()&gt;&gt; {
         LayerResult::Unhandled
     }
@@ -10700,7 +10817,7 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _physical_device: vk::PhysicalDevice,
         _queue_family_index: u32,
-        _dfb: <span class="kw-2">&amp;mut </span>vk::IDirectFB,
+        _dfb: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;vk::IDirectFB&gt;,
     ) -&gt; LayerResult&lt;bool&gt; {
         LayerResult::Unhandled
     }
@@ -10723,7 +10840,10 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         _physical_device: vk::PhysicalDevice,
         _p_optical_flow_image_format_info: <span class="kw-2">&amp;</span>vk::OpticalFlowImageFormatInfoNV,
-        _p_image_format_properties: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>[vk::OpticalFlowImageFormatPropertiesNV]&gt;,
+        _p_format_count: <span class="kw-2">&amp;mut </span>MaybeUninit&lt;u32&gt;,
+        _p_image_format_properties: <span class="prelude-ty">Option</span>&lt;
+            <span class="kw-2">&amp;mut </span>[MaybeUninit&lt;vk::OpticalFlowImageFormatPropertiesNV&gt;],
+        &gt;,
     ) -&gt; LayerResult&lt;VkResult&lt;()&gt;&gt; {
         LayerResult::Unhandled
     }
