@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `scripts\codegen.rs`."><title>codegen.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-c5d6553a23f1e5a6.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="codegen" data-themes="" data-resource-suffix="" data-rustdoc-version="1.81.0-nightly (506985649 2024-07-20)" data-channel="nightly" data-search-js="search-d234aafac6c221dd.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-d2fab2bf619172d3.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `scripts\codegen.rs`."><title>codegen.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-970bf1bf55bd1c15.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="codegen" data-themes="" data-resource-suffix="" data-rustdoc-version="1.82.0-nightly (8e86c9567 2024-08-01)" data-channel="nightly" data-search-js="search-ef54e092fea9c776.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-f9142fe437216fc3.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -480,6 +480,8 @@
 <a href="#480" id="480">480</a>
 <a href="#481" id="481">481</a>
 <a href="#482" id="482">482</a>
+<a href="#483" id="483">483</a>
+<a href="#484" id="484">484</a>
 </pre></div><pre class="rust"><code><span class="comment">// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -701,7 +703,8 @@ pub use windows::*;
 }
 
 <span class="kw">struct </span>GenvkArgs {
-    script_path: PathBuf,
+    working_directory: PathBuf,
+    module: String,
     target: OsString,
     registry: PathBuf,
     out_dir: PathBuf,
@@ -709,7 +712,8 @@ pub use windows::*;
 
 <span class="kw">fn </span>run_vulkan_layer_genvk(
     GenvkArgs {
-        script_path,
+        working_directory,
+        module,
         target,
         registry,
         out_dir,
@@ -729,19 +733,19 @@ pub use windows::*;
         });
     }
     <span class="kw">let </span>python_command = guess_python_command().expect(<span class="string">"Failed to find installed python."</span>);
-    <span class="kw">let </span>status = Command::new(python_command)
-        .args([
-            script_path.as_os_str(),
-            target.as_os_str(),
-            OsStr::new(<span class="string">"-registry"</span>),
-            registry.as_os_str(),
-            OsStr::new(<span class="string">"-o"</span>),
-            out_dir.as_os_str(),
-        ])
-        .spawn()
-        .unwrap()
-        .wait()
-        .unwrap();
+    <span class="kw">let </span><span class="kw-2">mut </span>command = Command::new(python_command);
+    command.args([
+        OsStr::new(<span class="string">"-m"</span>),
+        OsStr::new(module),
+        target.as_ref(),
+        OsStr::new(<span class="string">"-registry"</span>),
+        registry.as_os_str(),
+        OsStr::new(<span class="string">"-o"</span>),
+        out_dir.as_os_str(),
+    ]);
+    command.current_dir(working_directory);
+
+    <span class="kw">let </span>status = command.spawn().unwrap().wait().unwrap();
     <span class="macro">assert!</span>(status.success());
 
     <span class="kw">let </span>output_file = File::open(<span class="kw-2">&amp;</span>output_file_path).unwrap();
@@ -805,9 +809,7 @@ pub use windows::*;
         completed_files_tx.clone(),
     ));
 
-    <span class="kw">let </span><span class="kw-2">mut </span>vulkan_layer_genvk_path = project_root_dir.clone();
-    vulkan_layer_genvk_path.push(<span class="string">"scripts"</span>);
-    vulkan_layer_genvk_path.push(<span class="string">"vulkan_layer_genvk.py"</span>);
+    <span class="kw">let </span>vulkan_layer_genvk_module = <span class="string">"scripts.vulkan_layer_genvk"</span>;
 
     <span class="kw">let </span><span class="kw-2">mut </span>vk_xml_path = vulkan_headers_dir.clone();
     vk_xml_path.push(<span class="string">"registry"</span>);
@@ -817,7 +819,8 @@ pub use windows::*;
         <span class="kw">let </span>target = OsString::from(<span class="string">"layer_trait/generated.rs"</span>);
         <span class="kw">let </span>target_relative_path = PathBuf::from(target.clone());
         <span class="kw">let </span>genvk_args = GenvkArgs {
-            script_path: vulkan_layer_genvk_path.clone(),
+            working_directory: project_root_dir.clone(),
+            module: vulkan_layer_genvk_module.to_string(),
             target: target.clone(),
             registry: vk_xml_path.clone(),
             out_dir: vulkan_layer_src_dir.clone(),
@@ -840,7 +843,8 @@ pub use windows::*;
         <span class="kw">let </span>target = OsString::from(<span class="string">"global_simple_intercept/generated.rs"</span>);
         <span class="kw">let </span>target_relative_path = PathBuf::from(target.clone());
         <span class="kw">let </span>genvk_args = GenvkArgs {
-            script_path: vulkan_layer_genvk_path.clone(),
+            working_directory: project_root_dir.clone(),
+            module: vulkan_layer_genvk_module.to_string(),
             target: target.clone(),
             registry: vk_xml_path.clone(),
             out_dir: vulkan_layer_src_dir.clone(),
