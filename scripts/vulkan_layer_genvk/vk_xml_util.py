@@ -965,7 +965,7 @@ class TestUtils:
     @cache
     def __get_vk_xml() -> TestUtils.__VkXml:
         vk_xml_path = (
-            Path(__file__).absolute().parents[1]
+            Path(__file__).absolute().parents[2]
             / "third_party"
             / "Vulkan-Headers"
             / "registry"

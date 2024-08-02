@@ -219,7 +219,8 @@ fn guess_python_command() -> Option<&'static str> {
 }
 
 struct GenvkArgs {
-    script_path: PathBuf,
+    working_directory: PathBuf,
+    module: String,
     target: OsString,
     registry: PathBuf,
     out_dir: PathBuf,
@@ -227,7 +228,8 @@ struct GenvkArgs {
 
 fn run_vulkan_layer_genvk(
     GenvkArgs {
-        script_path,
+        working_directory,
+        module,
         target,
         registry,
         out_dir,
@@ -247,19 +249,19 @@ fn run_vulkan_layer_genvk(
         });
     }
     let python_command = guess_python_command().expect("Failed to find installed python.");
-    let status = Command::new(python_command)
-        .args([
-            script_path.as_os_str(),
-            target.as_os_str(),
-            OsStr::new("-registry"),
-            registry.as_os_str(),
-            OsStr::new("-o"),
-            out_dir.as_os_str(),
-        ])
-        .spawn()
-        .unwrap()
-        .wait()
-        .unwrap();
+    let mut command = Command::new(python_command);
+    command.args([
+        OsStr::new("-m"),
+        OsStr::new(module),
+        target.as_ref(),
+        OsStr::new("-registry"),
+        registry.as_os_str(),
+        OsStr::new("-o"),
+        out_dir.as_os_str(),
+    ]);
+    command.current_dir(working_directory);
+
+    let status = command.spawn().unwrap().wait().unwrap();
     assert!(status.success());
 
     let output_file = File::open(&output_file_path).unwrap();
@@ -323,9 +325,7 @@ fn main() -> ExitCode {
         completed_files_tx.clone(),
     ));
 
-    let mut vulkan_layer_genvk_path = project_root_dir.clone();
-    vulkan_layer_genvk_path.push("scripts");
-    vulkan_layer_genvk_path.push("vulkan_layer_genvk.py");
+    let vulkan_layer_genvk_module = "scripts.vulkan_layer_genvk";
 
     let mut vk_xml_path = vulkan_headers_dir.clone();
     vk_xml_path.push("registry");
@@ -335,7 +335,8 @@ fn main() -> ExitCode {
         let target = OsString::from("layer_trait/generated.rs");
         let target_relative_path = PathBuf::from(target.clone());
         let genvk_args = GenvkArgs {
-            script_path: vulkan_layer_genvk_path.clone(),
+            working_directory: project_root_dir.clone(),
+            module: vulkan_layer_genvk_module.to_string(),
             target: target.clone(),
             registry: vk_xml_path.clone(),
             out_dir: vulkan_layer_src_dir.clone(),
@@ -358,7 +359,8 @@ fn main() -> ExitCode {
         let target = OsString::from("global_simple_intercept/generated.rs");
         let target_relative_path = PathBuf::from(target.clone());
         let genvk_args = GenvkArgs {
-            script_path: vulkan_layer_genvk_path.clone(),
+            working_directory: project_root_dir.clone(),
+            module: vulkan_layer_genvk_module.to_string(),
             target: target.clone(),
             registry: vk_xml_path.clone(),
             out_dir: vulkan_layer_src_dir.clone(),

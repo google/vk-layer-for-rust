@@ -19,7 +19,7 @@ from generator import OutputGenerator
 import reg
 import sys
 from typing import NamedTuple, Optional, ClassVar, Callable
-from vk_xml_util import (
+from .vk_xml_util import (
     DispatchChainType,
     VkXmlCommand,
     camel_case_to_snake_case,
