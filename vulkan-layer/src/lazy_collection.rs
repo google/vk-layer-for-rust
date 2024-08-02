@@ -16,7 +16,6 @@ use std::{
     borrow::Cow,
     cell::RefCell,
     collections::BTreeMap,
-    fmt::{self, Display, Formatter},
     marker::PhantomData,
     ops::{Deref, DerefMut},
 };
@@ -165,12 +164,6 @@ impl<T: CheckEmpty> DerefMut for CollectionRefMut<'_, T> {
     }
 }
 
-impl<T: CheckEmpty + Display> Display for CollectionRefMut<'_, T> {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        (**self).fmt(f)
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -179,6 +172,11 @@ mod tests {
     fn test_empty_get_shouldnt_leak() {
         // We rely on the Miri test to detect the resource leak.
         let lazy_vec = LazyCollection::<Vec<u32>>::new(vec![]);
+        let empty_vec = lazy_vec.get();
+        assert!(empty_vec.is_empty());
+        std::mem::forget(lazy_vec);
+
+        let lazy_vec = LazyCollection::<Vec<u32>>::default();
         let empty_vec = lazy_vec.get();
         assert!(empty_vec.is_empty());
         std::mem::forget(lazy_vec);

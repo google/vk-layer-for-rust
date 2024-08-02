@@ -437,4 +437,11 @@ mod tests {
     fn maybe_slice_from_raw_parts_bad_len() {
         unsafe { maybe_slice_from_raw_parts(std::ptr::NonNull::<u8>::dangling().as_ptr(), -1) };
     }
+
+    #[test]
+    fn extension_try_from_should_return_error_on_unknown_extension() {
+        let unknown_extension = "VK_UNKNOWN_unknown";
+        let err = Extension::try_from(unknown_extension).unwrap_err();
+        assert!(err.to_string().contains(unknown_extension));
+    }
 }

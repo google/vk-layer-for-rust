@@ -542,4 +542,24 @@ mod tests {
         result_uninit.write(expected_value);
         assert_eq!(unsafe { uninit_data.assume_init() }, expected_value);
     }
+
+    // The following 2 tests guarantee that when invalid UTF-8 strings are passed in,
+    // slice_to_owned_strings only panics when the returned iterator is consumed.
+    #[test]
+    fn test_slice_to_owned_strings_invalid_utf8_str_shouldnt_panic_before_iter_consumed() {
+        let invalid_input = b"\xc3\x28\x00";
+        let invalid_input: &[i8] = bytemuck::cast_slice(invalid_input);
+        let invalid_inputs = [invalid_input.as_ptr()];
+        let _ = unsafe { slice_to_owned_strings(&invalid_inputs) };
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_slice_to_owned_strings_invalid_utf8_str() {
+        let invalid_input = b"\xc3\x28\x00";
+        let invalid_input: &[i8] = bytemuck::cast_slice(invalid_input);
+        let invalid_inputs = [invalid_input.as_ptr()];
+        let output = unsafe { slice_to_owned_strings(&invalid_inputs) };
+        output.for_each(|_| {});
+    }
 }
