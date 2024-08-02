@@ -1729,3 +1729,15 @@ pub trait Layer: Sync + Default + 'static {
         Box::new(Self::DeviceInfo::hooked_commands().iter().cloned())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn vulkan_command_try_from_should_end_up_error_with_unknown_commands() {
+        let unknown_command = "vkTestCommandTEST";
+        let err = VulkanCommand::try_from(unknown_command).unwrap_err();
+        assert!(err.to_string().contains(unknown_command));
+    }
+}
