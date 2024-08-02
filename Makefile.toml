@@ -289,8 +289,13 @@ command = "cargo"
 install_crate_args = ["--locked"]
 private = true
 
-[tasks.test]
-# TODO: also run python tests
+[tasks.python-test]
+args = ["-m", "unittest", "discover", "-p", "*.py"]
+category = "Development"
+command = "python"
+description = "Runs python tests."
+
+[tasks.rust-test]
 args = [
     "nextest",
     "run",
@@ -304,6 +309,11 @@ category = "Development"
 command = "cargo"
 dependencies = ["nextest-detection"]
 description = "Runs cargo nextest."
+
+[tasks.test]
+category = "Development"
+dependencies = ["rust-test", "python-test"]
+description = "Runs tests."
 
 [tasks.doctest]
 args = ["+nightly", "test", "--doc", "--all-features", "--workspace", "--", "--show-output"]
