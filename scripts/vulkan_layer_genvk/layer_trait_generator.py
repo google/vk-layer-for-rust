@@ -16,7 +16,7 @@ from generator import OutputGenerator
 import reg
 import sys
 from typing import Optional
-from vk_xml_util import (
+from .vk_xml_util import (
     VkXmlCommand,
     RustMethod,
     DispatchChainType,

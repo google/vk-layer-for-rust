@@ -20,16 +20,12 @@ import re
 import sys
 import xml.etree.ElementTree as etree
 
-sys.path.insert(
-    0, str(Path(__file__).absolute().parents[1] / "third_party" / "Vulkan-Headers" / "registry")
-)  # noqa: E402
-
-from generator import OutputGenerator, GeneratorOptions  # noqa: E402
-from layer_trait_generator import LayerTraitGenerator  # noqa: E402
-from global_simple_intercept_generator import GlobalSimpleInterceptGenerator  # noqa: E402
-from reg import Registry  # noqa: E402
-from vkconventions import VulkanConventions  # noqa: E402
-from spec_tools.conventions import ConventionsBase  # noqa: E402
+from generator import OutputGenerator, GeneratorOptions
+from .layer_trait_generator import LayerTraitGenerator
+from .global_simple_intercept_generator import GlobalSimpleInterceptGenerator
+from reg import Registry
+from vkconventions import VulkanConventions
+from spec_tools.conventions import ConventionsBase
 
 
 def make_re_string(strings, default=None, strings_are_regex=False):
@@ -96,7 +92,7 @@ def main():
         level=logging.INFO,
     )
 
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(prog="python -m vulkan_layer_genvk")
     parser.add_argument(
         "-registry",
         action="store",
