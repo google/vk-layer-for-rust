@@ -438,6 +438,13 @@
 <a href="#438" id="438">438</a>
 <a href="#439" id="439">439</a>
 <a href="#440" id="440">440</a>
+<a href="#441" id="441">441</a>
+<a href="#442" id="442">442</a>
+<a href="#443" id="443">443</a>
+<a href="#444" id="444">444</a>
+<a href="#445" id="445">445</a>
+<a href="#446" id="446">446</a>
+<a href="#447" id="447">447</a>
 </pre></div><pre class="rust"><code><span class="comment">// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -876,6 +883,13 @@
     #[should_panic]
     </span><span class="kw">fn </span>maybe_slice_from_raw_parts_bad_len() {
         <span class="kw">unsafe </span>{ maybe_slice_from_raw_parts(std::ptr::NonNull::&lt;u8&gt;::dangling().as_ptr(), -<span class="number">1</span>) };
+    }
+
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>extension_try_from_should_return_error_on_unknown_extension() {
+        <span class="kw">let </span>unknown_extension = <span class="string">"VK_UNKNOWN_unknown"</span>;
+        <span class="kw">let </span>err = Extension::try_from(unknown_extension).unwrap_err();
+        <span class="macro">assert!</span>(err.to_string().contains(unknown_extension));
     }
 }
 </code></pre></div></section></main></body></html>

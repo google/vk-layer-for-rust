@@ -543,6 +543,26 @@
 <a href="#543" id="543">543</a>
 <a href="#544" id="544">544</a>
 <a href="#545" id="545">545</a>
+<a href="#546" id="546">546</a>
+<a href="#547" id="547">547</a>
+<a href="#548" id="548">548</a>
+<a href="#549" id="549">549</a>
+<a href="#550" id="550">550</a>
+<a href="#551" id="551">551</a>
+<a href="#552" id="552">552</a>
+<a href="#553" id="553">553</a>
+<a href="#554" id="554">554</a>
+<a href="#555" id="555">555</a>
+<a href="#556" id="556">556</a>
+<a href="#557" id="557">557</a>
+<a href="#558" id="558">558</a>
+<a href="#559" id="559">559</a>
+<a href="#560" id="560">560</a>
+<a href="#561" id="561">561</a>
+<a href="#562" id="562">562</a>
+<a href="#563" id="563">563</a>
+<a href="#564" id="564">564</a>
+<a href="#565" id="565">565</a>
 </pre></div><pre class="rust"><code><span class="comment">// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -1086,6 +1106,26 @@
         <span class="macro">assert_eq!</span>(result_uninit.as_mut_ptr(), uninit_data.as_mut_ptr());
         result_uninit.write(expected_value);
         <span class="macro">assert_eq!</span>(<span class="kw">unsafe </span>{ uninit_data.assume_init() }, expected_value);
+    }
+
+    <span class="comment">// The following 2 tests guarantee that when invalid UTF-8 strings are passed in,
+    // slice_to_owned_strings only panics when the returned iterator is consumed.
+    </span><span class="attr">#[test]
+    </span><span class="kw">fn </span>test_slice_to_owned_strings_invalid_utf8_str_shouldnt_panic_before_iter_consumed() {
+        <span class="kw">let </span>invalid_input = <span class="string">b"\xc3\x28\x00"</span>;
+        <span class="kw">let </span>invalid_input: <span class="kw-2">&amp;</span>[i8] = bytemuck::cast_slice(invalid_input);
+        <span class="kw">let </span>invalid_inputs = [invalid_input.as_ptr()];
+        <span class="kw">let _ </span>= <span class="kw">unsafe </span>{ slice_to_owned_strings(<span class="kw-2">&amp;</span>invalid_inputs) };
+    }
+
+    <span class="attr">#[test]
+    #[should_panic]
+    </span><span class="kw">fn </span>test_slice_to_owned_strings_invalid_utf8_str() {
+        <span class="kw">let </span>invalid_input = <span class="string">b"\xc3\x28\x00"</span>;
+        <span class="kw">let </span>invalid_input: <span class="kw-2">&amp;</span>[i8] = bytemuck::cast_slice(invalid_input);
+        <span class="kw">let </span>invalid_inputs = [invalid_input.as_ptr()];
+        <span class="kw">let </span>output = <span class="kw">unsafe </span>{ slice_to_owned_strings(<span class="kw-2">&amp;</span>invalid_inputs) };
+        output.for_each(|<span class="kw">_</span>| {});
     }
 }
 </code></pre></div></section></main></body></html>
