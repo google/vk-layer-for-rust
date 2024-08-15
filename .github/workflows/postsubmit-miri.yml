@@ -25,7 +25,7 @@ jobs:
     # generally faster.
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up nightly Rust toolchain
         # dtolnay/rust-toolchain@nightly
         uses: dtolnay/rust-toolchain@f2f3c4b315c5bb8415dbb043af44ec90f68ae503
