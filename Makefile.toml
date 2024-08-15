@@ -22,13 +22,6 @@ unstable_features = ["CTRL_C_HANDLING"]
 description = "Set up environements."
 private = true
 script = '''
-# TODO: MY_CARGO_MAKE_INIT_CALLED is to WA https://github.com/sagiegurari/cargo-make/issues/1108.
-# Remove it once the bug is fixed.
-if ${MY_CARGO_MAKE_INIT_CALLED}
-    echo Skip init task because we have called it.
-    exit 0
-endif
-set_env MY_CARGO_MAKE_INIT_CALLED true
 
 # Check whether linters and formatters should only check or fix in place.
 echo Parsing arguments...
