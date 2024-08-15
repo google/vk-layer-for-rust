@@ -34,8 +34,8 @@ jobs:
             rust-src
             miri
       - name: Set up Rust dependency cache
-        # Swatinem/rust-cache@v2.5.1
-        uses: Swatinem/rust-cache@dd05243424bd5c0e585e4b55eb2d7615cdd32f1f
+        # Swatinem/rust-cache@master
+        uses: Swatinem/rust-cache@9bdad043e88c75890e36ad3bbc8d27f0090dd609
       - name: Install cargo-make
         run: cargo install --no-default-features --locked cargo-make
       - name: Run tests with Miri
