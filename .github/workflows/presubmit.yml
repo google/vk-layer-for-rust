@@ -28,7 +28,7 @@ jobs:
         os: ["ubuntu-latest", "windows-latest"]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
       - name: Setup LLVM install path
@@ -97,7 +97,7 @@ jobs:
         run: go install github.com/google/addlicense@master
       - run: cargo make ci-presubmit
       - name: Checkout base coverage
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: static_resource
           sparse-checkout: |
@@ -107,7 +107,7 @@ jobs:
       - name: Report coverage
         # 06393993/lcov-reporter-action@master
         # TODO: once the upstream accept the PR, change back to romeovs/lcov-reporter-action@master
-        uses: 06393993/lcov-reporter-action@45b31bf53fa5ac82d0f49039198080afdb535288
+        uses: 06393993/lcov-reporter-action@24d48ff28930b87e67d0df34283153b04a76f166
         with:
           lcov-file: target/lcov.info
           lcov-base: ${{ format('target/base-coverage/coverage-{0}/lcov.info', runner.os) }}
