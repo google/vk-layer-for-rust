@@ -30,25 +30,25 @@ jobs:
           ref: static_resource
       - run: rm -rf coverage-Linux
       - name: Download Linux coverage artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: coverage-Linux
           path: coverage-Linux
       - run: rm -rf coverage-Windows
       - name: Download Windows coverage artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: coverage-Windows
           path: coverage-Windows
       - run: rm -rf doc-Linux
       - name: Download Linux doc artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: doc-Linux
           path: doc-Linux
       - run: rm -rf doc-Windows
       - name: Download Windows doc artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: doc-Windows
           path: doc-Windows

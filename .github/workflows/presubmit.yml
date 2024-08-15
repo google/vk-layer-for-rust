@@ -45,13 +45,13 @@ jobs:
         shell: bash
       - name: Cache LLVM and Clang
         id: cache-llvm
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ steps.setup-llvm-install-path.outputs.LLVM_INSTALL_PATH }}
           key: ${{ format('llvm-16.0.0-{0}', runner.os) }}
       - name: Install LLVM and Clang
-        # KyleMayes/install-llvm-action@v1.8.3
-        uses: KyleMayes/install-llvm-action@c135b3937686fd69c2651507aabc9925a8f9eee8
+        # KyleMayes/install-llvm-action@v2.0.4
+        uses: KyleMayes/install-llvm-action@10c8957324ef77f0712d883b9ed08adb6da4a192
         with:
           version: "16.0.0"
           directory: ${{ steps.setup-llvm-install-path.outputs.LLVM_INSTALL_PATH }}
@@ -74,8 +74,8 @@ jobs:
           components: rustfmt
       - run: rustup default stable
       - name: Set up Rust dependency cache
-        # Swatinem/rust-cache@v2.5.1
-        uses: Swatinem/rust-cache@dd05243424bd5c0e585e4b55eb2d7615cdd32f1f
+        # Swatinem/rust-cache@master
+        uses: Swatinem/rust-cache@9bdad043e88c75890e36ad3bbc8d27f0090dd609
         with:
           key: ${{ runner.os }}
           cache-all-crates: true
@@ -85,7 +85,7 @@ jobs:
         run: cargo install --no-default-features --locked cargo-make
       - name: Install cargo llvm cov
         run: cargo install cargo-llvm-cov --locked
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.9.13"
           cache: "pipenv"
@@ -114,7 +114,7 @@ jobs:
           filter-changed-files: true
           title: ${{ format('Test coverage for {0}', runner.os) }}
           post-to: ${{ github.event_name == 'push' && 'comment' || 'job-summary' }}
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: ${{ format('coverage-{0}', runner.os) }}
           # lcov.info is needed for the next commit and PR to diff the coverage report of the base
@@ -124,7 +124,7 @@ jobs:
             target/lcov.info
             target/llvm-cov
             target/coverage_badge.json
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: ${{ format('doc-{0}', runner.os) }}
           path: target/doc
