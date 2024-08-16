@@ -60,6 +60,6 @@ jobs:
           git commit -a -m "Upload artifacts for $GITHUB_SHA"
       - name: Push changes
         # ad-m/github-push-action@master
-        uses: ad-m/github-push-action@d9117be7cad08757e9e906a1bcd1716d6b192db5
+        uses: ad-m/github-push-action@77c5b412c50b723d2a4fbc6d71fb5723bcd439aa
         with:
           branch: static_resource
