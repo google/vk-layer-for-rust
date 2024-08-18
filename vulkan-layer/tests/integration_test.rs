@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use ash::vk;
+use ash::vk::{self, Handle};
 use mockall::predicate::{always, eq};
 use once_cell::sync::Lazy;
 use std::{
@@ -178,70 +178,6 @@ mod get_instance_proc_addr {
 
     mod valid_instance {
         use super::*;
-
-        #[test]
-        fn test_should_return_null_for_global_commands() {
-            {
-                static TEST_GLOBAL: TestGlobal = TestGlobal::builder().build();
-                let _ctx = TEST_GLOBAL.create_context();
-                let ctx = vk::InstanceCreateInfo::builder().default_instance::<(TestLayer,)>();
-
-                let InstanceContext {
-                    entry, instance, ..
-                } = ctx.as_ref();
-                let global_commands = [
-                    "vkEnumerateInstanceVersion",
-                    "vkEnumerateInstanceExtensionProperties",
-                    "vkEnumerateInstanceLayerProperties",
-                    "vkCreateInstance",
-                ];
-                for global_command in &global_commands {
-                    let global_command = CString::new(global_command.to_owned()).unwrap();
-                    let proc_addr = unsafe {
-                        entry.get_instance_proc_addr(instance.handle(), global_command.as_ptr())
-                    };
-                    assert!(
-                        proc_addr.is_none(),
-                        "{} should be null",
-                        global_command.to_string_lossy()
-                    );
-                }
-            }
-
-            // Test if vkCreateInstance is NULL even if we intercept vkCreateInstance.
-            {
-                static TEST_GLOBAL: TestGlobal = TestGlobal::builder()
-                    .set_layer_mock_builder(|| {
-                        let mut mock = MockTestLayer::default();
-                        mock.expect_hooked_global_commands()
-                            .return_const(vec![LayerVulkanCommand::CreateInstance]);
-                        mock.set_default_expectations();
-                        mock
-                    })
-                    .set_layer_global_builder(|| {
-                        let global: Global<TestLayer> = Default::default();
-                        global
-                            .layer_info
-                            .global_hooks()
-                            .expect_create_instance()
-                            .once()
-                            .return_const(LayerResult::Unhandled);
-                        global
-                    })
-                    .build();
-                let _ctx = TEST_GLOBAL.create_context();
-                let ctx = vk::InstanceCreateInfo::builder().default_instance::<(TestLayer,)>();
-
-                let InstanceContext { instance, .. } = ctx.as_ref();
-                let create_instance = unsafe {
-                    ctx.entry.get_instance_proc_addr(
-                        instance.handle(),
-                        b"vkCreateInstance\0".as_ptr() as *const i8,
-                    )
-                };
-                assert!(create_instance.is_none());
-            }
-        }
 
         #[test]
         #[cfg_attr(miri, ignore)]
@@ -707,6 +643,36 @@ mod get_instance_proc_addr {
         #[ignore]
         fn test_should_return_fp_with_device_command_supported_by_the_layer_extension_only() {
             todo!()
+        }
+    }
+
+    mod invalid_instance {
+        use super::*;
+
+        #[test]
+        fn test_query_global_commands_should_still_succeed() {
+            // See https://github.com/KhronosGroup/Vulkan-Loader/issues/1537.
+            static TEST_GLOBAL: TestGlobal = TestGlobal::builder().build();
+            let _ctx = TEST_GLOBAL.create_context();
+
+            let entry = create_entry::<TestLayer>();
+            let expected = unsafe {
+                entry.get_instance_proc_addr(
+                    vk::Instance::null(),
+                    b"vkCreateInstance\0".as_ptr() as *const i8,
+                )
+            }
+            .expect("vkCreateInstance should be a valid function pointer with NULL instance.");
+            let actual = unsafe {
+                entry.get_instance_proc_addr(
+                    vk::Instance::from_raw(u64::MAX),
+                    b"vkCreateInstance\0".as_ptr() as *const i8,
+                )
+            }
+            .expect(
+                "vkCreateInstance should be a valid function pointer with an invalid instance.",
+            );
+            assert_eq!(expected, actual);
         }
     }
 
