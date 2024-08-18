@@ -1416,40 +1416,43 @@ impl<T: Layer> Global<T> {
             "According to VUID-vkGetInstanceProcAddr-pName-parameter, p_name must be a null-",
             "terminated UTF-8 string."
         ));
-        if instance == vk::Instance::null() {
-            match name {
-                "vkGetInstanceProcAddr" => {
-                    return unsafe {
-                        std::mem::transmute::<vk::PFN_vkGetInstanceProcAddr, vk::PFN_vkVoidFunction>(
-                            Self::get_instance_proc_addr,
-                        )
-                    }
+        // Returns a valid function pointer for global commands all the time, although this behavior
+        // doesn't match the spec. See https://github.com/KhronosGroup/Vulkan-Loader/issues/1537 for
+        // details.
+        match name {
+            "vkGetInstanceProcAddr" => {
+                return unsafe {
+                    std::mem::transmute::<vk::PFN_vkGetInstanceProcAddr, vk::PFN_vkVoidFunction>(
+                        Self::get_instance_proc_addr,
+                    )
                 }
-                "vkEnumerateInstanceExtensionProperties" => {
-                    return unsafe {
-                        std::mem::transmute::<
-                            vk::PFN_vkEnumerateInstanceExtensionProperties,
-                            vk::PFN_vkVoidFunction,
-                        >(Self::enumerate_instance_extension_properties)
-                    }
-                }
-                "vkEnumerateInstanceLayerProperties" => {
-                    return unsafe {
-                        std::mem::transmute::<
-                            vk::PFN_vkEnumerateInstanceLayerProperties,
-                            vk::PFN_vkVoidFunction,
-                        >(Self::enumerate_instance_layer_properties)
-                    }
-                }
-                "vkCreateInstance" => {
-                    return unsafe {
-                        std::mem::transmute::<vk::PFN_vkCreateInstance, vk::PFN_vkVoidFunction>(
-                            Self::create_instance,
-                        )
-                    }
-                }
-                _ => {}
             }
+            "vkEnumerateInstanceExtensionProperties" => {
+                return unsafe {
+                    std::mem::transmute::<
+                        vk::PFN_vkEnumerateInstanceExtensionProperties,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::enumerate_instance_extension_properties)
+                }
+            }
+            "vkEnumerateInstanceLayerProperties" => {
+                return unsafe {
+                    std::mem::transmute::<
+                        vk::PFN_vkEnumerateInstanceLayerProperties,
+                        vk::PFN_vkVoidFunction,
+                    >(Self::enumerate_instance_layer_properties)
+                }
+            }
+            "vkCreateInstance" => {
+                return unsafe {
+                    std::mem::transmute::<vk::PFN_vkCreateInstance, vk::PFN_vkVoidFunction>(
+                        Self::create_instance,
+                    )
+                }
+            }
+            _ => {}
+        }
+        if instance == vk::Instance::null() {
             // TODO: allow inteception of vkEnumerateInstanceVersion and handle
             // vkEnumerateInstanceVersion properly. For now, we still return NULL for
             // vkEnumerateInstanceVersion. The Vulkan loader should cover us for this case.
