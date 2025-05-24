@@ -104,7 +104,11 @@ echo Detecting the GOPATH environment...
 output = exec --fail-on-error go env GOPATH
 gopath = trim ${output.stdout}
 echo GOPATH=${gopath}
-addlicense_path = join_path ${gopath} bin addlicense
+addlicense_file_name = set addlicense
+if is_windows
+    addlicense_file_name = concat ${addlicense_file_name} .exe
+end
+addlicense_path = join_path ${gopath} bin ${addlicense_file_name}
 echo Path of addlicense is ${addlicense_path}
 set_env MY_CARGO_MAKE_ADDLICENSE_PATH ${addlicense_path}
 addlicense_installed = is_path_exists ${addlicense_path}
@@ -245,7 +249,11 @@ echo Detecting the GOPATH environment...
 output = exec --fail-on-error go env GOPATH
 gopath = trim ${output.stdout}
 echo GOPATH=${gopath}
-yamlfmt_path = join_path ${gopath} bin yamlfmt
+yamlfmt_file_name = set yamlfmt
+if is_windows
+    yamlfmt_file_name = concat ${yamlfmt_file_name} .exe
+end
+yamlfmt_path = join_path ${gopath} bin ${yamlfmt_file_name}
 echo Path of yamlfmt is ${yamlfmt_path}
 set_env MY_CARGO_MAKE_YAMLFMT_PATH ${yamlfmt_path}
 yamlfmt_installed = is_path_exists ${yamlfmt_path}
