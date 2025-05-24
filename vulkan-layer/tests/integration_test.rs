@@ -15,13 +15,14 @@
 use ash::vk::{self, Handle};
 use mockall::predicate::{always, eq};
 use once_cell::sync::Lazy;
+use parking_lot::{Mutex, MutexGuard};
 use std::{
     ffi::{CStr, CString},
     iter::zip,
     marker::PhantomData,
     mem::MaybeUninit,
     ptr::{null, null_mut},
-    sync::{atomic::AtomicBool, Arc},
+    sync::{atomic::AtomicBool, Arc, LazyLock},
 };
 use vulkan_layer::{
     test_utils::{
@@ -53,7 +54,7 @@ mod get_instance_proc_addr {
             let _ctx = TEST_GLOBAL.create_context();
 
             let entry = create_entry::<TestLayer>();
-            let get_instance_proc_addr_name = b"vkGetInstanceProcAddr\0".as_ptr() as *const i8;
+            let get_instance_proc_addr_name = c"vkGetInstanceProcAddr".as_ptr();
             let get_instance_proc_addr = unsafe {
                 entry.get_instance_proc_addr(vk::Instance::null(), get_instance_proc_addr_name)
             }
@@ -77,10 +78,7 @@ mod get_instance_proc_addr {
             entry.enumerate_instance_layer_properties().unwrap();
             // Verify if the returned function pointer can be called in other tests.
             unsafe {
-                entry.get_instance_proc_addr(
-                    vk::Instance::null(),
-                    b"vkCreateInstance\0".as_ptr() as *const i8,
-                )
+                entry.get_instance_proc_addr(vk::Instance::null(), c"vkCreateInstance".as_ptr())
             }
             .expect("vkCreateInstance should be a valid function pointer.");
         }
@@ -92,10 +90,8 @@ mod get_instance_proc_addr {
                 let _ctx = TEST_GLOBAL.create_context();
                 let entry = create_entry::<TestLayer>();
                 assert!(unsafe {
-                    entry.get_instance_proc_addr(
-                        vk::Instance::null(),
-                        b"vkDestroyInstance\0".as_ptr() as *const i8,
-                    )
+                    entry
+                        .get_instance_proc_addr(vk::Instance::null(), c"vkDestroyInstance".as_ptr())
                 }
                 .is_none());
             }
@@ -116,7 +112,7 @@ mod get_instance_proc_addr {
                 assert!(unsafe {
                     entry.get_instance_proc_addr(
                         vk::Instance::null(),
-                        b"vkGetPhysicalDeviceSparseImageFormatProperties2\0".as_ptr() as *const i8,
+                        c"vkGetPhysicalDeviceSparseImageFormatProperties2".as_ptr(),
                     )
                 }
                 .is_none());
@@ -141,7 +137,7 @@ mod get_instance_proc_addr {
                 assert!(unsafe {
                     entry.get_instance_proc_addr(
                         vk::Instance::null(),
-                        b"vkDestroySwapchainKHR\0".as_ptr() as *const i8,
+                        c"vkDestroySwapchainKHR".as_ptr(),
                     )
                 }
                 .is_none());
@@ -168,7 +164,7 @@ mod get_instance_proc_addr {
                 assert!(unsafe {
                     entry.get_instance_proc_addr(
                         vk::Instance::null(),
-                        b"vkDestroySwapchainKHR\0".as_ptr() as *const i8,
+                        c"vkDestroySwapchainKHR".as_ptr(),
                     )
                 }
                 .is_none());
@@ -188,7 +184,7 @@ mod get_instance_proc_addr {
             let InstanceContext {
                 entry, instance, ..
             } = ctx.as_ref();
-            let get_instance_proc_addr_name = b"vkGetInstanceProcAddr\0".as_ptr() as *const i8;
+            let get_instance_proc_addr_name = c"vkGetInstanceProcAddr".as_ptr();
             let get_instance_proc_addr = unsafe {
                 entry.get_instance_proc_addr(instance.handle(), get_instance_proc_addr_name)
             }
@@ -210,10 +206,7 @@ mod get_instance_proc_addr {
                 entry, instance, ..
             } = ctx.as_ref();
             let destroy_instance = unsafe {
-                entry.get_instance_proc_addr(
-                    instance.handle(),
-                    b"vkDestroyInstance\0".as_ptr() as *const i8,
-                )
+                entry.get_instance_proc_addr(instance.handle(), c"vkDestroyInstance".as_ptr())
             };
             assert!(destroy_instance.is_some());
             // vkDestroyInstance will be called in the destructor of the instance context.
@@ -235,7 +228,7 @@ mod get_instance_proc_addr {
                 icd_entry,
                 ..
             } = ctx.as_ref();
-            let destroy_surface_name = b"vkDestroySurfaceKHR\0".as_ptr() as *const i8;
+            let destroy_surface_name = c"vkDestroySurfaceKHR".as_ptr();
             let destroy_surface =
                 unsafe { entry.get_instance_proc_addr(instance.handle(), destroy_surface_name) }
                     .map(|fp| fp as usize);
@@ -265,7 +258,7 @@ mod get_instance_proc_addr {
                 let fp = unsafe {
                     entry.get_instance_proc_addr(
                         instance.handle(),
-                        b"vkGetPhysicalDeviceSparseImageFormatProperties2\0".as_ptr() as *const i8,
+                        c"vkGetPhysicalDeviceSparseImageFormatProperties2".as_ptr(),
                     )
                 };
                 assert!(fp.is_some());
@@ -291,10 +284,7 @@ mod get_instance_proc_addr {
                     entry, instance, ..
                 } = ctx.as_ref();
                 let destroy_surface = unsafe {
-                    entry.get_instance_proc_addr(
-                        instance.handle(),
-                        b"vkDestroySurfaceKHR\0".as_ptr() as *const i8,
-                    )
+                    entry.get_instance_proc_addr(instance.handle(), c"vkDestroySurfaceKHR".as_ptr())
                 };
                 let destroy_surface: vk::PFN_vkDestroySurfaceKHR =
                     unsafe { std::mem::transmute(destroy_surface.unwrap()) };
@@ -324,16 +314,13 @@ mod get_instance_proc_addr {
                 entry, instance, ..
             } = ctx.as_ref();
             let fp = unsafe {
-                entry.get_instance_proc_addr(
-                    instance.handle(),
-                    b"vkDestroySurfaceKHR\0".as_ptr() as *const i8,
-                )
+                entry.get_instance_proc_addr(instance.handle(), c"vkDestroySurfaceKHR".as_ptr())
             };
             assert!(fp.is_none());
             let fp = unsafe {
                 entry.get_instance_proc_addr(
                     instance.handle(),
-                    b"vkGetPhysicalDeviceSparseImageFormatProperties2\0".as_ptr() as *const i8,
+                    c"vkGetPhysicalDeviceSparseImageFormatProperties2".as_ptr(),
                 )
             };
             assert!(fp.is_none());
@@ -358,16 +345,13 @@ mod get_instance_proc_addr {
                 entry, instance, ..
             } = ctx.as_ref();
             let fp = unsafe {
-                entry.get_instance_proc_addr(
-                    instance.handle(),
-                    b"vkDestroySurfaceKHR\0".as_ptr() as *const i8,
-                )
+                entry.get_instance_proc_addr(instance.handle(), c"vkDestroySurfaceKHR".as_ptr())
             };
             assert!(fp.is_none());
             let fp = unsafe {
                 entry.get_instance_proc_addr(
                     instance.handle(),
-                    b"vkGetPhysicalDeviceSparseImageFormatProperties2\0".as_ptr() as *const i8,
+                    c"vkGetPhysicalDeviceSparseImageFormatProperties2".as_ptr(),
                 )
             };
             assert!(fp.is_none());
@@ -439,7 +423,7 @@ mod get_instance_proc_addr {
                 let destroy_swapchain = unsafe {
                     entry.get_instance_proc_addr(
                         instance.handle(),
-                        b"vkDestroySwapchainKHR\0".as_ptr() as *const i8,
+                        c"vkDestroySwapchainKHR".as_ptr(),
                     )
                 };
                 assert!(destroy_swapchain.is_some());
@@ -465,7 +449,7 @@ mod get_instance_proc_addr {
                 let destroy_swapchain = unsafe {
                     entry.get_instance_proc_addr(
                         instance.handle(),
-                        b"vkDestroySwapchainKHR\0".as_ptr() as *const i8,
+                        c"vkDestroySwapchainKHR".as_ptr(),
                     )
                 };
                 assert!(destroy_swapchain.is_some());
@@ -500,7 +484,7 @@ mod get_instance_proc_addr {
                 let destroy_swapchain = unsafe {
                     icd_entry.get_instance_proc_addr(
                         instance.handle(),
-                        b"vkDestroySwapchainKHR\0".as_ptr() as *const i8,
+                        c"vkDestroySwapchainKHR".as_ptr(),
                     )
                 };
                 assert!(destroy_swapchain.is_none());
@@ -509,7 +493,7 @@ mod get_instance_proc_addr {
                 let destroy_swapchain = unsafe {
                     entry.get_instance_proc_addr(
                         instance.handle(),
-                        b"vkDestroySwapchainKHR\0".as_ptr() as *const i8,
+                        c"vkDestroySwapchainKHR".as_ptr(),
                     )
                 };
                 assert!(destroy_swapchain.is_none());
@@ -563,10 +547,8 @@ mod get_instance_proc_addr {
                     .once()
                     .return_const(LayerResult::Handled(()));
                 let destroy_swapchain_khr = unsafe {
-                    instance.get_device_proc_addr(
-                        device.handle(),
-                        b"vkDestroySwapchainKHR\0".as_ptr() as *const i8,
-                    )
+                    instance
+                        .get_device_proc_addr(device.handle(), c"vkDestroySwapchainKHR".as_ptr())
                 }
                 .unwrap();
                 let destroy_swapchain_khr: vk::PFN_vkDestroySwapchainKHR =
@@ -631,10 +613,7 @@ mod get_instance_proc_addr {
             unsafe { InstanceData::from_handle(instance.handle()) }
                 .set_available_device_extensions(&[]);
             let destroy_swapchain = unsafe {
-                entry.get_instance_proc_addr(
-                    instance.handle(),
-                    b"vkDestroySwapchainKHR\0".as_ptr() as *const i8,
-                )
+                entry.get_instance_proc_addr(instance.handle(), c"vkDestroySwapchainKHR".as_ptr())
             };
             assert!(destroy_swapchain.is_none());
         }
@@ -657,16 +636,13 @@ mod get_instance_proc_addr {
 
             let entry = create_entry::<TestLayer>();
             let expected = unsafe {
-                entry.get_instance_proc_addr(
-                    vk::Instance::null(),
-                    b"vkCreateInstance\0".as_ptr() as *const i8,
-                )
+                entry.get_instance_proc_addr(vk::Instance::null(), c"vkCreateInstance".as_ptr())
             }
             .expect("vkCreateInstance should be a valid function pointer with NULL instance.");
             let actual = unsafe {
                 entry.get_instance_proc_addr(
                     vk::Instance::from_raw(u64::MAX),
-                    b"vkCreateInstance\0".as_ptr() as *const i8,
+                    c"vkCreateInstance".as_ptr(),
                 )
             }
             .expect(
@@ -724,9 +700,20 @@ mod create_destroy_instance {
         ) -> bool {
             match (lhs, rhs) {
                 (Some(lhs), Some(rhs)) => {
-                    lhs.pfnNextGetInstanceProcAddr == rhs.pfnNextGetInstanceProcAddr
-                        && lhs.pfnNextGetPhysicalDeviceProcAddr
-                            == rhs.pfnNextGetPhysicalDeviceProcAddr
+                    if !std::ptr::fn_addr_eq(
+                        lhs.pfnNextGetInstanceProcAddr,
+                        rhs.pfnNextGetInstanceProcAddr,
+                    ) {
+                        return false;
+                    }
+                    match (
+                        lhs.pfnNextGetPhysicalDeviceProcAddr,
+                        rhs.pfnNextGetPhysicalDeviceProcAddr,
+                    ) {
+                        (Some(lhs), Some(rhs)) => std::ptr::fn_addr_eq(lhs, rhs),
+                        (None, None) => true,
+                        _ => false,
+                    }
                 }
                 (None, None) => true,
                 _ => false,
@@ -822,10 +809,7 @@ mod create_destroy_instance {
             entry, instance, ..
         } = ctx.as_ref();
         let destroy_instance = unsafe {
-            entry.get_instance_proc_addr(
-                instance.handle(),
-                b"vkDestroyInstance\0".as_ptr() as *const i8,
-            )
+            entry.get_instance_proc_addr(instance.handle(), c"vkDestroyInstance".as_ptr())
         };
         assert!(destroy_instance.is_some());
     }
@@ -972,7 +956,7 @@ mod get_device_proc_addr {
         let get_physical_device_sparse_image_format_properties2 = unsafe {
             (instance_context.instance.fp_v1_0().get_device_proc_addr)(
                 device.handle(),
-                b"vkGetPhysicalDeviceSparseImageFormatProperties2\0".as_ptr() as *const i8,
+                c"vkGetPhysicalDeviceSparseImageFormatProperties2".as_ptr(),
             )
         };
         assert!(get_physical_device_sparse_image_format_properties2.is_none());
@@ -1056,7 +1040,7 @@ mod get_device_proc_addr {
         let destroy_sampler_ycbcr_conversion = unsafe {
             (instance_context.instance.fp_v1_0().get_device_proc_addr)(
                 device.handle(),
-                b"vkDestroySamplerYcbcrConversion\0".as_ptr() as *const i8,
+                c"vkDestroySamplerYcbcrConversion".as_ptr(),
             )
         };
         let destroy_sampler_ycbcr_conversion: vk::PFN_vkDestroySamplerYcbcrConversion =
@@ -1111,7 +1095,7 @@ mod get_device_proc_addr {
         let destroy_sampler_ycbcr_conversion = unsafe {
             (instance_context.instance.fp_v1_0().get_device_proc_addr)(
                 device.handle(),
-                b"vkDestroySamplerYcbcrConversion\0".as_ptr() as *const i8,
+                c"vkDestroySamplerYcbcrConversion".as_ptr(),
             )
         };
         assert!(destroy_sampler_ycbcr_conversion.is_none());
@@ -1538,7 +1522,7 @@ mod enumerate_device_extensions {
         let _ = unsafe {
             (instance.fp_v1_0().enumerate_device_extension_properties)(
                 vk::PhysicalDevice::null(),
-                b"VK_LAYER_VENDOR_test_112434\0".as_ptr() as *const _,
+                c"VK_LAYER_VENDOR_test_112434".as_ptr() as *const _,
                 &mut property_count,
                 null_mut(),
             )
@@ -1804,8 +1788,13 @@ mod create_destroy_device {
         ) -> bool {
             match (lhs, rhs) {
                 (Some(lhs), Some(rhs)) => {
-                    lhs.pfnNextGetInstanceProcAddr == rhs.pfnNextGetInstanceProcAddr
-                        && lhs.pfnNextGetDeviceProcAddr == rhs.pfnNextGetDeviceProcAddr
+                    std::ptr::fn_addr_eq(
+                        lhs.pfnNextGetInstanceProcAddr,
+                        rhs.pfnNextGetInstanceProcAddr,
+                    ) && std::ptr::fn_addr_eq(
+                        lhs.pfnNextGetDeviceProcAddr,
+                        rhs.pfnNextGetDeviceProcAddr,
+                    )
                 }
                 (None, None) => true,
                 _ => false,
@@ -2102,7 +2091,7 @@ fn global_should_be_trivially_destructible() {
     #[derive(Default)]
     struct MyLayer(StubGlobalHooks);
 
-    static mut GLOBAL: Option<Global<MyLayer>> = None;
+    static GLOBAL: LazyLock<Mutex<Option<Global<MyLayer>>>> = LazyLock::new(Default::default);
 
     impl Layer for MyLayer {
         type GlobalHooksInfo = StubGlobalHooks;
@@ -2111,8 +2100,8 @@ fn global_should_be_trivially_destructible() {
         type InstanceInfoContainer = StubInstanceInfo;
         type DeviceInfoContainer = StubDeviceInfo;
 
-        fn global_instance() -> &'static Global<Self> {
-            unsafe { GLOBAL.as_ref() }.unwrap()
+        fn global_instance() -> impl std::ops::Deref<Target = Global<Self>> + 'static {
+            MutexGuard::map(GLOBAL.lock(), |global| global.as_mut().unwrap())
         }
 
         fn manifest() -> LayerManifest {
@@ -2152,17 +2141,17 @@ fn global_should_be_trivially_destructible() {
     }
     {
         let global = Global::<MyLayer>::default();
-        assert!(unsafe { GLOBAL.replace(global) }.is_none());
+        assert!(GLOBAL.lock().replace(global).is_none());
 
         let instance_ctx = vk::InstanceCreateInfo::builder().default_instance::<(MyLayer,)>();
         drop(instance_ctx);
 
-        let global = unsafe { GLOBAL.take() };
+        let global = GLOBAL.lock().take();
         std::mem::forget(global);
     }
     {
         let global = Global::<MyLayer>::default();
-        assert!(unsafe { GLOBAL.replace(global) }.is_none());
+        assert!(GLOBAL.lock().replace(global).is_none());
 
         let device_ctx = vk::InstanceCreateInfo::builder()
             .default_instance::<(MyLayer,)>()
@@ -2170,7 +2159,7 @@ fn global_should_be_trivially_destructible() {
             .unwrap();
         drop(device_ctx);
 
-        let global = unsafe { GLOBAL.take() };
+        let global = GLOBAL.lock().take();
         std::mem::forget(global);
     }
 }

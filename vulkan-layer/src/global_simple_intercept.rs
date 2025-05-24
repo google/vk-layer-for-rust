@@ -117,8 +117,10 @@ fn get_instance_proc_addr_loader(
         // Safe because the VkInstance is valid, and a valid C string pointer is passed to the
         // `p_name` parameter.
         let fp = unsafe { get_instance_proc_addr(instance.handle(), name.as_ptr()) };
-        // It's safe to cast a function pointer to void*.
-        unsafe { std::mem::transmute(fp) }
+        if let Some(fp) = fp {
+            return fp as *const _;
+        }
+        std::ptr::null()
     }
 }
 
@@ -130,8 +132,10 @@ fn get_device_proc_addr_loader(
         // Safe because the VkDevice is valid, and a valid C string pointer is passed to the
         // `p_name` parameter.
         let fp = unsafe { get_device_proc_addr(device.handle(), name.as_ptr()) };
-        // It's safe to cast a function pointer to void*.
-        unsafe { std::mem::transmute(fp) }
+        match fp {
+            Some(fp) => fp as *const _,
+            None => std::ptr::null(),
+        }
     }
 }
 

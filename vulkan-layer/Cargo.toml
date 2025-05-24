@@ -36,6 +36,7 @@ unstable = []
 
 [dev-dependencies]
 env_logger = "0.11.3"
+parking_lot = "0.12.3"
 vulkan-layer = { path = ".", default-features = false, features = ["_test"] }
 
 [build-dependencies]

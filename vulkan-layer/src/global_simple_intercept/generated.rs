@@ -1,4 +1,4 @@
-// Copyright 2024 Google LLC
+// Copyright 2025 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21576,7 +21576,7 @@ impl<T: Layer> Global<T> {
             .borrow()
             .hooks()
             .cmd_set_sample_mask_ext(command_buffer, samples, unsafe {
-                slice_from_raw_parts(p_sample_mask, (samples.as_raw() + 31) / 32)
+                slice_from_raw_parts(p_sample_mask, samples.as_raw().div_ceil(32))
             });
         match layer_result {
             LayerResult::Handled(res) => res,

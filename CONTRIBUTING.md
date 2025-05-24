@@ -96,7 +96,7 @@ Presubmit will fail if the generated files are not sync with the source.
    [link](https://rust-lang.github.io/rust-bindgen/requirements.html), because `bindgen` is used in
    the codegen process.
 
-1. Make sure python newer than 3.9 is installed.
+1. Make sure python newer than 3.13 is installed.
 
 1. Run the following command:
 
@@ -190,7 +190,7 @@ MIRIFLAGS="-Zmiri-tree-borrows" cargo +nightly miri nextest run --all-targets --
 
 ### Document
 
-All public intefaces must have documents. Otherwise the presubmit will fail. After a new PR is
+All public interfaces must have documents. Otherwise the presubmit will fail. After a new PR is
 merged, the document will be automatically regenerated and published. Use the badge in
 [`README.md`](README.md) to browse the document. To generate the document locally, run
 

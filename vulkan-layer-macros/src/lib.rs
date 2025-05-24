@@ -247,9 +247,9 @@ pub fn auto_deviceinfo_impl(_: TokenStream, item: TokenStream) -> TokenStream {
 /// #     type InstanceInfoContainer = StubInstanceInfo;
 /// #     type DeviceInfoContainer = StubDeviceInfo;
 /// #     
-/// #     fn global_instance() -> &'static Global<Self> {
+/// #     fn global_instance() -> impl std::ops::Deref<Target = Global<Self>> + 'static {
 /// #         static GLOBAL: Lazy<Global<MyLayer>> = Lazy::new(Default::default);
-/// #         &GLOBAL
+/// #         &*GLOBAL
 /// #     }
 /// #
 /// #     fn manifest() -> LayerManifest {

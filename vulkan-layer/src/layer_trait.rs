@@ -217,9 +217,9 @@ pub trait DeviceInfo: Send + Sync {
     /// #     type InstanceInfoContainer = StubInstanceInfo;
     ///     type DeviceInfoContainer = MyLayerDeviceInfo;
     /// #
-    /// #     fn global_instance() -> &'static Global<Self> {
+    /// #     fn global_instance() -> impl std::ops::Deref<Target = Global<Self>> + 'static {
     /// #         static GLOBAL: Lazy<Global<MyLayer>> = Lazy::new(Default::default);
-    /// #         &GLOBAL
+    /// #         &*GLOBAL
     /// #     }
     /// #
     /// #     fn manifest() -> LayerManifest {
@@ -472,9 +472,9 @@ pub trait InstanceInfo: Send + Sync {
     ///     type InstanceInfoContainer = MyLayerInstanceInfo;
     /// #     type DeviceInfoContainer = StubDeviceInfo;
     /// #
-    /// #     fn global_instance() -> &'static Global<Self> {
+    /// #     fn global_instance() -> impl std::ops::Deref<Target = Global<Self>> + 'static {
     /// #         static GLOBAL: Lazy<Global<MyLayer>> = Lazy::new(Default::default);
-    /// #         &GLOBAL
+    /// #         &*GLOBAL
     /// #     }
     /// #
     /// #     fn manifest() -> LayerManifest {
@@ -1001,7 +1001,7 @@ pub struct LayerManifest {
 ///     type InstanceInfoContainer = StubInstanceInfo;
 ///     type DeviceInfoContainer = StubDeviceInfo;
 ///
-///     fn global_instance() -> &'static Global<Self> {
+///     fn global_instance() -> impl std::ops::Deref<Target = Global<Self>> + 'static {
 ///         static GLOBAL: Lazy<Global<MyLayer>> = Lazy::new(Default::default);
 ///         &*GLOBAL
 ///     }
@@ -1067,7 +1067,7 @@ pub struct LayerManifest {
 ///     type InstanceInfoContainer = StubInstanceInfo;
 ///     type DeviceInfoContainer = StubDeviceInfo;
 ///
-///     fn global_instance() -> &'static Global<Self> {
+///     fn global_instance() -> impl std::ops::Deref<Target = Global<Self>> + 'static {
 ///         static GLOBAL: Lazy<Global<MyLayer>> = Lazy::new(Default::default);
 ///         &*GLOBAL
 ///     }
@@ -1180,9 +1180,9 @@ pub trait Layer: Sync + Default + 'static {
     /// #     type DeviceInfo = StubDeviceInfo;
     /// #     type DeviceInfoContainer = StubDeviceInfo;
     /// #
-    /// #     fn global_instance() -> &'static Global<Self> {
+    /// #     fn global_instance() -> impl std::ops::Deref<Target = Global<Self>> + 'static {
     /// #         static GLOBAL: Lazy<Global<MyLayer>> = Lazy::new(Default::default);
-    /// #         &GLOBAL
+    /// #         &*GLOBAL
     /// #     }
     /// #
     /// #     fn manifest() -> LayerManifest {
@@ -1246,9 +1246,9 @@ pub trait Layer: Sync + Default + 'static {
     /// #     type InstanceInfo = StubInstanceInfo;
     /// #     type InstanceInfoContainer = StubInstanceInfo;
     /// #
-    /// #     fn global_instance() -> &'static Global<Self> {
+    /// #     fn global_instance() -> impl std::ops::Deref<Target = Global<Self>> + 'static {
     /// #         static GLOBAL: Lazy<Global<MyLayer>> = Lazy::new(Default::default);
-    /// #         &GLOBAL
+    /// #         &*GLOBAL
     /// #     }
     /// #
     /// #     fn manifest() -> LayerManifest {
@@ -1312,7 +1312,7 @@ pub trait Layer: Sync + Default + 'static {
     /// struct MyLayer(StubGlobalHooks);
     ///
     /// impl Layer for MyLayer {
-    ///     fn global_instance() -> &'static Global<Self> {
+    ///     fn global_instance() -> impl std::ops::Deref<Target = Global<Self>> + 'static {
     ///         static GLOBAL: Lazy<Global<MyLayer>> = Lazy::new(Default::default);
     ///         &*GLOBAL
     ///     }
@@ -1358,7 +1358,7 @@ pub trait Layer: Sync + Default + 'static {
     /// #     }
     /// }
     /// ```
-    fn global_instance() -> &'static Global<Self>;
+    fn global_instance() -> impl std::ops::Deref<Target = Global<Self>> + 'static;
 
     /// Returns a reference of the underlying [`GlobalHooksInfo`] object.
     fn global_hooks_info(&self) -> &Self::GlobalHooksInfo;
@@ -1494,9 +1494,9 @@ pub trait Layer: Sync + Default + 'static {
     ///     type InstanceInfoContainer = MyLayerInstanceInfo;
     /// #     type DeviceInfoContainer = StubDeviceInfo;
     /// #
-    /// #     fn global_instance() -> &'static Global<Self> {
+    /// #     fn global_instance() -> impl std::ops::Deref<Target = Global<Self>> + 'static {
     /// #         static GLOBAL: Lazy<Global<MyLayer>> = Lazy::new(Default::default);
-    /// #         &GLOBAL
+    /// #         &*GLOBAL
     /// #     }
     /// #
     /// #     fn manifest() -> LayerManifest {
@@ -1645,9 +1645,9 @@ pub trait Layer: Sync + Default + 'static {
     /// #     type InstanceInfoContainer = StubInstanceInfo;
     ///     type DeviceInfoContainer = MyLayerDeviceInfo;
     /// #
-    /// #     fn global_instance() -> &'static Global<Self> {
+    /// #     fn global_instance() -> impl std::ops::Deref<Target = Global<Self>> + 'static {
     /// #         static GLOBAL: Lazy<Global<MyLayer>> = Lazy::new(Default::default);
-    /// #         &GLOBAL
+    /// #         &*GLOBAL
     /// #     }
     /// #
     /// #     fn manifest() -> LayerManifest {

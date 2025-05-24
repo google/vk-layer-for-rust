@@ -68,21 +68,20 @@ TODO
 - \[x\] Auto-generate the binding from
   [`vk_layer.h`](https://github.com/KhronosGroup/Vulkan-Headers/blob/9e61870ecbd32514113b467e0a0c46f60ed222c7/include/vulkan/vk_layer.h).
 - \[x\] Auto-generate the `Layer` trait and the interception code from `vk.xml`.
-- \[x\] Use an attribute macro to track which function is implemented in the `Layer` trait, and
-  don't inject all other functions for performance.
-- \[x\] Make global instance trivially destructible after all instances are destroyed, so the layer
-  is robust against the situation where the dynamic library is loaded and unloaded for several
-  times.
+- \[x\] Use an attribute macro to track which function is implemented in the `Layer` trait, and don't
+  inject all other functions for performance.
+- \[x\] Make global instance trivially destructible after all instances are destroyed, so the layer is
+  robust against the situation where the dynamic library is loaded and unloaded for several times.
 - \[x\] Use procedure macro to generate the export functions in `lib.rs` file for the layer user.
 - \[ \] Use the cargo-make workflow to generate the layer json files for examples.
-- \[ \] Support the latest layer interface version. Currently 2 is the latest version. e.g.
-  correctly handle the `vk_layerGetPhysicalDeviceProcAddr` case.
+- \[ \] Support the latest layer interface version. Currently 2 is the latest version. e.g. correctly
+  handle the `vk_layerGetPhysicalDeviceProcAddr` case.
 - \[ \] Allow intercepting
   [pre-instance functions](https://github.com/KhronosGroup/Vulkan-Loader/blob/0c63db1aeda6916690b863688fa6cdf2ac1f790b/docs/LoaderLayerInterface.md#pre-instance-functions).
 - \[ \] Add docstring to generated `layer_trait.rs` file.
 - \[ \] Testing
-  - \[ \] e2e test: the test boundary is the Vulkan layer ABI. The Vulkan loader and the mock ICD
-    will be used for testing. Write a `cdylib` crate named `tests`, with a layer that is allowed to
+  - \[ \] e2e test: the test boundary is the Vulkan layer ABI. The Vulkan loader and the mock ICD will
+    be used for testing. Write a `cdylib` crate named `tests`, with a layer that is allowed to
     customize the behavior through a function exported as a dynamic library symbol. We run different
     tests in different processes. For different tests, we customize the layer differently, and
     asserts either inside the customization point or after it returns, e.g. to test initialization
