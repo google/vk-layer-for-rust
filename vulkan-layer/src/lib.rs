@@ -76,7 +76,7 @@
 //!     type InstanceInfoContainer = StubInstanceInfo;
 //!     type DeviceInfoContainer = StubDeviceInfo;
 //!
-//!     fn global_instance() -> &'static Global<Self> {
+//!     fn global_instance() -> impl std::ops::Deref<Target = Global<Self>> + 'static {
 //!         static GLOBAL: Lazy<Global<MyLayer>> = Lazy::new(Default::default);
 //!         &*GLOBAL
 //!     }
@@ -195,7 +195,7 @@
 //!     type InstanceInfoContainer = StubInstanceInfo;
 //!     type DeviceInfoContainer = StubDeviceInfo;
 //!
-//!     fn global_instance() -> &'static Global<Self> {
+//!     fn global_instance() -> impl std::ops::Deref<Target = Global<Self>> + 'static {
 //!         static GLOBAL: Lazy<Global<MyLayer>> = Lazy::new(Default::default);
 //!         &*GLOBAL
 //!     }
@@ -256,7 +256,7 @@
 //! #     type InstanceInfoContainer = StubInstanceInfo;
 //! #     type DeviceInfoContainer = StubDeviceInfo;
 //! #
-//! #     fn global_instance() -> &'static Global<Self> {
+//! #     fn global_instance() -> impl std::ops::Deref<Target = Global<Self>> + 'static {
 //! #         static GLOBAL: Lazy<Global<MyLayer>> = Lazy::new(Default::default);
 //! #         &*GLOBAL
 //! #     }
@@ -567,7 +567,7 @@ pub struct Global<T: Layer> {
 }
 
 impl<T: Layer> Global<T> {
-    fn instance() -> &'static Self {
+    fn instance() -> impl std::ops::Deref<Target = Self> + 'static {
         T::global_instance()
     }
 
@@ -679,9 +679,8 @@ impl<T: Layer> Global<T> {
             layer_info.pfnNextGetInstanceProcAddr;
 
         let global = Self::instance();
-        let hooked = T::GlobalHooksInfo::hooked_commands()
-            .iter()
-            .any(|command| *command == LayerVulkanCommand::CreateInstance);
+        let hooked =
+            T::GlobalHooksInfo::hooked_commands().contains(&LayerVulkanCommand::CreateInstance);
         let layer_result = if hooked {
             global.layer_info.global_hooks().create_instance(
                 unsafe { create_info.as_ref() }.unwrap(),
@@ -698,12 +697,11 @@ impl<T: Layer> Global<T> {
             LayerResult::Handled(Err(e)) => return e,
             LayerResult::Unhandled => {
                 let get_proc_addr = |name: &CStr| -> *const c_void {
-                    unsafe {
-                        std::mem::transmute(get_instance_proc_addr(
-                            vk::Instance::null(),
-                            name.as_ptr(),
-                        ))
+                    let fp = unsafe { get_instance_proc_addr(vk::Instance::null(), name.as_ptr()) };
+                    if let Some(fp) = fp {
+                        return fp as *const _;
                     }
+                    std::ptr::null()
                 };
                 let entry = vk::EntryFnV1_0::load(get_proc_addr);
 
@@ -1583,8 +1581,7 @@ impl<T: Layer> Default for Global<T> {
     fn default() -> Self {
         let layer_info: T = Default::default();
         let get_instance_addr_proc_hooked = T::GlobalHooksInfo::hooked_commands()
-            .iter()
-            .any(|command| *command == LayerVulkanCommand::GetInstanceProcAddr);
+            .contains(&LayerVulkanCommand::GetInstanceProcAddr);
         Self {
             instance_map: Default::default(),
             physical_device_map: Default::default(),
@@ -1639,8 +1636,8 @@ mod tests {
             type InstanceInfoContainer = StubInstanceInfo;
             type DeviceInfoContainer = StubDeviceInfo;
 
-            fn global_instance() -> &'static Global<Self> {
-                &GLOBAL
+            fn global_instance() -> impl std::ops::Deref<Target = Global<Self>> + 'static {
+                &*GLOBAL
             }
 
             fn manifest() -> LayerManifest {

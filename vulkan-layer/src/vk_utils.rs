@@ -37,7 +37,7 @@ use crate::global_simple_intercept::{ApiVersion, Extension, Feature};
 /// let features2 = vk::PhysicalDeviceFeatures2::builder()
 ///     .push_next(&mut timeline_semaphore_feature)
 ///     .push_next(&mut ycbcr_feature);
-/// let out_chain: *mut vk::BaseOutStructure = unsafe { std::mem::transmute(features2.p_next) };
+/// let out_chain = features2.p_next.cast::<vk::BaseOutStructure>();
 /// let mut out_chain: VulkanBaseOutStructChain = unsafe { out_chain.as_mut() }.into();
 /// // `push_next` prepends the element to the pNext chain.
 /// assert_eq!(
@@ -87,8 +87,7 @@ impl<'a> Iterator for VulkanBaseOutStructChain<'a> {
 /// let image_create_info = vk::ImageCreateInfo::builder()
 ///     .push_next(&mut external_memory_image_info)
 ///     .push_next(&mut image_format_list_info);
-/// let in_chain: *const vk::BaseInStructure =
-///     unsafe { std::mem::transmute(image_create_info.p_next) };
+/// let in_chain = image_create_info.p_next.cast::<vk::BaseInStructure>();
 /// let mut in_chain: VulkanBaseInStructChain = unsafe { in_chain.as_ref() }.into();
 /// // `push_next` prepends the element to the pNext chain.
 /// assert_eq!(
@@ -329,7 +328,7 @@ where
     <U as TryInto<usize>>::Error: Debug,
 {
     let count = unsafe { p_count.as_mut() };
-    let mut p_out = match NonNull::new(p_out) {
+    let p_out = match NonNull::new(p_out) {
         Some(p_out) => p_out,
         None => {
             *count = out.len().try_into().unwrap();
@@ -344,7 +343,7 @@ where
         }
     }
     let out_slice =
-        unsafe { std::slice::from_raw_parts_mut(p_out.as_mut(), (*count).try_into().unwrap()) };
+        unsafe { std::slice::from_raw_parts_mut(p_out.as_ptr(), (*count).try_into().unwrap()) };
     if out_slice.len() < out.len() {
         *count = out_slice.len().try_into().unwrap();
         out_slice.clone_from_slice(&out[..out_slice.len()]);
@@ -388,8 +387,7 @@ mod tests {
         let image_create_info = vk::ImageCreateInfo::builder()
             .push_next(&mut external_memory_image_info)
             .push_next(&mut image_format_list_info);
-        let in_chain: *const vk::BaseInStructure =
-            unsafe { std::mem::transmute(image_create_info.p_next) };
+        let in_chain = image_create_info.p_next as *const vk::BaseInStructure;
         let mut in_chain: VulkanBaseInStructChain = unsafe { in_chain.as_ref() }.into();
         // `push_next` prepends the element to the pNext chain.
         assert_eq!(
@@ -410,7 +408,7 @@ mod tests {
         let features2 = vk::PhysicalDeviceFeatures2::builder()
             .push_next(&mut timeline_semaphore_feature)
             .push_next(&mut ycbcr_feature);
-        let out_chain: *mut vk::BaseOutStructure = unsafe { std::mem::transmute(features2.p_next) };
+        let out_chain = features2.p_next.cast::<vk::BaseOutStructure>();
         let mut out_chain: VulkanBaseOutStructChain = unsafe { out_chain.as_mut() }.into();
         // `push_next` prepends the element to the pNext chain.
         assert_eq!(

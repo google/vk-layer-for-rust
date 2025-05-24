@@ -51,7 +51,7 @@ where
     type InstanceInfoContainer = U;
     type DeviceInfoContainer = V;
 
-    fn global_instance() -> &'static Global<Self> {
+    fn global_instance() -> impl std::ops::Deref<Target = Global<Self>> + 'static {
         MockGlobalInstanceProvider::<Self>::instance()
     }
 

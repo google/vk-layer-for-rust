@@ -1075,7 +1075,7 @@ class GeneralSliceParamTransformer(ParamTransformer):
                 vk_xml_param.len_var == "(samples + 31) / 32"
                 and vk_xml_command.name == "vkCmdSetSampleMaskEXT"
             ):
-                return "(samples.as_raw() + 31) / 32"
+                return "samples.as_raw().div_ceil(32)"
 
             if vk_xml_param.type.is_optional and not vk_xml_param.type.points_to.is_const:
                 # handle mutable optional slice
@@ -1108,7 +1108,10 @@ class GeneralSliceParamTransformer(ParamTransformer):
                 field_name = RustParam.param_name_from_vk_xml_param_for_ffi(len_var_components[1])
                 return f"{len_expr}.unwrap().{field_name}"
 
-            assert vk_xml_param.len_var in params_by_name
+            assert vk_xml_param.len_var in params_by_name, (
+                f"The length variable of {vk_xml_param.name} {vk_xml_param.len_var} isn't a "
+                f"parameter of {vk_xml_command.name}"
+            )
             len_var_xml_param = params_by_name[vk_xml_param.len_var]
             rust_ffi_len_var_name = RustParam.param_name_from_vk_xml_param_for_ffi(
                 len_var_xml_param.name
@@ -1502,7 +1505,7 @@ class TestSimpleInterceptGenerator(unittest.TestCase):
                 param_transformer.transform(
                     rust_method.parameters[2], vk_xml_command.parameters[2], vk_xml_command
                 ),
-                "unsafe { slice_from_raw_parts(p_sample_mask, (samples.as_raw() + 31) / 32) }",
+                "unsafe { slice_from_raw_parts(p_sample_mask, samples.as_raw().div_ceil(32)) }",
             )
 
     def test_no_length_not_optional_mutable_ptr_param_transformer(self):

@@ -338,7 +338,7 @@ impl<T: TestLayerTag> Layer for TestLayer<T> {
     type InstanceInfoContainer = ArcDel<Self::InstanceInfo>;
     type DeviceInfoContainer = ArcDel<Self::DeviceInfo>;
 
-    fn global_instance() -> &'static Global<Self> {
+    fn global_instance() -> impl std::ops::Deref<Target = Global<Self>> + 'static {
         MockTestLayer::<T>::instance()
     }
 
