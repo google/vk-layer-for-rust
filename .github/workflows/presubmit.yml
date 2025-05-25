@@ -113,7 +113,7 @@ jobs:
           lcov-base: ${{ format('target/base-coverage/coverage-{0}/lcov.info', runner.os) }}
           filter-changed-files: true
           title: ${{ format('Test coverage for {0}', runner.os) }}
-          post-to: ${{ github.event_name == 'push' && 'comment' || 'job-summary' }}
+          post-to: job-summary
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ format('coverage-{0}', runner.os) }}
