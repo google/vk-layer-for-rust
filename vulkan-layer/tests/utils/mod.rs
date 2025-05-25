@@ -72,16 +72,34 @@ impl From<LayerVulkanCommand> for VulkanCommandName {
 trait ToVulkanHandle: Sized {
     type Handle: vk::Handle;
     fn into_vulkan_handle(self: Arc<Self>) -> Self::Handle {
-        Self::Handle::from_raw((Arc::into_raw(self) as usize).try_into().unwrap())
+        let vulkan_obj_ptr = Arc::into_raw(self);
+        assert_eq!(
+            std::mem::size_of::<Self::Handle>(),
+            std::mem::size_of_val(&vulkan_obj_ptr)
+        );
+        // We use transmute instead of Handle::from_raw here to avoid integer to pointer cast, and
+        // allow the miri tests with tree borrows to work with this test. See
+        // https://github.com/ash-rs/ash/issues/996 for details.
+        unsafe { std::mem::transmute_copy(&vulkan_obj_ptr) }
     }
 
     #[deny(unsafe_op_in_unsafe_fn)]
     unsafe fn destroy(handle: Self::Handle) {
-        let raw_handle: usize = handle.as_raw().try_into().unwrap();
-        let ptr = raw_handle as *const Self;
+        // We use transmute instead of Handle::as_raw here to avoid integer to pointer cast, and
+        // allow the miri tests with tree borrows to work with this test. See
+        // https://github.com/ash-rs/ash/issues/996 for details.
+        assert_eq!(
+            std::mem::size_of::<Self::Handle>(),
+            std::mem::size_of::<*const Self>()
+        );
+        let ptr: *const Self = unsafe { std::mem::transmute_copy(&handle) };
         let last_object = unsafe { Arc::from_raw(ptr) };
         let last_object = Arc::into_inner(last_object).unwrap_or_else(|| {
-            panic!("Object {:?} {:#20x} leaks.", Self::Handle::TYPE, raw_handle)
+            panic!(
+                "Object {:?} {:#20x} leaks.",
+                Self::Handle::TYPE,
+                handle.as_raw()
+            )
         });
         drop(last_object)
     }
@@ -94,8 +112,11 @@ pub trait FromVulkanHandle<T: vk::Handle>: Sized {
     /// The raw Vulkan handle must be created from the Self type.
     #[deny(unsafe_op_in_unsafe_fn)]
     unsafe fn from_handle(handle: T) -> Arc<Self> {
-        let raw_handle: usize = handle.as_raw().try_into().unwrap();
-        let ptr = raw_handle as *const Self;
+        // We use transmute instead of Handle::as_raw here to avoid integer to pointer cast, and
+        // allow the miri tests with tree borrows to work with this test. See
+        // https://github.com/ash-rs/ash/issues/996 for details.
+        assert_eq!(std::mem::size_of::<T>(), std::mem::size_of::<*const Self>());
+        let ptr: *const Self = unsafe { std::mem::transmute_copy(&handle) };
         unsafe {
             Arc::increment_strong_count(ptr);
             Arc::from_raw(ptr)

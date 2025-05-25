@@ -14,7 +14,7 @@
 
 use std::ffi::{c_char, CStr, CString};
 
-use ash::vk::{self, Handle};
+use ash::vk::{self};
 
 use mockall::automock;
 use vulkan_layer_macros::declare_introspection_queries;
@@ -118,7 +118,11 @@ fn test_declare_introspection_queries_should_just_forward_to_global() {
         );
     }
     {
-        let physical_device = vk::PhysicalDevice::from_raw(42);
+        // We use transmute instead of Handle::from_raw here to avoid integer to pointer cast, and
+        // allow the miri tests with tree borrows to work with this test. See
+        // https://github.com/ash-rs/ash/issues/996 for details.
+        let physical_device =
+            unsafe { std::mem::transmute::<*const u8, vk::PhysicalDevice>(std::ptr::dangling()) };
         const COUNT: usize = 3;
         let mut count = COUNT as u32;
         let mut layer_properties: [vk::LayerProperties; COUNT] = Default::default();
@@ -154,7 +158,11 @@ fn test_declare_introspection_queries_should_just_forward_to_global() {
         );
     }
     {
-        let instance = vk::Instance::from_raw(553);
+        // We use transmute instead of Handle::from_raw here to avoid integer to pointer cast, and
+        // allow the miri tests with tree borrows to work with this test. See
+        // https://github.com/ash-rs/ash/issues/996 for details.
+        let instance =
+            unsafe { std::mem::transmute::<*const u8, vk::Instance>(std::ptr::dangling()) };
         let name = CString::new("vkCreateInstance").unwrap();
         extern "system" fn fake_create_instance(
             _: *const vk::InstanceCreateInfo,
@@ -185,7 +193,10 @@ fn test_declare_introspection_queries_should_just_forward_to_global() {
         );
     }
     {
-        let device = vk::Device::from_raw(473);
+        // We use transmute instead of Handle::from_raw here to avoid integer to pointer cast, and
+        // allow the miri tests with tree borrows to work with this test. See
+        // https://github.com/ash-rs/ash/issues/996 for details.
+        let device = unsafe { std::mem::transmute::<*const u8, vk::Device>(std::ptr::dangling()) };
         let name = CString::new("vkAllocateMemory").unwrap();
         extern "system" fn fake_allocate_memory(
             _: vk::Device,

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use ash::vk::{self, Handle};
+use ash::vk::{self};
 use mockall::predicate::{always, eq};
 use once_cell::sync::Lazy;
 use parking_lot::{Mutex, MutexGuard};
@@ -176,7 +176,7 @@ mod get_instance_proc_addr {
         use super::*;
 
         #[test]
-        #[cfg_attr(miri, ignore)]
+        #[cfg_attr(miri, ignore = "https://github.com/google/vk-layer-for-rust/issues/49")]
         fn test_should_return_fp_for_get_instance_proc_addr() {
             static TEST_GLOBAL: TestGlobal = TestGlobal::builder().build();
             let _ctx = TEST_GLOBAL.create_context();
@@ -629,6 +629,7 @@ mod get_instance_proc_addr {
         use super::*;
 
         #[test]
+        #[cfg_attr(miri, ignore = "https://github.com/google/vk-layer-for-rust/issues/49")]
         fn test_query_global_commands_should_still_succeed() {
             // See https://github.com/KhronosGroup/Vulkan-Loader/issues/1537.
             static TEST_GLOBAL: TestGlobal = TestGlobal::builder().build();
@@ -641,7 +642,10 @@ mod get_instance_proc_addr {
             .expect("vkCreateInstance should be a valid function pointer with NULL instance.");
             let actual = unsafe {
                 entry.get_instance_proc_addr(
-                    vk::Instance::from_raw(u64::MAX),
+                    // We use transmute instead of Handle::from_raw here to avoid integer to
+                    // pointer cast, and allow the miri tests with tree borrows
+                    // to work with this test. See https://github.com/ash-rs/ash/issues/996 for details.
+                    std::mem::transmute::<*mut u8, vk::Instance>(std::ptr::dangling_mut::<u8>()),
                     c"vkCreateInstance".as_ptr(),
                 )
             }
@@ -668,7 +672,7 @@ mod get_instance_proc_addr {
 mod create_destroy_instance {
     use super::*;
     #[test]
-    #[cfg_attr(miri, ignore)]
+    #[cfg_attr(miri, ignore = "https://github.com/google/vk-layer-for-rust/issues/49")]
     fn test_should_move_layer_instance_link_forward() {
         static TEST_GLOBAL0: TestGlobal<Tag<0>> = TestGlobal::builder()
             .set_layer_mock_builder(|| {
@@ -1752,7 +1756,7 @@ mod create_destroy_device {
     }
 
     #[test]
-    #[cfg_attr(miri, ignore)]
+    #[cfg_attr(miri, ignore = "https://github.com/google/vk-layer-for-rust/issues/49")]
     fn test_should_move_layer_device_link_forward() {
         static TEST_GLOBAL0: TestGlobal<Tag<0>> = TestGlobal::builder()
             .set_layer_mock_builder(|| {
