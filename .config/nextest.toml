@@ -22,6 +22,3 @@ failure-output = "immediate-final"
 
 [profile.default-miri]
 test-threads = "num-cpus"
-# FIXME(https://github.com/google/vk-layer-for-rust/issues/47): Tests that use
-# ash::vk::Handle::from_raw can't run miri tests with tree borrows.
-default-filter = "!binary(integration_test) & !test(test_declare_introspection_queries_should_just_forward_to_global)"

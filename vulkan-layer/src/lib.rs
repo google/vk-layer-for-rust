@@ -464,10 +464,20 @@ trait DispatchableObject: vk::Handle + Copy {
     type DispatchKey: From<usize>;
 
     fn get_dispatch_key(&self) -> Self::DispatchKey {
-        let key = self.as_raw() as *const *const c_void;
+        assert_eq!(
+            std::mem::size_of::<Self>(),
+            std::mem::size_of::<*const *const c_void>()
+        );
         // Safe, because all dispatchable objects can be cast to void **. See details at
         // https://github.com/KhronosGroup/Vulkan-Loader/blob/35b005a5792f6e4c2931d62a37324923f1a71c79/docs/LoaderDriverInterface.md#driver-dispatchable-object-creation.
-        (*(unsafe { key.as_ref() }.unwrap()) as usize).into()
+        let key = unsafe {
+            // We use transmute instead of Handle::as_raw here to avoid integer to pointer cast, and
+            // allow the miri tests with tree borrows to work with this test. See
+            // https://github.com/ash-rs/ash/issues/996 for details.
+            let dispatch_table_ptr = std::mem::transmute_copy::<Self, *const *const c_void>(self);
+            std::ptr::read(dispatch_table_ptr)
+        };
+        (key as usize).into()
     }
 }
 
