@@ -1,1 +1,2 @@
 window.ALL_CRATES = ["VkLayer_vendor_rust_example_hello_world","ci","codegen","list_files","vulkan_layer","vulkan_layer_macros","vulkan_layer_scripts"];
+//{"start":21,"fragment_lengths":[41,5,10,13,15,22,23]}
