@@ -23,6 +23,9 @@ jobs:
     name: Upload static resources
     needs: run_presubmit
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
         with:
