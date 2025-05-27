@@ -133,7 +133,7 @@ impl<T: CheckEmpty> LazyCollection<T> {
 #[derive(Debug)]
 pub struct CollectionRefMut<'a, T: CheckEmpty>(&'a mut OnceCell<T>);
 
-impl<'a, T: CheckEmpty> Drop for CollectionRefMut<'a, T> {
+impl<T: CheckEmpty> Drop for CollectionRefMut<'_, T> {
     fn drop(&mut self) {
         let should_destroy = self
             .0
