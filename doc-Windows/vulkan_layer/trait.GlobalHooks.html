@@ -101,7 +101,7 @@ layers.</li>
         </span><span class="kw">let </span>create_instance = <span class="kw">unsafe </span>{
             (layer_instance_link.pfnNextGetInstanceProcAddr)(
                 vk::Instance::null(),
-                <span class="string">b"vkCreateInstance\0"</span>.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span>i8,
+                <span class="string">c"vkCreateInstance"</span>.as_ptr(),
             )
         };
         <span class="kw">let </span>create_instance: vk::PFN_vkCreateInstance = <span class="kw">match </span>create_instance {

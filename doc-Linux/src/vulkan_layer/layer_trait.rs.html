@@ -643,7 +643,7 @@
 <a href=#643 id=643 data-nosnippet>643</a>    ///         let create_instance = unsafe {
 <a href=#644 id=644 data-nosnippet>644</a>    ///             (layer_instance_link.pfnNextGetInstanceProcAddr)(
 <a href=#645 id=645 data-nosnippet>645</a>    ///                 vk::Instance::null(),
-<a href=#646 id=646 data-nosnippet>646</a>    ///                 b"vkCreateInstance\0".as_ptr() as *const i8,
+<a href=#646 id=646 data-nosnippet>646</a>    ///                 c"vkCreateInstance".as_ptr(),
 <a href=#647 id=647 data-nosnippet>647</a>    ///             )
 <a href=#648 id=648 data-nosnippet>648</a>    ///         };
 <a href=#649 id=649 data-nosnippet>649</a>    ///         let create_instance: vk::PFN_vkCreateInstance = match create_instance {
