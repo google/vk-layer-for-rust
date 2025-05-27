@@ -643,7 +643,7 @@ pub trait GlobalHooks: Send + Sync {
     ///         let create_instance = unsafe {
     ///             (layer_instance_link.pfnNextGetInstanceProcAddr)(
     ///                 vk::Instance::null(),
-    ///                 b"vkCreateInstance\0".as_ptr() as *const i8,
+    ///                 c"vkCreateInstance".as_ptr(),
     ///             )
     ///         };
     ///         let create_instance: vk::PFN_vkCreateInstance = match create_instance {

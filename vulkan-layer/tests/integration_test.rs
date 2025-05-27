@@ -375,36 +375,33 @@ mod get_instance_proc_addr {
             // vkEnumerateInstanceLayerProperties,
             // vkEnumerateInstanceExtensionProperties, vkCreateInstance are global
             // commands, and can't be queried with a valid VkInstance.
-            let commands_must_be_intercepted: &[&'static [u8]] = &[
+            let commands_must_be_intercepted: &[&'static CStr] = &[
                 // 4 Android introspection queries.
-                b"vkEnumerateDeviceLayerProperties\0",
-                b"vkEnumerateDeviceExtensionProperties\0",
-                b"vkGetInstanceProcAddr\0",
-                b"vkGetDeviceProcAddr\0",
+                c"vkEnumerateDeviceLayerProperties",
+                c"vkEnumerateDeviceExtensionProperties",
+                c"vkGetInstanceProcAddr",
+                c"vkGetDeviceProcAddr",
                 // 2 Physical device enumeration APIs.
-                b"vkEnumeratePhysicalDevices\0",
-                b"vkEnumeratePhysicalDeviceGroups\0",
+                c"vkEnumeratePhysicalDevices",
+                c"vkEnumeratePhysicalDeviceGroups",
                 // 3 device, instance creation and destruction APIs.
-                b"vkDestroyInstance\0",
-                b"vkCreateDevice\0",
-                b"vkDestroyDevice\0",
+                c"vkDestroyInstance",
+                c"vkCreateDevice",
+                c"vkDestroyDevice",
             ];
             for command in commands_must_be_intercepted {
-                let fp = unsafe {
-                    entry.get_instance_proc_addr(instance.handle(), command.as_ptr() as *const i8)
-                }
-                .map(|fp| fp as usize);
+                let fp =
+                    unsafe { entry.get_instance_proc_addr(instance.handle(), command.as_ptr()) }
+                        .map(|fp| fp as usize);
                 let next_fp = unsafe {
-                    icd_entry
-                        .get_instance_proc_addr(instance.handle(), command.as_ptr() as *const i8)
+                    icd_entry.get_instance_proc_addr(instance.handle(), command.as_ptr())
                 }
                 .map(|fp| fp as usize);
-                let command_name = CStr::from_bytes_with_nul(command).unwrap();
                 assert_ne!(
                     fp,
                     next_fp,
                     "The function pointer to {} should be different.",
-                    command_name.to_string_lossy()
+                    command.to_string_lossy()
                 );
             }
         }
