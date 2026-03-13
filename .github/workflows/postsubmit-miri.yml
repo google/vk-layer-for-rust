@@ -26,7 +26,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Set up nightly Rust toolchain
         # dtolnay/rust-toolchain@nightly
-        uses: dtolnay/rust-toolchain@f2f3c4b315c5bb8415dbb043af44ec90f68ae503
+        uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9  # v1
         with:
           components: |
             rust-src
