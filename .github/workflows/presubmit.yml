@@ -26,7 +26,7 @@ jobs:
         os: ["ubuntu-latest", "windows-latest"]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: recursive
       - name: Install Linux dependency
@@ -48,7 +48,7 @@ jobs:
         shell: bash
       - name: Cache LLVM and Clang
         id: cache-llvm
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ${{ steps.setup-llvm-install-path.outputs.LLVM_INSTALL_PATH }}
           key: ${{ format('llvm-16.0.0-{0}', runner.os) }}
@@ -85,7 +85,7 @@ jobs:
         run: cargo install --no-default-features --locked cargo-make
       - name: Install cargo llvm cov
         run: cargo install cargo-llvm-cov --locked
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.13t"
           cache: "pipenv"
@@ -97,7 +97,7 @@ jobs:
         run: go install github.com/google/addlicense@master
       - run: cargo make ci-presubmit
       - name: Checkout base coverage
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: static_resource
           sparse-checkout: |
@@ -114,7 +114,7 @@ jobs:
           filter-changed-files: true
           title: ${{ format('Test coverage for {0}', runner.os) }}
           post-to: job-summary
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: ${{ format('coverage-{0}', runner.os) }}
           # lcov.info is needed for the next commit and PR to diff the coverage report of the base
@@ -124,7 +124,7 @@ jobs:
             target/lcov.info
             target/llvm-cov
             target/coverage_badge.json
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: ${{ format('doc-{0}', runner.os) }}
           path: target/doc
